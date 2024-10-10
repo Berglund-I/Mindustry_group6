@@ -225,6 +225,75 @@ public class ApplicationTests{
     }
 
     @Test
+    void mode_shouldReturnPvp_whenPvpIsTrue(){
+        //Ida
+        //Arrange
+        Rules rules = new Rules();
+        rules.pvp = true;
+
+        //Act
+        Gamemode result = rules.mode();
+
+        //Assert
+        assertEquals(Gamemode.pvp, result);
+    }
+
+    @Test
+    void mode_shouldReturnEditor_whenEditorIsTrue(){
+        //Ida
+        //Arrange
+        Rules rules = new Rules();
+        rules.editor = true;
+
+        //Act
+        Gamemode result = rules.mode();
+
+        //Assert
+        assertEquals(Gamemode.editor, result);
+    }
+
+    @Test
+    void mode_shouldReturnAttack_whenAttackModelsIsTrue(){
+        //Ida. B
+        // Arrange
+        Rules rules = new Rules();
+        rules.attackMode = true;
+
+        //Act
+        Gamemode result = rules.mode();
+
+        //Assert
+        assertEquals(Gamemode.attack, result);
+    }
+
+    @Test
+    void mode_shouldReturnSandbox_whenInifiteResourcesIsTrue(){
+        //Ida
+        //Arrange
+        Rules rules = new Rules();
+        rules.infiniteResources = true;
+
+        //Act
+        Gamemode result = rules.mode();
+
+        //Assert
+        assertEquals(Gamemode.sandbox, result);
+    }
+
+    @Test
+    void mode_shouldReturnSurvival_whenNoOtherModesAreTrue() {
+        //Ida
+        //Arrange
+        Rules rules = new Rules();
+
+        //Act
+        Gamemode result = rules.mode();
+
+        //Assert
+        assertEquals(Gamemode.survival, result);
+    }
+
+    @Test
     void serverListJson(){
         String[] files = {"servers_v6.json", "servers_v7.json", "servers_be.json"};
 
