@@ -727,13 +727,16 @@ public class ApplicationTests{
     }
 
     @Test
-    void load77Save(){
+    void testLoad77Save(){
+        // Arrange
         resetWorld();
+
+        // Act
         SaveIO.load(Core.files.internal("77.msav"));
 
+        // Assert
         //just tests if the map was loaded properly and didn't crash, no validity checks currently
-        assertEquals(276, world.width());
-        assertEquals(10, world.height());
+        assertTrue(world.width() == 276 && world.height() == 10);
     }
 
     @Test
