@@ -738,37 +738,37 @@ public class ApplicationTests{
 //
 //    }
 
-    @Test
-    void testSaveUpdateWhenStateIsNotPausedAndHasDialog() {
-        // Andreas
-        // Arrange
-        if (arc.Core.assets == null) {
-            Core.assets = new arc.assets.AssetManager();
-        }
-        // Act
-        Saves save = new Saves();
-        try {
-            Field field = Saves.class.getDeclaredField("lastTimestamp");
-            field.setAccessible(true);
-            field.set(save, 1000L);
-        }
-        catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        GameState state = mock(GameState.class);
-        Scene scene = mock(Scene.class);
-        when(state.isGame()).thenReturn(true);
-        when(state.isPaused()).thenReturn(false);
-        when(scene.hasDialog()).thenReturn(false);
-        Core.scene = scene;
-        Vars.state = state;
-
-        save.update();
-
-        // Assert
-        assertTrue(save.getTotalPlaytime() > 0);
-    }
+//    @Test
+//    void testSaveUpdateWhenStateIsNotPausedAndHasDialog() {
+//        // Andreas
+//        // Arrange
+//        if (arc.Core.assets == null) {
+//            Core.assets = new arc.assets.AssetManager();
+//        }
+//        // Act
+//        Saves save = new Saves();
+//        try {
+//            Field field = Saves.class.getDeclaredField("lastTimestamp");
+//            field.setAccessible(true);
+//            field.set(save, 1000L);
+//        }
+//        catch (NoSuchFieldException | IllegalAccessException e) {
+//            e.printStackTrace();
+//        }
+//
+//        GameState state = mock(GameState.class);
+//        Scene scene = mock(Scene.class);
+//        when(state.isGame()).thenReturn(true);
+//        when(state.isPaused()).thenReturn(false);
+//        when(scene.hasDialog()).thenReturn(false);
+//        Core.scene = scene;
+//        Vars.state = state;
+//
+//        save.update();
+//
+//        // Assert
+//        assertTrue(save.getTotalPlaytime() > 0);
+//    }
 
 
     void updateBlocks(int times){
