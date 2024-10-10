@@ -1,0 +1,298 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DatabaseDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: DatabaseDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DatabaseDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/86)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DatabaseDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/89)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class DatabaseDialog extends BaseDialog{
+&nbsp;    private TextField search;
+<b class="nc">&nbsp;    private Table all = new Table();</b>
+&nbsp;
+&nbsp;    private @Nullable Seq&lt;UnlockableContent&gt; allTabs;
+&nbsp;    //sun means &quot;all content&quot;
+<b class="nc">&nbsp;    private UnlockableContent tab = Planets.sun;</b>
+&nbsp;
+&nbsp;    public DatabaseDialog(){
+<b class="nc">&nbsp;        super(&quot;@database&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        shouldPause = true;</b>
+<b class="nc">&nbsp;        addCloseButton();</b>
+<b class="nc">&nbsp;        shown(() -&gt; {</b>
+<b class="nc">&nbsp;            checkTabList();</b>
+<b class="nc">&nbsp;            if(state.isCampaign() &amp;&amp; allTabs.contains(state.getPlanet())){</b>
+<b class="nc">&nbsp;                tab = state.getPlanet();</b>
+<b class="nc">&nbsp;            }else if(state.isGame() &amp;&amp; state.rules.planet != null &amp;&amp; allTabs.contains(state.rules.planet)){</b>
+<b class="nc">&nbsp;                tab = state.rules.planet;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            rebuild();</b>
+&nbsp;        });
+<b class="nc">&nbsp;        onResize(this::rebuild);</b>
+&nbsp;
+<b class="nc">&nbsp;        all.margin(20).marginTop(0f);</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.top();</b>
+<b class="nc">&nbsp;        cont.table(s -&gt; {</b>
+<b class="nc">&nbsp;            s.image(Icon.zoom).padRight(8);</b>
+<b class="nc">&nbsp;            search = s.field(null, text -&gt; rebuild()).growX().get();</b>
+<b class="nc">&nbsp;            search.setMessageText(&quot;@players.search&quot;);</b>
+<b class="nc">&nbsp;        }).fillX().padBottom(4).row();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.pane(all).scrollX(false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void checkTabList(){
+<b class="nc">&nbsp;        if(allTabs == null){</b>
+<b class="nc">&nbsp;            Seq&lt;Content&gt;[] allContent = Vars.content.getContentMap();</b>
+<b class="nc">&nbsp;            ObjectSet&lt;UnlockableContent&gt; all = new ObjectSet&lt;&gt;();</b>
+<b class="nc">&nbsp;            for(var contents : allContent){</b>
+<b class="nc">&nbsp;                for(var content : contents){</b>
+<b class="nc">&nbsp;                    if(content instanceof UnlockableContent u){</b>
+<b class="nc">&nbsp;                        all.addAll(u.databaseTabs);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;            allTabs = all.toSeq().sort();</b>
+<b class="nc">&nbsp;            allTabs.insert(0, Planets.sun);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void rebuild(){
+<b class="nc">&nbsp;        checkTabList();</b>
+&nbsp;
+<b class="nc">&nbsp;        all.clear();</b>
+<b class="nc">&nbsp;        var text = search.getText().toLowerCase();</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Content&gt;[] allContent = Vars.content.getContentMap();</b>
+&nbsp;
+<b class="nc">&nbsp;        all.table(t -&gt; {</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+<b class="nc">&nbsp;            for(var content : allTabs){</b>
+<b class="nc">&nbsp;                t.button(content == Planets.sun ? Icon.eyeSmall : content instanceof Planet ? Icon.planet : new TextureRegionDrawable(content.uiIcon), Styles.clearNoneTogglei, iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                    tab = content;</b>
+<b class="nc">&nbsp;                    rebuild();</b>
+<b class="nc">&nbsp;                }).size(50f).checked(b -&gt; tab == content).tooltip(content == Planets.sun ? &quot;@all&quot; : content.localizedName).with(but -&gt; {</b>
+<b class="nc">&nbsp;                    but.getStyle().imageUpColor = content instanceof Planet p ? p.iconColor : Color.white.cpy();</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                if(++i % 10 == 0) t.row();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }).row();;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int j = 0; j &lt; allContent.length; j++){</b>
+<b class="nc">&nbsp;            ContentType type = ContentType.all[j];</b>
+&nbsp;
+<b class="nc">&nbsp;            Seq&lt;UnlockableContent&gt; array = allContent[j]</b>
+<b class="nc">&nbsp;                .select(c -&gt; c instanceof UnlockableContent u &amp;&amp; !u.isHidden() &amp;&amp; (tab == Planets.sun || u.allDatabaseTabs || u.databaseTabs.contains(tab)) &amp;&amp;</b>
+<b class="nc">&nbsp;                    (text.isEmpty() || u.localizedName.toLowerCase().contains(text))).as();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(array.size == 0) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            all.add(&quot;@content.&quot; + type.name() + &quot;.name&quot;).growX().left().color(Pal.accent);</b>
+<b class="nc">&nbsp;            all.row();</b>
+<b class="nc">&nbsp;            all.image().growX().pad(5).padLeft(0).padRight(0).height(3).color(Pal.accent);</b>
+<b class="nc">&nbsp;            all.row();</b>
+<b class="nc">&nbsp;            all.table(list -&gt; {</b>
+<b class="nc">&nbsp;                list.left();</b>
+&nbsp;
+<b class="nc">&nbsp;                int cols = (int)Mathf.clamp((Core.graphics.getWidth() - Scl.scl(30)) / Scl.scl(32 + 12), 1, 22);</b>
+<b class="nc">&nbsp;                int count = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; array.size; i++){</b>
+<b class="nc">&nbsp;                    UnlockableContent unlock = array.get(i);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Image image = unlocked(unlock) ? new Image(unlock.uiIcon).setScaling(Scaling.fit) : new Image(Icon.lock, Pal.gray);</b>
+&nbsp;
+&nbsp;                    //banned cross
+<b class="nc">&nbsp;                    if(state.isGame() &amp;&amp; (unlock instanceof UnitType u &amp;&amp; u.isBanned() || unlock instanceof Block b &amp;&amp; state.rules.isBanned(b))){</b>
+<b class="nc">&nbsp;                        list.stack(image, new Image(Icon.cancel){{</b>
+<b class="nc">&nbsp;                            setColor(Color.scarlet);</b>
+<b class="nc">&nbsp;                            touchable = Touchable.disabled;</b>
+<b class="nc">&nbsp;                        }}).size(8 * 4).pad(3);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        list.add(image).size(8 * 4).pad(3);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    ClickListener listener = new ClickListener();</b>
+<b class="nc">&nbsp;                    image.addListener(listener);</b>
+<b class="nc">&nbsp;                    if(!mobile &amp;&amp; unlocked(unlock)){</b>
+<b class="nc">&nbsp;                        image.addListener(new HandCursorListener());</b>
+<b class="nc">&nbsp;                        image.update(() -&gt; image.color.lerp(!listener.isOver() ? Color.lightGray : Color.white, Mathf.clamp(0.4f * Time.delta)));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(unlocked(unlock)){</b>
+<b class="nc">&nbsp;                        image.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;                            if(Core.input.keyDown(KeyCode.shiftLeft) &amp;&amp; Fonts.getUnicode(unlock.name) != 0){</b>
+<b class="nc">&nbsp;                                Core.app.setClipboardText((char)Fonts.getUnicode(unlock.name) + &quot;&quot;);</b>
+<b class="nc">&nbsp;                                ui.showInfoFade(&quot;@copied&quot;);</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                ui.content.show(unlock);</b>
+&nbsp;                            }
+&nbsp;                        });
+<b class="nc">&nbsp;                        image.addListener(new Tooltip(t -&gt; t.background(Tex.button).add(unlock.localizedName + (settings.getBool(&quot;console&quot;) ? &quot;\n[gray]&quot; + unlock.name : &quot;&quot;))));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if((++count) % cols == 0){</b>
+<b class="nc">&nbsp;                        list.row();</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }).growX().left().padBottom(10);</b>
+<b class="nc">&nbsp;            all.row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(all.getChildren().isEmpty()){</b>
+<b class="nc">&nbsp;            all.add(&quot;@none.found&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean unlocked(UnlockableContent content){
+<b class="nc">&nbsp;        return (!Vars.state.isCampaign() &amp;&amp; !Vars.state.isMenu()) || content.unlocked();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

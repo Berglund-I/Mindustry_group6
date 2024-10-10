@@ -1,0 +1,402 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Build</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world</a>
+</div>
+
+<h1>Coverage Summary for Class: Build (mindustry.world)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Build</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (9/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    52%
+  </span>
+  <span class="absValue">
+    (77/148)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Build{</b>
+<b class="fc">&nbsp;    private static final IntSet tmp = new IntSet();</b>
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void beginBreak(@Nullable Unit unit, Team team, int x, int y){
+<b class="fc">&nbsp;        if(!validBreak(team, x, y)){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Tile tile = world.tileBuilding(x, y);</b>
+&nbsp;        //this should never happen, but it doesn&#39;t hurt to check for links
+<b class="fc">&nbsp;        float prevPercent = 1f;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(tile.build != null){</b>
+<b class="fc">&nbsp;            prevPercent = tile.build.healthf();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        int rotation = tile.build != null ? tile.build.rotation : 0;</b>
+<b class="fc">&nbsp;        Block previous = tile.block();</b>
+&nbsp;
+&nbsp;        //instantly deconstruct if necessary
+<b class="fc">&nbsp;        if(previous.instantDeconstruct){</b>
+<b class="nc">&nbsp;            ConstructBlock.deconstructFinish(tile, previous, unit);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Block sub = ConstructBlock.get(previous.size);</b>
+&nbsp;
+<b class="fc">&nbsp;        Seq&lt;Building&gt; prevBuild = new Seq&lt;&gt;(1);</b>
+<b class="fc">&nbsp;        if(tile.build != null){</b>
+<b class="fc">&nbsp;            prevBuild.add(tile.build);</b>
+<b class="fc">&nbsp;            tile.build.onDeconstructed(unit);</b>
+<b class="fc">&nbsp;            tile.build.dead = true;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        tile.setBlock(sub, team, rotation);</b>
+<b class="fc">&nbsp;        var build = (ConstructBuild)tile.build;</b>
+<b class="fc">&nbsp;        build.setDeconstruct(previous);</b>
+<b class="fc">&nbsp;        build.prevBuild = prevBuild;</b>
+<b class="fc">&nbsp;        tile.build.health = tile.build.maxHealth * prevPercent;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(unit != null &amp;&amp; unit.getControllerName() != null){</b>
+<b class="nc">&nbsp;            tile.build.lastAccessed = unit.getControllerName();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Events.fire(new BlockBuildBeginEvent(tile, team, unit, true));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Places a ConstructBlock at this location. */
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void beginPlace(@Nullable Unit unit, Block result, Team team, int x, int y, int rotation){
+<b class="fc">&nbsp;        if(!validPlace(result, team, x, y, rotation)){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Tile tile = world.tile(x, y);</b>
+&nbsp;
+&nbsp;        //just in case
+<b class="fc">&nbsp;        if(tile == null) return;</b>
+&nbsp;
+&nbsp;        //auto-rotate the block to the correct orientation and bail out
+<b class="fc">&nbsp;        if(tile.team() == team &amp;&amp; tile.block == result &amp;&amp; tile.build != null &amp;&amp; tile.block.quickRotate){</b>
+<b class="nc">&nbsp;            if(unit != null &amp;&amp; unit.getControllerName() != null) tile.build.lastAccessed = unit.getControllerName();</b>
+<b class="nc">&nbsp;            int previous = tile.build.rotation;</b>
+<b class="nc">&nbsp;            tile.build.rotation = Mathf.mod(rotation, 4);</b>
+<b class="nc">&nbsp;            tile.build.updateProximity();</b>
+<b class="nc">&nbsp;            tile.build.noSleep();</b>
+<b class="nc">&nbsp;            Fx.rotateBlock.at(tile.build.x, tile.build.y, tile.build.block.size);</b>
+<b class="nc">&nbsp;            Events.fire(new BuildRotateEvent(tile.build, unit, previous));</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;        //repair derelict tile
+<b class="fc">&nbsp;        if(tile.team() == Team.derelict &amp;&amp; team != Team.derelict &amp;&amp; tile.block == result &amp;&amp; tile.build != null &amp;&amp; tile.block.allowDerelictRepair &amp;&amp; state.rules.derelictRepair){</b>
+<b class="nc">&nbsp;            float healthf = tile.build.healthf();</b>
+<b class="nc">&nbsp;            var config = tile.build.config();</b>
+&nbsp;
+<b class="nc">&nbsp;            tile.setBlock(result, team, rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(unit != null &amp;&amp; unit.getControllerName() != null) tile.build.lastAccessed = unit.getControllerName();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(config != null){</b>
+<b class="nc">&nbsp;                tile.build.configured(unit, config);</b>
+&nbsp;            }
+&nbsp;            //keep health
+<b class="nc">&nbsp;            tile.build.health = result.health * healthf;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(fogControl.isVisibleTile(team, tile.x, tile.y)){</b>
+<b class="nc">&nbsp;                result.placeEffect.at(tile.drawx(), tile.drawy(), result.size);</b>
+<b class="nc">&nbsp;                Fx.rotateBlock.at(tile.build.x, tile.build.y, tile.build.block.size);</b>
+&nbsp;                //doesn&#39;t play a sound
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Events.fire(new BlockBuildEndEvent(tile, unit, team, false, config));</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;        //break all props in the way
+<b class="fc">&nbsp;        tile.getLinkedTilesAs(result, out -&gt; {</b>
+<b class="fc">&nbsp;            if(out.block != Blocks.air &amp;&amp; out.block.alwaysReplace){</b>
+<b class="nc">&nbsp;                out.block.breakEffect.at(out.drawx(), out.drawy(), out.block.size, out.block.mapColor);</b>
+<b class="nc">&nbsp;                out.remove();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;        //complete it immediately
+<b class="fc">&nbsp;        if(result.instantBuild){</b>
+<b class="nc">&nbsp;            Events.fire(new BlockBuildBeginEvent(tile, team, unit, false));</b>
+<b class="nc">&nbsp;            result.placeBegan(tile, tile.block, unit);</b>
+<b class="nc">&nbsp;            ConstructBlock.constructFinish(tile, result, unit, (byte)rotation, team, null);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Block previous = tile.block();</b>
+<b class="fc">&nbsp;        Block sub = ConstructBlock.get(result.size);</b>
+<b class="fc">&nbsp;        var prevBuild = new Seq&lt;Building&gt;(9);</b>
+&nbsp;
+<b class="fc">&nbsp;        result.beforePlaceBegan(tile, previous);</b>
+<b class="fc">&nbsp;        tmp.clear();</b>
+&nbsp;
+<b class="fc">&nbsp;        tile.getLinkedTilesAs(result, t -&gt; {</b>
+<b class="fc">&nbsp;            if(t.build != null &amp;&amp; t.build.team == team &amp;&amp; tmp.add(t.build.id)){</b>
+<b class="nc">&nbsp;                prevBuild.add(t.build);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        tile.setBlock(sub, team, rotation);</b>
+&nbsp;
+<b class="fc">&nbsp;        var build = (ConstructBuild)tile.build;</b>
+&nbsp;
+<b class="fc">&nbsp;        build.setConstruct(previous.size == sub.size ? previous : Blocks.air, result);</b>
+<b class="fc">&nbsp;        build.prevBuild = prevBuild;</b>
+<b class="fc">&nbsp;        if(unit != null &amp;&amp; unit.getControllerName() != null) build.lastAccessed = unit.getControllerName();</b>
+&nbsp;
+<b class="fc">&nbsp;        Events.fire(new BlockBuildBeginEvent(tile, team, unit, false));</b>
+&nbsp;
+<b class="fc">&nbsp;        result.placeBegan(tile, previous, unit);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns whether a tile can be placed at this location by this team. */
+&nbsp;    public static boolean validPlace(Block type, Team team, int x, int y, int rotation){
+<b class="fc">&nbsp;        return validPlace(type, team, x, y, rotation, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns whether a tile can be placed at this location by this team. */
+&nbsp;    public static boolean validPlace(Block type, Team team, int x, int y, int rotation, boolean checkVisible){
+&nbsp;        //the wave team can build whatever they want as long as it&#39;s visible - banned blocks are not applicable
+<b class="fc">&nbsp;        if(type == null || (checkVisible &amp;&amp; (!type.environmentBuildable() || (!type.isPlaceable() &amp;&amp; !(state.rules.waves &amp;&amp; team == state.rules.waveTeam &amp;&amp; type.isVisible()))))){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if((type.solid || type.solidifes) &amp;&amp; Units.anyEntities(x * tilesize + type.offset - type.size*tilesize/2f, y * tilesize + type.offset - type.size*tilesize/2f, type.size * tilesize, type.size*tilesize)){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(!state.rules.editor){</b>
+&nbsp;            //find closest core, if it doesn&#39;t match the team, placing is not legal
+<b class="fc">&nbsp;            if(state.rules.polygonCoreProtection){</b>
+<b class="nc">&nbsp;                float mindst = Float.MAX_VALUE;</b>
+<b class="nc">&nbsp;                CoreBuild closest = null;</b>
+<b class="nc">&nbsp;                for(TeamData data : state.teams.active){</b>
+<b class="nc">&nbsp;                    for(CoreBuild tile : data.cores){</b>
+<b class="nc">&nbsp;                        float dst = tile.dst2(x * tilesize + type.offset, y * tilesize + type.offset);</b>
+<b class="nc">&nbsp;                        if(dst &lt; mindst){</b>
+<b class="nc">&nbsp;                            closest = tile;</b>
+<b class="nc">&nbsp;                            mindst = dst;</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;                if(closest != null &amp;&amp; closest.team != team){</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(state.teams.anyEnemyCoresWithin(team, x * tilesize + type.offset, y * tilesize + type.offset, state.rules.enemyCoreBuildRadius + tilesize)){</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Tile tile = world.tile(x, y);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(tile == null) return false;</b>
+&nbsp;
+&nbsp;        //floors have different checks
+<b class="fc">&nbsp;        if(type.isFloor()){</b>
+<b class="nc">&nbsp;            return type.isOverlay() ? tile.overlay() != type : tile.floor() != type;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //campaign darkness check
+<b class="fc">&nbsp;        if(world.getDarkness(x, y) &gt;= 3){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(!type.requiresWater &amp;&amp; !contactsShallows(tile.x, tile.y, type) &amp;&amp; !type.placeableLiquid){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(!type.canPlaceOn(tile, team, rotation)){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        int offsetx = -(type.size - 1) / 2;</b>
+<b class="fc">&nbsp;        int offsety = -(type.size - 1) / 2;</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int dx = 0; dx &lt; type.size; dx++){</b>
+<b class="fc">&nbsp;            for(int dy = 0; dy &lt; type.size; dy++){</b>
+<b class="fc">&nbsp;                int wx = dx + offsetx + tile.x, wy = dy + offsety + tile.y;</b>
+&nbsp;
+<b class="fc">&nbsp;                Tile check = world.tile(wx, wy);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(</b>
+&nbsp;                check == null || //nothing there
+<b class="fc">&nbsp;                (type.size == 2 &amp;&amp; world.getDarkness(wx, wy) &gt;= 3) ||</b>
+<b class="nc">&nbsp;                (state.rules.staticFog &amp;&amp; state.rules.fog &amp;&amp; !fogControl.isDiscovered(team, wx, wy)) ||</b>
+<b class="fc">&nbsp;                (check.floor().isDeep() &amp;&amp; !type.floating &amp;&amp; !type.requiresWater &amp;&amp; !type.placeableLiquid) || //deep water</b>
+<b class="fc">&nbsp;                (type == check.block() &amp;&amp; check.build != null &amp;&amp; rotation == check.build.rotation &amp;&amp; type.rotate &amp;&amp; !((type == check.block &amp;&amp; team != Team.derelict &amp;&amp; check.team() == Team.derelict))) || //same block, same rotation</b>
+<b class="fc">&nbsp;                !check.interactable(team) || //cannot interact</b>
+<b class="fc">&nbsp;                !check.floor().placeableOn  || //solid floor</b>
+<b class="nc">&nbsp;                (!checkVisible &amp;&amp; !check.block().alwaysReplace) || //replacing a block that should be replaced (e.g. payload placement)</b>
+<b class="fc">&nbsp;                    !(((type.canReplace(check.block()) || (type == check.block &amp;&amp; team != Team.derelict &amp;&amp; state.rules.derelictRepair &amp;&amp; check.team() == Team.derelict)) || //can replace type OR can replace derelict block of same type</b>
+<b class="nc">&nbsp;                        (check.build instanceof ConstructBuild build &amp;&amp; build.current == type &amp;&amp; check.centerX() == tile.x &amp;&amp; check.centerY() == tile.y)) &amp;&amp; //same type in construction</b>
+<b class="fc">&nbsp;                    type.bounds(tile.x, tile.y, Tmp.r1).grow(0.01f).contains(check.block.bounds(check.centerX(), check.centerY(), Tmp.r2))) || //no replacement</b>
+<b class="nc">&nbsp;                (type.requiresWater &amp;&amp; check.floor().liquidDrop != Liquids.water) //requires water but none found</b>
+<b class="nc">&nbsp;                ) return false;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(state.rules.placeRangeCheck &amp;&amp; !state.isEditor() &amp;&amp; getEnemyOverlap(type, team, x, y) != null){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static @Nullable Building getEnemyOverlap(Block block, Team team, int x, int y){
+<b class="nc">&nbsp;        return indexer.findEnemyTile(team, x * tilesize + block.size, y * tilesize + block.size, block.placeOverlapRange + 4f, p -&gt; true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean contactsGround(int x, int y, Block block){
+<b class="nc">&nbsp;        if(block.isMultiblock()){</b>
+<b class="nc">&nbsp;            for(Point2 point : Edges.getEdges(block.size)){</b>
+<b class="nc">&nbsp;                Tile tile = world.tile(x + point.x, y + point.y);</b>
+<b class="nc">&nbsp;                if(tile != null &amp;&amp; !tile.floor().isLiquid) return true;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            for(Point2 point : Geometry.d4){</b>
+<b class="nc">&nbsp;                Tile tile = world.tile(x + point.x, y + point.y);</b>
+<b class="nc">&nbsp;                if(tile != null &amp;&amp; !tile.floor().isLiquid) return true;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean contactsShallows(int x, int y, Block block){
+<b class="fc">&nbsp;        if(block.isMultiblock()){</b>
+<b class="fc">&nbsp;            for(Point2 point : block.getInsideEdges()){</b>
+<b class="fc">&nbsp;                Tile tile = world.tile(x + point.x, y + point.y);</b>
+<b class="fc">&nbsp;                if(tile != null &amp;&amp; !tile.floor().isDeep()) return true;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(Point2 point : block.getEdges()){</b>
+<b class="nc">&nbsp;                Tile tile = world.tile(x + point.x, y + point.y);</b>
+<b class="nc">&nbsp;                if(tile != null &amp;&amp; !tile.floor().isDeep()) return true;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            for(Point2 point : Geometry.d4){</b>
+<b class="nc">&nbsp;                Tile tile = world.tile(x + point.x, y + point.y);</b>
+<b class="nc">&nbsp;                if(tile != null &amp;&amp; !tile.floor().isDeep()) return true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Tile tile = world.tile(x, y);</b>
+<b class="nc">&nbsp;            return tile != null &amp;&amp; !tile.floor().isDeep();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether the tile at this position is breakable by this team */
+&nbsp;    public static boolean validBreak(Team team, int x, int y){
+<b class="fc">&nbsp;        Tile tile = world.tile(x, y);</b>
+<b class="fc">&nbsp;        return tile != null &amp;&amp; tile.block() != Blocks.air &amp;&amp; (tile.block().canBreak(tile) &amp;&amp; (tile.breakable() || state.rules.allowEnvironmentDeconstruct)) &amp;&amp; tile.interactable(team);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

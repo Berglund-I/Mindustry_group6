@@ -1,0 +1,239 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Bar</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui</a>
+</div>
+
+<h1>Coverage Summary for Class: Bar (mindustry.ui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Bar</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/68)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;public class Bar extends Element{
+<b class="nc">&nbsp;    private static Rect scissor = new Rect();</b>
+&nbsp;
+&nbsp;    private Floatp fraction;
+<b class="nc">&nbsp;    private CharSequence name = &quot;&quot;;</b>
+&nbsp;    private float value, lastValue, blink, outlineRadius;
+<b class="nc">&nbsp;    private Color blinkColor = new Color(), outlineColor = new Color();</b>
+&nbsp;
+<b class="nc">&nbsp;    public Bar(String name, Color color, Floatp fraction){</b>
+<b class="nc">&nbsp;        this.fraction = fraction;</b>
+<b class="nc">&nbsp;        this.name = Core.bundle.get(name, name);</b>
+<b class="nc">&nbsp;        this.blinkColor.set(color);</b>
+<b class="nc">&nbsp;        lastValue = value = fraction.get();</b>
+<b class="nc">&nbsp;        setColor(color);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Bar(Prov&lt;CharSequence&gt; name, Prov&lt;Color&gt; color, Floatp fraction){</b>
+<b class="nc">&nbsp;        this.fraction = fraction;</b>
+<b class="nc">&nbsp;        lastValue = value = Mathf.clamp(fraction.get());</b>
+<b class="nc">&nbsp;        update(() -&gt; {</b>
+<b class="nc">&nbsp;            this.name = name.get();</b>
+<b class="nc">&nbsp;            this.blinkColor.set(color.get());</b>
+<b class="nc">&nbsp;            setColor(color.get());</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Bar(){</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reset(float value){
+<b class="nc">&nbsp;        this.value = lastValue = blink = value;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void set(Prov&lt;String&gt; name, Floatp fraction, Color color){
+<b class="nc">&nbsp;        this.fraction = fraction;</b>
+<b class="nc">&nbsp;        this.lastValue = fraction.get();</b>
+<b class="nc">&nbsp;        this.blinkColor.set(color);</b>
+<b class="nc">&nbsp;        setColor(color);</b>
+<b class="nc">&nbsp;        update(() -&gt; this.name = name.get());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void snap(){
+<b class="nc">&nbsp;        lastValue = value = fraction.get();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Bar outline(Color color, float stroke){
+<b class="nc">&nbsp;        outlineColor.set(color);</b>
+<b class="nc">&nbsp;        outlineRadius = Scl.scl(stroke);</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void flash(){
+<b class="nc">&nbsp;        blink = 1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Bar blink(Color color){
+<b class="nc">&nbsp;        blinkColor.set(color);</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        if(fraction == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float computed = Mathf.clamp(fraction.get());</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        if(lastValue &gt; computed){</b>
+<b class="nc">&nbsp;            blink = 1f;</b>
+<b class="nc">&nbsp;            lastValue = computed;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Float.isNaN(lastValue)) lastValue = 0;</b>
+<b class="nc">&nbsp;        if(Float.isInfinite(lastValue)) lastValue = 1f;</b>
+<b class="nc">&nbsp;        if(Float.isNaN(value)) value = 0;</b>
+<b class="nc">&nbsp;        if(Float.isInfinite(value)) value = 1f;</b>
+<b class="nc">&nbsp;        if(Float.isNaN(computed)) computed = 0;</b>
+<b class="nc">&nbsp;        if(Float.isInfinite(computed)) computed = 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;        blink = Mathf.lerpDelta(blink, 0f, 0.2f);</b>
+<b class="nc">&nbsp;        value = Mathf.lerpDelta(value, computed, 0.15f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawable bar = Tex.bar;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(outlineRadius &gt; 0){</b>
+<b class="nc">&nbsp;            Draw.color(outlineColor);</b>
+<b class="nc">&nbsp;            bar.draw(x - outlineRadius, y - outlineRadius, width + outlineRadius*2, height + outlineRadius*2);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.colorl(0.1f);</b>
+<b class="nc">&nbsp;        Draw.alpha(parentAlpha);</b>
+<b class="nc">&nbsp;        bar.draw(x, y, width, height);</b>
+<b class="nc">&nbsp;        Draw.color(color, blinkColor, blink);</b>
+<b class="nc">&nbsp;        Draw.alpha(parentAlpha);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawable top = Tex.barTop;</b>
+<b class="nc">&nbsp;        float topWidth = width * value;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(topWidth &gt; Core.atlas.find(&quot;bar-top&quot;).width){</b>
+<b class="nc">&nbsp;            top.draw(x, y, topWidth, height);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            if(ScissorStack.push(scissor.set(x, y, topWidth, height))){</b>
+<b class="nc">&nbsp;                top.draw(x, y, Core.atlas.find(&quot;bar-top&quot;).width, height);</b>
+<b class="nc">&nbsp;                ScissorStack.pop();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;
+<b class="nc">&nbsp;        Font font = Fonts.outline;</b>
+<b class="nc">&nbsp;        GlyphLayout lay = Pools.obtain(GlyphLayout.class, GlyphLayout::new);</b>
+<b class="nc">&nbsp;        lay.setText(font, name);</b>
+&nbsp;
+<b class="nc">&nbsp;        font.setColor(1f, 1f, 1f, 1f);</b>
+<b class="nc">&nbsp;        font.getCache().clear();</b>
+<b class="nc">&nbsp;        font.getCache().addText(name, x + width / 2f - lay.width / 2f, y + height / 2f + lay.height / 2f + 1);</b>
+<b class="nc">&nbsp;        font.getCache().draw(parentAlpha);</b>
+&nbsp;
+<b class="nc">&nbsp;        Pools.free(lay);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,509 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MinimapRenderer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: MinimapRenderer (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MinimapRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/215)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.Texture.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class MinimapRenderer{
+&nbsp;    private static final float baseSize = 16f, updateInterval = 2f;
+&nbsp;
+<b class="nc">&nbsp;    private final Seq&lt;Unit&gt; units = new Seq&lt;&gt;();</b>
+&nbsp;    private Pixmap pixmap;
+&nbsp;    private Texture texture;
+&nbsp;    private TextureRegion region;
+<b class="nc">&nbsp;    private Rect rect = new Rect();</b>
+<b class="nc">&nbsp;    private float zoom = 4;</b>
+&nbsp;
+&nbsp;    private float lastX, lastY, lastW, lastH, lastScl;
+&nbsp;    private boolean worldSpace;
+<b class="nc">&nbsp;    private IntSet updates = new IntSet();</b>
+<b class="nc">&nbsp;    private float updateCounter = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;    public MinimapRenderer(){</b>
+<b class="nc">&nbsp;        Events.on(WorldLoadEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            reset();</b>
+<b class="nc">&nbsp;            updateAll();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(TileChangeEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            if(!ui.editor.isShown()){</b>
+<b class="nc">&nbsp;                update(event.tile);</b>
+&nbsp;
+&nbsp;                //update floor below block.
+<b class="nc">&nbsp;                if(event.tile.block().solid &amp;&amp; event.tile.y &gt; 0 &amp;&amp; event.tile.isCenter()){</b>
+<b class="nc">&nbsp;                    event.tile.getLinkedTiles(t -&gt; {</b>
+<b class="nc">&nbsp;                        Tile tile = world.tile(t.x, t.y - 1);</b>
+<b class="nc">&nbsp;                        if(tile != null &amp;&amp; tile.block() == Blocks.air){</b>
+<b class="nc">&nbsp;                            update(tile);</b>
+&nbsp;                        }
+&nbsp;                    });
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(TilePreChangeEvent.class, e -&gt; {</b>
+&nbsp;            //update floor below a *recently removed* block.
+<b class="nc">&nbsp;            if(e.tile.block().solid &amp;&amp; e.tile.y &gt; 0){</b>
+<b class="nc">&nbsp;                Tile tile = world.tile(e.tile.x, e.tile.y - 1);</b>
+<b class="nc">&nbsp;                if(tile.block() == Blocks.air){</b>
+<b class="nc">&nbsp;                    Core.app.post(() -&gt; update(tile));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(BuildTeamChangeEvent.class, event -&gt; update(event.build.tile));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(){
+&nbsp;        //updates are batched to occur every 2 frames
+<b class="nc">&nbsp;        if((updateCounter += Time.delta) &gt;= updateInterval){</b>
+<b class="nc">&nbsp;            updateCounter %= updateInterval;</b>
+&nbsp;
+<b class="nc">&nbsp;            updates.each(pos -&gt; {</b>
+<b class="nc">&nbsp;                Tile tile = world.tile(pos);</b>
+<b class="nc">&nbsp;                if(tile == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                int color = colorFor(tile);</b>
+<b class="nc">&nbsp;                pixmap.set(tile.x, pixmap.height - 1 - tile.y, color);</b>
+&nbsp;
+&nbsp;                //yes, this calls glTexSubImage2D every time, with a 1x1 region
+<b class="nc">&nbsp;                Pixmaps.drawPixel(texture, tile.x, pixmap.height - 1 - tile.y, color);</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            updates.clear();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Pixmap getPixmap(){
+<b class="nc">&nbsp;        return pixmap;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Texture getTexture(){
+<b class="nc">&nbsp;        return texture;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void zoomBy(float amount){
+<b class="nc">&nbsp;        zoom += amount;</b>
+<b class="nc">&nbsp;        setZoom(zoom);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setZoom(float amount){
+<b class="nc">&nbsp;        zoom = Mathf.clamp(amount, 1f, Math.min(world.width(), world.height()) / baseSize / 2f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getZoom(){
+<b class="nc">&nbsp;        return zoom;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reset(){
+<b class="nc">&nbsp;        updates.clear();</b>
+<b class="nc">&nbsp;        if(pixmap != null){</b>
+<b class="nc">&nbsp;            pixmap.dispose();</b>
+<b class="nc">&nbsp;            texture.dispose();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        setZoom(4f);</b>
+<b class="nc">&nbsp;        pixmap = new Pixmap(world.width(), world.height());</b>
+<b class="nc">&nbsp;        texture = new Texture(pixmap);</b>
+<b class="nc">&nbsp;        region = new TextureRegion(texture);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawEntities(float x, float y, float w, float h, float scaling, boolean fullView){
+<b class="nc">&nbsp;        lastX = x;</b>
+<b class="nc">&nbsp;        lastY = y;</b>
+<b class="nc">&nbsp;        lastW = w;</b>
+<b class="nc">&nbsp;        lastH = h;</b>
+<b class="nc">&nbsp;        lastScl = scaling;</b>
+<b class="nc">&nbsp;        worldSpace = fullView;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!fullView){</b>
+<b class="nc">&nbsp;            updateUnitArray();</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            units.clear();</b>
+<b class="nc">&nbsp;            Groups.unit.copy(units);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float sz = baseSize * zoom;</b>
+<b class="nc">&nbsp;        float dx = (Core.camera.position.x / tilesize);</b>
+<b class="nc">&nbsp;        float dy = (Core.camera.position.y / tilesize);</b>
+<b class="nc">&nbsp;        dx = Mathf.clamp(dx, sz, world.width() - sz);</b>
+<b class="nc">&nbsp;        dy = Mathf.clamp(dy, sz, world.height() - sz);</b>
+&nbsp;
+<b class="nc">&nbsp;        rect.set((dx - sz) * tilesize, (dy - sz) * tilesize, sz * 2 * tilesize, sz * 2 * tilesize);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.m2.set(Draw.trans());</b>
+&nbsp;
+&nbsp;        float scaleFactor;
+<b class="nc">&nbsp;        var trans = Tmp.m1.idt();</b>
+<b class="nc">&nbsp;        trans.translate(lastX, lastY);</b>
+<b class="nc">&nbsp;        if(!worldSpace){</b>
+<b class="nc">&nbsp;            trans.scl(Tmp.v1.set(scaleFactor = lastW / rect.width, lastH / rect.height));</b>
+<b class="nc">&nbsp;            trans.translate(-rect.x, -rect.y);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            trans.scl(Tmp.v1.set(scaleFactor = lastW / world.unitWidth(), lastH / world.unitHeight()));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        trans.translate(tilesize / 2f, tilesize / 2f);</b>
+<b class="nc">&nbsp;        Draw.trans(trans);</b>
+&nbsp;
+<b class="nc">&nbsp;        scaleFactor = 1f / scaleFactor;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Unit unit : units){</b>
+<b class="nc">&nbsp;            if(unit.inFogTo(player.team()) || !unit.type.drawMinimap) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            float scale = Scl.scl(1f) * tilesize * 3;</b>
+<b class="nc">&nbsp;            var region = unit.icon();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.mixcol(unit.team.color, 1f);</b>
+<b class="nc">&nbsp;            Draw.rect(region, unit.x, unit.y, scale, scale * (float)region.height / region.width, unit.rotation() - 90);</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(fullView &amp;&amp; net.active()){</b>
+<b class="nc">&nbsp;            for(Player player : Groups.player){</b>
+<b class="nc">&nbsp;                if(!player.dead()){</b>
+<b class="nc">&nbsp;                    drawLabel(player.x, player.y, player.name, player.color);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.fog){</b>
+<b class="nc">&nbsp;            if(fullView){</b>
+<b class="nc">&nbsp;                float z = zoom;</b>
+&nbsp;                //max zoom out fixes everything, somehow?
+<b class="nc">&nbsp;                setZoom(99999f);</b>
+<b class="nc">&nbsp;                getRegion();</b>
+<b class="nc">&nbsp;                zoom = z;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Draw.shader(Shaders.fog);</b>
+<b class="nc">&nbsp;            Texture staticTex = renderer.fog.getStaticTexture(), dynamicTex = renderer.fog.getDynamicTexture();</b>
+&nbsp;
+&nbsp;            //crisp pixels
+<b class="nc">&nbsp;            dynamicTex.setFilter(TextureFilter.nearest);</b>
+&nbsp;
+<b class="nc">&nbsp;            Tmp.tr1.set(dynamicTex);</b>
+<b class="nc">&nbsp;            Tmp.tr1.set(0f, 1f, 1f, 0f);</b>
+&nbsp;
+<b class="nc">&nbsp;            float wf = world.width() * tilesize;</b>
+<b class="nc">&nbsp;            float hf = world.height() * tilesize;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(state.rules.dynamicColor, 0.5f);</b>
+<b class="nc">&nbsp;            Draw.rect(Tmp.tr1, wf / 2, hf / 2, wf, hf);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(state.rules.staticFog){</b>
+<b class="nc">&nbsp;                staticTex.setFilter(TextureFilter.nearest);</b>
+&nbsp;
+<b class="nc">&nbsp;                Tmp.tr1.texture = staticTex;</b>
+&nbsp;                //must be black to fit with borders
+<b class="nc">&nbsp;                Draw.color(0f, 0f, 0f, 1f);</b>
+<b class="nc">&nbsp;                Draw.rect(Tmp.tr1, wf / 2, hf / 2, wf, hf);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.color();</b>
+<b class="nc">&nbsp;            Draw.shader();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //TODO might be useful in the standard minimap too
+<b class="nc">&nbsp;        if(fullView){</b>
+<b class="nc">&nbsp;            drawSpawns();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!mobile){</b>
+&nbsp;                //draw bounds for camera - not drawn on mobile because you can&#39;t shift it by tapping anyway
+<b class="nc">&nbsp;                Rect r = Core.camera.bounds(Tmp.r1);</b>
+<b class="nc">&nbsp;                Lines.stroke(Scl.scl(3f) * scaleFactor);</b>
+<b class="nc">&nbsp;                Draw.color(Pal.accent);</b>
+<b class="nc">&nbsp;                Lines.rect(r.x, r.y, r.width, r.height);</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        LongSeq indicators = control.indicators.list();</b>
+<b class="nc">&nbsp;        float fin = ((Time.globalTime / 30f) % 1f);</b>
+<b class="nc">&nbsp;        float rad = fin * 5f + tilesize - 2f;</b>
+<b class="nc">&nbsp;        Lines.stroke(Scl.scl((1f - fin) * 4f + 0.5f));</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; indicators.size; i++){</b>
+<b class="nc">&nbsp;            long ind = indicators.items[i];</b>
+&nbsp;            int
+<b class="nc">&nbsp;                pos = Indicator.pos(ind),</b>
+<b class="nc">&nbsp;                ix = Point2.x(pos),</b>
+<b class="nc">&nbsp;                iy = Point2.y(pos);</b>
+<b class="nc">&nbsp;            float time = Indicator.time(ind), offset = 0f;</b>
+&nbsp;
+&nbsp;            //fix multiblock offset - this is suboptimal
+<b class="nc">&nbsp;            Building build = world.build(pos);</b>
+<b class="nc">&nbsp;            if(build != null){</b>
+<b class="nc">&nbsp;                offset = build.block.offset / tilesize;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(Color.orange, Color.scarlet, Mathf.clamp(time / 70f));</b>
+&nbsp;
+<b class="nc">&nbsp;            Lines.square((ix + 0.5f + offset) * tilesize, (iy + 0.5f + offset) * tilesize, rad);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+&nbsp;        //TODO autoscale markers
+<b class="nc">&nbsp;        state.rules.objectives.eachRunning(obj -&gt; {</b>
+<b class="nc">&nbsp;            for(var marker : obj.markers){</b>
+<b class="nc">&nbsp;                if(marker.minimap){</b>
+<b class="nc">&nbsp;                    marker.draw(1);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        for(var marker : state.markers){</b>
+<b class="nc">&nbsp;            if(marker.minimap){</b>
+<b class="nc">&nbsp;                marker.draw(1);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.trans(Tmp.m2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawSpawns(){
+<b class="nc">&nbsp;        if(!state.rules.showSpawns || !state.hasSpawns() || !state.rules.waves) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        TextureRegion icon = Icon.units.getRegion();</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(Scl.scl(3f));</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(state.rules.waveTeam.color, Tmp.c2.set(state.rules.waveTeam.color).value(1.2f), Mathf.absin(Time.time, 16f, 1f));</b>
+&nbsp;
+<b class="nc">&nbsp;        float rad = state.rules.dropZoneRadius;</b>
+<b class="nc">&nbsp;        float curve = Mathf.curve(Time.time % 240f, 120f, 240f);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Tile tile : spawner.getSpawns()){</b>
+<b class="nc">&nbsp;            float tx = tile.worldx();</b>
+<b class="nc">&nbsp;            float ty = tile.worldy();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(icon, tx, ty, icon.width, icon.height);</b>
+<b class="nc">&nbsp;            Lines.circle(tx, ty, rad);</b>
+<b class="nc">&nbsp;            if(curve &gt; 0f) Lines.circle(tx, ty, rad * Interp.pow3Out.apply(curve));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable TextureRegion getRegion(){
+<b class="nc">&nbsp;        if(texture == null) return null;</b>
+&nbsp;
+<b class="nc">&nbsp;        float sz = Mathf.clamp(baseSize * zoom, baseSize, Math.min(world.width(), world.height()));</b>
+<b class="nc">&nbsp;        float dx = (Core.camera.position.x / tilesize);</b>
+<b class="nc">&nbsp;        float dy = (Core.camera.position.y / tilesize);</b>
+<b class="nc">&nbsp;        dx = Mathf.clamp(dx, sz, world.width() - sz);</b>
+<b class="nc">&nbsp;        dy = Mathf.clamp(dy, sz, world.height() - sz);</b>
+<b class="nc">&nbsp;        float invTexWidth = 1f / texture.width;</b>
+<b class="nc">&nbsp;        float invTexHeight = 1f / texture.height;</b>
+<b class="nc">&nbsp;        float x = dx - sz, y = world.height() - dy - sz, width = sz * 2, height = sz * 2;</b>
+<b class="nc">&nbsp;        region.set(x * invTexWidth, y * invTexHeight, (x + width) * invTexWidth, (y + height) * invTexHeight);</b>
+<b class="nc">&nbsp;        return region;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateAll(){
+<b class="nc">&nbsp;        for(Tile tile : world.tiles){</b>
+<b class="nc">&nbsp;            pixmap.set(tile.x, pixmap.height - 1 - tile.y, colorFor(tile));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        texture.draw(pixmap);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(Tile tile){
+<b class="nc">&nbsp;        if(world.isGenerating() || !state.isGame()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(tile.build != null &amp;&amp; tile.isCenter()){</b>
+<b class="nc">&nbsp;            tile.getLinkedTiles(other -&gt; {</b>
+<b class="nc">&nbsp;                if(!other.isCenter()){</b>
+<b class="nc">&nbsp;                    updatePixel(other);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(tile.block().solid &amp;&amp; other.y &gt; 0){</b>
+<b class="nc">&nbsp;                    Tile low = world.tile(other.x, other.y - 1);</b>
+<b class="nc">&nbsp;                    if(!low.solid()){</b>
+<b class="nc">&nbsp;                        updatePixel(low);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        updatePixel(tile);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void updatePixel(Tile tile){
+<b class="nc">&nbsp;        updates.add(tile.pos());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateUnitArray(){
+<b class="nc">&nbsp;        float sz = baseSize * zoom;</b>
+<b class="nc">&nbsp;        float dx = (Core.camera.position.x / tilesize);</b>
+<b class="nc">&nbsp;        float dy = (Core.camera.position.y / tilesize);</b>
+<b class="nc">&nbsp;        dx = Mathf.clamp(dx, sz, world.width() - sz);</b>
+<b class="nc">&nbsp;        dy = Mathf.clamp(dy, sz, world.height() - sz);</b>
+&nbsp;
+<b class="nc">&nbsp;        units.clear();</b>
+<b class="nc">&nbsp;        Units.nearby((dx - sz) * tilesize, (dy - sz) * tilesize, sz * 2 * tilesize, sz * 2 * tilesize, units::add);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Block realBlock(Tile tile){
+&nbsp;        //TODO doesn&#39;t work properly until player goes and looks at block
+<b class="nc">&nbsp;        return tile.build == null ? tile.block() : state.rules.fog &amp;&amp; !tile.build.wasVisible ? Blocks.air : tile.block();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private int colorFor(Tile tile){
+<b class="nc">&nbsp;        if(tile == null) return 0;</b>
+<b class="nc">&nbsp;        Block real = realBlock(tile);</b>
+<b class="nc">&nbsp;        int bc = real.minimapColor(tile);</b>
+&nbsp;
+<b class="nc">&nbsp;        Color color = Tmp.c1.set(bc == 0 ? MapIO.colorFor(real, tile.floor(), tile.overlay(), tile.team()) : bc);</b>
+<b class="nc">&nbsp;        color.mul(1f - Mathf.clamp(world.getDarkness(tile.x, tile.y) / 4f));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(real == Blocks.air &amp;&amp; tile.y &lt; world.height() - 1 &amp;&amp; realBlock(world.tile(tile.x, tile.y + 1)).solid){</b>
+<b class="nc">&nbsp;            color.mul(0.7f);</b>
+<b class="nc">&nbsp;        }else if(tile.floor().isLiquid &amp;&amp; (tile.y &gt;= world.height() - 1 || !world.tile(tile.x, tile.y + 1).floor().isLiquid)){</b>
+<b class="nc">&nbsp;            color.mul(0.84f, 0.84f, 0.9f, 1f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return color.rgba();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawLabel(float x, float y, String text, Color color){
+<b class="nc">&nbsp;        Font font = Fonts.outline;</b>
+<b class="nc">&nbsp;        GlyphLayout l = Pools.obtain(GlyphLayout.class, GlyphLayout::new);</b>
+<b class="nc">&nbsp;        boolean ints = font.usesIntegerPositions();</b>
+<b class="nc">&nbsp;        font.getData().setScale(1 / 1.5f / Scl.scl(1f));</b>
+<b class="nc">&nbsp;        font.setUseIntegerPositions(false);</b>
+&nbsp;
+<b class="nc">&nbsp;        l.setText(font, text, color, 90f, Align.left, true);</b>
+<b class="nc">&nbsp;        float yOffset = 20f;</b>
+<b class="nc">&nbsp;        float margin = 3f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(0f, 0f, 0f, 0.2f);</b>
+<b class="nc">&nbsp;        Fill.rect(x, y + yOffset - l.height/2f, l.width + margin, l.height + margin);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+<b class="nc">&nbsp;        font.setColor(color);</b>
+<b class="nc">&nbsp;        font.draw(text, x - l.width/2f, y + yOffset, 90f, Align.left, true);</b>
+<b class="nc">&nbsp;        font.setUseIntegerPositions(ints);</b>
+&nbsp;
+<b class="nc">&nbsp;        font.getData().setScale(1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Pools.free(l);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

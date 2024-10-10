@@ -1,0 +1,125 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ConsumeItemExplosive</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.consumers</a>
+</div>
+
+<h1>Coverage Summary for Class: ConsumeItemExplosive (mindustry.world.consumers)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConsumeItemExplosive</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.consumers;
+&nbsp;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;public class ConsumeItemExplosive extends ConsumeItemFilter{
+&nbsp;    public float minExplosiveness;
+&nbsp;
+<b class="nc">&nbsp;    public ConsumeItemExplosive(float minCharge){</b>
+<b class="nc">&nbsp;        this.minExplosiveness = minCharge;</b>
+<b class="nc">&nbsp;        filter = item -&gt; item.explosiveness &gt;= this.minExplosiveness;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConsumeItemExplosive(){
+<b class="nc">&nbsp;        this(0.2f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float efficiencyMultiplier(Building build){
+<b class="nc">&nbsp;        var item = getConsumed(build);</b>
+<b class="nc">&nbsp;        return item == null ? 0f : item.explosiveness;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

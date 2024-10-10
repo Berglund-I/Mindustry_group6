@@ -1,0 +1,161 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawPistons</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawPistons (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawPistons</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.2%
+  </span>
+  <span class="absValue">
+    (4/22)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+<b class="fc">&nbsp;public class DrawPistons extends DrawBlock{</b>
+<b class="fc">&nbsp;    public float sinMag = 4f, sinScl = 6f, sinOffset = 50f, sideOffset = 0f, lenOffset = -1f, horiOffset = 0f, angleOffset = 0f;</b>
+<b class="fc">&nbsp;    public int sides = 4;</b>
+<b class="fc">&nbsp;    public String suffix = &quot;-piston&quot;;</b>
+&nbsp;    public TextureRegion region1, region2, regiont, iconRegion;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlan(Block block, BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        if(iconRegion.found()){</b>
+<b class="nc">&nbsp;            Draw.rect(iconRegion, plan.drawx(), plan.drawy());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; sides; i++){</b>
+<b class="nc">&nbsp;            float len = Mathf.absin(build.totalProgress() + sinOffset + sideOffset * sinScl * i, sinScl, sinMag) + lenOffset;</b>
+<b class="nc">&nbsp;            float angle = angleOffset + i * 360f / sides;</b>
+&nbsp;            TextureRegion reg =
+<b class="nc">&nbsp;                regiont.found() &amp;&amp; (Mathf.equal(angle, 315) || Mathf.equal(angle, 135)) ? regiont :</b>
+<b class="nc">&nbsp;                angle &gt;= 135 &amp;&amp; angle &lt; 315 ? region2 : region1;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Mathf.equal(angle, 315)){</b>
+<b class="nc">&nbsp;                Draw.yscl = -1f;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Tmp.v1.trns(angle, len, -horiOffset);</b>
+<b class="nc">&nbsp;            Draw.rect(reg, build.x + Tmp.v1.x, build.y + Tmp.v1.y, angle);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.yscl = 1f;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(Block block){
+<b class="nc">&nbsp;        super.load(block);</b>
+&nbsp;
+<b class="nc">&nbsp;        region1 = Core.atlas.find(block.name + suffix + &quot;0&quot;, block.name + suffix);</b>
+<b class="nc">&nbsp;        region2 = Core.atlas.find(block.name + suffix + &quot;1&quot;, block.name + suffix);</b>
+<b class="nc">&nbsp;        regiont = Core.atlas.find(block.name + suffix + &quot;-t&quot;);</b>
+<b class="nc">&nbsp;        iconRegion = Core.atlas.find(block.name + suffix + &quot;-icon&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(Block block){
+<b class="nc">&nbsp;        return new TextureRegion[]{iconRegion};</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1313 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > NetServer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.core</a>
+</div>
+
+<h1>Coverage Summary for Class: NetServer (mindustry.core)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NetServer</td>
+<td class="coverageStat">
+  <span class="percent">
+    8%
+  </span>
+  <span class="absValue">
+    (4/50)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.3%
+  </span>
+  <span class="absValue">
+    (36/568)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">NetServer$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">NetServer$ChatFormatter</td>
+  </tr>
+  <tr>
+    <td class="name">NetServer$InvalidCommandHandler</td>
+  </tr>
+  <tr>
+    <td class="name">NetServer$TeamAssigner</td>
+  </tr>
+  <tr>
+    <td class="name">NetServer$VoteSession</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/23)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    7.3%
+  </span>
+  <span class="absValue">
+    (4/55)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.1%
+  </span>
+  <span class="absValue">
+    (36/592)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.core;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.CommandHandler.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.GameState.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.net.*;
+&nbsp;import java.nio.*;
+&nbsp;import java.util.zip.*;
+&nbsp;
+&nbsp;import static arc.util.Log.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class NetServer implements ApplicationListener{
+&nbsp;    /** note that snapshots are compressed, so the max snapshot size here is above the typical UDP safe limit */
+&nbsp;    private static final int maxSnapshotSize = 800;
+&nbsp;    private static final int timerBlockSync = 0, timerHealthSync = 1;
+&nbsp;    private static final float blockSyncTime = 60 * 6, healthSyncTime = 30;
+<b class="fc">&nbsp;    private static final FloatBuffer fbuffer = FloatBuffer.allocate(20);</b>
+<b class="fc">&nbsp;    private static final Writes dataWrites = new Writes(null);</b>
+<b class="fc">&nbsp;    private static final IntSeq hiddenIds = new IntSeq();</b>
+<b class="fc">&nbsp;    private static final IntSeq healthSeq = new IntSeq(maxSnapshotSize / 4 + 1);</b>
+<b class="fc">&nbsp;    private static final Vec2 vector = new Vec2();</b>
+&nbsp;    /** If a player goes away of their server-side coordinates by this distance, they get teleported back. */
+&nbsp;    private static final float correctDist = tilesize * 14f;
+&nbsp;
+<b class="fc">&nbsp;    public Administration admins = new Administration();</b>
+<b class="fc">&nbsp;    public CommandHandler clientCommands = new CommandHandler(&quot;/&quot;);</b>
+<b class="fc">&nbsp;    public TeamAssigner assigner = (player, players) -&gt; {</b>
+<b class="nc">&nbsp;        if(state.rules.pvp){</b>
+&nbsp;            //find team with minimum amount of players and auto-assign player to that.
+<b class="nc">&nbsp;            TeamData re = state.teams.getActive().min(data -&gt; {</b>
+<b class="nc">&nbsp;                if((state.rules.waveTeam == data.team &amp;&amp; state.rules.waves) || !data.team.active() || data.team == Team.derelict) return Integer.MAX_VALUE;</b>
+&nbsp;
+<b class="nc">&nbsp;                int count = 0;</b>
+<b class="nc">&nbsp;                for(Player other : players){</b>
+<b class="nc">&nbsp;                    if(other.team() == data.team &amp;&amp; other != player){</b>
+<b class="nc">&nbsp;                        count++;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;                return (float)count + Mathf.random(-0.1f, 0.1f); //if several have the same playercount pick random</b>
+&nbsp;            });
+<b class="nc">&nbsp;            return re == null ? null : re.team;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return state.rules.defaultTeam;</b>
+&nbsp;    };
+&nbsp;    /** Converts a message + NULLABLE player sender into a single string. Override for custom prefixes/suffixes. */
+<b class="fc">&nbsp;    public ChatFormatter chatFormatter = (player, message) -&gt; player == null ? message : &quot;[coral][[&quot; + player.coloredName() + &quot;[coral]]:[white] &quot; + message;</b>
+&nbsp;
+&nbsp;    /** Handles an incorrect command response. Returns text that will be sent to player. Override for customisation. */
+<b class="fc">&nbsp;    public InvalidCommandHandler invalidHandler = (player, response) -&gt; {</b>
+<b class="nc">&nbsp;        if(response.type == ResponseType.manyArguments){</b>
+<b class="nc">&nbsp;            return &quot;[scarlet]Too many arguments. Usage:[lightgray] &quot; + response.command.text + &quot;[gray] &quot; + response.command.paramText;</b>
+<b class="nc">&nbsp;        }else if(response.type == ResponseType.fewArguments){</b>
+<b class="nc">&nbsp;            return &quot;[scarlet]Too few arguments. Usage:[lightgray] &quot; + response.command.text + &quot;[gray] &quot; + response.command.paramText;</b>
+&nbsp;        }else{ //unknown command
+<b class="nc">&nbsp;            int minDst = 0;</b>
+<b class="nc">&nbsp;            Command closest = null;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Command command : netServer.clientCommands.getCommandList()){</b>
+<b class="nc">&nbsp;                int dst = Strings.levenshtein(command.text, response.runCommand);</b>
+<b class="nc">&nbsp;                if(dst &lt; 3 &amp;&amp; (closest == null || dst &lt; minDst)){</b>
+<b class="nc">&nbsp;                    minDst = dst;</b>
+<b class="nc">&nbsp;                    closest = command;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if(closest != null){</b>
+<b class="nc">&nbsp;                return &quot;[scarlet]Unknown command. Did you mean \&quot;[lightgray]&quot; + closest.text + &quot;[]\&quot;?&quot;;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                return &quot;[scarlet]Unknown command. Check [lightgray]/help[scarlet].&quot;;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+<b class="fc">&nbsp;    private boolean closing = false, pvpAutoPaused = true;</b>
+<b class="fc">&nbsp;    private Interval timer = new Interval(10);</b>
+<b class="fc">&nbsp;    private IntSet buildHealthChanged = new IntSet();</b>
+&nbsp;
+&nbsp;    /** Current kick session. */
+<b class="fc">&nbsp;    public @Nullable VoteSession currentlyKicking = null;</b>
+&nbsp;    /** Duration of a kick in seconds. */
+<b class="fc">&nbsp;    public static int kickDuration = 60 * 60;</b>
+&nbsp;    /** Voting round duration in seconds. */
+<b class="fc">&nbsp;    public static float voteDuration = 0.5f * 60;</b>
+&nbsp;    /** Cooldown between votes in seconds. */
+<b class="fc">&nbsp;    public static int voteCooldown = 60 * 5;</b>
+&nbsp;
+<b class="fc">&nbsp;    private ReusableByteOutStream writeBuffer = new ReusableByteOutStream(127);</b>
+<b class="fc">&nbsp;    private Writes outputBuffer = new Writes(new DataOutputStream(writeBuffer));</b>
+&nbsp;
+&nbsp;    /** Stream for writing player sync data to. */
+<b class="fc">&nbsp;    private ReusableByteOutStream syncStream = new ReusableByteOutStream();</b>
+&nbsp;    /** Data stream for writing player sync data to. */
+<b class="fc">&nbsp;    private DataOutputStream dataStream = new DataOutputStream(syncStream);</b>
+&nbsp;    /** Packet handlers for custom types of messages. */
+<b class="fc">&nbsp;    private ObjectMap&lt;String, Seq&lt;Cons2&lt;Player, String&gt;&gt;&gt; customPacketHandlers = new ObjectMap&lt;&gt;();</b>
+&nbsp;    /** Packet handlers for logic client data */
+<b class="fc">&nbsp;    private ObjectMap&lt;String, Seq&lt;Cons2&lt;Player, Object&gt;&gt;&gt; logicClientDataHandlers = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    public NetServer(){</b>
+&nbsp;
+<b class="fc">&nbsp;        net.handleServer(Connect.class, (con, connect) -&gt; {</b>
+<b class="nc">&nbsp;            Events.fire(new ConnectionEvent(con));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(admins.isIPBanned(connect.addressTCP) || admins.isSubnetBanned(connect.addressTCP)){</b>
+<b class="nc">&nbsp;                con.kick(KickReason.banned);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        net.handleServer(Disconnect.class, (con, packet) -&gt; {</b>
+<b class="nc">&nbsp;            if(con.player != null){</b>
+<b class="nc">&nbsp;                onDisconnect(con.player, packet.reason);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        net.handleServer(ConnectPacket.class, (con, packet) -&gt; {</b>
+<b class="nc">&nbsp;            if(con.kicked) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(con.address.startsWith(&quot;steam:&quot;)){</b>
+<b class="nc">&nbsp;                packet.uuid = con.address.substring(&quot;steam:&quot;.length());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Events.fire(new ConnectPacketEvent(con, packet));</b>
+&nbsp;
+<b class="nc">&nbsp;            con.connectTime = Time.millis();</b>
+&nbsp;
+<b class="nc">&nbsp;            String uuid = packet.uuid;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(admins.isIPBanned(con.address) || admins.isSubnetBanned(con.address) || con.kicked || !con.isConnected()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(con.hasBegunConnecting){</b>
+<b class="nc">&nbsp;                con.kick(KickReason.idInUse);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            PlayerInfo info = admins.getInfo(uuid);</b>
+&nbsp;
+<b class="nc">&nbsp;            con.hasBegunConnecting = true;</b>
+<b class="nc">&nbsp;            con.mobile = packet.mobile;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(packet.uuid == null || packet.usid == null){</b>
+<b class="nc">&nbsp;                con.kick(KickReason.idInUse);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(admins.isIDBanned(uuid)){</b>
+<b class="nc">&nbsp;                con.kick(KickReason.banned);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Time.millis() &lt; admins.getKickTime(uuid, con.address)){</b>
+<b class="nc">&nbsp;                con.kick(KickReason.recentKick);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(admins.getPlayerLimit() &gt; 0 &amp;&amp; Groups.player.size() &gt;= admins.getPlayerLimit() &amp;&amp; !netServer.admins.isAdmin(uuid, packet.usid)){</b>
+<b class="nc">&nbsp;                con.kick(KickReason.playerLimit);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Seq&lt;String&gt; extraMods = packet.mods.copy();</b>
+<b class="nc">&nbsp;            Seq&lt;String&gt; missingMods = mods.getIncompatibility(extraMods);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!extraMods.isEmpty() || !missingMods.isEmpty()){</b>
+&nbsp;                //can&#39;t easily be localized since kick reasons can&#39;t have formatted text with them
+<b class="nc">&nbsp;                StringBuilder result = new StringBuilder(&quot;[accent]Incompatible mods![]\n\n&quot;);</b>
+<b class="nc">&nbsp;                if(!missingMods.isEmpty()){</b>
+<b class="nc">&nbsp;                    result.append(&quot;Missing:[lightgray]\n&quot;).append(&quot;&gt; &quot;).append(missingMods.toString(&quot;\n&gt; &quot;));</b>
+<b class="nc">&nbsp;                    result.append(&quot;[]\n&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(!extraMods.isEmpty()){</b>
+<b class="nc">&nbsp;                    result.append(&quot;Unnecessary mods:[lightgray]\n&quot;).append(&quot;&gt; &quot;).append(extraMods.toString(&quot;\n&gt; &quot;));</b>
+&nbsp;                }
+<b class="nc">&nbsp;                con.kick(result.toString(), 0);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!admins.isWhitelisted(packet.uuid, packet.usid)){</b>
+<b class="nc">&nbsp;                info.adminUsid = packet.usid;</b>
+<b class="nc">&nbsp;                info.lastName = packet.name;</b>
+<b class="nc">&nbsp;                info.id = packet.uuid;</b>
+<b class="nc">&nbsp;                admins.save();</b>
+<b class="nc">&nbsp;                Call.infoMessage(con, &quot;You are not whitelisted here.&quot;);</b>
+<b class="nc">&nbsp;                info(&quot;&amp;lcDo &amp;lywhitelist add @&amp;lc to whitelist the player &amp;lb&#39;@&#39;&quot;, packet.uuid, packet.name);</b>
+<b class="nc">&nbsp;                con.kick(KickReason.whitelist);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(packet.versionType == null || ((packet.version == -1 || !packet.versionType.equals(Version.type)) &amp;&amp; Version.build != -1 &amp;&amp; !admins.allowsCustomClients())){</b>
+<b class="nc">&nbsp;                con.kick(!Version.type.equals(packet.versionType) ? KickReason.typeMismatch : KickReason.customClient);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            boolean preventDuplicates = headless &amp;&amp; netServer.admins.isStrict();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(preventDuplicates){</b>
+<b class="nc">&nbsp;                if(Groups.player.contains(p -&gt; Strings.stripColors(p.name).trim().equalsIgnoreCase(Strings.stripColors(packet.name).trim()))){</b>
+<b class="nc">&nbsp;                    con.kick(KickReason.nameInUse);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(Groups.player.contains(player -&gt; player.uuid().equals(packet.uuid) || player.usid().equals(packet.usid))){</b>
+<b class="nc">&nbsp;                    con.uuid = packet.uuid;</b>
+<b class="nc">&nbsp;                    con.kick(KickReason.idInUse);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                for(var otherCon : net.getConnections()){</b>
+<b class="nc">&nbsp;                    if(otherCon != con &amp;&amp; uuid.equals(otherCon.uuid)){</b>
+<b class="nc">&nbsp;                        con.uuid = packet.uuid;</b>
+<b class="nc">&nbsp;                        con.kick(KickReason.idInUse);</b>
+&nbsp;                        return;
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            packet.name = fixName(packet.name);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(packet.name.trim().length() &lt;= 0){</b>
+<b class="nc">&nbsp;                con.kick(KickReason.nameEmpty);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(packet.locale == null){</b>
+<b class="nc">&nbsp;                packet.locale = &quot;en&quot;;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            String ip = con.address;</b>
+&nbsp;
+<b class="nc">&nbsp;            admins.updatePlayerJoined(uuid, ip, packet.name);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(packet.version != Version.build &amp;&amp; Version.build != -1 &amp;&amp; packet.version != -1){</b>
+<b class="nc">&nbsp;                con.kick(packet.version &gt; Version.build ? KickReason.serverOutdated : KickReason.clientOutdated);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(packet.version == -1){</b>
+<b class="nc">&nbsp;                con.modclient = true;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Player player = Player.create();</b>
+<b class="nc">&nbsp;            player.admin = admins.isAdmin(uuid, packet.usid);</b>
+<b class="nc">&nbsp;            player.con = con;</b>
+<b class="nc">&nbsp;            player.con.usid = packet.usid;</b>
+<b class="nc">&nbsp;            player.con.uuid = uuid;</b>
+<b class="nc">&nbsp;            player.con.mobile = packet.mobile;</b>
+<b class="nc">&nbsp;            player.name = packet.name;</b>
+<b class="nc">&nbsp;            player.locale = packet.locale;</b>
+<b class="nc">&nbsp;            player.color.set(packet.color).a(1f);</b>
+&nbsp;
+&nbsp;            //save admin ID but don&#39;t overwrite it
+<b class="nc">&nbsp;            if(!player.admin &amp;&amp; !info.admin){</b>
+<b class="nc">&nbsp;                info.adminUsid = packet.usid;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            try{
+<b class="nc">&nbsp;                writeBuffer.reset();</b>
+<b class="nc">&nbsp;                player.write(outputBuffer);</b>
+<b class="nc">&nbsp;            }catch(Throwable t){</b>
+<b class="nc">&nbsp;                con.kick(KickReason.nameEmpty);</b>
+<b class="nc">&nbsp;                err(t);</b>
+&nbsp;                return;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            con.player = player;</b>
+&nbsp;
+&nbsp;            //playing in pvp mode automatically assigns players to teams
+<b class="nc">&nbsp;            player.team(assignTeam(player));</b>
+&nbsp;
+<b class="nc">&nbsp;            sendWorldData(player);</b>
+&nbsp;
+<b class="nc">&nbsp;            platform.updateRPC();</b>
+&nbsp;
+<b class="nc">&nbsp;            Events.fire(new PlayerConnect(player));</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        registerCommands();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        mods.eachClass(mod -&gt; mod.registerClientCommands(clientCommands));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void registerCommands(){
+<b class="fc">&nbsp;        clientCommands.&lt;Player&gt;register(&quot;help&quot;, &quot;[page]&quot;, &quot;Lists all commands.&quot;, (args, player) -&gt; {</b>
+<b class="nc">&nbsp;            if(args.length &gt; 0 &amp;&amp; !Strings.canParseInt(args[0])){</b>
+<b class="nc">&nbsp;                player.sendMessage(&quot;[scarlet]&#39;page&#39; must be a number.&quot;);</b>
+&nbsp;                return;
+&nbsp;            }
+<b class="nc">&nbsp;            int commandsPerPage = 6;</b>
+<b class="nc">&nbsp;            int page = args.length &gt; 0 ? Strings.parseInt(args[0]) : 1;</b>
+<b class="nc">&nbsp;            int pages = Mathf.ceil((float)clientCommands.getCommandList().size / commandsPerPage);</b>
+&nbsp;
+<b class="nc">&nbsp;            page--;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(page &gt;= pages || page &lt; 0){</b>
+<b class="nc">&nbsp;                player.sendMessage(&quot;[scarlet]&#39;page&#39; must be a number between[orange] 1[] and[orange] &quot; + pages + &quot;[scarlet].&quot;);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            StringBuilder result = new StringBuilder();</b>
+<b class="nc">&nbsp;            result.append(Strings.format(&quot;[orange]-- Commands Page[lightgray] @[gray]/[lightgray]@[orange] --\n\n&quot;, (page + 1), pages));</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = commandsPerPage * page; i &lt; Math.min(commandsPerPage * (page + 1), clientCommands.getCommandList().size); i++){</b>
+<b class="nc">&nbsp;                Command command = clientCommands.getCommandList().get(i);</b>
+<b class="nc">&nbsp;                result.append(&quot;[orange] /&quot;).append(command.text).append(&quot;[white] &quot;).append(command.paramText).append(&quot;[lightgray] - &quot;).append(command.description).append(&quot;\n&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            player.sendMessage(result.toString());</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        clientCommands.&lt;Player&gt;register(&quot;t&quot;, &quot;&lt;message...&gt;&quot;, &quot;Send a message only to your teammates.&quot;, (args, player) -&gt; {</b>
+<b class="nc">&nbsp;            String message = admins.filterMessage(player, args[0]);</b>
+<b class="nc">&nbsp;            if(message != null){</b>
+<b class="nc">&nbsp;                String raw = &quot;[#&quot; + player.team().color.toString() + &quot;]&lt;T&gt; &quot; + chatFormatter.format(player, message);</b>
+<b class="nc">&nbsp;                Groups.player.each(p -&gt; p.team() == player.team(), o -&gt; o.sendMessage(raw, player, message));</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        clientCommands.&lt;Player&gt;register(&quot;a&quot;, &quot;&lt;message...&gt;&quot;, &quot;Send a message only to admins.&quot;, (args, player) -&gt; {</b>
+<b class="nc">&nbsp;            if(!player.admin){</b>
+<b class="nc">&nbsp;                player.sendMessage(&quot;[scarlet]You must be an admin to use this command.&quot;);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            String raw = &quot;[#&quot; + Pal.adminChat.toString() + &quot;]&lt;A&gt; &quot; + chatFormatter.format(player, args[0]);</b>
+<b class="nc">&nbsp;            Groups.player.each(Player::admin, a -&gt; a.sendMessage(raw, player, args[0]));</b>
+&nbsp;        });
+&nbsp;
+&nbsp;        //cooldowns per player
+<b class="fc">&nbsp;        ObjectMap&lt;String, Timekeeper&gt; cooldowns = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;        clientCommands.&lt;Player&gt;register(&quot;votekick&quot;, &quot;[player] [reason...]&quot;, &quot;Vote to kick a player with a valid reason.&quot;, (args, player) -&gt; {</b>
+<b class="nc">&nbsp;            if(!Config.enableVotekick.bool()){</b>
+<b class="nc">&nbsp;                player.sendMessage(&quot;[scarlet]Vote-kick is disabled on this server.&quot;);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Groups.player.size() &lt; 3){</b>
+<b class="nc">&nbsp;                player.sendMessage(&quot;[scarlet]At least 3 players are needed to start a votekick.&quot;);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(player.isLocal()){</b>
+<b class="nc">&nbsp;                player.sendMessage(&quot;[scarlet]Just kick them yourself if you&#39;re the host.&quot;);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(currentlyKicking != null){</b>
+<b class="nc">&nbsp;                player.sendMessage(&quot;[scarlet]A vote is already in progress.&quot;);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(args.length == 0){</b>
+<b class="nc">&nbsp;                StringBuilder builder = new StringBuilder();</b>
+<b class="nc">&nbsp;                builder.append(&quot;[orange]Players to kick: \n&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                Groups.player.each(p -&gt; !p.admin &amp;&amp; p.con != null &amp;&amp; p != player, p -&gt; {</b>
+<b class="nc">&nbsp;                    builder.append(&quot;[lightgray] &quot;).append(p.name).append(&quot;[accent] (#&quot;).append(p.id()).append(&quot;)\n&quot;);</b>
+&nbsp;                });
+<b class="nc">&nbsp;                player.sendMessage(builder.toString());</b>
+<b class="nc">&nbsp;            }else if(args.length == 1){</b>
+<b class="nc">&nbsp;                player.sendMessage(&quot;[orange]You need a valid reason to kick the player. Add a reason after the player name.&quot;);</b>
+&nbsp;            }else{
+&nbsp;                Player found;
+<b class="nc">&nbsp;                if(args[0].length() &gt; 1 &amp;&amp; args[0].startsWith(&quot;#&quot;) &amp;&amp; Strings.canParseInt(args[0].substring(1))){</b>
+<b class="nc">&nbsp;                    int id = Strings.parseInt(args[0].substring(1));</b>
+<b class="nc">&nbsp;                    found = Groups.player.find(p -&gt; p.id() == id);</b>
+<b class="nc">&nbsp;                }else{</b>
+<b class="nc">&nbsp;                    found = Groups.player.find(p -&gt; p.name.equalsIgnoreCase(args[0]));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(found != null){</b>
+<b class="nc">&nbsp;                    if(found == player){</b>
+<b class="nc">&nbsp;                        player.sendMessage(&quot;[scarlet]You can&#39;t vote to kick yourself.&quot;);</b>
+<b class="nc">&nbsp;                    }else if(found.admin){</b>
+<b class="nc">&nbsp;                        player.sendMessage(&quot;[scarlet]Did you really expect to be able to kick an admin?&quot;);</b>
+<b class="nc">&nbsp;                    }else if(found.isLocal()){</b>
+<b class="nc">&nbsp;                        player.sendMessage(&quot;[scarlet]Local players cannot be kicked.&quot;);</b>
+<b class="nc">&nbsp;                    }else if(found.team() != player.team()){</b>
+<b class="nc">&nbsp;                        player.sendMessage(&quot;[scarlet]Only players on your team can be kicked.&quot;);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        Timekeeper vtime = cooldowns.get(player.uuid(), () -&gt; new Timekeeper(voteCooldown));</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(!vtime.get()){</b>
+<b class="nc">&nbsp;                            player.sendMessage(&quot;[scarlet]You must wait &quot; + voteCooldown/60 + &quot; minutes between votekicks.&quot;);</b>
+&nbsp;                            return;
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        VoteSession session = new VoteSession(found);</b>
+<b class="nc">&nbsp;                        session.vote(player, 1);</b>
+<b class="nc">&nbsp;                        Call.sendMessage(Strings.format(&quot;[lightgray]Reason:[orange] @[lightgray].&quot;, args[1]));</b>
+<b class="nc">&nbsp;                        vtime.reset();</b>
+<b class="nc">&nbsp;                        currentlyKicking = session;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    player.sendMessage(&quot;[scarlet]No player [orange]&#39;&quot; + args[0] + &quot;&#39;[scarlet] found.&quot;);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        clientCommands.&lt;Player&gt;register(&quot;vote&quot;, &quot;&lt;y/n/c&gt;&quot;, &quot;Vote to kick the current player. Admin can cancel the voting with &#39;c&#39;.&quot;, (arg, player) -&gt; {</b>
+<b class="nc">&nbsp;            if(currentlyKicking == null){</b>
+<b class="nc">&nbsp;                player.sendMessage(&quot;[scarlet]Nobody is being voted on.&quot;);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                if(player.admin &amp;&amp; arg[0].equalsIgnoreCase(&quot;c&quot;)){</b>
+<b class="nc">&nbsp;                    Call.sendMessage(Strings.format(&quot;[lightgray]Vote canceled by admin[orange] @[lightgray].&quot;, player.name));</b>
+<b class="nc">&nbsp;                    currentlyKicking.task.cancel();</b>
+<b class="nc">&nbsp;                    currentlyKicking = null;</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(player.isLocal()){</b>
+<b class="nc">&nbsp;                    player.sendMessage(&quot;[scarlet]Local players can&#39;t vote. Kick the player yourself instead.&quot;);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                int sign = switch(arg[0].toLowerCase()){</b>
+<b class="nc">&nbsp;                    case &quot;y&quot;, &quot;yes&quot; -&gt; 1;</b>
+<b class="nc">&nbsp;                    case &quot;n&quot;, &quot;no&quot; -&gt; -1;</b>
+<b class="nc">&nbsp;                    default -&gt; 0;</b>
+&nbsp;                };
+&nbsp;
+&nbsp;                //hosts can vote all they want
+<b class="nc">&nbsp;                if((currentlyKicking.voted.get(player.uuid(), 2) == sign || currentlyKicking.voted.get(admins.getInfo(player.uuid()).lastIP, 2) == sign)){</b>
+<b class="nc">&nbsp;                    player.sendMessage(Strings.format(&quot;[scarlet]You&#39;ve already voted @. Sit down.&quot;, arg[0].toLowerCase()));</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(currentlyKicking.target == player){</b>
+<b class="nc">&nbsp;                    player.sendMessage(&quot;[scarlet]You can&#39;t vote on your own trial.&quot;);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(currentlyKicking.target.team() != player.team()){</b>
+<b class="nc">&nbsp;                    player.sendMessage(&quot;[scarlet]You can&#39;t vote for other teams.&quot;);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(sign == 0){</b>
+<b class="nc">&nbsp;                    player.sendMessage(&quot;[scarlet]Vote either &#39;y&#39; (yes) or &#39;n&#39; (no).&quot;);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                currentlyKicking.vote(player, sign);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        clientCommands.&lt;Player&gt;register(&quot;sync&quot;, &quot;Re-synchronize world state.&quot;, (args, player) -&gt; {</b>
+<b class="nc">&nbsp;            if(player.isLocal()){</b>
+<b class="nc">&nbsp;                player.sendMessage(&quot;[scarlet]Re-synchronizing as the host is pointless.&quot;);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                if(Time.timeSinceMillis(player.getInfo().lastSyncTime) &lt; 1000 * 5){</b>
+<b class="nc">&nbsp;                    player.sendMessage(&quot;[scarlet]You may only /sync every 5 seconds.&quot;);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                player.getInfo().lastSyncTime = Time.millis();</b>
+<b class="nc">&nbsp;                Call.worldDataBegin(player.con);</b>
+<b class="nc">&nbsp;                netServer.sendWorldData(player);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public int votesRequired(){
+<b class="nc">&nbsp;        return 2 + (Groups.player.size() &gt; 4 ? 1 : 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Team assignTeam(Player current){
+<b class="nc">&nbsp;        return assigner.assign(current, Groups.player);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Team assignTeam(Player current, Iterable&lt;Player&gt; players){
+<b class="nc">&nbsp;        return assigner.assign(current, players);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void sendWorldData(Player player){
+<b class="nc">&nbsp;        ByteArrayOutputStream stream = new ByteArrayOutputStream();</b>
+<b class="nc">&nbsp;        DeflaterOutputStream def = new FastDeflaterOutputStream(stream);</b>
+<b class="nc">&nbsp;        NetworkIO.writeWorld(player, def);</b>
+<b class="nc">&nbsp;        WorldStream data = new WorldStream();</b>
+<b class="nc">&nbsp;        data.stream = new ByteArrayInputStream(stream.toByteArray());</b>
+<b class="nc">&nbsp;        player.con.sendStream(data);</b>
+&nbsp;
+<b class="nc">&nbsp;        debug(&quot;Packed @ bytes of world data.&quot;, stream.size());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addPacketHandler(String type, Cons2&lt;Player, String&gt; handler){
+<b class="nc">&nbsp;        customPacketHandlers.get(type, Seq::new).add(handler);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Cons2&lt;Player, String&gt;&gt; getPacketHandlers(String type){
+<b class="nc">&nbsp;        return customPacketHandlers.get(type, Seq::new);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addLogicDataHandler(String type, Cons2&lt;Player, Object&gt; handler){
+<b class="nc">&nbsp;        logicClientDataHandlers.get(type, Seq::new).add(handler);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void onDisconnect(Player player, String reason){
+&nbsp;        //singleplayer multiplayer weirdness
+<b class="nc">&nbsp;        if(player.con == null){</b>
+<b class="nc">&nbsp;            player.remove();</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!player.con.hasDisconnected){</b>
+<b class="nc">&nbsp;            if(player.con.hasConnected){</b>
+<b class="nc">&nbsp;                Events.fire(new PlayerLeave(player));</b>
+<b class="nc">&nbsp;                if(Config.showConnectMessages.bool()) Call.sendMessage(&quot;[accent]&quot; + player.name + &quot;[accent] has disconnected.&quot;);</b>
+<b class="nc">&nbsp;                Call.playerDisconnect(player.id());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            String message = Strings.format(&quot;&amp;lb@&amp;fi&amp;lk has disconnected. [&amp;lb@&amp;fi&amp;lk] (@)&quot;, player.plainName(), player.uuid(), reason);</b>
+<b class="nc">&nbsp;            if(Config.showConnectMessages.bool()) info(message);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        player.remove();</b>
+<b class="nc">&nbsp;        player.con.hasDisconnected = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //these functions are for debugging only, and will be removed!
+&nbsp;
+&nbsp;    @Remote(targets = Loc.client, variants = Variant.one)
+&nbsp;    public static void requestDebugStatus(Player player){
+&nbsp;        int flags =
+<b class="nc">&nbsp;        (player.con.hasDisconnected ? 1 : 0) |</b>
+<b class="nc">&nbsp;        (player.con.hasConnected ? 2 : 0) |</b>
+<b class="nc">&nbsp;        (player.isAdded() ? 4 : 0) |</b>
+<b class="nc">&nbsp;        (player.con.hasBegunConnecting ? 8 : 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        Call.debugStatusClient(player.con, flags, player.con.lastReceivedClientSnapshot, player.con.snapshotsSent);</b>
+<b class="nc">&nbsp;        Call.debugStatusClientUnreliable(player.con, flags, player.con.lastReceivedClientSnapshot, player.con.snapshotsSent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both, priority = PacketPriority.high)
+&nbsp;    public static void debugStatusClient(int value, int lastClientSnapshot, int snapshotsSent){
+<b class="nc">&nbsp;        logClientStatus(true, value, lastClientSnapshot, snapshotsSent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both, priority = PacketPriority.high, unreliable = true)
+&nbsp;    public static void debugStatusClientUnreliable(int value, int lastClientSnapshot, int snapshotsSent){
+<b class="nc">&nbsp;        logClientStatus(false, value, lastClientSnapshot, snapshotsSent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static void logClientStatus(boolean reliable, int value, int lastClientSnapshot, int snapshotsSent){
+<b class="nc">&nbsp;        Log.info(&quot;@ Debug status received. disconnected = @, connected = @, added = @, begunConnecting = @ lastClientSnapshot = @, snapshotsSent = @&quot;,</b>
+<b class="nc">&nbsp;        reliable ? &quot;[RELIABLE]&quot; : &quot;[UNRELIABLE]&quot;,</b>
+<b class="nc">&nbsp;        (value &amp; 1) != 0, (value &amp; 2) != 0, (value &amp; 4) != 0, (value &amp; 8) != 0,</b>
+<b class="nc">&nbsp;        lastClientSnapshot, snapshotsSent</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.client)
+&nbsp;    public static void serverPacketReliable(Player player, String type, String contents){
+<b class="nc">&nbsp;        if(netServer.customPacketHandlers.containsKey(type)){</b>
+<b class="nc">&nbsp;            for(Cons2&lt;Player, String&gt; c : netServer.customPacketHandlers.get(type)){</b>
+<b class="nc">&nbsp;                c.get(player, contents);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.client, unreliable = true)
+&nbsp;    public static void serverPacketUnreliable(Player player, String type, String contents){
+<b class="nc">&nbsp;        serverPacketReliable(player, type, contents);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.client)
+&nbsp;    public static void clientLogicDataReliable(Player player, String channel, Object value){
+<b class="nc">&nbsp;        Seq&lt;Cons2&lt;Player, Object&gt;&gt; handlers = netServer.logicClientDataHandlers.get(channel);</b>
+<b class="nc">&nbsp;        if(handlers != null){</b>
+<b class="nc">&nbsp;            for(Cons2&lt;Player, Object&gt; handler : handlers){</b>
+<b class="nc">&nbsp;                handler.get(player, value);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.client, unreliable = true)
+&nbsp;    public static void clientLogicDataUnreliable(Player player, String channel, Object value){
+<b class="nc">&nbsp;        clientLogicDataReliable(player, channel, value);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean invalid(float f){
+<b class="nc">&nbsp;        return Float.isInfinite(f) || Float.isNaN(f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.client, unreliable = true)
+&nbsp;    public static void clientSnapshot(
+&nbsp;    Player player,
+&nbsp;    int snapshotID,
+&nbsp;    int unitID,
+&nbsp;    boolean dead,
+&nbsp;    float x, float y,
+&nbsp;    float pointerX, float pointerY,
+&nbsp;    float rotation, float baseRotation,
+&nbsp;    float xVelocity, float yVelocity,
+&nbsp;    Tile mining,
+&nbsp;    boolean boosting, boolean shooting, boolean chatting, boolean building,
+&nbsp;    @Nullable Queue&lt;BuildPlan&gt; plans,
+&nbsp;    float viewX, float viewY, float viewWidth, float viewHeight
+&nbsp;    ){
+<b class="nc">&nbsp;        NetConnection con = player.con;</b>
+<b class="nc">&nbsp;        if(con == null || snapshotID &lt; con.lastReceivedClientSnapshot) return;</b>
+&nbsp;
+&nbsp;        //validate coordinates just in case
+<b class="nc">&nbsp;        if(invalid(x)) x = 0f;</b>
+<b class="nc">&nbsp;        if(invalid(y)) y = 0f;</b>
+<b class="nc">&nbsp;        if(invalid(xVelocity)) xVelocity = 0f;</b>
+<b class="nc">&nbsp;        if(invalid(yVelocity)) yVelocity = 0f;</b>
+<b class="nc">&nbsp;        if(invalid(pointerX)) pointerX = 0f;</b>
+<b class="nc">&nbsp;        if(invalid(pointerY)) pointerY = 0f;</b>
+<b class="nc">&nbsp;        if(invalid(rotation)) rotation = 0f;</b>
+<b class="nc">&nbsp;        if(invalid(baseRotation)) baseRotation = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean verifyPosition = netServer.admins.isStrict() &amp;&amp; headless;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(con.lastReceivedClientTime == 0) con.lastReceivedClientTime = Time.millis() - 16;</b>
+&nbsp;
+<b class="nc">&nbsp;        con.viewX = viewX;</b>
+<b class="nc">&nbsp;        con.viewY = viewY;</b>
+<b class="nc">&nbsp;        con.viewWidth = viewWidth;</b>
+<b class="nc">&nbsp;        con.viewHeight = viewHeight;</b>
+&nbsp;
+&nbsp;        //disable shooting when a mech flies
+<b class="nc">&nbsp;        if(!player.dead() &amp;&amp; player.unit().isFlying() &amp;&amp; player.unit() instanceof Mechc){</b>
+<b class="nc">&nbsp;            shooting = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!player.dead() &amp;&amp; (player.unit().type.flying || !player.unit().type.canBoost)){</b>
+<b class="nc">&nbsp;            boosting = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        player.mouseX = pointerX;</b>
+<b class="nc">&nbsp;        player.mouseY = pointerY;</b>
+<b class="nc">&nbsp;        player.typing = chatting;</b>
+<b class="nc">&nbsp;        player.shooting = shooting;</b>
+<b class="nc">&nbsp;        player.boosting = boosting;</b>
+&nbsp;
+<b class="nc">&nbsp;        @Nullable var unit = player.unit();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(player.isBuilder()){</b>
+<b class="nc">&nbsp;            unit.clearBuilding();</b>
+<b class="nc">&nbsp;            unit.updateBuilding(building);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(plans != null){</b>
+<b class="nc">&nbsp;                for(BuildPlan req : plans){</b>
+<b class="nc">&nbsp;                    if(req == null) continue;</b>
+<b class="nc">&nbsp;                    Tile tile = world.tile(req.x, req.y);</b>
+<b class="nc">&nbsp;                    if(tile == null || (!req.breaking &amp;&amp; req.block == null)) continue;</b>
+&nbsp;                    //auto-skip done requests
+<b class="nc">&nbsp;                    if(req.breaking &amp;&amp; tile.block() == Blocks.air){</b>
+<b class="nc">&nbsp;                        continue;</b>
+<b class="nc">&nbsp;                    }else if(!req.breaking &amp;&amp; tile.block() == req.block &amp;&amp; tile.team() != Team.derelict &amp;&amp; (!req.block.rotate || (tile.build != null &amp;&amp; tile.build.rotation == req.rotation))){</b>
+<b class="nc">&nbsp;                        continue;</b>
+<b class="nc">&nbsp;                    }else if(con.rejectedRequests.contains(r -&gt; r.breaking == req.breaking &amp;&amp; r.x == req.x &amp;&amp; r.y == req.y)){ //check if request was recently rejected, and skip it if so</b>
+<b class="nc">&nbsp;                        continue;</b>
+<b class="nc">&nbsp;                    }else if(!netServer.admins.allowAction(player, req.breaking ? ActionType.breakBlock : ActionType.placeBlock, tile, action -&gt; { //make sure request is allowed by the server</b>
+<b class="nc">&nbsp;                        action.block = req.block;</b>
+<b class="nc">&nbsp;                        action.rotation = req.rotation;</b>
+<b class="nc">&nbsp;                        action.config = req.config;</b>
+&nbsp;                    })){
+&nbsp;                        //force the player to remove this request if that&#39;s not the case
+<b class="nc">&nbsp;                        Call.removeQueueBlock(player.con, req.x, req.y, req.breaking);</b>
+<b class="nc">&nbsp;                        con.rejectedRequests.add(req);</b>
+<b class="nc">&nbsp;                        continue;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    player.unit().plans().addLast(req);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        con.rejectedRequests.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!player.dead()){</b>
+<b class="nc">&nbsp;            unit.controlWeapons(shooting, shooting);</b>
+<b class="nc">&nbsp;            unit.aim(pointerX, pointerY);</b>
+<b class="nc">&nbsp;            unit.mineTile = mining;</b>
+&nbsp;
+<b class="nc">&nbsp;            long elapsed = Math.min(Time.timeSinceMillis(con.lastReceivedClientTime), 1500);</b>
+<b class="nc">&nbsp;            float maxSpeed = unit.speed();</b>
+&nbsp;
+<b class="nc">&nbsp;            float maxMove = elapsed / 1000f * 60f * maxSpeed * 1.2f;</b>
+&nbsp;
+&nbsp;            //ignore the position if the player thinks they&#39;re dead, or the unit is wrong
+<b class="nc">&nbsp;            boolean ignorePosition = dead || unit.id != unitID;</b>
+<b class="nc">&nbsp;            float newx = unit.x, newy = unit.y;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!ignorePosition){</b>
+<b class="nc">&nbsp;                unit.vel.set(xVelocity, yVelocity).limit(maxSpeed);</b>
+&nbsp;
+<b class="nc">&nbsp;                vector.set(x, y).sub(unit);</b>
+<b class="nc">&nbsp;                vector.limit(maxMove);</b>
+&nbsp;
+<b class="nc">&nbsp;                float prevx = unit.x, prevy = unit.y;</b>
+<b class="nc">&nbsp;                if(!unit.isFlying()){</b>
+<b class="nc">&nbsp;                    unit.move(vector.x, vector.y);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    unit.trns(vector.x, vector.y);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                newx = unit.x;</b>
+<b class="nc">&nbsp;                newy = unit.y;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!verifyPosition){</b>
+<b class="nc">&nbsp;                    unit.set(prevx, prevy);</b>
+<b class="nc">&nbsp;                    newx = x;</b>
+<b class="nc">&nbsp;                    newy = y;</b>
+<b class="nc">&nbsp;                }else if(!Mathf.within(x, y, newx, newy, correctDist)){</b>
+<b class="nc">&nbsp;                    Call.setPosition(player.con, newx, newy); //teleport and correct position when necessary</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //write sync data to the buffer
+<b class="nc">&nbsp;            fbuffer.limit(20);</b>
+<b class="nc">&nbsp;            fbuffer.position(0);</b>
+&nbsp;
+&nbsp;            //now, put the new position, rotation and baserotation into the buffer so it can be read
+&nbsp;            //TODO this is terrible
+<b class="nc">&nbsp;            if(unit instanceof Mechc) fbuffer.put(baseRotation); //base rotation is optional</b>
+<b class="nc">&nbsp;            fbuffer.put(rotation); //rotation is always there</b>
+<b class="nc">&nbsp;            fbuffer.put(newx);</b>
+<b class="nc">&nbsp;            fbuffer.put(newy);</b>
+<b class="nc">&nbsp;            fbuffer.flip();</b>
+&nbsp;
+&nbsp;            //read sync data so it can be used for interpolation for the server
+<b class="nc">&nbsp;            unit.readSyncManual(fbuffer);</b>
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            player.x = x;</b>
+<b class="nc">&nbsp;            player.y = y;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        con.lastReceivedClientSnapshot = snapshotID;</b>
+<b class="nc">&nbsp;        con.lastReceivedClientTime = Time.millis();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.client, called = Loc.server)
+&nbsp;    public static void adminRequest(Player player, Player other, AdminAction action, Object params){
+<b class="nc">&nbsp;        if(!player.admin &amp;&amp; !player.isLocal()){</b>
+<b class="nc">&nbsp;            warn(&quot;ACCESS DENIED: Player @ / @ attempted to perform admin action &#39;@&#39; on &#39;@&#39; without proper security access.&quot;,</b>
+<b class="nc">&nbsp;            player.plainName(), player.con == null ? &quot;null&quot; : player.con.address, action.name(), other == null ? null : other.plainName());</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(other == null || ((other.admin &amp;&amp; !player.isLocal()) &amp;&amp; other != player)){</b>
+<b class="nc">&nbsp;            warn(&quot;@ &amp;fi&amp;lk[&amp;lb@&amp;fi&amp;lk]&amp;fb attempted to perform admin action on nonexistant or admin player.&quot;, player.plainName(), player.uuid());</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(new EventType.AdminRequestEvent(player, other, action));</b>
+&nbsp;
+<b class="nc">&nbsp;        switch(action){</b>
+&nbsp;            case wave -&gt; {
+&nbsp;                //no verification is done, so admins can hypothetically spam waves
+&nbsp;                //not a real issue, because server owners may want to do just that
+<b class="nc">&nbsp;                logic.skipWave();</b>
+<b class="nc">&nbsp;                info(&quot;&amp;lc@ &amp;fi&amp;lk[&amp;lb@&amp;fi&amp;lk]&amp;fb has skipped the wave.&quot;, player.plainName(), player.uuid());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;            case ban -&gt; {
+<b class="nc">&nbsp;                netServer.admins.banPlayerID(other.con.uuid);</b>
+<b class="nc">&nbsp;                netServer.admins.banPlayerIP(other.con.address);</b>
+<b class="nc">&nbsp;                other.kick(KickReason.banned);</b>
+<b class="nc">&nbsp;                info(&quot;&amp;lc@ &amp;fi&amp;lk[&amp;lb@&amp;fi&amp;lk]&amp;fb has banned @ &amp;fi&amp;lk[&amp;lb@&amp;fi&amp;lk]&amp;fb.&quot;, player.plainName(), player.uuid(), other.plainName(), other.uuid());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;            case kick -&gt; {
+<b class="nc">&nbsp;                other.kick(KickReason.kick);</b>
+<b class="nc">&nbsp;                info(&quot;&amp;lc@ &amp;fi&amp;lk[&amp;lb@&amp;fi&amp;lk]&amp;fb has kicked @ &amp;fi&amp;lk[&amp;lb@&amp;fi&amp;lk]&amp;fb.&quot;, player.plainName(), player.uuid(), other.plainName(), other.uuid());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;            case trace -&gt; {
+<b class="nc">&nbsp;                PlayerInfo stats = netServer.admins.getInfo(other.uuid());</b>
+<b class="nc">&nbsp;                TraceInfo info = new TraceInfo(other.con.address, other.uuid(), other.con.modclient, other.con.mobile, stats.timesJoined, stats.timesKicked, stats.ips.toArray(String.class), stats.names.toArray(String.class));</b>
+<b class="nc">&nbsp;                if(player.con != null){</b>
+<b class="nc">&nbsp;                    Call.traceInfo(player.con, other, info);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    NetClient.traceInfo(other, info);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;            case switchTeam -&gt; {
+<b class="nc">&nbsp;                if(params instanceof Team team){</b>
+<b class="nc">&nbsp;                    other.team(team);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.client)
+&nbsp;    public static void connectConfirm(Player player){
+<b class="nc">&nbsp;        if(player.con.kicked) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        player.add();</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(new PlayerConnectionConfirmed(player));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(player.con == null || player.con.hasConnected) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        player.con.hasConnected = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Config.showConnectMessages.bool()){</b>
+<b class="nc">&nbsp;            Call.sendMessage(&quot;[accent]&quot; + player.name + &quot;[accent] has connected.&quot;);</b>
+<b class="nc">&nbsp;            String message = Strings.format(&quot;&amp;lb@&amp;fi&amp;lk has connected. &amp;fi&amp;lk[&amp;lb@&amp;fi&amp;lk]&quot;, player.plainName(), player.uuid());</b>
+<b class="nc">&nbsp;            info(message);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!Config.motd.string().equalsIgnoreCase(&quot;off&quot;)){</b>
+<b class="nc">&nbsp;            player.sendMessage(Config.motd.string());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(new PlayerJoin(player));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isWaitingForPlayers(){
+<b class="nc">&nbsp;        if(state.rules.pvp &amp;&amp; !state.gameOver){</b>
+<b class="nc">&nbsp;            int used = 0;</b>
+<b class="nc">&nbsp;            for(TeamData t : state.teams.getActive()){</b>
+<b class="nc">&nbsp;                if(Groups.player.count(p -&gt; p.team() == t.team) &gt; 0){</b>
+<b class="nc">&nbsp;                    used++;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;            return used &lt; 2;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        if(!headless &amp;&amp; !closing &amp;&amp; net.server() &amp;&amp; state.isMenu()){</b>
+<b class="nc">&nbsp;            closing = true;</b>
+<b class="nc">&nbsp;            ui.loadfrag.show(&quot;@server.closing&quot;);</b>
+<b class="nc">&nbsp;            Time.runTask(5f, () -&gt; {</b>
+<b class="nc">&nbsp;                net.closeServer();</b>
+<b class="nc">&nbsp;                ui.loadfrag.hide();</b>
+<b class="nc">&nbsp;                closing = false;</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.isGame() &amp;&amp; net.server()){</b>
+<b class="nc">&nbsp;            if(state.rules.pvp &amp;&amp; state.rules.pvpAutoPause){</b>
+<b class="nc">&nbsp;                boolean waiting = isWaitingForPlayers(), paused = state.isPaused();</b>
+<b class="nc">&nbsp;                if(waiting != paused){</b>
+<b class="nc">&nbsp;                    if(waiting){</b>
+&nbsp;                        //is now waiting, enable pausing, flag it correctly
+<b class="nc">&nbsp;                        pvpAutoPaused = true;</b>
+<b class="nc">&nbsp;                        state.set(State.paused);</b>
+<b class="nc">&nbsp;                    }else if(pvpAutoPaused){</b>
+&nbsp;                        //no longer waiting, stop pausing
+<b class="nc">&nbsp;                        state.set(State.playing);</b>
+<b class="nc">&nbsp;                        pvpAutoPaused = false;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            sync();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO I don&#39;t like where this is, move somewhere else?
+&nbsp;    /** Queues a building health update. This will be sent in a Call.buildHealthUpdate packet later. */
+&nbsp;    public void buildHealthUpdate(Building build){
+<b class="nc">&nbsp;        buildHealthChanged.add(build.pos());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Should only be used on the headless backend. */
+&nbsp;    public void openServer(){
+&nbsp;        try{
+<b class="nc">&nbsp;            net.host(Config.port.num());</b>
+<b class="nc">&nbsp;            info(&quot;Opened a server on port @.&quot;, Config.port.num());</b>
+<b class="nc">&nbsp;        }catch(BindException e){</b>
+<b class="nc">&nbsp;            err(&quot;Unable to host: Port &quot; + Config.port.num() + &quot; already in use! Make sure no other servers are running on the same port in your network.&quot;);</b>
+<b class="nc">&nbsp;            state.set(State.menu);</b>
+<b class="nc">&nbsp;        }catch(IOException e){</b>
+<b class="nc">&nbsp;            err(e);</b>
+<b class="nc">&nbsp;            state.set(State.menu);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void kickAll(KickReason reason){
+<b class="nc">&nbsp;        for(NetConnection con : net.getConnections()){</b>
+<b class="nc">&nbsp;            con.kick(reason);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Sends a block snapshot to all players. */
+&nbsp;    public void writeBlockSnapshots() throws IOException{
+<b class="nc">&nbsp;        syncStream.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        short sent = 0;</b>
+<b class="nc">&nbsp;        for(Building entity : Groups.build){</b>
+<b class="nc">&nbsp;            if(!entity.block.sync) continue;</b>
+<b class="nc">&nbsp;            sent++;</b>
+&nbsp;
+<b class="nc">&nbsp;            dataStream.writeInt(entity.pos());</b>
+<b class="nc">&nbsp;            dataStream.writeShort(entity.block.id);</b>
+<b class="nc">&nbsp;            entity.writeSync(Writes.get(dataStream));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(syncStream.size() &gt; maxSnapshotSize){</b>
+<b class="nc">&nbsp;                dataStream.close();</b>
+<b class="nc">&nbsp;                Call.blockSnapshot(sent, syncStream.toByteArray());</b>
+<b class="nc">&nbsp;                sent = 0;</b>
+<b class="nc">&nbsp;                syncStream.reset();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(sent &gt; 0){</b>
+<b class="nc">&nbsp;            dataStream.close();</b>
+<b class="nc">&nbsp;            Call.blockSnapshot(sent, syncStream.toByteArray());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeEntitySnapshot(Player player) throws IOException{
+<b class="nc">&nbsp;        byte tps = (byte)Math.min(Core.graphics.getFramesPerSecond(), 255);</b>
+<b class="nc">&nbsp;        syncStream.reset();</b>
+<b class="nc">&nbsp;        int activeTeams = (byte)state.teams.present.count(t -&gt; t.cores.size &gt; 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        dataStream.writeByte(activeTeams);</b>
+<b class="nc">&nbsp;        dataWrites.output = dataStream;</b>
+&nbsp;
+&nbsp;        //block data isn&#39;t important, just send the items for each team, they&#39;re synced across cores
+<b class="nc">&nbsp;        for(TeamData data : state.teams.present){</b>
+<b class="nc">&nbsp;            if(data.cores.size &gt; 0){</b>
+<b class="nc">&nbsp;                dataStream.writeByte(data.team.id);</b>
+<b class="nc">&nbsp;                data.cores.first().items.write(dataWrites);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        dataStream.close();</b>
+&nbsp;
+&nbsp;        //write basic state data.
+<b class="nc">&nbsp;        Call.stateSnapshot(player.con, state.wavetime, state.wave, state.enemies, state.isPaused(), state.gameOver,</b>
+<b class="nc">&nbsp;        universe.seconds(), tps, GlobalVars.rand.seed0, GlobalVars.rand.seed1, syncStream.toByteArray());</b>
+&nbsp;
+<b class="nc">&nbsp;        syncStream.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        hiddenIds.clear();</b>
+<b class="nc">&nbsp;        int sent = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Syncc entity : Groups.sync){</b>
+&nbsp;            //TODO write to special list
+<b class="nc">&nbsp;            if(entity.isSyncHidden(player)){</b>
+<b class="nc">&nbsp;                hiddenIds.add(entity.id());</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //write all entities now
+<b class="nc">&nbsp;            dataStream.writeInt(entity.id()); //write id</b>
+<b class="nc">&nbsp;            dataStream.writeByte(entity.classId() &amp; 0xFF); //write type ID</b>
+<b class="nc">&nbsp;            entity.writeSync(Writes.get(dataStream)); //write entity</b>
+&nbsp;
+<b class="nc">&nbsp;            sent++;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(syncStream.size() &gt; maxSnapshotSize){</b>
+<b class="nc">&nbsp;                dataStream.close();</b>
+<b class="nc">&nbsp;                Call.entitySnapshot(player.con, (short)sent, syncStream.toByteArray());</b>
+<b class="nc">&nbsp;                sent = 0;</b>
+<b class="nc">&nbsp;                syncStream.reset();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(sent &gt; 0){</b>
+<b class="nc">&nbsp;            dataStream.close();</b>
+&nbsp;
+<b class="nc">&nbsp;            Call.entitySnapshot(player.con, (short)sent, syncStream.toByteArray());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(hiddenIds.size &gt; 0){</b>
+<b class="nc">&nbsp;            Call.hiddenSnapshot(player.con, hiddenIds);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        player.con.snapshotsSent++;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String fixName(String name){
+<b class="nc">&nbsp;        name = name.trim().replace(&quot;\n&quot;, &quot;&quot;).replace(&quot;\t&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;        if(name.equals(&quot;[&quot;) || name.equals(&quot;]&quot;)){</b>
+<b class="nc">&nbsp;            return &quot;&quot;;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; name.length(); i++){</b>
+<b class="nc">&nbsp;            if(name.charAt(i) == &#39;[&#39; &amp;&amp; i != name.length() - 1 &amp;&amp; name.charAt(i + 1) != &#39;[&#39; &amp;&amp; (i == 0 || name.charAt(i - 1) != &#39;[&#39;)){</b>
+<b class="nc">&nbsp;                String prev = name.substring(0, i);</b>
+<b class="nc">&nbsp;                String next = name.substring(i);</b>
+<b class="nc">&nbsp;                String result = checkColor(next);</b>
+&nbsp;
+<b class="nc">&nbsp;                name = prev + result;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        StringBuilder result = new StringBuilder();</b>
+<b class="nc">&nbsp;        int curChar = 0;</b>
+<b class="nc">&nbsp;        while(curChar &lt; name.length() &amp;&amp; result.toString().getBytes(Strings.utf8).length &lt; maxNameLength){</b>
+<b class="nc">&nbsp;            result.append(name.charAt(curChar++));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return result.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String checkColor(String str){
+<b class="nc">&nbsp;        for(int i = 1; i &lt; str.length(); i++){</b>
+<b class="nc">&nbsp;            if(str.charAt(i) == &#39;]&#39;){</b>
+<b class="nc">&nbsp;                String color = str.substring(1, i);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(Colors.get(color.toUpperCase()) != null || Colors.get(color.toLowerCase()) != null){</b>
+<b class="nc">&nbsp;                    Color result = (Colors.get(color.toLowerCase()) == null ? Colors.get(color.toUpperCase()) : Colors.get(color.toLowerCase()));</b>
+<b class="nc">&nbsp;                    if(result.a &lt; 1f){</b>
+<b class="nc">&nbsp;                        return str.substring(i + 1);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }else{</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        Color result = Color.valueOf(color);</b>
+<b class="nc">&nbsp;                        if(result.a &lt; 1f){</b>
+<b class="nc">&nbsp;                            return str.substring(i + 1);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }catch(Exception e){</b>
+<b class="nc">&nbsp;                        return str;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return str;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void sync(){
+&nbsp;        try{
+<b class="nc">&nbsp;            int interval = Config.snapshotInterval.num();</b>
+<b class="nc">&nbsp;            Groups.player.each(p -&gt; !p.isLocal(), player -&gt; {</b>
+<b class="nc">&nbsp;                if(player.con == null || !player.con.isConnected()){</b>
+<b class="nc">&nbsp;                    onDisconnect(player, &quot;disappeared&quot;);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                var connection = player.con;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(Time.timeSinceMillis(connection.syncTime) &lt; interval || !connection.hasConnected) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                connection.syncTime = Time.millis();</b>
+&nbsp;
+&nbsp;                try{
+<b class="nc">&nbsp;                    writeEntitySnapshot(player);</b>
+<b class="nc">&nbsp;                }catch(IOException e){</b>
+<b class="nc">&nbsp;                    e.printStackTrace();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            if(Groups.player.size() &gt; 0 &amp;&amp; Core.settings.getBool(&quot;blocksync&quot;) &amp;&amp; timer.get(timerBlockSync, blockSyncTime)){</b>
+<b class="nc">&nbsp;                writeBlockSnapshots();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Groups.player.size() &gt; 0 &amp;&amp; buildHealthChanged.size &gt; 0 &amp;&amp; timer.get(timerHealthSync, healthSyncTime)){</b>
+<b class="nc">&nbsp;                healthSeq.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;                var iter = buildHealthChanged.iterator();</b>
+<b class="nc">&nbsp;                while(iter.hasNext){</b>
+<b class="nc">&nbsp;                    int next = iter.next();</b>
+<b class="nc">&nbsp;                    var build = world.build(next);</b>
+&nbsp;
+&nbsp;                    //pack pos + health into update list
+<b class="nc">&nbsp;                    if(build != null){</b>
+<b class="nc">&nbsp;                        healthSeq.add(next, Float.floatToRawIntBits(build.health));</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //if size exceeds snapshot limit, send it out and begin building it up again
+<b class="nc">&nbsp;                    if(healthSeq.size * 4 &gt;= maxSnapshotSize){</b>
+<b class="nc">&nbsp;                        Call.buildHealthUpdate(healthSeq);</b>
+<b class="nc">&nbsp;                        healthSeq.clear();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                //send any residual health updates
+<b class="nc">&nbsp;                if(healthSeq.size &gt; 0){</b>
+<b class="nc">&nbsp;                    Call.buildHealthUpdate(healthSeq);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                buildHealthChanged.clear();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }catch(IOException e){</b>
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public class VoteSession{
+&nbsp;        Player target;
+<b class="nc">&nbsp;        ObjectIntMap&lt;String&gt; voted = new ObjectIntMap&lt;&gt;();</b>
+&nbsp;        Timer.Task task;
+&nbsp;        int votes;
+&nbsp;
+<b class="nc">&nbsp;        public VoteSession(Player target){</b>
+<b class="nc">&nbsp;            this.target = target;</b>
+<b class="nc">&nbsp;            this.task = Timer.schedule(() -&gt; {</b>
+<b class="nc">&nbsp;                if(!checkPass()){</b>
+<b class="nc">&nbsp;                    Call.sendMessage(Strings.format(&quot;[lightgray]Vote failed. Not enough votes to kick[orange] @[lightgray].&quot;, target.name));</b>
+<b class="nc">&nbsp;                    currentlyKicking = null;</b>
+<b class="nc">&nbsp;                    task.cancel();</b>
+&nbsp;                }
+&nbsp;            }, voteDuration);
+&nbsp;        }
+&nbsp;
+&nbsp;        void vote(Player player, int d){
+<b class="nc">&nbsp;            int lastVote = voted.get(player.uuid(), 0) | voted.get(admins.getInfo(player.uuid()).lastIP, 0);</b>
+<b class="nc">&nbsp;            votes -= lastVote;</b>
+&nbsp;
+<b class="nc">&nbsp;            votes += d;</b>
+<b class="nc">&nbsp;            voted.put(player.uuid(), d);</b>
+<b class="nc">&nbsp;            voted.put(admins.getInfo(player.uuid()).lastIP, d);</b>
+&nbsp;
+<b class="nc">&nbsp;            Call.sendMessage(Strings.format(&quot;[lightgray]@[lightgray] has voted on kicking[orange] @[lightgray].[accent] (@/@)\n[lightgray]Type[orange] /vote &lt;y/n&gt;[] to agree.&quot;,</b>
+<b class="nc">&nbsp;            player.name, target.name, votes, votesRequired()));</b>
+&nbsp;
+<b class="nc">&nbsp;            checkPass();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean checkPass(){
+<b class="nc">&nbsp;            if(votes &gt;= votesRequired()){</b>
+<b class="nc">&nbsp;                Call.sendMessage(Strings.format(&quot;[orange]Vote passed.[scarlet] @[orange] will be banned from the server for @ minutes.&quot;, target.name, (kickDuration / 60)));</b>
+<b class="nc">&nbsp;                Groups.player.each(p -&gt; p.uuid().equals(target.uuid()), p -&gt; p.kick(KickReason.vote, kickDuration * 1000));</b>
+<b class="nc">&nbsp;                currentlyKicking = null;</b>
+<b class="nc">&nbsp;                task.cancel();</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface TeamAssigner{
+&nbsp;        Team assign(Player player, Iterable&lt;Player&gt; players);
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface ChatFormatter{
+&nbsp;        /** @return text to be placed before player name */
+&nbsp;        String format(@Nullable Player player, String message);
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface InvalidCommandHandler{
+&nbsp;        String handle(Player player, CommandResponse response);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,213 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Links</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui</a>
+</div>
+
+<h1>Coverage Summary for Class: Links (mindustry.ui)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Links</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Links$LinkEntry</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/29)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.mod.Mods.*;
+&nbsp;
+<b class="nc">&nbsp;public class Links{</b>
+&nbsp;    private static LinkEntry[] links;
+&nbsp;
+&nbsp;    private static void createLinks(){
+<b class="nc">&nbsp;        links = new LinkEntry[]{</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;discord&quot;, &quot;https://discord.gg/mindustry&quot;, Icon.discord, Color.valueOf(&quot;7289da&quot;)),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;changelog&quot;, &quot;https://github.com/Anuken/Mindustry/releases&quot;, Icon.list, Pal.accent.cpy()),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;trello&quot;, &quot;https://trello.com/b/aE2tcUwF&quot;, Icon.trello, Color.valueOf(&quot;026aa7&quot;)),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;wiki&quot;, &quot;https://mindustrygame.github.io/wiki/&quot;, Icon.book, Color.valueOf(&quot;0f142f&quot;)),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;suggestions&quot;, &quot;https://github.com/Anuken/Mindustry-Suggestions/issues/new/choose/&quot;, Icon.add, Color.valueOf(&quot;ebebeb&quot;)),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;reddit&quot;, &quot;https://www.reddit.com/r/Mindustry/&quot;, Icon.redditAlien, Color.valueOf(&quot;ee593b&quot;)),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;itch.io&quot;, &quot;https://anuke.itch.io/mindustry&quot;, Icon.itchio, Color.valueOf(&quot;fa5c5c&quot;)),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;google-play&quot;, &quot;https://play.google.com/store/apps/details?id=io.anuke.mindustry&quot;, Icon.googleplay, Color.valueOf(&quot;689f38&quot;)),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;f-droid&quot;, &quot;https://f-droid.org/packages/io.anuke.mindustry/&quot;, Icon.android, Color.valueOf(&quot;026aa7&quot;)),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;github&quot;, &quot;https://github.com/Anuken/Mindustry/&quot;, Icon.github, Color.valueOf(&quot;24292e&quot;)),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;dev-builds&quot;, &quot;https://github.com/Anuken/MindustryBuilds&quot;, Icon.githubSquare, Color.valueOf(&quot;fafbfc&quot;)),</b>
+<b class="nc">&nbsp;        new LinkEntry(&quot;bug&quot;, report(), Icon.wrench, Color.valueOf(&quot;cbd97f&quot;))</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static LinkEntry[] getLinks(){
+<b class="nc">&nbsp;        if(links == null){</b>
+<b class="nc">&nbsp;            createLinks();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return links;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class LinkEntry{
+&nbsp;        public final String name, title, description, link;
+&nbsp;        public final Color color;
+&nbsp;        public final Drawable icon;
+&nbsp;
+<b class="nc">&nbsp;        public LinkEntry(String name, String link, Drawable icon, Color color){</b>
+<b class="nc">&nbsp;            this.name = name;</b>
+<b class="nc">&nbsp;            this.color = color;</b>
+<b class="nc">&nbsp;            this.description = Core.bundle.get(&quot;link.&quot; + name + &quot;.description&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;            this.link = link;</b>
+<b class="nc">&nbsp;            this.icon = icon;</b>
+<b class="nc">&nbsp;            this.title = Core.bundle.get(&quot;link.&quot; + name + &quot;.title&quot;, Strings.capitalize(name.replace(&quot;-&quot;, &quot; &quot;)));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static String report(){
+<b class="nc">&nbsp;        return &quot;https://github.com/Anuken/Mindustry/issues/new?assignees=&amp;labels=bug&amp;body=&quot; +</b>
+<b class="nc">&nbsp;        Strings.encode(Strings.format(</b>
+&nbsp;        &quot;&quot;&quot;
+&nbsp;        **Platform**: `@`
+&nbsp;                    
+&nbsp;        **Build**: `@`
+&nbsp;                    
+&nbsp;        **Issue**: *Explain your issue in detail.*
+&nbsp;                    
+&nbsp;        **Steps to reproduce**: *How you happened across the issue, and what exactly you did to make the bug happen.*
+&nbsp;                    
+&nbsp;        **Link(s) to mod(s) used**: `@`
+&nbsp;                    
+&nbsp;        **Save file**: *The (zipped) save file you were playing on when the bug happened. THIS IS REQUIRED FOR ANY ISSUE HAPPENING IN-GAME, REGARDLESS OF WHETHER YOU THINK IT HAPPENS EVERYWHERE. DO NOT DELETE OR OMIT THIS LINE UNLESS YOU ARE SURE THAT THE ISSUE DOES NOT HAPPEN IN-GAME.*
+&nbsp;                    
+&nbsp;        **Crash report**: *The contents of relevant crash report files. REQUIRED if you are reporting a crash.*
+&nbsp;                    
+&nbsp;        ---
+&nbsp;                    
+&nbsp;        *Place an X (no spaces) between the brackets to confirm that you have read the line below.*
+&nbsp;        - [ ] **I have updated to the latest release (https://github.com/Anuken/Mindustry/releases) to make sure my issue has not been fixed.**
+&nbsp;        - [ ] **I have searched the closed and open issues to make sure that this problem has not already been reported.**
+&nbsp;        &quot;&quot;&quot;,
+<b class="nc">&nbsp;        OS.isAndroid ? &quot;Android &quot; + Core.app.getVersion() : (OS.osName + &quot; x&quot; + OS.osArchBits),</b>
+<b class="nc">&nbsp;        Version.combined(),</b>
+<b class="nc">&nbsp;        Vars.mods.list().any() ? Vars.mods.list().select(LoadedMod::enabled).map(l -&gt; l.meta.author + &quot;/&quot; + l.name + &quot;:&quot; + l.meta.version) : &quot;none&quot;));</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

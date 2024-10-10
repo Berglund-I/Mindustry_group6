@@ -1,0 +1,228 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > OverflowGate</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: OverflowGate (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OverflowGate</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (13/13)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">OverflowGate$OverflowGateBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.8%
+  </span>
+  <span class="absValue">
+    (6/32)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    62.5%
+  </span>
+  <span class="absValue">
+    (5/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.2%
+  </span>
+  <span class="absValue">
+    (19/45)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class OverflowGate extends Block{
+<b class="fc">&nbsp;    public float speed = 1f;</b>
+<b class="fc">&nbsp;    public boolean invert = false;</b>
+&nbsp;
+&nbsp;    public OverflowGate(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+<b class="fc">&nbsp;        update = false;</b>
+<b class="fc">&nbsp;        destructible = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.transportation;</b>
+<b class="fc">&nbsp;        instantTransfer = true;</b>
+<b class="fc">&nbsp;        unloadable = false;</b>
+<b class="fc">&nbsp;        canOverdrive = false;</b>
+<b class="fc">&nbsp;        itemCapacity = 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class OverflowGateBuild extends Building{</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            Building to = getTileTarget(item, source, false);</b>
+&nbsp;
+<b class="nc">&nbsp;            return to != null &amp;&amp; to.acceptItem(this, item) &amp;&amp; to.team == team;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleItem(Building source, Item item){
+<b class="nc">&nbsp;            Building target = getTileTarget(item, source, true);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(target != null) target.handleItem(this, item);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public @Nullable Building getTileTarget(Item item, Building src, boolean flip){
+<b class="nc">&nbsp;            int from = relativeToEdge(src.tile);</b>
+<b class="nc">&nbsp;            if(from == -1) return null;</b>
+<b class="nc">&nbsp;            Building to = nearby((from + 2) % 4);</b>
+&nbsp;            boolean
+<b class="nc">&nbsp;                fromInst = src.block.instantTransfer,</b>
+<b class="nc">&nbsp;                canForward = to != null &amp;&amp; to.team == team &amp;&amp; !(fromInst &amp;&amp; to.block.instantTransfer) &amp;&amp; to.acceptItem(this, item),</b>
+<b class="nc">&nbsp;                inv = invert == enabled;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!canForward || inv){</b>
+<b class="nc">&nbsp;                Building a = nearby(Mathf.mod(from - 1, 4));</b>
+<b class="nc">&nbsp;                Building b = nearby(Mathf.mod(from + 1, 4));</b>
+<b class="nc">&nbsp;                boolean ac = a != null &amp;&amp; !(fromInst &amp;&amp; a.block.instantTransfer) &amp;&amp; a.team == team &amp;&amp; a.acceptItem(this, item);</b>
+<b class="nc">&nbsp;                boolean bc = b != null &amp;&amp; !(fromInst &amp;&amp; b.block.instantTransfer) &amp;&amp; b.team == team &amp;&amp; b.acceptItem(this, item);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!ac &amp;&amp; !bc){</b>
+<b class="nc">&nbsp;                    return inv &amp;&amp; canForward ? to : null;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(ac &amp;&amp; !bc){</b>
+<b class="nc">&nbsp;                    to = a;</b>
+<b class="nc">&nbsp;                }else if(bc &amp;&amp; !ac){</b>
+<b class="nc">&nbsp;                    to = b;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    to = (rotation &amp; (1 &lt;&lt; from)) == 0 ? a : b;</b>
+<b class="nc">&nbsp;                    if(flip) rotation ^= (1 &lt;&lt; from);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return to;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 4;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(revision == 1){</b>
+<b class="nc">&nbsp;                new DirectionalItemBuffer(25).read(read);</b>
+<b class="fc">&nbsp;            }else if(revision == 3){</b>
+<b class="nc">&nbsp;                read.i();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            items.clear();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

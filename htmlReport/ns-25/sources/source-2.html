@@ -1,0 +1,548 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ErekirPlanetGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps.planet</a>
+</div>
+
+<h1>Coverage Summary for Class: ErekirPlanetGenerator (mindustry.maps.planet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ErekirPlanetGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.6%
+  </span>
+  <span class="absValue">
+    (3/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.7%
+  </span>
+  <span class="absValue">
+    (12/209)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps.planet;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.maps.generators.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class ErekirPlanetGenerator extends PlanetGenerator{</b>
+<b class="fc">&nbsp;    public float heightScl = 0.9f, octaves = 8, persistence = 0.7f, heightPow = 3f, heightMult = 1.6f;</b>
+&nbsp;
+&nbsp;    //TODO inline/remove
+<b class="fc">&nbsp;    public static float arkThresh = 0.28f, arkScl = 0.83f;</b>
+<b class="fc">&nbsp;    public static int arkSeed = 7, arkOct = 2;</b>
+<b class="fc">&nbsp;    public static float liqThresh = 0.64f, liqScl = 87f, redThresh = 3.1f, noArkThresh = 0.3f;</b>
+<b class="fc">&nbsp;    public static int crystalSeed = 8, crystalOct = 2;</b>
+<b class="fc">&nbsp;    public static float crystalScl = 0.9f, crystalMag = 0.3f;</b>
+<b class="fc">&nbsp;    public static float airThresh = 0.13f, airScl = 14;</b>
+&nbsp;
+<b class="fc">&nbsp;    Block[] terrain = {Blocks.regolith, Blocks.regolith, Blocks.regolith, Blocks.regolith, Blocks.yellowStone, Blocks.rhyolite, Blocks.rhyolite, Blocks.carbonStone};</b>
+&nbsp;
+&nbsp;    {
+<b class="fc">&nbsp;        baseSeed = 2;</b>
+<b class="fc">&nbsp;        defaultLoadout = Loadouts.basicBastion;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void generateSector(Sector sector){
+&nbsp;        //no bases right now
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float getHeight(Vec3 position){
+<b class="nc">&nbsp;        return Mathf.pow(rawHeight(position), heightPow) * heightMult;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Color getColor(Vec3 position){
+<b class="nc">&nbsp;        Block block = getBlock(position);</b>
+&nbsp;
+&nbsp;        //more obvious color
+<b class="nc">&nbsp;        if(block == Blocks.crystallineStone) block = Blocks.crystalFloor;</b>
+&nbsp;        //TODO this might be too green
+&nbsp;        //if(block == Blocks.beryllicStone) block = Blocks.arkyicStone;
+&nbsp;
+<b class="nc">&nbsp;        return Tmp.c1.set(block.mapColor).a(1f - block.albedo);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float getSizeScl(){
+&nbsp;        //TODO should sectors be 600, or 500 blocks?
+<b class="nc">&nbsp;        return 2000 * 1.07f * 6f / 5f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    float rawHeight(Vec3 position){
+<b class="nc">&nbsp;        return Simplex.noise3d(seed, octaves, persistence, 1f/heightScl, 10f + position.x, 10f + position.y, 10f + position.z);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    float rawTemp(Vec3 position){
+<b class="nc">&nbsp;        return position.dst(0, 0, 1)*2.2f - Simplex.noise3d(seed, 8, 0.54f, 1.4f, 10f + position.x, 10f + position.y, 10f + position.z) * 2.9f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Block getBlock(Vec3 position){
+<b class="nc">&nbsp;        float ice = rawTemp(position);</b>
+<b class="nc">&nbsp;        Tmp.v32.set(position);</b>
+&nbsp;
+<b class="nc">&nbsp;        float height = rawHeight(position);</b>
+<b class="nc">&nbsp;        Tmp.v31.set(position);</b>
+<b class="nc">&nbsp;        height *= 1.2f;</b>
+<b class="nc">&nbsp;        height = Mathf.clamp(height);</b>
+&nbsp;
+<b class="nc">&nbsp;        Block result = terrain[Mathf.clamp((int)(height * terrain.length), 0, terrain.length - 1)];</b>
+&nbsp;
+<b class="nc">&nbsp;        if(ice &lt; 0.3 + Math.abs(Ridged.noise3d(seed + crystalSeed, position.x + 4f, position.y + 8f, position.z + 1f, crystalOct, crystalScl)) * crystalMag){</b>
+<b class="nc">&nbsp;            return Blocks.crystallineStone;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(ice &lt; 0.6){</b>
+<b class="nc">&nbsp;            if(result == Blocks.rhyolite || result == Blocks.yellowStone || result == Blocks.regolith){</b>
+&nbsp;                //TODO bio(?) luminescent stuff? ice?
+<b class="nc">&nbsp;                return Blocks.carbonStone; //TODO perhaps something else.</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        position = Tmp.v32;</b>
+&nbsp;
+&nbsp;        //TODO tweak this to make it more natural
+&nbsp;        //TODO edge distortion?
+<b class="nc">&nbsp;        if(ice &lt; redThresh - noArkThresh &amp;&amp; Ridged.noise3d(seed + arkSeed, position.x + 2f, position.y + 8f, position.z + 1f, arkOct, arkScl) &gt; arkThresh){</b>
+&nbsp;            //TODO arkyic in middle
+<b class="nc">&nbsp;            result = Blocks.beryllicStone;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(ice &gt; redThresh){</b>
+<b class="nc">&nbsp;            result = Blocks.redStone;</b>
+<b class="nc">&nbsp;        }else if(ice &gt; redThresh - 0.4f){</b>
+&nbsp;            //TODO this may increase the amount of regolith, but it&#39;s too obvious a transition.
+<b class="nc">&nbsp;            result = Blocks.regolith;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void genTile(Vec3 position, TileGen tile){
+<b class="nc">&nbsp;        tile.floor = getBlock(position);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(tile.floor == Blocks.rhyolite &amp;&amp; rand.chance(0.01)){</b>
+<b class="nc">&nbsp;            tile.floor = Blocks.rhyoliteCrater;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        tile.block = tile.floor.asFloor().wall;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Ridged.noise3d(seed + 1, position.x, position.y, position.z, 2, airScl) &gt; airThresh){</b>
+<b class="nc">&nbsp;            tile.block = Blocks.air;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //TODO only certain places should have carbon stone...
+<b class="nc">&nbsp;        if(Ridged.noise3d(seed + 2, position.x, position.y + 4f, position.z, 3, 6f) &gt; 0.6){</b>
+<b class="nc">&nbsp;            tile.floor = Blocks.carbonStone;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected void generate(){
+<b class="nc">&nbsp;        float temp = rawTemp(sector.tile.v);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(temp &gt; 0.7){</b>
+&nbsp;
+<b class="nc">&nbsp;            pass((x, y) -&gt; {</b>
+<b class="nc">&nbsp;                if(floor != Blocks.redIce){</b>
+<b class="nc">&nbsp;                    float noise = noise(x + 782, y, 7, 0.8f, 280f, 1f);</b>
+<b class="nc">&nbsp;                    if(noise &gt; 0.62f){</b>
+<b class="nc">&nbsp;                        if(noise &gt; 0.635f){</b>
+<b class="nc">&nbsp;                            floor = Blocks.slag;</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            floor = Blocks.yellowStone;</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        ore = Blocks.air;</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //TODO this needs to be tweaked
+<b class="nc">&nbsp;                    if(noise &gt; 0.55f &amp;&amp; floor == Blocks.beryllicStone){</b>
+<b class="nc">&nbsp;                        floor = Blocks.yellowStone;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        cells(4);</b>
+&nbsp;
+&nbsp;        //regolith walls for more dense terrain
+<b class="nc">&nbsp;        pass((x, y) -&gt; {</b>
+<b class="nc">&nbsp;            if(floor == Blocks.regolith &amp;&amp; noise(x, y, 3, 0.4f, 13f, 1f) &gt; 0.59f){</b>
+<b class="nc">&nbsp;                block = Blocks.regolithWall;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;        //TODO: yellow regolith biome tweaks
+&nbsp;        //TODO ice biome
+&nbsp;
+<b class="nc">&nbsp;        float length = width/2.6f;</b>
+<b class="nc">&nbsp;        Vec2 trns = Tmp.v1.trns(rand.random(360f), length);</b>
+&nbsp;        int
+<b class="nc">&nbsp;        spawnX = (int)(trns.x + width/2f), spawnY = (int)(trns.y + height/2f),</b>
+<b class="nc">&nbsp;        endX = (int)(-trns.x + width/2f), endY = (int)(-trns.y + height/2f);</b>
+<b class="nc">&nbsp;        float maxd = Mathf.dst(width/2f, height/2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        erase(spawnX, spawnY, 15);</b>
+<b class="nc">&nbsp;        brush(pathfind(spawnX, spawnY, endX, endY, tile -&gt; (tile.solid() ? 300f : 0f) + maxd - tile.dst(width/2f, height/2f)/10f, Astar.manhattan), 9);</b>
+<b class="nc">&nbsp;        erase(endX, endY, 15);</b>
+&nbsp;
+&nbsp;        //arkycite
+<b class="nc">&nbsp;        pass((x, y) -&gt; {</b>
+<b class="nc">&nbsp;            if(floor != Blocks.beryllicStone) return;</b>
+&nbsp;
+&nbsp;            //TODO bad
+<b class="nc">&nbsp;            if(Math.abs(noise(x, y + 500f, 5, 0.6f, 40f, 1f) - 0.5f) &lt; 0.09f){</b>
+<b class="nc">&nbsp;                floor = Blocks.arkyicStone;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(nearWall(x, y)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            float noise = noise(x + 300, y - x*1.6f + 100, 4, 0.8f, liqScl, 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(noise &gt; liqThresh){</b>
+<b class="nc">&nbsp;                floor = Blocks.arkyciteFloor;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        median(2, 0.6, Blocks.arkyciteFloor);</b>
+&nbsp;
+<b class="nc">&nbsp;        blend(Blocks.arkyciteFloor, Blocks.arkyicStone, 4);</b>
+&nbsp;
+&nbsp;        //TODO may overwrite floor blocks under walls and look bad
+<b class="nc">&nbsp;        blend(Blocks.slag, Blocks.yellowStonePlates, 4);</b>
+&nbsp;
+<b class="nc">&nbsp;        distort(10f, 12f);</b>
+<b class="nc">&nbsp;        distort(5f, 7f);</b>
+&nbsp;
+&nbsp;        //does arkycite need smoothing?
+<b class="nc">&nbsp;        median(2, 0.6, Blocks.arkyciteFloor);</b>
+&nbsp;
+&nbsp;        //smooth out slag to prevent random 1-tile patches
+<b class="nc">&nbsp;        median(3, 0.6, Blocks.slag);</b>
+&nbsp;
+<b class="nc">&nbsp;        pass((x, y) -&gt; {</b>
+&nbsp;            //rough rhyolite
+<b class="nc">&nbsp;            if(noise(x, y + 600 + x, 5, 0.86f, 60f, 1f) &lt; 0.41f &amp;&amp; floor == Blocks.rhyolite){</b>
+<b class="nc">&nbsp;                floor = Blocks.roughRhyolite;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(floor == Blocks.slag &amp;&amp; Mathf.within(x, y, spawnX, spawnY, 30f + noise(x, y, 2, 0.8f, 9f, 15f))){</b>
+<b class="nc">&nbsp;                floor = Blocks.yellowStonePlates;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if((floor == Blocks.arkyciteFloor || floor == Blocks.arkyicStone) &amp;&amp; block.isStatic()){</b>
+<b class="nc">&nbsp;                block = Blocks.arkyicWall;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float max = 0;</b>
+<b class="nc">&nbsp;            for(Point2 p : Geometry.d8){</b>
+&nbsp;                //TODO I think this is the cause of lag
+<b class="nc">&nbsp;                max = Math.max(max, world.getDarkness(x + p.x, y + p.y));</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(max &gt; 0){</b>
+<b class="nc">&nbsp;                block = floor.asFloor().wall;</b>
+<b class="nc">&nbsp;                if(block == Blocks.air) block = Blocks.yellowStoneWall;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(floor == Blocks.yellowStonePlates &amp;&amp; noise(x + 78 + y, y, 3, 0.8f, 6f, 1f) &gt; 0.44f){</b>
+<b class="nc">&nbsp;                floor = Blocks.yellowStone;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(floor == Blocks.redStone &amp;&amp; noise(x + 78 - y, y, 4, 0.73f, 19f, 1f) &gt; 0.63f){</b>
+<b class="nc">&nbsp;                floor = Blocks.denseRedStone;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        inverseFloodFill(tiles.getn(spawnX, spawnY));</b>
+&nbsp;
+&nbsp;        //TODO veins, blend after inverse flood fill?
+<b class="nc">&nbsp;        blend(Blocks.redStoneWall, Blocks.denseRedStone, 4);</b>
+&nbsp;
+&nbsp;        //make sure enemies have room
+<b class="nc">&nbsp;        erase(endX, endY, 6);</b>
+&nbsp;
+&nbsp;        //TODO enemies get stuck on 1x1 passages.
+&nbsp;
+<b class="nc">&nbsp;        tiles.getn(endX, endY).setOverlay(Blocks.spawn);</b>
+&nbsp;
+&nbsp;        //ores
+<b class="nc">&nbsp;        pass((x, y) -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;            if(block != Blocks.air){</b>
+<b class="nc">&nbsp;                if(nearAir(x, y)){</b>
+<b class="nc">&nbsp;                    if(block == Blocks.carbonWall &amp;&amp; noise(x + 78, y, 4, 0.7f, 33f, 1f) &gt; 0.52f){</b>
+<b class="nc">&nbsp;                        block = Blocks.graphiticWall;</b>
+<b class="nc">&nbsp;                    }else if(block != Blocks.carbonWall &amp;&amp; noise(x + 782, y, 4, 0.8f, 38f, 1f) &gt; 0.665f){</b>
+<b class="nc">&nbsp;                        ore = Blocks.wallOreBeryllium;</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(!nearWall(x, y)){</b>
+&nbsp;
+<b class="nc">&nbsp;                if(noise(x + 150, y + x*2 + 100, 4, 0.8f, 55f, 1f) &gt; 0.76f){</b>
+<b class="nc">&nbsp;                    ore = Blocks.oreTungsten;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //TODO design ore generation so it doesn&#39;t overlap
+<b class="nc">&nbsp;                if(noise(x + 999, y + 600 - x, 4, 0.63f, 45f, 1f) &lt; 0.27f &amp;&amp; floor == Blocks.crystallineStone){</b>
+<b class="nc">&nbsp;                    ore = Blocks.oreCrystalThorium;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(noise(x + 999, y + 600 - x, 5, 0.8f, 45f, 1f) &lt; 0.44f &amp;&amp; floor == Blocks.crystallineStone){</b>
+<b class="nc">&nbsp;                floor = Blocks.crystalFloor;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(block == Blocks.air &amp;&amp; (floor == Blocks.crystallineStone || floor == Blocks.crystalFloor) &amp;&amp; rand.chance(0.09) &amp;&amp; nearWall(x, y)</b>
+<b class="nc">&nbsp;                &amp;&amp; !near(x, y, 4, Blocks.crystalCluster) &amp;&amp; !near(x, y, 4, Blocks.vibrantCrystalCluster)){</b>
+<b class="nc">&nbsp;                block = floor == Blocks.crystalFloor ? Blocks.vibrantCrystalCluster : Blocks.crystalCluster;</b>
+<b class="nc">&nbsp;                ore = Blocks.air;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(block == Blocks.arkyicWall &amp;&amp; rand.chance(0.23) &amp;&amp; nearAir(x, y) &amp;&amp; !near(x, y, 3, Blocks.crystalOrbs)){</b>
+<b class="nc">&nbsp;                block = Blocks.crystalOrbs;</b>
+<b class="nc">&nbsp;                ore = Blocks.air;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //TODO test, different placement
+&nbsp;            //TODO this biome should have more blocks in general
+<b class="nc">&nbsp;            if(block == Blocks.regolithWall &amp;&amp; rand.chance(0.3) &amp;&amp; nearAir(x, y) &amp;&amp; !near(x, y, 3, Blocks.crystalBlocks)){</b>
+<b class="nc">&nbsp;                block = Blocks.crystalBlocks;</b>
+<b class="nc">&nbsp;                ore = Blocks.air;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;        //remove props near ores, they&#39;re too annoying
+<b class="nc">&nbsp;        pass((x, y) -&gt; {</b>
+<b class="nc">&nbsp;            if(ore.asFloor().wallOre || block.itemDrop != null || (block == Blocks.air &amp;&amp; ore != Blocks.air)){</b>
+<b class="nc">&nbsp;                removeWall(x, y, 3, b -&gt; b instanceof TallBlock);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        trimDark();</b>
+&nbsp;
+<b class="nc">&nbsp;        int minVents = rand.random(6, 9);</b>
+<b class="nc">&nbsp;        int ventCount = 0;</b>
+&nbsp;
+&nbsp;        //vents
+&nbsp;        outer:
+<b class="nc">&nbsp;        for(Tile tile : tiles){</b>
+<b class="nc">&nbsp;            var floor = tile.floor();</b>
+<b class="nc">&nbsp;            if((floor == Blocks.rhyolite || floor == Blocks.roughRhyolite) &amp;&amp; rand.chance(0.002)){</b>
+<b class="nc">&nbsp;                int radius = 2;</b>
+<b class="nc">&nbsp;                for(int x = -radius; x &lt;= radius; x++){</b>
+<b class="nc">&nbsp;                    for(int y = -radius; y &lt;= radius; y++){</b>
+<b class="nc">&nbsp;                        Tile other = tiles.get(x + tile.x, y + tile.y);</b>
+<b class="nc">&nbsp;                        if(other == null || (other.floor() != Blocks.rhyolite &amp;&amp; other.floor() != Blocks.roughRhyolite) || other.block().solid){</b>
+<b class="nc">&nbsp;                            continue outer;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                ventCount ++;</b>
+<b class="nc">&nbsp;                for(var pos : SteamVent.offsets){</b>
+<b class="nc">&nbsp;                    Tile other = tiles.get(pos.x + tile.x + 1, pos.y + tile.y + 1);</b>
+<b class="nc">&nbsp;                    other.setFloor(Blocks.rhyoliteVent.asFloor());</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        int iterations = 0;</b>
+<b class="nc">&nbsp;        int maxIterations = 5;</b>
+&nbsp;
+&nbsp;        //try to add additional vents, but only several times to prevent infinite loops in bad maps
+<b class="nc">&nbsp;        while(ventCount &lt; minVents &amp;&amp; iterations++ &lt; maxIterations){</b>
+&nbsp;            outer:
+<b class="nc">&nbsp;            for(Tile tile : tiles){</b>
+<b class="nc">&nbsp;                if(rand.chance(0.00018 * (1 + iterations)) &amp;&amp; !Mathf.within(tile.x, tile.y, spawnX, spawnY, 5f)){</b>
+&nbsp;                    //skip crystals, but only when directly on them
+<b class="nc">&nbsp;                    if(tile.floor() == Blocks.crystallineStone || tile.floor() == Blocks.crystalFloor){</b>
+<b class="nc">&nbsp;                        continue;</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    int radius = 1;</b>
+<b class="nc">&nbsp;                    for(int x = -radius; x &lt;= radius; x++){</b>
+<b class="nc">&nbsp;                        for(int y = -radius; y &lt;= radius; y++){</b>
+<b class="nc">&nbsp;                            Tile other = tiles.get(x + tile.x, y + tile.y);</b>
+&nbsp;                            //skip solids / other vents / arkycite / slag
+<b class="nc">&nbsp;                            if(other == null || other.block().solid || other.floor().attributes.get(Attribute.steam) != 0 || other.floor() == Blocks.slag || other.floor() == Blocks.arkyciteFloor){</b>
+<b class="nc">&nbsp;                                continue outer;</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    Block
+<b class="nc">&nbsp;                    floor = Blocks.rhyolite,</b>
+<b class="nc">&nbsp;                    secondFloor = Blocks.rhyoliteCrater,</b>
+<b class="nc">&nbsp;                    vent = Blocks.rhyoliteVent;</b>
+&nbsp;
+<b class="nc">&nbsp;                    int xDir = 1;</b>
+&nbsp;                    //set target material depending on what&#39;s encountered
+<b class="nc">&nbsp;                    if(tile.floor() == Blocks.beryllicStone || tile.floor() == Blocks.arkyicStone){</b>
+<b class="nc">&nbsp;                        floor = secondFloor = Blocks.arkyicStone;</b>
+<b class="nc">&nbsp;                        vent = Blocks.arkyicVent;</b>
+<b class="nc">&nbsp;                    }else if(tile.floor() == Blocks.yellowStone || tile.floor() == Blocks.yellowStonePlates || tile.floor() == Blocks.regolith){</b>
+<b class="nc">&nbsp;                        floor = Blocks.yellowStone;</b>
+<b class="nc">&nbsp;                        secondFloor = Blocks.yellowStonePlates;</b>
+<b class="nc">&nbsp;                        vent = Blocks.yellowStoneVent;</b>
+<b class="nc">&nbsp;                    }else if(tile.floor() == Blocks.redStone || tile.floor() == Blocks.denseRedStone){</b>
+<b class="nc">&nbsp;                        floor = Blocks.denseRedStone;</b>
+<b class="nc">&nbsp;                        secondFloor = Blocks.redStone;</b>
+<b class="nc">&nbsp;                        vent = Blocks.redStoneVent;</b>
+<b class="nc">&nbsp;                        xDir = -1;</b>
+<b class="nc">&nbsp;                    }else if(tile.floor() == Blocks.carbonStone){</b>
+<b class="nc">&nbsp;                        floor = secondFloor = Blocks.carbonStone;</b>
+<b class="nc">&nbsp;                        vent = Blocks.carbonVent;</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;                    ventCount ++;</b>
+<b class="nc">&nbsp;                    for(var pos : SteamVent.offsets){</b>
+<b class="nc">&nbsp;                        Tile other = tiles.get(pos.x + tile.x + 1, pos.y + tile.y + 1);</b>
+<b class="nc">&nbsp;                        other.setFloor(vent.asFloor());</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //&quot;circle&quot; for blending
+&nbsp;                    //TODO should it replace akrycite? slag?
+<b class="nc">&nbsp;                    int crad = rand.random(6, 14), crad2 = crad * crad;</b>
+<b class="nc">&nbsp;                    for(int cx = -crad; cx &lt;= crad; cx++){</b>
+<b class="nc">&nbsp;                        for(int cy = -crad; cy &lt;= crad; cy++){</b>
+<b class="nc">&nbsp;                            int rx = cx + tile.x, ry = cy + tile.y;</b>
+&nbsp;                            //skew circle Y
+<b class="nc">&nbsp;                            float rcy = cy + cx*0.9f;</b>
+<b class="nc">&nbsp;                            if(cx*cx + rcy*rcy &lt;= crad2 - noise(rx, ry + rx * 2f * xDir, 2, 0.7f, 8f, crad2 * 1.1f)){</b>
+<b class="nc">&nbsp;                                Tile dest = tiles.get(rx, ry);</b>
+<b class="nc">&nbsp;                                if(dest != null &amp;&amp; dest.floor().attributes.get(Attribute.steam) == 0 &amp;&amp; dest.floor() != Blocks.roughRhyolite &amp;&amp; dest.floor() != Blocks.arkyciteFloor &amp;&amp; dest.floor() != Blocks.slag){</b>
+&nbsp;
+<b class="nc">&nbsp;                                    dest.setFloor(rand.chance(0.08) ? secondFloor.asFloor() : floor.asFloor());</b>
+&nbsp;
+<b class="nc">&nbsp;                                    if(dest.block().isStatic()){</b>
+<b class="nc">&nbsp;                                        dest.setBlock(floor.asFloor().wall);</b>
+&nbsp;                                    }
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(Tile tile : tiles){</b>
+<b class="nc">&nbsp;            if(tile.overlay().needsSurface &amp;&amp; !tile.floor().hasSurface()){</b>
+<b class="nc">&nbsp;                tile.setOverlay(Blocks.air);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        decoration(0.017f);</b>
+&nbsp;
+&nbsp;        //it is very hot
+<b class="nc">&nbsp;        state.rules.env = sector.planet.defaultEnv;</b>
+<b class="nc">&nbsp;        state.rules.placeRangeCheck = true;</b>
+&nbsp;
+&nbsp;        //TODO remove slag and arkycite around core.
+<b class="nc">&nbsp;        Schematics.placeLaunchLoadout(spawnX, spawnY);</b>
+&nbsp;
+&nbsp;        //all sectors are wave sectors
+<b class="nc">&nbsp;        state.rules.waves = false;</b>
+<b class="nc">&nbsp;        state.rules.showSpawns = true;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

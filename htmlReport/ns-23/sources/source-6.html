@@ -1,0 +1,331 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > FilterOption</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps.filters</a>
+</div>
+
+<h1>Coverage Summary for Class: FilterOption (mindustry.maps.filters)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FilterOption</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">FilterOption$BlockOption</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/31)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">FilterOption$SliderOption</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/29)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">FilterOption$ToggleOption</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/78)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps.filters;
+&nbsp;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public abstract class FilterOption{</b>
+<b class="nc">&nbsp;    public static final Boolf&lt;Block&gt; floorsOnly = b -&gt; (b instanceof Floor &amp;&amp; !(b instanceof OverlayFloor)) &amp;&amp; !headless &amp;&amp; Core.atlas.isFound(b.fullIcon);</b>
+<b class="nc">&nbsp;    public static final Boolf&lt;Block&gt; wallsOnly = b -&gt; (!b.synthetic() &amp;&amp; !(b instanceof Floor)) &amp;&amp; !headless &amp;&amp; Core.atlas.isFound(b.fullIcon) &amp;&amp; b.inEditor;</b>
+<b class="nc">&nbsp;    public static final Boolf&lt;Block&gt; floorsOptional = b -&gt; b == Blocks.air || ((b instanceof Floor &amp;&amp; !(b instanceof OverlayFloor)) &amp;&amp; !headless &amp;&amp; Core.atlas.isFound(b.fullIcon));</b>
+<b class="nc">&nbsp;    public static final Boolf&lt;Block&gt; wallsOptional = b -&gt; (b == Blocks.air || ((!b.synthetic() &amp;&amp; !(b instanceof Floor)) &amp;&amp; !headless &amp;&amp; Core.atlas.isFound(b.fullIcon))) &amp;&amp; b.inEditor;</b>
+<b class="nc">&nbsp;    public static final Boolf&lt;Block&gt; wallsOresOptional = b -&gt; b == Blocks.air || (((!b.synthetic() &amp;&amp; !(b instanceof Floor)) || (b instanceof OverlayFloor)) &amp;&amp; !headless &amp;&amp; Core.atlas.isFound(b.fullIcon)) &amp;&amp; b.inEditor;</b>
+<b class="nc">&nbsp;    public static final Boolf&lt;Block&gt; oresOnly = b -&gt; b instanceof OverlayFloor &amp;&amp; !headless &amp;&amp; Core.atlas.isFound(b.fullIcon);</b>
+<b class="nc">&nbsp;    public static final Boolf&lt;Block&gt; oresFloorsOptional = b -&gt; (b instanceof Floor) &amp;&amp; !headless &amp;&amp; Core.atlas.isFound(b.fullIcon);</b>
+<b class="nc">&nbsp;    public static final Boolf&lt;Block&gt; anyOptional = b -&gt; (floorsOnly.get(b) || wallsOnly.get(b) || oresOnly.get(b) || b == Blocks.air) &amp;&amp; b.inEditor;</b>
+&nbsp;
+&nbsp;    public abstract void build(Table table);
+&nbsp;
+<b class="nc">&nbsp;    public Runnable changed = () -&gt; {};</b>
+&nbsp;
+&nbsp;    static class SliderOption extends FilterOption{
+&nbsp;        final String name;
+&nbsp;        final Floatp getter;
+&nbsp;        final Floatc setter;
+&nbsp;        final float min, max, step;
+&nbsp;
+<b class="nc">&nbsp;        boolean display = true;</b>
+&nbsp;
+&nbsp;        SliderOption(String name, Floatp getter, Floatc setter, float min, float max){
+<b class="nc">&nbsp;            this(name, getter, setter, min, max, (max - min) / 200);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        SliderOption(String name, Floatp getter, Floatc setter, float min, float max, float step){</b>
+<b class="nc">&nbsp;            this.name = name;</b>
+<b class="nc">&nbsp;            this.getter = getter;</b>
+<b class="nc">&nbsp;            this.setter = setter;</b>
+<b class="nc">&nbsp;            this.min = min;</b>
+<b class="nc">&nbsp;            this.max = max;</b>
+<b class="nc">&nbsp;            this.step = step;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public SliderOption display(){
+<b class="nc">&nbsp;            display = true;</b>
+<b class="nc">&nbsp;            return this;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void build(Table table){
+&nbsp;            Element base;
+<b class="nc">&nbsp;            if(!display){</b>
+<b class="nc">&nbsp;                Label l = new Label(&quot;@filter.option.&quot; + name);</b>
+<b class="nc">&nbsp;                l.setWrap(true);</b>
+<b class="nc">&nbsp;                l.setStyle(Styles.outlineLabel);</b>
+<b class="nc">&nbsp;                base = l;</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                Table t = new Table().marginLeft(11f).marginRight(11f);</b>
+<b class="nc">&nbsp;                base = t;</b>
+<b class="nc">&nbsp;                t.add(&quot;@filter.option.&quot; + name).growX().wrap().style(Styles.outlineLabel);</b>
+<b class="nc">&nbsp;                t.label(() -&gt; Strings.autoFixed(getter.get(), 2)).style(Styles.outlineLabel).right().labelAlign(Align.right).padLeft(6);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            base.touchable = Touchable.disabled;</b>
+&nbsp;
+<b class="nc">&nbsp;            Slider slider = new Slider(min, max, step, false);</b>
+<b class="nc">&nbsp;            slider.moved(setter);</b>
+<b class="nc">&nbsp;            slider.setValue(getter.get());</b>
+<b class="nc">&nbsp;            if(updateEditorOnChange){</b>
+<b class="nc">&nbsp;                slider.changed(changed);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                slider.released(changed);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            table.stack(slider, base).colspan(2).pad(3).growX().row();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static class BlockOption extends FilterOption{
+&nbsp;        final String name;
+&nbsp;        final Prov&lt;Block&gt; supplier;
+&nbsp;        final Cons&lt;Block&gt; consumer;
+&nbsp;        final Boolf&lt;Block&gt; filter;
+&nbsp;
+<b class="nc">&nbsp;        BlockOption(String name, Prov&lt;Block&gt; supplier, Cons&lt;Block&gt; consumer, Boolf&lt;Block&gt; filter){</b>
+<b class="nc">&nbsp;            this.name = name;</b>
+<b class="nc">&nbsp;            this.supplier = supplier;</b>
+<b class="nc">&nbsp;            this.consumer = consumer;</b>
+<b class="nc">&nbsp;            this.filter = filter;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void build(Table table){
+<b class="nc">&nbsp;            Button button = table.button(b -&gt; b.image(supplier.get().uiIcon).update(i -&gt; ((TextureRegionDrawable)i.getDrawable())</b>
+<b class="nc">&nbsp;                .setRegion(supplier.get() == Blocks.air ? Icon.none.getRegion() : supplier.get().uiIcon)).size(iconSmall), () -&gt; {</b>
+<b class="nc">&nbsp;                BaseDialog dialog = new BaseDialog(&quot;@filter.option.&quot; + name);</b>
+<b class="nc">&nbsp;                dialog.cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;                    int i = 0;</b>
+<b class="nc">&nbsp;                    for(Block block : content.blocks()){</b>
+<b class="nc">&nbsp;                        if(!filter.get(block)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.image(block == Blocks.air ? Icon.none.getRegion() : block.uiIcon).size(iconMed).pad(3).tooltip(block == Blocks.air ? &quot;@none&quot; : block.localizedName).get().clicked(() -&gt; {</b>
+<b class="nc">&nbsp;                            consumer.get(block);</b>
+<b class="nc">&nbsp;                            dialog.hide();</b>
+<b class="nc">&nbsp;                            changed.run();</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                        if(++i % 10 == 0) t.row();</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                    dialog.setFillParent(i &gt; 100);</b>
+<b class="nc">&nbsp;                }).scrollX(false);</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;                dialog.addCloseButton();</b>
+<b class="nc">&nbsp;                dialog.show();</b>
+<b class="nc">&nbsp;            }).pad(4).margin(12f).get();</b>
+&nbsp;
+<b class="nc">&nbsp;            button.clicked(KeyCode.mouseMiddle, () -&gt; {</b>
+<b class="nc">&nbsp;                Core.app.setClipboardText(supplier.get().name);</b>
+<b class="nc">&nbsp;                ui.showInfoFade(&quot;@copied&quot;);</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            button.clicked(KeyCode.mouseRight, () -&gt; {</b>
+<b class="nc">&nbsp;                if(content.block(Core.app.getClipboardText()) != null &amp;&amp; filter.get(content.block(Core.app.getClipboardText()))){</b>
+<b class="nc">&nbsp;                    consumer.get(content.block(Core.app.getClipboardText()));</b>
+<b class="nc">&nbsp;                    changed.run();</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            table.add(&quot;@filter.option.&quot; + name);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static class ToggleOption extends FilterOption{
+&nbsp;        final String name;
+&nbsp;        final Boolp getter;
+&nbsp;        final Boolc setter;
+&nbsp;
+<b class="nc">&nbsp;        ToggleOption(String name, Boolp getter, Boolc setter){</b>
+<b class="nc">&nbsp;            this.name = name;</b>
+<b class="nc">&nbsp;            this.getter = getter;</b>
+<b class="nc">&nbsp;            this.setter = setter;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void build(Table table){
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            CheckBox check = table.check(&quot;@filter.option.&quot; + name, setter).growX().padBottom(5).padTop(5).center().get();</b>
+<b class="nc">&nbsp;            check.setChecked(getter.get());</b>
+<b class="nc">&nbsp;            check.changed(changed);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

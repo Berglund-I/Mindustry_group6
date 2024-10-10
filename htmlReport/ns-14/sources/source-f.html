@@ -1,0 +1,209 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LiquidBulletType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.bullet</a>
+</div>
+
+<h1>Coverage Summary for Class: LiquidBulletType (mindustry.entities.bullet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LiquidBulletType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.8%
+  </span>
+  <span class="absValue">
+    (21/48)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.bullet;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class LiquidBulletType extends BulletType{
+&nbsp;    public Liquid liquid;
+<b class="fc">&nbsp;    public float puddleSize = 6f;</b>
+<b class="fc">&nbsp;    public float orbSize = 3f;</b>
+<b class="fc">&nbsp;    public float boilTime = 5f;</b>
+&nbsp;
+&nbsp;    public LiquidBulletType(@Nullable Liquid liquid){
+<b class="fc">&nbsp;        super(3.5f, 0);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(liquid != null){</b>
+<b class="fc">&nbsp;            this.liquid = liquid;</b>
+<b class="fc">&nbsp;            this.status = liquid.effect;</b>
+<b class="fc">&nbsp;            hitColor = liquid.color;</b>
+<b class="fc">&nbsp;            lightColor = liquid.lightColor;</b>
+<b class="fc">&nbsp;            lightOpacity = liquid.lightColor.a;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        ammoMultiplier = 1f;</b>
+<b class="fc">&nbsp;        lifetime = 34f;</b>
+<b class="fc">&nbsp;        statusDuration = 60f * 2f;</b>
+<b class="fc">&nbsp;        despawnEffect = Fx.none;</b>
+<b class="fc">&nbsp;        hitEffect = Fx.hitLiquid;</b>
+<b class="fc">&nbsp;        smokeEffect = Fx.none;</b>
+<b class="fc">&nbsp;        shootEffect = Fx.none;</b>
+<b class="fc">&nbsp;        drag = 0.001f;</b>
+<b class="fc">&nbsp;        knockback = 0.55f;</b>
+<b class="fc">&nbsp;        displayAmmoMultiplier = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public LiquidBulletType(){
+<b class="fc">&nbsp;        this(null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(Bullet b){
+<b class="nc">&nbsp;        super.update(b);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(liquid.willBoil() &amp;&amp; b.time &gt;= Mathf.randomSeed(b.id, boilTime)){</b>
+<b class="nc">&nbsp;            Fx.vaporSmall.at(b.x, b.y, liquid.gasColor);</b>
+<b class="nc">&nbsp;            b.remove();</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(liquid.canExtinguish()){</b>
+<b class="nc">&nbsp;            Tile tile = world.tileWorld(b.x, b.y);</b>
+<b class="nc">&nbsp;            if(tile != null &amp;&amp; Fires.has(tile.x, tile.y)){</b>
+<b class="nc">&nbsp;                Fires.extinguish(tile, 100f);</b>
+<b class="nc">&nbsp;                b.remove();</b>
+<b class="nc">&nbsp;                hit(b);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Bullet b){
+<b class="nc">&nbsp;        super.draw(b);</b>
+<b class="nc">&nbsp;        if(liquid.willBoil()){</b>
+<b class="nc">&nbsp;            Draw.color(liquid.color, Tmp.c3.set(liquid.gasColor).a(0.4f), b.time / Mathf.randomSeed(b.id, boilTime));</b>
+<b class="nc">&nbsp;            Fill.circle(b.x, b.y, orbSize * (b.fin() * 1.1f + 1f));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Draw.color(liquid.color, Color.white, b.fout() / 100f);</b>
+<b class="nc">&nbsp;            Fill.circle(b.x, b.y, orbSize);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void despawned(Bullet b){
+<b class="nc">&nbsp;        super.despawned(b);</b>
+&nbsp;
+&nbsp;        //don&#39;t create liquids when the projectile despawns
+<b class="nc">&nbsp;        if(!liquid.willBoil()){</b>
+<b class="nc">&nbsp;            hitEffect.at(b.x, b.y, b.rotation(), liquid.color);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void hit(Bullet b, float hitx, float hity){
+<b class="nc">&nbsp;        hitEffect.at(hitx, hity, liquid.color);</b>
+<b class="nc">&nbsp;        Puddles.deposit(world.tileWorld(hitx, hity), liquid, puddleSize);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(liquid.temperature &lt;= 0.5f &amp;&amp; liquid.flammability &lt; 0.3f){</b>
+<b class="nc">&nbsp;            float intensity = 400f * puddleSize/6f;</b>
+<b class="nc">&nbsp;            Fires.extinguish(world.tileWorld(hitx, hity), intensity);</b>
+<b class="nc">&nbsp;            for(Point2 p : Geometry.d4){</b>
+<b class="nc">&nbsp;                Fires.extinguish(world.tileWorld(hitx + p.x * tilesize, hity + p.y * tilesize), intensity);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

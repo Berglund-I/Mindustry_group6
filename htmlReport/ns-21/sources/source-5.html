@@ -1,0 +1,164 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > GlobalVarsDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: GlobalVarsDialog (mindustry.logic)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GlobalVarsDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.logic;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class GlobalVarsDialog extends BaseDialog{
+&nbsp;
+&nbsp;    public GlobalVarsDialog(){
+<b class="nc">&nbsp;        super(&quot;@logic.globals&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseButton();</b>
+<b class="nc">&nbsp;        shown(this::setup);</b>
+<b class="nc">&nbsp;        onResize(this::setup);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void setup(){
+<b class="nc">&nbsp;        float prefWidth = Math.min(Core.graphics.getWidth() * 0.9f / Scl.scl(1f) - 240f, 600f);</b>
+<b class="nc">&nbsp;        cont.clearChildren();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;            t.margin(10f).marginRight(16f);</b>
+<b class="nc">&nbsp;            t.defaults().fillX().fillY();</b>
+<b class="nc">&nbsp;            for(var entry : logicVars.getEntries()){</b>
+<b class="nc">&nbsp;                if(entry.name.startsWith(&quot;section&quot;)){</b>
+<b class="nc">&nbsp;                    Color color = Pal.accent;</b>
+<b class="nc">&nbsp;                    t.add(&quot;@lglobal.&quot; + entry.name).fillX().center().labelAlign(Align.center).colspan(4).color(color).padTop(4f).padBottom(2f).row();</b>
+<b class="nc">&nbsp;                    t.image(Tex.whiteui).height(4f).color(color).colspan(4).padBottom(8f).row();</b>
+<b class="nc">&nbsp;                }else{</b>
+<b class="nc">&nbsp;                    Color varColor = Pal.gray;</b>
+<b class="nc">&nbsp;                    float stub = 8f, mul = 0.5f, pad = 4;</b>
+&nbsp;
+<b class="nc">&nbsp;                    String desc = entry.description;</b>
+<b class="nc">&nbsp;                    if(desc == null || desc.isEmpty()){</b>
+<b class="nc">&nbsp;                        desc = Core.bundle.get(&quot;lglobal.&quot; + entry.name, &quot;&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    String fdesc = desc;</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.add(new Image(Tex.whiteui, varColor.cpy().mul(mul))).width(stub);</b>
+<b class="nc">&nbsp;                    t.stack(new Image(Tex.whiteui, varColor), new Label(&quot; &quot; + entry.name + &quot; &quot;, Styles.outlineLabel)).padRight(pad);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.add(new Image(Tex.whiteui, Pal.gray.cpy().mul(mul))).width(stub);</b>
+<b class="nc">&nbsp;                    t.table(Tex.pane, out -&gt; out.add(fdesc).style(Styles.outlineLabel).width(prefWidth).padLeft(2).padRight(2).wrap()).padRight(pad);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.add().fillX().colspan(4).height(4).row();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }).grow();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,2230 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > InputHandler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.input</a>
+</div>
+
+<h1>Coverage Summary for Class: InputHandler (mindustry.input)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InputHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.3%
+  </span>
+  <span class="absValue">
+    (2/154)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.2%
+  </span>
+  <span class="absValue">
+    (12/1004)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">InputHandler$PlaceLine</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    1.3%
+  </span>
+  <span class="absValue">
+    (2/155)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.2%
+  </span>
+  <span class="absValue">
+    (12/1005)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.input;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.input.GestureDetector.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.Placement.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.fragments.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.distribution.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public abstract class InputHandler implements InputProcessor, GestureListener{
+&nbsp;    //not sure where else to put this - maps unique commands based on position to a list of units that will be turned into a unit group
+<b class="fc">&nbsp;    static ObjectMap&lt;Vec2, Seq&lt;Unit&gt;&gt; queuedCommands = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    /** Used for dropping items. */
+<b class="fc">&nbsp;    final static float playerSelectRange = mobile ? 17f : 11f;</b>
+<b class="fc">&nbsp;    final static IntSeq removed = new IntSeq();</b>
+<b class="fc">&nbsp;    final static IntSet intSet = new IntSet();</b>
+&nbsp;    /** Maximum line length. */
+&nbsp;    final static int maxLength = 100;
+<b class="fc">&nbsp;    final static Rect r1 = new Rect(), r2 = new Rect();</b>
+<b class="fc">&nbsp;    final static Seq&lt;Unit&gt; tmpUnits = new Seq&lt;&gt;(false);</b>
+<b class="fc">&nbsp;    final static Binding[] controlGroupBindings = {</b>
+&nbsp;    Binding.block_select_01,
+&nbsp;    Binding.block_select_02,
+&nbsp;    Binding.block_select_03,
+&nbsp;    Binding.block_select_04,
+&nbsp;    Binding.block_select_05,
+&nbsp;    Binding.block_select_06,
+&nbsp;    Binding.block_select_07,
+&nbsp;    Binding.block_select_08,
+&nbsp;    Binding.block_select_09,
+&nbsp;    Binding.block_select_10
+&nbsp;    };
+&nbsp;
+&nbsp;    /** If true, there is a cutscene currently occurring in logic. */
+&nbsp;    public boolean logicCutscene;
+<b class="nc">&nbsp;    public Vec2 logicCamPan = new Vec2();</b>
+<b class="nc">&nbsp;    public float logicCamSpeed = 0.1f;</b>
+<b class="nc">&nbsp;    public float logicCutsceneZoom = -1f;</b>
+&nbsp;
+&nbsp;    /** If any of these functions return true, input is locked. */
+<b class="nc">&nbsp;    public Seq&lt;Boolp&gt; inputLocks = Seq.with(() -&gt; renderer.isCutscene(), () -&gt; logicCutscene);</b>
+<b class="nc">&nbsp;    public Interval controlInterval = new Interval();</b>
+&nbsp;    public @Nullable Block block;
+&nbsp;    public boolean overrideLineRotation;
+&nbsp;    public int rotation;
+&nbsp;    public boolean droppingItem;
+&nbsp;    public float itemDepositCooldown;
+&nbsp;    public Group uiGroup;
+<b class="nc">&nbsp;    public boolean isBuilding = true, buildWasAutoPaused = false, wasShooting = false;</b>
+&nbsp;    public @Nullable UnitType controlledType;
+&nbsp;    public float recentRespawnTimer;
+&nbsp;
+&nbsp;    public @Nullable Schematic lastSchematic;
+&nbsp;    public GestureDetector detector;
+<b class="nc">&nbsp;    public PlaceLine line = new PlaceLine();</b>
+&nbsp;    public BuildPlan resultplan;
+<b class="nc">&nbsp;    public BuildPlan bplan = new BuildPlan();</b>
+<b class="nc">&nbsp;    public Seq&lt;BuildPlan&gt; linePlans = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    public Seq&lt;BuildPlan&gt; selectPlans = new Seq&lt;&gt;(BuildPlan.class);</b>
+&nbsp;
+&nbsp;    //for RTS controls
+<b class="nc">&nbsp;    public Seq&lt;Unit&gt; selectedUnits = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    public Seq&lt;Building&gt; commandBuildings = new Seq&lt;&gt;(false);</b>
+<b class="nc">&nbsp;    public boolean commandMode = false;</b>
+<b class="nc">&nbsp;    public boolean commandRect = false;</b>
+<b class="nc">&nbsp;    public boolean tappedOne = false;</b>
+&nbsp;    public float commandRectX, commandRectY;
+&nbsp;    /** Groups of units saved to different hotkeys */
+<b class="nc">&nbsp;    public IntSeq[] controlGroups = new IntSeq[controlGroupBindings.length];</b>
+&nbsp;
+<b class="nc">&nbsp;    private Seq&lt;BuildPlan&gt; plansOut = new Seq&lt;&gt;(BuildPlan.class);</b>
+<b class="nc">&nbsp;    private QuadTree&lt;BuildPlan&gt; playerPlanTree = new QuadTree&lt;&gt;(new Rect());</b>
+&nbsp;
+&nbsp;    public final BlockInventoryFragment inv;
+&nbsp;    public final BlockConfigFragment config;
+&nbsp;
+<b class="nc">&nbsp;    private WidgetGroup group = new WidgetGroup();</b>
+&nbsp;
+<b class="nc">&nbsp;    private final Eachable&lt;BuildPlan&gt; allPlans = cons -&gt; {</b>
+<b class="nc">&nbsp;        if(!player.dead()){</b>
+<b class="nc">&nbsp;            player.unit().plans().each(cons);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        selectPlans.each(cons);</b>
+<b class="nc">&nbsp;        linePlans.each(cons);</b>
+&nbsp;    };
+&nbsp;
+<b class="nc">&nbsp;    private final Eachable&lt;BuildPlan&gt; allSelectLines = cons -&gt; {</b>
+<b class="nc">&nbsp;        selectPlans.each(cons);</b>
+<b class="nc">&nbsp;        linePlans.each(cons);</b>
+&nbsp;    };
+&nbsp;
+<b class="nc">&nbsp;    public InputHandler(){</b>
+<b class="nc">&nbsp;        group.touchable = Touchable.childrenOnly;</b>
+<b class="nc">&nbsp;        inv = new BlockInventoryFragment();</b>
+<b class="nc">&nbsp;        config = new BlockConfigFragment();</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(UnitDestroyEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.unit != null &amp;&amp; e.unit.isPlayer() &amp;&amp; e.unit.getPlayer().isLocal() &amp;&amp; e.unit.type.weapons.contains(w -&gt; w.bullet.killShooter)){</b>
+<b class="nc">&nbsp;                player.shooting = false;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(WorldLoadEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            playerPlanTree = new QuadTree&lt;&gt;(new Rect(0f, 0f, world.unitWidth(), world.unitHeight()));</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ResetEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            logicCutscene = false;</b>
+<b class="nc">&nbsp;            itemDepositCooldown = 0f;</b>
+<b class="nc">&nbsp;            Arrays.fill(controlGroups, null);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    //methods to override
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, unreliable = true)
+&nbsp;    public static void transferItemEffect(Item item, float x, float y, Itemsc to){
+<b class="nc">&nbsp;        if(to == null) return;</b>
+<b class="nc">&nbsp;        createItemTransfer(item, 1, x, y, to, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, unreliable = true)
+&nbsp;    public static void takeItems(Building build, Item item, int amount, Unit to){
+<b class="nc">&nbsp;        if(to == null || build == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        int removed = build.removeStack(item, Math.min(to.maxAccepted(item), amount));</b>
+<b class="nc">&nbsp;        if(removed == 0) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        to.addItem(item, removed);</b>
+<b class="nc">&nbsp;        for(int j = 0; j &lt; Mathf.clamp(removed / 3, 1, 8); j++){</b>
+<b class="nc">&nbsp;            Time.run(j * 3f, () -&gt; transferItemEffect(item, build.x, build.y, to));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, unreliable = true)
+&nbsp;    public static void transferItemToUnit(Item item, float x, float y, Itemsc to){
+<b class="nc">&nbsp;        if(to == null) return;</b>
+<b class="nc">&nbsp;        createItemTransfer(item, 1, x, y, to, () -&gt; to.addItem(item));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, unreliable = true)
+&nbsp;    public static void setItem(Building build, Item item, int amount){
+<b class="nc">&nbsp;        if(build == null || build.items == null) return;</b>
+<b class="nc">&nbsp;        build.items.set(item, amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, unreliable = true)
+&nbsp;    public static void clearItems(Building build){
+<b class="nc">&nbsp;        if(build == null || build.items == null) return;</b>
+<b class="nc">&nbsp;        build.items.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, unreliable = true)
+&nbsp;    public static void transferItemTo(@Nullable Unit unit, Item item, int amount, float x, float y, Building build){
+<b class="nc">&nbsp;        if(build == null || build.items == null || item == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit != null &amp;&amp; unit.item() == item) unit.stack.amount = Math.max(unit.stack.amount - amount, 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; Mathf.clamp(amount / 3, 1, 8); i++){</b>
+<b class="nc">&nbsp;            Time.run(i * 3, () -&gt; createItemTransfer(item, amount, x, y, build, () -&gt; {}));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(amount &gt; 0){</b>
+<b class="nc">&nbsp;            build.handleStack(item, amount, unit);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.both, targets = Loc.both, forward = true, unreliable = true)
+&nbsp;    public static void deletePlans(Player player, int[] positions){
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; !netServer.admins.allowAction(player, ActionType.removePlanned, a -&gt; a.plans = positions)){</b>
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot remove plans.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(player == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        var it = player.team().data().plans.iterator();</b>
+&nbsp;        //O(n^2) search here; no way around it
+&nbsp;        outer:
+<b class="nc">&nbsp;        while(it.hasNext()){</b>
+<b class="nc">&nbsp;            var plan = it.next();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int pos : positions){</b>
+<b class="nc">&nbsp;                if(plan.x == Point2.x(pos) &amp;&amp; plan.y == Point2.y(pos)){</b>
+<b class="nc">&nbsp;                    plan.removed = true;</b>
+<b class="nc">&nbsp;                    it.remove();</b>
+<b class="nc">&nbsp;                    continue outer;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void createItemTransfer(Item item, int amount, float x, float y, Position to, Runnable done){
+<b class="nc">&nbsp;        Fx.itemTransfer.at(x, y, amount, item.color, to);</b>
+<b class="nc">&nbsp;        if(done != null){</b>
+<b class="nc">&nbsp;            Time.run(Fx.itemTransfer.lifetime, done);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, targets = Loc.both, forward = true)
+&nbsp;    public static void commandUnits(Player player, int[] unitIds, @Nullable Building buildTarget, @Nullable Unit unitTarget, @Nullable Vec2 posTarget, boolean queueCommand, boolean finalBatch){
+<b class="nc">&nbsp;        if(player == null || unitIds == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; !netServer.admins.allowAction(player, ActionType.commandUnits, event -&gt; {</b>
+<b class="nc">&nbsp;            event.unitIDs = unitIds;</b>
+&nbsp;        })){
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot command units.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Teamc teamTarget = buildTarget == null ? unitTarget : buildTarget;</b>
+<b class="nc">&nbsp;        Vec2 targetAsVec = new Vec2().set(teamTarget != null ? teamTarget : posTarget);</b>
+<b class="nc">&nbsp;        Seq&lt;Unit&gt; toAdd = queuedCommands.get(targetAsVec, Seq::new);</b>
+<b class="nc">&nbsp;        boolean anyCommandedTarget = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int id : unitIds){</b>
+<b class="nc">&nbsp;            Unit unit = Groups.unit.getByID(id);</b>
+<b class="nc">&nbsp;            if(unit != null &amp;&amp; unit.team == player.team() &amp;&amp; unit.controller() instanceof CommandAI ai){</b>
+&nbsp;
+&nbsp;                //implicitly order it to move
+<b class="nc">&nbsp;                if(ai.command == null || ai.command.switchToMove){</b>
+<b class="nc">&nbsp;                    ai.command(UnitCommand.moveCommand);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(teamTarget != null &amp;&amp; teamTarget.team() != player.team() &amp;&amp;</b>
+<b class="nc">&nbsp;                !(teamTarget instanceof Unit u &amp;&amp; !unit.canTarget(u)) &amp;&amp; !(teamTarget instanceof Building &amp;&amp; !unit.type.targetGround)){</b>
+&nbsp;
+<b class="nc">&nbsp;                    anyCommandedTarget = true;</b>
+<b class="nc">&nbsp;                    if(queueCommand){</b>
+<b class="nc">&nbsp;                        ai.commandQueue(teamTarget);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        ai.commandQueue.clear();</b>
+<b class="nc">&nbsp;                        ai.commandTarget(teamTarget);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }else if(posTarget != null){</b>
+<b class="nc">&nbsp;                    if(queueCommand){</b>
+<b class="nc">&nbsp;                        ai.commandQueue(posTarget);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        ai.commandQueue.clear();</b>
+<b class="nc">&nbsp;                        ai.commandPosition(posTarget);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                unit.lastCommanded = player.coloredName();</b>
+<b class="nc">&nbsp;                if(ai.commandQueue.size &lt;= 0){</b>
+<b class="nc">&nbsp;                    ai.group = null;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //remove when other player command
+<b class="nc">&nbsp;                if(!headless &amp;&amp; player != Vars.player){</b>
+<b class="nc">&nbsp;                    control.input.selectedUnits.remove(unit);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                toAdd.add(unit);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //in the &quot;final batch&quot; of commands, assign formations based on EVERYTHING that was commanded.
+<b class="nc">&nbsp;        if(finalBatch){</b>
+&nbsp;            //each physics layer has its own group
+<b class="nc">&nbsp;            UnitGroup[] groups = new UnitGroup[PhysicsProcess.layers];</b>
+<b class="nc">&nbsp;            var units = queuedCommands.remove(targetAsVec);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Unit unit : units){</b>
+<b class="nc">&nbsp;                if(unit.controller() instanceof CommandAI ai){</b>
+&nbsp;                    //only assign a group when this is not a queued command
+<b class="nc">&nbsp;                    if(ai.commandQueue.size == 0 &amp;&amp; unitIds.length &gt; 1){</b>
+<b class="nc">&nbsp;                        int layer = unit.collisionLayer();</b>
+<b class="nc">&nbsp;                        if(groups[layer] == null){</b>
+<b class="nc">&nbsp;                            groups[layer] = new UnitGroup();</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        groups[layer].units.add(unit);</b>
+<b class="nc">&nbsp;                        ai.group = groups[layer];</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; groups.length; i ++){</b>
+<b class="nc">&nbsp;                var group = groups[i];</b>
+<b class="nc">&nbsp;                if(group != null &amp;&amp; group.units.size &gt; 0){</b>
+<b class="nc">&nbsp;                    group.calculateFormation(targetAsVec, i);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(unitIds.length &gt; 0 &amp;&amp; player == Vars.player &amp;&amp; !state.isPaused()){</b>
+<b class="nc">&nbsp;            if(anyCommandedTarget){</b>
+<b class="nc">&nbsp;                Fx.attackCommand.at(teamTarget);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Fx.moveCommand.at(posTarget);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, targets = Loc.both, forward = true)
+&nbsp;    public static void setUnitCommand(Player player, int[] unitIds, UnitCommand command){
+<b class="nc">&nbsp;        if(player == null || unitIds == null || command == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; !netServer.admins.allowAction(player, ActionType.commandUnits, event -&gt; {</b>
+<b class="nc">&nbsp;            event.unitIDs = unitIds;</b>
+&nbsp;        })){
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot command units.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(int id : unitIds){</b>
+<b class="nc">&nbsp;            Unit unit = Groups.unit.getByID(id);</b>
+<b class="nc">&nbsp;            if(unit != null &amp;&amp; unit.team == player.team() &amp;&amp; unit.controller() instanceof CommandAI ai){</b>
+<b class="nc">&nbsp;                boolean reset = command.resetTarget || ai.currentCommand().resetTarget;</b>
+<b class="nc">&nbsp;                ai.command(command);</b>
+<b class="nc">&nbsp;                if(reset){</b>
+<b class="nc">&nbsp;                    ai.targetPos = null;</b>
+<b class="nc">&nbsp;                    ai.attackTarget = null;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                unit.lastCommanded = player.coloredName();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, targets = Loc.both, forward = true)
+&nbsp;    public static void setUnitStance(Player player, int[] unitIds, UnitStance stance){
+<b class="nc">&nbsp;        if(player == null || unitIds == null || stance == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; !netServer.admins.allowAction(player, ActionType.commandUnits, event -&gt; {</b>
+<b class="nc">&nbsp;            event.unitIDs = unitIds;</b>
+&nbsp;        })){
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot command units.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(int id : unitIds){</b>
+<b class="nc">&nbsp;            Unit unit = Groups.unit.getByID(id);</b>
+<b class="nc">&nbsp;            if(unit != null &amp;&amp; unit.team == player.team() &amp;&amp; unit.controller() instanceof CommandAI ai){</b>
+<b class="nc">&nbsp;                if(stance == UnitStance.stop){ //not a real stance, just cancels orders</b>
+<b class="nc">&nbsp;                    ai.clearCommands();</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    ai.stance = stance;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                unit.lastCommanded = player.coloredName();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, targets = Loc.both, forward = true)
+&nbsp;    public static void commandBuilding(Player player, int[] buildings, Vec2 target){
+<b class="nc">&nbsp;        if(player == null || target == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; !netServer.admins.allowAction(player, ActionType.commandBuilding, event -&gt; {</b>
+<b class="nc">&nbsp;            event.buildingPositions = buildings;</b>
+&nbsp;        })){
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot command buildings.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(int pos : buildings){</b>
+<b class="nc">&nbsp;            var build = world.build(pos);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(build == null || build.team() != player.team() || !build.block.commandable) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            build.onCommand(target);</b>
+<b class="nc">&nbsp;            build.updateLastAccess(player);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!state.isPaused() &amp;&amp; player == Vars.player){</b>
+<b class="nc">&nbsp;                Fx.moveCommand.at(target);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Events.fire(new BuildingCommandEvent(player, build, target));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, targets = Loc.both, forward = true)
+&nbsp;    public static void requestItem(Player player, Building build, Item item, int amount){
+<b class="nc">&nbsp;        if(player == null || build == null || !build.interactable(player.team()) || !player.within(build, itemTransferRange) || player.dead() || amount &lt;= 0) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; (!Units.canInteract(player, build) ||</b>
+<b class="nc">&nbsp;        !netServer.admins.allowAction(player, ActionType.withdrawItem, build.tile(), action -&gt; {</b>
+<b class="nc">&nbsp;            action.item = item;</b>
+<b class="nc">&nbsp;            action.itemAmount = amount;</b>
+&nbsp;        }))){
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot request items.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Call.takeItems(build, item, Math.min(player.unit().maxAccepted(item), amount), player.unit());</b>
+<b class="nc">&nbsp;        Events.fire(new WithdrawEvent(build, player, item, amount));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, forward = true, called = Loc.server)
+&nbsp;    public static void transferInventory(Player player, Building build){
+<b class="nc">&nbsp;        if(player == null || build == null || !player.within(build, itemTransferRange) || build.items == null || player.dead() || (state.rules.onlyDepositCore &amp;&amp; !(build instanceof CoreBuild))) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; (player.unit().stack.amount &lt;= 0 || !Units.canInteract(player, build) ||</b>
+&nbsp;        //to avoid rejecting deposit packets that happen to overlap due to packet speed differences, the actual cap is double the cooldown with 2 deposits.
+<b class="nc">&nbsp;        (!player.isLocal() &amp;&amp; !player.itemDepositRate.allow((long)(state.rules.itemDepositCooldown * 1000 * 2), 2)) ||</b>
+&nbsp;
+<b class="nc">&nbsp;        !netServer.admins.allowAction(player, ActionType.depositItem, build.tile, action -&gt; {</b>
+<b class="nc">&nbsp;            action.itemAmount = player.unit().stack.amount;</b>
+<b class="nc">&nbsp;            action.item = player.unit().item();</b>
+&nbsp;        }))){
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot transfer an item.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var unit = player.unit();</b>
+<b class="nc">&nbsp;        Item item = unit.item();</b>
+<b class="nc">&nbsp;        int accepted = build.acceptStack(item, unit.stack.amount, unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        Call.transferItemTo(unit, item, accepted, unit.x, unit.y, build);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(new DepositEvent(build, player, item, accepted));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.one)
+&nbsp;    public static void removeQueueBlock(int x, int y, boolean breaking){
+<b class="nc">&nbsp;        player.unit().removeBuild(x, y, breaking);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, called = Loc.server)
+&nbsp;    public static void requestUnitPayload(Player player, Unit target){
+<b class="nc">&nbsp;        if(player == null || !(player.unit() instanceof Payloadc pay)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Unit unit = player.unit();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(target.isAI() &amp;&amp; target.isGrounded() &amp;&amp; pay.canPickup(target)</b>
+<b class="nc">&nbsp;        &amp;&amp; target.within(unit, unit.type.hitSize * 2f + target.type.hitSize * 2f)){</b>
+<b class="nc">&nbsp;            Call.pickedUnitPayload(unit, target);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, called = Loc.server)
+&nbsp;    public static void requestBuildPayload(Player player, Building build){
+<b class="nc">&nbsp;        if(player == null || !(player.unit() instanceof Payloadc pay) || build == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Unit unit = player.unit();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!unit.within(build, tilesize * build.block.size * 1.2f + tilesize * 5f)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; !netServer.admins.allowAction(player, ActionType.pickupBlock, build.tile, action -&gt; {</b>
+<b class="nc">&nbsp;            action.unit = unit;</b>
+&nbsp;        })){
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot pick up a block.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.teams.canInteract(unit.team, build.team)){</b>
+&nbsp;            //pick up block&#39;s payload
+<b class="nc">&nbsp;            Payload current = build.getPayload();</b>
+<b class="nc">&nbsp;            if(current != null &amp;&amp; pay.canPickupPayload(current)){</b>
+<b class="nc">&nbsp;                Call.pickedBuildPayload(unit, build, false);</b>
+&nbsp;                //pick up whole building directly
+<b class="nc">&nbsp;            }else if(build.block.buildVisibility != BuildVisibility.hidden &amp;&amp; build.canPickup() &amp;&amp; pay.canPickup(build)){</b>
+<b class="nc">&nbsp;                Call.pickedBuildPayload(unit, build, true);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.server, called = Loc.server)
+&nbsp;    public static void pickedUnitPayload(Unit unit, Unit target){
+<b class="nc">&nbsp;        if(target != null &amp;&amp; unit instanceof Payloadc pay){</b>
+<b class="nc">&nbsp;            pay.pickup(target);</b>
+<b class="nc">&nbsp;        }else if(target != null){</b>
+<b class="nc">&nbsp;            target.remove();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.server, called = Loc.server)
+&nbsp;    public static void pickedBuildPayload(Unit unit, Building build, boolean onGround){
+<b class="nc">&nbsp;        if(build != null &amp;&amp; unit instanceof Payloadc pay){</b>
+<b class="nc">&nbsp;            if(onGround){</b>
+<b class="nc">&nbsp;                if(build.block.buildVisibility != BuildVisibility.hidden &amp;&amp; build.canPickup() &amp;&amp; pay.canPickup(build)){</b>
+<b class="nc">&nbsp;                    pay.pickup(build);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Fx.unitPickup.at(build);</b>
+<b class="nc">&nbsp;                    build.tile.remove();</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="nc">&nbsp;                Payload current = build.getPayload();</b>
+<b class="nc">&nbsp;                if(current != null &amp;&amp; pay.canPickupPayload(current)){</b>
+<b class="nc">&nbsp;                    Payload taken = build.takePayload();</b>
+<b class="nc">&nbsp;                    if(taken != null){</b>
+<b class="nc">&nbsp;                        pay.addPayload(taken);</b>
+<b class="nc">&nbsp;                        Fx.unitPickup.at(build);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;        }else if(build != null &amp;&amp; onGround){</b>
+<b class="nc">&nbsp;            Fx.unitPickup.at(build);</b>
+<b class="nc">&nbsp;            build.tile.remove();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, called = Loc.server)
+&nbsp;    public static void requestDropPayload(Player player, float x, float y){
+<b class="nc">&nbsp;        if(player == null || net.client() || player.dead()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Payloadc pay = (Payloadc)player.unit();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(pay.payloads().isEmpty()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; !netServer.admins.allowAction(player, ActionType.dropPayload, player.unit().tileOn(), action -&gt; {</b>
+<b class="nc">&nbsp;            action.payload = pay.payloads().peek();</b>
+&nbsp;        })){
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot drop a payload.&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //apply margin of error
+<b class="nc">&nbsp;        Tmp.v1.set(x, y).sub(pay).limit(tilesize * 4f).add(pay);</b>
+<b class="nc">&nbsp;        float cx = Tmp.v1.x, cy = Tmp.v1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;        Call.payloadDropped(player.unit(), cx, cy);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, targets = Loc.server)
+&nbsp;    public static void payloadDropped(Unit unit, float x, float y){
+<b class="nc">&nbsp;        if(unit instanceof Payloadc pay){</b>
+<b class="nc">&nbsp;            float prevx = pay.x(), prevy = pay.y();</b>
+<b class="nc">&nbsp;            pay.set(x, y);</b>
+<b class="nc">&nbsp;            pay.dropLastPayload();</b>
+<b class="nc">&nbsp;            pay.set(prevx, prevy);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void unitEnteredPayload(Unit unit, Building build){
+<b class="nc">&nbsp;        if(unit == null || build == null || unit.team != build.team) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        unit.remove();</b>
+&nbsp;
+&nbsp;        //reset the enter command
+<b class="nc">&nbsp;        if(unit.controller() instanceof CommandAI ai &amp;&amp; ai.command == UnitCommand.enterPayloadCommand){</b>
+<b class="nc">&nbsp;            ai.clearCommands();</b>
+<b class="nc">&nbsp;            ai.command = UnitCommand.moveCommand;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //clear removed state of unit so it can be synced
+<b class="nc">&nbsp;        if(Vars.net.client()){</b>
+<b class="nc">&nbsp;            Vars.netClient.clearRemovedEntity(unit.id);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        UnitPayload unitPay = new UnitPayload(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(build.acceptPayload(build, unitPay)){</b>
+<b class="nc">&nbsp;            Fx.unitDrop.at(build);</b>
+<b class="nc">&nbsp;            build.handlePayload(build, unitPay);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.client, called = Loc.server)
+&nbsp;    public static void dropItem(Player player, float angle){
+<b class="nc">&nbsp;        if(player == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; player.unit().stack.amount &lt;= 0){</b>
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot drop an item.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var unit = player.unit();</b>
+<b class="nc">&nbsp;        Fx.dropItem.at(unit.x, unit.y, angle, Color.white, unit.item());</b>
+<b class="nc">&nbsp;        unit.clearItem();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, called = Loc.server, forward = true, unreliable = true)
+&nbsp;    public static void rotateBlock(@Nullable Player player, Building build, boolean direction){
+<b class="nc">&nbsp;        if(build == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; (!Units.canInteract(player, build) ||</b>
+<b class="nc">&nbsp;        !netServer.admins.allowAction(player, ActionType.rotate, build.tile(), action -&gt; action.rotation = Mathf.mod(build.rotation + Mathf.sign(direction), 4)))){</b>
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot rotate a block.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(player != null) build.updateLastAccess(player);</b>
+<b class="nc">&nbsp;        int previous = build.rotation;</b>
+<b class="nc">&nbsp;        build.rotation = Mathf.mod(build.rotation + Mathf.sign(direction), 4);</b>
+<b class="nc">&nbsp;        build.updateProximity();</b>
+<b class="nc">&nbsp;        build.noSleep();</b>
+<b class="nc">&nbsp;        Fx.rotateBlock.at(build.x, build.y, build.block.size);</b>
+<b class="nc">&nbsp;        Events.fire(new BuildRotateEvent(build, player == null ? null : player.unit(), previous));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, called = Loc.both, forward = true)
+&nbsp;    public static void tileConfig(@Nullable Player player, Building build, @Nullable Object value){
+<b class="fc">&nbsp;        if(build == null &amp;&amp; net.server()) throw new ValidateException(player, &quot;building is null&quot;);</b>
+<b class="fc">&nbsp;        if(build == null) return;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(net.server() &amp;&amp; (!Units.canInteract(player, build) ||</b>
+<b class="nc">&nbsp;        !netServer.admins.allowAction(player, ActionType.configure, build.tile, action -&gt; action.config = value))){</b>
+&nbsp;
+<b class="nc">&nbsp;            if(player.con != null){</b>
+<b class="nc">&nbsp;                var packet = new TileConfigCallPacket(); //undo the config on the client</b>
+<b class="nc">&nbsp;                packet.player = player;</b>
+<b class="nc">&nbsp;                packet.build = build;</b>
+<b class="nc">&nbsp;                packet.value = build.config();</b>
+<b class="nc">&nbsp;                player.con.send(packet, true);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot configure a tile.&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        build.configured(player == null || player.dead() ? null : player.unit(), value);</b>
+<b class="fc">&nbsp;        Events.fire(new ConfigEvent(build, player, value));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //only useful for servers or local mods, and is not replicated across clients
+&nbsp;    //uses unreliable packets due to high frequency
+&nbsp;    @Remote(targets = Loc.both, called = Loc.both, unreliable = true)
+&nbsp;    public static void tileTap(@Nullable Player player, Tile tile){
+<b class="nc">&nbsp;        if(tile == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(new TapEvent(player, tile));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, called = Loc.server, forward = true)
+&nbsp;    public static void buildingControlSelect(Player player, Building build){
+<b class="nc">&nbsp;        if(player == null || build == null || player.dead()) return;</b>
+&nbsp;
+&nbsp;        //make sure player is allowed to control the building
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; !netServer.admins.allowAction(player, ActionType.buildSelect, action -&gt; action.tile = build.tile)){</b>
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot control a building.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(player.team() == build.team &amp;&amp; build.canControlSelect(player.unit())){</b>
+<b class="nc">&nbsp;            var before = player.unit();</b>
+&nbsp;
+<b class="nc">&nbsp;            build.onControlSelect(player.unit());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!before.dead &amp;&amp; before.spawnedByCore &amp;&amp; !before.isPlayer()){</b>
+<b class="nc">&nbsp;                Call.unitDespawn(before);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void unitBuildingControlSelect(Unit unit, Building build){
+<b class="nc">&nbsp;        if(unit == null || unit.dead()) return;</b>
+&nbsp;
+&nbsp;        //client skips checks to prevent ghost units
+<b class="nc">&nbsp;        if(unit.team() == build.team &amp;&amp; (net.client() || build.canControlSelect(unit))){</b>
+<b class="nc">&nbsp;            build.onControlSelect(unit);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, called = Loc.both, forward = true)
+&nbsp;    public static void unitControl(Player player, @Nullable Unit unit){
+<b class="nc">&nbsp;        if(player == null) return;</b>
+&nbsp;
+&nbsp;        //make sure player is allowed to control the unit
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; (!state.rules.possessionAllowed || !netServer.admins.allowAction(player, ActionType.control, action -&gt; action.unit = unit))){</b>
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot control a unit.&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //clear player unit when they possess a core
+<b class="nc">&nbsp;        if(unit == null){ //just clear the unit (is this used?)</b>
+<b class="nc">&nbsp;            player.clearUnit();</b>
+&nbsp;            //make sure it&#39;s AI controlled, so players can&#39;t overwrite each other
+<b class="nc">&nbsp;        }else if(unit.isAI() &amp;&amp; unit.team == player.team() &amp;&amp; !unit.dead &amp;&amp; unit.type.playerControllable){</b>
+<b class="nc">&nbsp;            if(net.client() &amp;&amp; player.isLocal()){</b>
+<b class="nc">&nbsp;                player.justSwitchFrom = player.unit();</b>
+<b class="nc">&nbsp;                player.justSwitchTo = unit;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //TODO range check for docking?
+<b class="nc">&nbsp;            var before = player.unit();</b>
+&nbsp;
+<b class="nc">&nbsp;            player.unit(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(before != null){</b>
+<b class="nc">&nbsp;                if(before.spawnedByCore){</b>
+<b class="nc">&nbsp;                    unit.dockedType = before.type;</b>
+<b class="nc">&nbsp;                }else if(before.dockedType != null &amp;&amp; before.dockedType.coreUnitDock){</b>
+&nbsp;                    //direct dock transfer???
+<b class="nc">&nbsp;                    unit.dockedType = before.dockedType;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(before.spawnedByCore &amp;&amp; !before.isPlayer()){</b>
+<b class="nc">&nbsp;                    Call.unitDespawn(before);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Time.run(Fx.unitSpirit.lifetime, () -&gt; Fx.unitControl.at(unit.x, unit.y, 0f, unit));</b>
+<b class="nc">&nbsp;            if(!player.dead()){</b>
+<b class="nc">&nbsp;                Fx.unitSpirit.at(player.x, player.y, 0f, unit);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(net.server()){</b>
+&nbsp;            //reject forwarding the packet if the unit was dead, AI or team
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player attempted to control invalid unit.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(new UnitControlEvent(player, unit));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, called = Loc.server, forward = true)
+&nbsp;    public static void unitClear(Player player){
+<b class="nc">&nbsp;        if(player == null) return;</b>
+&nbsp;
+&nbsp;        //make sure player is allowed to control the building
+<b class="nc">&nbsp;        if(net.server() &amp;&amp; !netServer.admins.allowAction(player, ActionType.respawn, action -&gt; {})){</b>
+<b class="nc">&nbsp;            throw new ValidateException(player, &quot;Player cannot respawn.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!player.dead() &amp;&amp; !player.unit().spawnedByCore){</b>
+<b class="nc">&nbsp;            var docked = player.unit().dockedType;</b>
+&nbsp;
+&nbsp;            //get best core unit type as approximation
+<b class="nc">&nbsp;            if(docked == null){</b>
+<b class="nc">&nbsp;                var closest = player.bestCore();</b>
+<b class="nc">&nbsp;                if(closest != null){</b>
+<b class="nc">&nbsp;                    docked = ((CoreBlock)closest.block).unitType;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //respawn if necessary
+<b class="nc">&nbsp;            if(docked != null &amp;&amp; docked.coreUnitDock){</b>
+&nbsp;                //TODO animation, etc
+<b class="nc">&nbsp;                Fx.spawn.at(player);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!net.client()){</b>
+<b class="nc">&nbsp;                    Unit unit = docked.create(player.team());</b>
+<b class="nc">&nbsp;                    unit.set(player.unit());</b>
+&nbsp;                    //translate backwards so it doesn&#39;t spawn stuck in the unit
+<b class="nc">&nbsp;                    if(player.unit().isFlying() &amp;&amp; unit.type.flying){</b>
+<b class="nc">&nbsp;                        Tmp.v1.trns(player.unit().rotation + 180f, player.unit().hitSize / 2f + unit.hitSize / 2f);</b>
+<b class="nc">&nbsp;                        unit.x += Tmp.v1.x;</b>
+<b class="nc">&nbsp;                        unit.y += Tmp.v1.y;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    unit.rotation(player.unit().rotation);</b>
+&nbsp;                    //unit.impulse(0f, -3f);
+&nbsp;                    //TODO should there be an impulse?
+<b class="nc">&nbsp;                    unit.controller(player);</b>
+<b class="nc">&nbsp;                    unit.spawnedByCore(true);</b>
+<b class="nc">&nbsp;                    unit.add();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //skip standard respawn code
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;        //should only get to this code if docking failed or this isn&#39;t a docking unit
+&nbsp;
+&nbsp;        //problem: this gets called on both ends. it shouldn&#39;t be.
+<b class="nc">&nbsp;        Fx.spawn.at(player);</b>
+<b class="nc">&nbsp;        player.clearUnit();</b>
+<b class="nc">&nbsp;        player.checkSpawn();</b>
+<b class="nc">&nbsp;        player.deathTimer = Player.deathDelay + 1f; //for instant respawn</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds an input lock; if this function returns true, input is locked. Used for mod &#39;cutscenes&#39; or custom camera panning. */
+&nbsp;    public void addLock(Boolp lock){
+<b class="nc">&nbsp;        inputLocks.add(lock);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether most input is locked, for &#39;cutscenes&#39; */
+&nbsp;    public boolean locked(){
+<b class="nc">&nbsp;        return inputLocks.contains(Boolp::get);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Eachable&lt;BuildPlan&gt; allPlans(){
+<b class="nc">&nbsp;        return allPlans;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isUsingSchematic(){
+<b class="nc">&nbsp;        return !selectPlans.isEmpty();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        if(logicCutscene &amp;&amp; !renderer.isCutscene()){</b>
+<b class="nc">&nbsp;            Core.camera.position.lerpDelta(logicCamPan, logicCamSpeed);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            logicCutsceneZoom = -1f;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        itemDepositCooldown -= Time.delta / 60f;</b>
+&nbsp;
+<b class="nc">&nbsp;        commandBuildings.removeAll(b -&gt; !b.isValid());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!commandMode){</b>
+<b class="nc">&nbsp;            commandRect = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        playerPlanTree.clear();</b>
+<b class="nc">&nbsp;        if(!player.dead()){</b>
+<b class="nc">&nbsp;            player.unit().plans.each(playerPlanTree::insert);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        player.typing = ui.chatfrag.shown();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(player.dead()){</b>
+<b class="nc">&nbsp;            droppingItem = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(player.isBuilder()){</b>
+<b class="nc">&nbsp;            player.unit().updateBuilding(isBuilding);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!player.dead() &amp;&amp; player.shooting &amp;&amp; !wasShooting &amp;&amp; player.unit().hasWeapons() &amp;&amp; state.rules.unitAmmo &amp;&amp; !player.team().rules().infiniteAmmo &amp;&amp; player.unit().ammo &lt;= 0){</b>
+<b class="nc">&nbsp;            player.unit().type.weapons.first().noAmmoSound.at(player.unit());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //you don&#39;t want selected blocks while locked, looks weird
+<b class="nc">&nbsp;        if(locked()){</b>
+<b class="nc">&nbsp;            block = null;</b>
+&nbsp;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        wasShooting = player.shooting;</b>
+&nbsp;
+&nbsp;        //only reset the controlled type and control a unit after the timer runs out
+&nbsp;        //essentially, this means the client waits for ~1 second after controlling something before trying to control something else automatically
+<b class="nc">&nbsp;        if(!player.dead() &amp;&amp; (recentRespawnTimer -= Time.delta / 70f) &lt;= 0f &amp;&amp; player.justSwitchFrom != player.unit()){</b>
+<b class="nc">&nbsp;            controlledType = player.unit().type;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(controlledType != null &amp;&amp; player.dead() &amp;&amp; controlledType.playerControllable){</b>
+<b class="nc">&nbsp;            Unit unit = Units.closest(player.team(), player.x, player.y, u -&gt; !u.isPlayer() &amp;&amp; u.type == controlledType &amp;&amp; !u.dead);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(unit != null){</b>
+&nbsp;                //only trying controlling once a second to prevent packet spam
+<b class="nc">&nbsp;                if(!net.client() || controlInterval.get(0, 70f)){</b>
+<b class="nc">&nbsp;                    recentRespawnTimer = 1f;</b>
+<b class="nc">&nbsp;                    Call.unitControl(player, unit);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void checkUnit(){
+<b class="nc">&nbsp;        if(controlledType != null &amp;&amp; controlledType.playerControllable){</b>
+<b class="nc">&nbsp;            Unit unit = Units.closest(player.team(), player.x, player.y, u -&gt; !u.isPlayer() &amp;&amp; u.type == controlledType &amp;&amp; !u.dead);</b>
+<b class="nc">&nbsp;            if(unit == null &amp;&amp; controlledType == UnitTypes.block){</b>
+<b class="nc">&nbsp;                unit = world.buildWorld(player.x, player.y) instanceof ControlBlock cont &amp;&amp; cont.canControl() ? cont.unit() : null;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(unit != null){</b>
+<b class="nc">&nbsp;                if(net.client()){</b>
+<b class="nc">&nbsp;                    Call.unitControl(player, unit);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    unit.controller(player);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void tryPickupPayload(){
+<b class="nc">&nbsp;        Unit unit = player.unit();</b>
+<b class="nc">&nbsp;        if(!(unit instanceof Payloadc pay)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Unit target = Units.closest(player.team(), pay.x(), pay.y(), unit.type.hitSize * 2f, u -&gt; u.isAI() &amp;&amp; u.isGrounded() &amp;&amp; pay.canPickup(u) &amp;&amp; u.within(unit, u.hitSize + unit.hitSize));</b>
+<b class="nc">&nbsp;        if(target != null){</b>
+<b class="nc">&nbsp;            Call.requestUnitPayload(player, target);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Building build = world.buildWorld(pay.x(), pay.y());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(build != null &amp;&amp; state.teams.canInteract(unit.team, build.team)){</b>
+<b class="nc">&nbsp;                Call.requestBuildPayload(player, build);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void tryDropPayload(){
+<b class="nc">&nbsp;        Unit unit = player.unit();</b>
+<b class="nc">&nbsp;        if(!(unit instanceof Payloadc)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Call.requestDropPayload(player, player.x, player.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getMouseX(){
+<b class="nc">&nbsp;        return Core.input.mouseX();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getMouseY(){
+<b class="nc">&nbsp;        return Core.input.mouseY();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void buildPlacementUI(Table table){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void buildUI(Group group){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void updateState(){
+<b class="nc">&nbsp;        if(state.isMenu()){</b>
+<b class="nc">&nbsp;            controlledType = null;</b>
+<b class="nc">&nbsp;            logicCutscene = false;</b>
+<b class="nc">&nbsp;            config.forceHide();</b>
+<b class="nc">&nbsp;            commandMode = commandRect = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO when shift is held? ctrl?
+&nbsp;    public boolean multiUnitSelect(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void selectUnitsRect(){
+<b class="nc">&nbsp;        if(commandMode &amp;&amp; commandRect){</b>
+<b class="nc">&nbsp;            if(!tappedOne){</b>
+<b class="nc">&nbsp;                var units = selectedCommandUnits(commandRectX, commandRectY, input.mouseWorldX() - commandRectX, input.mouseWorldY() - commandRectY);</b>
+<b class="nc">&nbsp;                if(multiUnitSelect()){</b>
+&nbsp;                    //tiny brain method of unique addition
+<b class="nc">&nbsp;                    selectedUnits.removeAll(units);</b>
+&nbsp;                }else{
+&nbsp;                    //nothing selected, clear units
+<b class="nc">&nbsp;                    selectedUnits.clear();</b>
+&nbsp;                }
+<b class="nc">&nbsp;                selectedUnits.addAll(units);</b>
+<b class="nc">&nbsp;                Events.fire(Trigger.unitCommandChange);</b>
+<b class="nc">&nbsp;                commandBuildings.clear();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            commandRect = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void selectTypedUnits(){
+<b class="nc">&nbsp;        if(commandMode){</b>
+<b class="nc">&nbsp;            Unit unit = selectedCommandUnit(input.mouseWorldX(), input.mouseWorldY());</b>
+<b class="nc">&nbsp;            if(unit != null){</b>
+<b class="nc">&nbsp;                selectedUnits.clear();</b>
+<b class="nc">&nbsp;                camera.bounds(Tmp.r1);</b>
+<b class="nc">&nbsp;                selectedUnits.addAll(selectedCommandUnits(Tmp.r1.x, Tmp.r1.y, Tmp.r1.width, Tmp.r1.height, u -&gt; u.type == unit.type));</b>
+<b class="nc">&nbsp;                Events.fire(Trigger.unitCommandChange);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void tapCommandUnit(){
+<b class="nc">&nbsp;        if(commandMode){</b>
+&nbsp;
+<b class="nc">&nbsp;            Unit unit = selectedCommandUnit(input.mouseWorldX(), input.mouseWorldY());</b>
+<b class="nc">&nbsp;            Building build = world.buildWorld(input.mouseWorldX(), input.mouseWorldY());</b>
+<b class="nc">&nbsp;            if(unit != null){</b>
+<b class="nc">&nbsp;                if(!selectedUnits.contains(unit)){</b>
+<b class="nc">&nbsp;                    selectedUnits.add(unit);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    selectedUnits.remove(unit);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                commandBuildings.clear();</b>
+&nbsp;            }else{
+&nbsp;                //deselect
+<b class="nc">&nbsp;                selectedUnits.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(build != null &amp;&amp; build.team == player.team() &amp;&amp; build.block.commandable){</b>
+<b class="nc">&nbsp;                    if(commandBuildings.contains(build)){</b>
+<b class="nc">&nbsp;                        commandBuildings.remove(build);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        commandBuildings.add(build);</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                }else{
+<b class="nc">&nbsp;                    commandBuildings.clear();</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            Events.fire(Trigger.unitCommandChange);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void commandTap(float screenX, float screenY){
+<b class="nc">&nbsp;        commandTap(screenX, screenY, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void commandTap(float screenX, float screenY, boolean queue){
+<b class="nc">&nbsp;        if(commandMode){</b>
+&nbsp;            //right click: move to position
+&nbsp;
+&nbsp;            //move to location - TODO right click instead?
+<b class="nc">&nbsp;            Vec2 target = input.mouseWorld(screenX, screenY).cpy();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(selectedUnits.size &gt; 0){</b>
+&nbsp;
+<b class="nc">&nbsp;                Teamc attack = world.buildWorld(target.x, target.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(attack == null || attack.team() == player.team()){</b>
+<b class="nc">&nbsp;                    attack = selectedEnemyUnit(target.x, target.y);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                int[] ids = new int[selectedUnits.size];</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; ids.length; i++){</b>
+<b class="nc">&nbsp;                    ids[i] = selectedUnits.get(i).id;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(attack != null){</b>
+<b class="nc">&nbsp;                    Events.fire(Trigger.unitCommandAttack);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Events.fire(Trigger.unitCommandPosition);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                int maxChunkSize = 200;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(ids.length &gt; maxChunkSize){</b>
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; ids.length; i += maxChunkSize){</b>
+<b class="nc">&nbsp;                        int[] data = Arrays.copyOfRange(ids, i, Math.min(i + maxChunkSize, ids.length));</b>
+<b class="nc">&nbsp;                        Call.commandUnits(player, data, attack instanceof Building b ? b : null, attack instanceof Unit u ? u : null, target, queue, i + maxChunkSize &gt;= ids.length);</b>
+&nbsp;                    }
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Call.commandUnits(player, ids, attack instanceof Building b ? b : null, attack instanceof Unit u ? u : null, target, queue, true);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(commandBuildings.size &gt; 0){</b>
+<b class="nc">&nbsp;                Call.commandBuilding(player, commandBuildings.mapInt(b -&gt; b.pos()).toArray(), target);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawCommand(Unit sel){
+<b class="nc">&nbsp;        Drawf.square(sel.x, sel.y, sel.hitSize / 1.4f + Mathf.absin(4f, 1f), selectedUnits.contains(sel) ? Pal.remove : Pal.accent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawCommanded(){
+<b class="nc">&nbsp;        if(commandMode){</b>
+&nbsp;            //happens sometimes
+<b class="nc">&nbsp;            selectedUnits.removeAll(u -&gt; !u.isCommandable());</b>
+&nbsp;
+&nbsp;            //draw command overlay UI
+<b class="nc">&nbsp;            for(Unit unit : selectedUnits){</b>
+<b class="nc">&nbsp;                CommandAI ai = unit.command();</b>
+<b class="nc">&nbsp;                Position lastPos = ai.attackTarget != null ? ai.attackTarget : ai.targetPos;</b>
+&nbsp;
+&nbsp;                //draw target line
+<b class="nc">&nbsp;                if(ai.targetPos != null &amp;&amp; ai.currentCommand().drawTarget){</b>
+<b class="nc">&nbsp;                    Position lineDest = ai.attackTarget != null ? ai.attackTarget : ai.targetPos;</b>
+<b class="nc">&nbsp;                    Drawf.limitLine(unit, lineDest, unit.hitSize / 2f, 3.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(ai.attackTarget == null){</b>
+<b class="nc">&nbsp;                        Drawf.square(lineDest.getX(), lineDest.getY(), 3.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(ai.currentCommand() == UnitCommand.enterPayloadCommand){</b>
+<b class="nc">&nbsp;                            var build = world.buildWorld(lineDest.getX(), lineDest.getY());</b>
+<b class="nc">&nbsp;                            if(build != null &amp;&amp; build.block.acceptsUnitPayloads &amp;&amp; build.team == unit.team){</b>
+<b class="nc">&nbsp;                                Drawf.selected(build, Pal.accent);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Drawf.square(unit.x, unit.y, unit.hitSize / 1.4f + 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(ai.attackTarget != null &amp;&amp; ai.currentCommand().drawTarget){</b>
+<b class="nc">&nbsp;                    Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, Pal.remove);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(lastPos == null){</b>
+<b class="nc">&nbsp;                    lastPos = unit;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //draw command queue
+<b class="nc">&nbsp;                if(ai.currentCommand().drawTarget &amp;&amp; ai.commandQueue.size &gt; 0){</b>
+<b class="nc">&nbsp;                    for(var next : ai.commandQueue){</b>
+<b class="nc">&nbsp;                        Drawf.limitLine(lastPos, next, 3.5f, 3.5f);</b>
+<b class="nc">&nbsp;                        lastPos = next;</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(next instanceof Vec2 vec){</b>
+<b class="nc">&nbsp;                            Drawf.square(vec.x, vec.y, 3.5f);</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            Drawf.target(next.getX(), next.getY(), 6f, Pal.remove);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(ai.targetPos != null &amp;&amp; ai.currentCommand() == UnitCommand.loopPayloadCommand &amp;&amp; unit instanceof Payloadc pay){</b>
+<b class="nc">&nbsp;                    Draw.color(Pal.accent, 0.4f + Mathf.absin(5f, 0.5f));</b>
+<b class="nc">&nbsp;                    TextureRegion region = pay.hasPayload() ? Icon.download.getRegion() : Icon.upload.getRegion();</b>
+<b class="nc">&nbsp;                    float offset = 11f;</b>
+<b class="nc">&nbsp;                    float size = 8f;</b>
+<b class="nc">&nbsp;                    Draw.rect(region, ai.targetPos.x, ai.targetPos.y + offset, size, size / region.ratio());</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(ai.commandQueue.size &gt; 0){</b>
+<b class="nc">&nbsp;                        region = !pay.hasPayload() ? Icon.download.getRegion() : Icon.upload.getRegion();</b>
+<b class="nc">&nbsp;                        Draw.rect(region, ai.commandQueue.first().getX(), ai.commandQueue.first().getY() + offset, size, size / region.ratio());</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    Draw.color();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            for(var commandBuild : commandBuildings){</b>
+<b class="nc">&nbsp;                if(commandBuild != null){</b>
+<b class="nc">&nbsp;                    Drawf.square(commandBuild.x, commandBuild.y, commandBuild.hitSize() / 1.4f + 1f);</b>
+<b class="nc">&nbsp;                    var cpos = commandBuild.getCommandPosition();</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(cpos != null){</b>
+<b class="nc">&nbsp;                        Drawf.limitLine(commandBuild, cpos, commandBuild.hitSize() / 2f, 3.5f);</b>
+<b class="nc">&nbsp;                        Drawf.square(cpos.x, cpos.y, 3.5f);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if(commandMode &amp;&amp; !commandRect){</b>
+<b class="nc">&nbsp;                Unit sel = selectedCommandUnit(input.mouseWorldX(), input.mouseWorldY());</b>
+&nbsp;
+<b class="nc">&nbsp;                if(sel != null &amp;&amp; !(!multiUnitSelect() &amp;&amp; selectedUnits.size == 1 &amp;&amp; selectedUnits.contains(sel))){</b>
+<b class="nc">&nbsp;                    drawCommand(sel);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(commandRect){</b>
+<b class="nc">&nbsp;                float x2 = input.mouseWorldX(), y2 = input.mouseWorldY();</b>
+<b class="nc">&nbsp;                var units = selectedCommandUnits(commandRectX, commandRectY, x2 - commandRectX, y2 - commandRectY);</b>
+<b class="nc">&nbsp;                for(var unit : units){</b>
+<b class="nc">&nbsp;                    drawCommand(unit);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.color(Pal.accent, 0.3f);</b>
+<b class="nc">&nbsp;                Fill.crect(commandRectX, commandRectY, x2 - commandRectX, y2 - commandRectY);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBottom(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void drawTop(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void drawOverSelect(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void drawSelected(int x, int y, Block block, Color color){
+<b class="nc">&nbsp;        Drawf.selected(x, y, block, color);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBreaking(BuildPlan plan){
+<b class="nc">&nbsp;        if(plan.breaking){</b>
+<b class="nc">&nbsp;            drawBreaking(plan.x, plan.y);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            drawSelected(plan.x, plan.y, plan.block, Pal.remove);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawOverlapCheck(Block block, int cursorX, int cursorY, boolean valid){
+<b class="nc">&nbsp;        if(!valid &amp;&amp; state.rules.placeRangeCheck){</b>
+<b class="nc">&nbsp;            var blocker = Build.getEnemyOverlap(block, player.team(), cursorX, cursorY);</b>
+<b class="nc">&nbsp;            if(blocker != null &amp;&amp; blocker.wasVisible){</b>
+<b class="nc">&nbsp;                Drawf.selected(blocker, Pal.remove);</b>
+<b class="nc">&nbsp;                Tmp.v1.set(cursorX, cursorY).scl(tilesize).add(block.offset, block.offset).sub(blocker).scl(-1f).nor();</b>
+<b class="nc">&nbsp;                Drawf.dashLineDst(Pal.remove,</b>
+&nbsp;                cursorX * tilesize + block.offset + Tmp.v1.x * block.size * tilesize/2f,
+&nbsp;                cursorY * tilesize + block.offset + Tmp.v1.y * block.size * tilesize/2f,
+&nbsp;                blocker.x + Tmp.v1.x * -blocker.block.size * tilesize/2f,
+&nbsp;                blocker.y + Tmp.v1.y * -blocker.block.size * tilesize/2f
+&nbsp;                );
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean planMatches(BuildPlan plan){
+<b class="nc">&nbsp;        Tile tile = world.tile(plan.x, plan.y);</b>
+<b class="nc">&nbsp;        return tile != null &amp;&amp; tile.build instanceof ConstructBuild cons &amp;&amp; cons.current == plan.block;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBreaking(int x, int y){
+<b class="nc">&nbsp;        Tile tile = world.tile(x, y);</b>
+<b class="nc">&nbsp;        if(tile == null) return;</b>
+<b class="nc">&nbsp;        Block block = tile.block();</b>
+&nbsp;
+<b class="nc">&nbsp;        drawSelected(x, y, block, Pal.remove);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void useSchematic(Schematic schem){
+<b class="nc">&nbsp;        selectPlans.addAll(schematics.toPlans(schem, player.tileX(), player.tileY()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void showSchematicSave(){
+<b class="nc">&nbsp;        if(lastSchematic == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        var last = lastSchematic;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.showTextInput(&quot;@schematic.add&quot;, &quot;@name&quot;, 1000, &quot;&quot;, text -&gt; {</b>
+<b class="nc">&nbsp;            Schematic replacement = schematics.all().find(s -&gt; s.name().equals(text));</b>
+<b class="nc">&nbsp;            if(replacement != null){</b>
+<b class="nc">&nbsp;                ui.showConfirm(&quot;@confirm&quot;, &quot;@schematic.replace&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                    schematics.overwrite(replacement, last);</b>
+<b class="nc">&nbsp;                    ui.showInfoFade(&quot;@schematic.saved&quot;);</b>
+<b class="nc">&nbsp;                    ui.schematics.showInfo(replacement);</b>
+&nbsp;                });
+&nbsp;            }else{
+<b class="nc">&nbsp;                last.tags.put(&quot;name&quot;, text);</b>
+<b class="nc">&nbsp;                last.tags.put(&quot;description&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;                schematics.add(last);</b>
+<b class="nc">&nbsp;                ui.showInfoFade(&quot;@schematic.saved&quot;);</b>
+<b class="nc">&nbsp;                ui.schematics.showInfo(last);</b>
+<b class="nc">&nbsp;                Events.fire(new SchematicCreateEvent(last));</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void rotatePlans(Seq&lt;BuildPlan&gt; plans, int direction){
+<b class="nc">&nbsp;        int ox = schemOriginX(), oy = schemOriginY();</b>
+&nbsp;
+<b class="nc">&nbsp;        plans.each(plan -&gt; {</b>
+<b class="nc">&nbsp;            if(plan.breaking) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            plan.pointConfig(p -&gt; {</b>
+<b class="nc">&nbsp;                int cx = p.x, cy = p.y;</b>
+<b class="nc">&nbsp;                int lx = cx;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(direction &gt;= 0){</b>
+<b class="nc">&nbsp;                    cx = -cy;</b>
+<b class="nc">&nbsp;                    cy = lx;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    cx = cy;</b>
+<b class="nc">&nbsp;                    cy = -lx;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                p.set(cx, cy);</b>
+&nbsp;            });
+&nbsp;
+&nbsp;            //rotate actual plan, centered on its multiblock position
+<b class="nc">&nbsp;            float wx = (plan.x - ox) * tilesize + plan.block.offset, wy = (plan.y - oy) * tilesize + plan.block.offset;</b>
+<b class="nc">&nbsp;            float x = wx;</b>
+<b class="nc">&nbsp;            if(direction &gt;= 0){</b>
+<b class="nc">&nbsp;                wx = -wy;</b>
+<b class="nc">&nbsp;                wy = x;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                wx = wy;</b>
+<b class="nc">&nbsp;                wy = -x;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            plan.x = World.toTile(wx - plan.block.offset) + ox;</b>
+<b class="nc">&nbsp;            plan.y = World.toTile(wy - plan.block.offset) + oy;</b>
+<b class="nc">&nbsp;            plan.rotation = plan.block.planRotation(Mathf.mod(plan.rotation + direction, 4));</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void flipPlans(Seq&lt;BuildPlan&gt; plans, boolean x){
+<b class="nc">&nbsp;        int origin = (x ? schemOriginX() : schemOriginY()) * tilesize;</b>
+&nbsp;
+<b class="nc">&nbsp;        plans.each(plan -&gt; {</b>
+<b class="nc">&nbsp;            if(plan.breaking) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            float value = -((x ? plan.x : plan.y) * tilesize - origin + plan.block.offset) + origin;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(x){</b>
+<b class="nc">&nbsp;                plan.x = (int)((value - plan.block.offset) / tilesize);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                plan.y = (int)((value - plan.block.offset) / tilesize);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            plan.pointConfig(p -&gt; {</b>
+<b class="nc">&nbsp;                int corigin = x ? plan.originalWidth/2 : plan.originalHeight/2;</b>
+<b class="nc">&nbsp;                int nvalue = -(x ? p.x : p.y);</b>
+<b class="nc">&nbsp;                if(x){</b>
+<b class="nc">&nbsp;                    plan.originalX = -(plan.originalX - corigin) + corigin;</b>
+<b class="nc">&nbsp;                    p.x = nvalue;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    plan.originalY = -(plan.originalY - corigin) + corigin;</b>
+<b class="nc">&nbsp;                    p.y = nvalue;</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+&nbsp;            //flip rotation
+<b class="nc">&nbsp;            plan.block.flipRotation(plan, x);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    protected int schemOriginX(){
+<b class="nc">&nbsp;        return rawTileX();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected int schemOriginY(){
+<b class="nc">&nbsp;        return rawTileY();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the selection plan that overlaps this position, or null. */
+&nbsp;    protected @Nullable BuildPlan getPlan(int x, int y){
+<b class="nc">&nbsp;        return getPlan(x, y, 1, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the selection plan that overlaps this position, or null. */
+&nbsp;    protected @Nullable BuildPlan getPlan(int x, int y, int size, BuildPlan skip){
+<b class="nc">&nbsp;        float offset = ((size + 1) % 2) * tilesize / 2f;</b>
+<b class="nc">&nbsp;        r2.setSize(tilesize * size);</b>
+<b class="nc">&nbsp;        r2.setCenter(x * tilesize + offset, y * tilesize + offset);</b>
+<b class="nc">&nbsp;        resultplan = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        Boolf&lt;BuildPlan&gt; test = plan -&gt; {</b>
+<b class="nc">&nbsp;            if(plan == skip) return false;</b>
+<b class="nc">&nbsp;            Tile other = plan.tile();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(other == null) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!plan.breaking){</b>
+<b class="nc">&nbsp;                r1.setSize(plan.block.size * tilesize);</b>
+<b class="nc">&nbsp;                r1.setCenter(other.worldx() + plan.block.offset, other.worldy() + plan.block.offset);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                r1.setSize(other.block().size * tilesize);</b>
+<b class="nc">&nbsp;                r1.setCenter(other.worldx() + other.block().offset, other.worldy() + other.block().offset);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return r2.overlaps(r1);</b>
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        for(var plan : player.unit().plans()){</b>
+<b class="nc">&nbsp;            if(test.get(plan)) return plan;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return selectPlans.find(test);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawBreakSelection(int x1, int y1, int x2, int y2, int maxLength){
+<b class="nc">&nbsp;        drawBreakSelection(x1, y1, x2, y2, maxLength, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawBreakSelection(int x1, int y1, int x2, int y2, int maxLength, boolean useSelectPlans){
+<b class="nc">&nbsp;        NormalizeDrawResult result = Placement.normalizeDrawArea(Blocks.air, x1, y1, x2, y2, false, maxLength, 1f);</b>
+<b class="nc">&nbsp;        NormalizeResult dresult = Placement.normalizeArea(x1, y1, x2, y2, rotation, false, maxLength);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = dresult.x; x &lt;= dresult.x2; x++){</b>
+<b class="nc">&nbsp;            for(int y = dresult.y; y &lt;= dresult.y2; y++){</b>
+<b class="nc">&nbsp;                Tile tile = world.tileBuilding(x, y);</b>
+<b class="nc">&nbsp;                if(tile == null || !validBreak(tile.x, tile.y)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                drawBreaking(tile.x, tile.y);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Tmp.r1.set(result.x, result.y, result.x2 - result.x, result.y2 - result.y);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Pal.remove);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var plan : player.unit().plans()){</b>
+<b class="nc">&nbsp;            if(!plan.breaking &amp;&amp; plan.bounds(Tmp.r2).overlaps(Tmp.r1)){</b>
+<b class="nc">&nbsp;                drawBreaking(plan);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(useSelectPlans){</b>
+<b class="nc">&nbsp;            for(var plan : selectPlans){</b>
+<b class="nc">&nbsp;                if(!plan.breaking &amp;&amp; plan.bounds(Tmp.r2).overlaps(Tmp.r1)){</b>
+<b class="nc">&nbsp;                    drawBreaking(plan);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(BlockPlan plan : player.team().data().plans){</b>
+<b class="nc">&nbsp;            Block block = content.block(plan.block);</b>
+<b class="nc">&nbsp;            if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){</b>
+<b class="nc">&nbsp;                drawSelected(plan.x, plan.y, content.block(plan.block), Pal.remove);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Pal.removeBack);</b>
+<b class="nc">&nbsp;        Lines.rect(result.x, result.y - 1, result.x2 - result.x, result.y2 - result.y);</b>
+<b class="nc">&nbsp;        Draw.color(Pal.remove);</b>
+<b class="nc">&nbsp;        Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawRebuildSelection(int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        drawSelection(x1, y1, x2, y2, 0, Pal.sapBulletBack, Pal.sapBullet);</b>
+&nbsp;
+<b class="nc">&nbsp;        NormalizeDrawResult result = Placement.normalizeDrawArea(Blocks.air, x1, y1, x2, y2, false, 0, 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.r1.set(result.x, result.y, result.x2 - result.x, result.y2 - result.y);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(BlockPlan plan : player.team().data().plans){</b>
+<b class="nc">&nbsp;            Block block = content.block(plan.block);</b>
+<b class="nc">&nbsp;            if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){</b>
+<b class="nc">&nbsp;                drawSelected(plan.x, plan.y, content.block(plan.block), Pal.sapBullet);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        NormalizeResult dresult = Placement.normalizeArea(x1, y1, x2, y2, rotation, false, 999999999);</b>
+&nbsp;
+<b class="nc">&nbsp;        intSet.clear();</b>
+<b class="nc">&nbsp;        for(int x = dresult.x; x &lt;= dresult.x2; x++){</b>
+<b class="nc">&nbsp;            for(int y = dresult.y; y &lt;= dresult.y2; y++){</b>
+&nbsp;
+<b class="nc">&nbsp;                Tile tile = world.tileBuilding(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(tile != null &amp;&amp; intSet.add(tile.pos()) &amp;&amp; canRepairDerelict(tile)){</b>
+<b class="nc">&nbsp;                    drawSelected(tile.x, tile.y, tile.block(), Pal.sapBullet);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawBreakSelection(int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        drawBreakSelection(x1, y1, x2, y2, maxLength);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawSelection(int x1, int y1, int x2, int y2, int maxLength){
+<b class="nc">&nbsp;        drawSelection(x1, y1, x2, y2, maxLength, Pal.accentBack, Pal.accent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawSelection(int x1, int y1, int x2, int y2, int maxLength, Color col1, Color col2){
+<b class="nc">&nbsp;        NormalizeDrawResult result = Placement.normalizeDrawArea(Blocks.air, x1, y1, x2, y2, false, maxLength, 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(col1);</b>
+<b class="nc">&nbsp;        Lines.rect(result.x, result.y - 1, result.x2 - result.x, result.y2 - result.y);</b>
+<b class="nc">&nbsp;        Draw.color(col2);</b>
+<b class="nc">&nbsp;        Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void flushSelectPlans(Seq&lt;BuildPlan&gt; plans){
+<b class="nc">&nbsp;        for(BuildPlan plan : plans){</b>
+<b class="nc">&nbsp;            if(plan.block != null &amp;&amp; validPlace(plan.x, plan.y, plan.block, plan.rotation)){</b>
+<b class="nc">&nbsp;                BuildPlan other = getPlan(plan.x, plan.y, plan.block.size, null);</b>
+<b class="nc">&nbsp;                if(other == null){</b>
+<b class="nc">&nbsp;                    selectPlans.add(plan.copy());</b>
+<b class="nc">&nbsp;                }else if(!other.breaking &amp;&amp; other.x == plan.x &amp;&amp; other.y == plan.y &amp;&amp; other.block.size == plan.block.size){</b>
+<b class="nc">&nbsp;                    selectPlans.remove(other);</b>
+<b class="nc">&nbsp;                    selectPlans.add(plan.copy());</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void flushPlansReverse(Seq&lt;BuildPlan&gt; plans){
+&nbsp;        //reversed iteration.
+<b class="nc">&nbsp;        for(int i = plans.size - 1; i &gt;= 0; i--){</b>
+<b class="nc">&nbsp;            var plan = plans.get(i);</b>
+<b class="nc">&nbsp;            if(plan.block != null &amp;&amp; validPlace(plan.x, plan.y, plan.block, plan.rotation)){</b>
+<b class="nc">&nbsp;                BuildPlan copy = plan.copy();</b>
+<b class="nc">&nbsp;                plan.block.onNewPlan(copy);</b>
+<b class="nc">&nbsp;                player.unit().addBuild(copy, false);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void flushPlans(Seq&lt;BuildPlan&gt; plans){
+<b class="nc">&nbsp;        for(var plan : plans){</b>
+<b class="nc">&nbsp;            if(plan.block != null &amp;&amp; validPlace(plan.x, plan.y, plan.block, plan.rotation)){</b>
+<b class="nc">&nbsp;                BuildPlan copy = plan.copy();</b>
+<b class="nc">&nbsp;                plan.block.onNewPlan(copy);</b>
+<b class="nc">&nbsp;                player.unit().addBuild(copy);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawOverPlan(BuildPlan plan){
+<b class="nc">&nbsp;        drawOverPlan(plan, validPlace(plan.x, plan.y, plan.block, plan.rotation));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawOverPlan(BuildPlan plan, boolean valid){
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Draw.mixcol(!valid ? Pal.breakInvalid : Color.white, (!valid ? 0.4f : 0.24f) + Mathf.absin(Time.globalTime, 6f, 0.28f));</b>
+<b class="nc">&nbsp;        Draw.alpha(1f);</b>
+<b class="nc">&nbsp;        plan.block.drawPlanConfigTop(plan, allSelectLines);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawPlan(BuildPlan plan){
+<b class="nc">&nbsp;        drawPlan(plan, plan.cachedValid = validPlace(plan.x, plan.y, plan.block, plan.rotation));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawPlan(BuildPlan plan, boolean valid){
+<b class="nc">&nbsp;        plan.block.drawPlan(plan, allPlans(), valid);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Draws a placement icon for a specific block. */
+&nbsp;    protected void drawPlan(int x, int y, Block block, int rotation){
+<b class="nc">&nbsp;        bplan.set(x, y, rotation, block);</b>
+<b class="nc">&nbsp;        bplan.animScale = 1f;</b>
+<b class="nc">&nbsp;        block.drawPlan(bplan, allPlans(), validPlace(x, y, block, rotation));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Remove everything from the queue in a selection. */
+&nbsp;    protected void removeSelection(int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        removeSelection(x1, y1, x2, y2, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Remove everything from the queue in a selection. */
+&nbsp;    protected void removeSelection(int x1, int y1, int x2, int y2, int maxLength){
+<b class="nc">&nbsp;        removeSelection(x1, y1, x2, y2, false, maxLength);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Remove everything from the queue in a selection. */
+&nbsp;    protected void removeSelection(int x1, int y1, int x2, int y2, boolean flush){
+<b class="nc">&nbsp;        removeSelection(x1, y1, x2, y2, flush, maxLength);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Remove everything from the queue in a selection. */
+&nbsp;    protected void removeSelection(int x1, int y1, int x2, int y2, boolean flush, int maxLength){
+<b class="nc">&nbsp;        NormalizeResult result = Placement.normalizeArea(x1, y1, x2, y2, rotation, false, maxLength);</b>
+<b class="nc">&nbsp;        for(int x = 0; x &lt;= Math.abs(result.x2 - result.x); x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt;= Math.abs(result.y2 - result.y); y++){</b>
+<b class="nc">&nbsp;                int wx = x1 + x * Mathf.sign(x2 - x1);</b>
+<b class="nc">&nbsp;                int wy = y1 + y * Mathf.sign(y2 - y1);</b>
+&nbsp;
+<b class="nc">&nbsp;                Tile tile = world.tileBuilding(wx, wy);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(tile == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!flush){</b>
+<b class="nc">&nbsp;                    tryBreakBlock(wx, wy);</b>
+<b class="nc">&nbsp;                }else if(validBreak(tile.x, tile.y) &amp;&amp; !selectPlans.contains(r -&gt; r.tile() != null &amp;&amp; r.tile() == tile)){</b>
+<b class="nc">&nbsp;                    selectPlans.add(new BuildPlan(tile.x, tile.y));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //remove build plans
+<b class="nc">&nbsp;        Tmp.r1.set(result.x * tilesize, result.y * tilesize, (result.x2 - result.x) * tilesize, (result.y2 - result.y) * tilesize);</b>
+&nbsp;
+<b class="nc">&nbsp;        Iterator&lt;BuildPlan&gt; it = player.unit().plans().iterator();</b>
+<b class="nc">&nbsp;        while(it.hasNext()){</b>
+<b class="nc">&nbsp;            var plan = it.next();</b>
+<b class="nc">&nbsp;            if(!plan.breaking &amp;&amp; plan.bounds(Tmp.r2).overlaps(Tmp.r1)){</b>
+<b class="nc">&nbsp;                it.remove();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //don&#39;t remove plans on desktop, where flushing is false
+<b class="nc">&nbsp;        if(flush){</b>
+<b class="nc">&nbsp;            it = selectPlans.iterator();</b>
+<b class="nc">&nbsp;            while(it.hasNext()){</b>
+<b class="nc">&nbsp;                var plan = it.next();</b>
+<b class="nc">&nbsp;                if(!plan.breaking &amp;&amp; plan.bounds(Tmp.r2).overlaps(Tmp.r1)){</b>
+<b class="nc">&nbsp;                    it.remove();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        removed.clear();</b>
+&nbsp;
+&nbsp;        //remove blocks to rebuild
+<b class="nc">&nbsp;        Iterator&lt;BlockPlan&gt; broken = player.team().data().plans.iterator();</b>
+<b class="nc">&nbsp;        while(broken.hasNext()){</b>
+<b class="nc">&nbsp;            BlockPlan plan = broken.next();</b>
+<b class="nc">&nbsp;            Block block = content.block(plan.block);</b>
+<b class="nc">&nbsp;            if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){</b>
+<b class="nc">&nbsp;                removed.add(Point2.pack(plan.x, plan.y));</b>
+<b class="nc">&nbsp;                plan.removed = true;</b>
+<b class="nc">&nbsp;                broken.remove();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //TODO array may be too large?
+<b class="nc">&nbsp;        if(removed.size &gt; 0 &amp;&amp; net.active()){</b>
+<b class="nc">&nbsp;            Call.deletePlans(player, removed.toArray());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void updateLine(int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        linePlans.clear();</b>
+<b class="nc">&nbsp;        iterateLine(x1, y1, x2, y2, l -&gt; {</b>
+<b class="nc">&nbsp;            rotation = l.rotation;</b>
+<b class="nc">&nbsp;            var plan = new BuildPlan(l.x, l.y, l.rotation, block, block.nextConfig());</b>
+<b class="nc">&nbsp;            plan.animScale = 1f;</b>
+<b class="nc">&nbsp;            linePlans.add(plan);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        if(Core.settings.getBool(&quot;blockreplace&quot;)){</b>
+<b class="nc">&nbsp;            linePlans.each(plan -&gt; {</b>
+<b class="nc">&nbsp;                Block replace = plan.block.getReplacement(plan, linePlans);</b>
+<b class="nc">&nbsp;                if(replace.unlockedNow()){</b>
+<b class="nc">&nbsp;                    plan.block = replace;</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            block.handlePlacementLine(linePlans);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void updateLine(int x1, int y1){
+<b class="nc">&nbsp;        updateLine(x1, y1, tileX(getMouseX()), tileY(getMouseY()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean checkConfigTap(){
+<b class="nc">&nbsp;        return config.isShown() &amp;&amp; config.getSelected().onConfigureTapped(input.mouseWorldX(), input.mouseWorldY());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Handles tile tap events that are not platform specific. */
+&nbsp;    boolean tileTapped(@Nullable Building build){
+<b class="nc">&nbsp;        if(build == null){</b>
+<b class="nc">&nbsp;            inv.hide();</b>
+<b class="nc">&nbsp;            config.hideConfig();</b>
+<b class="nc">&nbsp;            commandBuildings.clear();</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        boolean consumed = false, showedInventory = false;</b>
+&nbsp;
+&nbsp;        //select building for commanding
+<b class="nc">&nbsp;        if(build.block.commandable &amp;&amp; commandMode){</b>
+&nbsp;            //TODO handled in tap.
+<b class="nc">&nbsp;            consumed = true;</b>
+<b class="nc">&nbsp;        }else if(build.block.configurable &amp;&amp; build.interactable(player.team())){ //check if tapped block is configurable</b>
+<b class="nc">&nbsp;            consumed = true;</b>
+<b class="nc">&nbsp;            if((!config.isShown() &amp;&amp; build.shouldShowConfigure(player)) //if the config fragment is hidden, show</b>
+&nbsp;            //alternatively, the current selected block can &#39;agree&#39; to switch config tiles
+<b class="nc">&nbsp;            || (config.isShown() &amp;&amp; config.getSelected().onConfigureBuildTapped(build) &amp;&amp; build.shouldShowConfigure(player))){</b>
+<b class="nc">&nbsp;                Sounds.click.at(build);</b>
+<b class="nc">&nbsp;                config.showConfig(build);</b>
+&nbsp;            }
+&nbsp;            //otherwise...
+<b class="nc">&nbsp;        }else if(!config.hasConfigMouse()){ //make sure a configuration fragment isn&#39;t on the cursor</b>
+&nbsp;            //then, if it&#39;s shown and the current block &#39;agrees&#39; to hide, hide it.
+<b class="nc">&nbsp;            if(config.isShown() &amp;&amp; config.getSelected().onConfigureBuildTapped(build)){</b>
+<b class="nc">&nbsp;                consumed = true;</b>
+<b class="nc">&nbsp;                config.hideConfig();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(config.isShown()){</b>
+<b class="nc">&nbsp;                consumed = true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //call tapped event
+<b class="nc">&nbsp;        if(!consumed &amp;&amp; build.interactable(player.team())){</b>
+<b class="nc">&nbsp;            build.tapped();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //consume tap event if necessary
+<b class="nc">&nbsp;        if(build.interactable(player.team()) &amp;&amp; build.block.consumesTap){</b>
+<b class="nc">&nbsp;            consumed = true;</b>
+<b class="nc">&nbsp;        }else if(build.interactable(player.team()) &amp;&amp; build.block.synthetic() &amp;&amp; (!consumed || build.block.allowConfigInventory)){</b>
+<b class="nc">&nbsp;            if(build.block.hasItems &amp;&amp; build.items.total() &gt; 0){</b>
+<b class="nc">&nbsp;                inv.showFor(build);</b>
+<b class="nc">&nbsp;                consumed = true;</b>
+<b class="nc">&nbsp;                showedInventory = true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!showedInventory){</b>
+<b class="nc">&nbsp;            inv.hide();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return consumed;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Tries to select the player to drop off items, returns true if successful. */
+&nbsp;    boolean tryTapPlayer(float x, float y){
+<b class="nc">&nbsp;        if(canTapPlayer(x, y)){</b>
+<b class="nc">&nbsp;            droppingItem = true;</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean canTapPlayer(float x, float y){
+<b class="nc">&nbsp;        return player.within(x, y, playerSelectRange) &amp;&amp; player.unit().stack.amount &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Tries to begin mining a tile, returns true if successful. */
+&nbsp;    boolean tryBeginMine(Tile tile){
+<b class="nc">&nbsp;        if(canMine(tile)){</b>
+<b class="nc">&nbsp;            player.unit().mineTile = tile;</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Tries to stop mining, returns true if mining was stopped. */
+&nbsp;    boolean tryStopMine(){
+<b class="nc">&nbsp;        if(player.unit().mining()){</b>
+<b class="nc">&nbsp;            player.unit().mineTile = null;</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean tryStopMine(Tile tile){
+<b class="nc">&nbsp;        if(player.unit().mineTile == tile){</b>
+<b class="nc">&nbsp;            player.unit().mineTile = null;</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean tryRepairDerelict(Tile selected){
+<b class="nc">&nbsp;        if(selected != null &amp;&amp; !state.rules.editor &amp;&amp; player.team() != Team.derelict &amp;&amp; selected.build != null &amp;&amp; selected.build.block.unlockedNow() &amp;&amp; selected.build.team == Team.derelict &amp;&amp;</b>
+<b class="nc">&nbsp;            Build.validPlace(selected.block(), player.team(), selected.build.tileX(), selected.build.tileY(), selected.build.rotation)){</b>
+&nbsp;
+<b class="nc">&nbsp;            player.unit().addBuild(new BuildPlan(selected.build.tileX(), selected.build.tileY(), selected.build.rotation, selected.block(), selected.build.config()));</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean canRepairDerelict(Tile tile){
+<b class="nc">&nbsp;        return tile != null &amp;&amp; tile.build != null &amp;&amp; !state.rules.editor &amp;&amp; player.team() != Team.derelict &amp;&amp; tile.build.team == Team.derelict &amp;&amp; tile.build.block.unlockedNow() &amp;&amp;</b>
+<b class="nc">&nbsp;            Build.validPlace(tile.block(), player.team(), tile.build.tileX(), tile.build.tileY(), tile.build.rotation);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean canMine(Tile tile){
+<b class="nc">&nbsp;        return !Core.scene.hasMouse()</b>
+<b class="nc">&nbsp;        &amp;&amp; player.unit().validMine(tile)</b>
+<b class="nc">&nbsp;        &amp;&amp; player.unit().acceptsItem(player.unit().getMineResult(tile))</b>
+<b class="nc">&nbsp;        &amp;&amp; !((!Core.settings.getBool(&quot;doubletapmine&quot;) &amp;&amp; tile.floor().playerUnmineable) &amp;&amp; tile.overlay().itemDrop == null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the tile at the specified MOUSE coordinates. */
+&nbsp;    Tile tileAt(float x, float y){
+<b class="nc">&nbsp;        return world.tile(tileX(x), tileY(y));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int rawTileX(){
+<b class="nc">&nbsp;        return World.toTile(Core.input.mouseWorld().x);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int rawTileY(){
+<b class="nc">&nbsp;        return World.toTile(Core.input.mouseWorld().y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int tileX(float cursorX){
+<b class="nc">&nbsp;        Vec2 vec = Core.input.mouseWorld(cursorX, 0);</b>
+<b class="nc">&nbsp;        if(selectedBlock()){</b>
+<b class="nc">&nbsp;            vec.sub(block.offset, block.offset);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return World.toTile(vec.x);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int tileY(float cursorY){
+<b class="nc">&nbsp;        Vec2 vec = Core.input.mouseWorld(0, cursorY);</b>
+<b class="nc">&nbsp;        if(selectedBlock()){</b>
+<b class="nc">&nbsp;            vec.sub(block.offset, block.offset);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return World.toTile(vec.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Forces the camera to a position and enables panning on desktop. */
+&nbsp;    public void panCamera(Vec2 position){
+<b class="nc">&nbsp;        if(!locked()){</b>
+<b class="nc">&nbsp;            camera.position.set(position);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean selectedBlock(){
+<b class="nc">&nbsp;        return isPlacing();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isPlacing(){
+<b class="nc">&nbsp;        return block != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isBreaking(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isRebuildSelecting(){
+<b class="nc">&nbsp;        return input.keyDown(Binding.rebuild_select);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float mouseAngle(float x, float y){
+<b class="nc">&nbsp;        return Core.input.mouseWorld(getMouseX(), getMouseY()).sub(x, y).angle();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Unit selectedUnit(){
+<b class="nc">&nbsp;        Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -&gt; u.isAI() &amp;&amp; u.type.playerControllable);</b>
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            unit.hitbox(Tmp.r1);</b>
+<b class="nc">&nbsp;            Tmp.r1.grow(6f);</b>
+<b class="nc">&nbsp;            if(Tmp.r1.contains(Core.input.mouseWorld())){</b>
+<b class="nc">&nbsp;                return unit;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);</b>
+<b class="nc">&nbsp;        if(build instanceof ControlBlock cont &amp;&amp; cont.canControl() &amp;&amp; build.team == player.team() &amp;&amp; cont.unit() != player.unit() &amp;&amp; cont.unit().isAI()){</b>
+<b class="nc">&nbsp;            return cont.unit();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Building selectedControlBuild(){
+<b class="nc">&nbsp;        Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);</b>
+<b class="nc">&nbsp;        if(build != null &amp;&amp; !player.dead() &amp;&amp; build.canControlSelect(player.unit()) &amp;&amp; build.team == player.team()){</b>
+<b class="nc">&nbsp;            return build;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Unit selectedCommandUnit(float x, float y){
+<b class="nc">&nbsp;        var tree = player.team().data().tree();</b>
+<b class="nc">&nbsp;        tmpUnits.clear();</b>
+<b class="nc">&nbsp;        float rad = 4f;</b>
+<b class="nc">&nbsp;        tree.intersect(x - rad/2f, y - rad/2f, rad, rad, tmpUnits);</b>
+<b class="nc">&nbsp;        return tmpUnits.min(u -&gt; u.isCommandable(), u -&gt; u.dst(x, y) - u.hitSize/2f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Unit selectedEnemyUnit(float x, float y){
+<b class="nc">&nbsp;        tmpUnits.clear();</b>
+<b class="nc">&nbsp;        float rad = 4f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;TeamData&gt; data = state.teams.present;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; data.size; i++){</b>
+<b class="nc">&nbsp;            if(data.items[i].team != player.team()){</b>
+<b class="nc">&nbsp;                data.items[i].tree().intersect(x - rad / 2f, y - rad / 2f, rad, rad, tmpUnits);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return tmpUnits.min(u -&gt; !u.inFogTo(player.team()), u -&gt; u.dst(x, y) - u.hitSize/2f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Unit&gt; selectedCommandUnits(float x, float y, float w, float h, Boolf&lt;Unit&gt; predicate){
+<b class="nc">&nbsp;        var tree = player.team().data().tree();</b>
+<b class="nc">&nbsp;        tmpUnits.clear();</b>
+<b class="nc">&nbsp;        float rad = 4f;</b>
+<b class="nc">&nbsp;        tree.intersect(Tmp.r1.set(x - rad/2f, y - rad/2f, rad*2f + w, rad*2f + h).normalize(), tmpUnits);</b>
+<b class="nc">&nbsp;        tmpUnits.removeAll(u -&gt; !u.isCommandable() || !predicate.get(u));</b>
+<b class="nc">&nbsp;        return tmpUnits;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Unit&gt; selectedCommandUnits(float x, float y, float w, float h){
+<b class="nc">&nbsp;        return selectedCommandUnits(x, y, w, h, u -&gt; true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(){
+<b class="nc">&nbsp;        Core.input.removeProcessor(this);</b>
+<b class="nc">&nbsp;        group.remove();</b>
+<b class="nc">&nbsp;        if(Core.scene != null){</b>
+<b class="nc">&nbsp;            Table table = (Table)Core.scene.find(&quot;inputTable&quot;);</b>
+<b class="nc">&nbsp;            if(table != null){</b>
+<b class="nc">&nbsp;                table.clear();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        if(detector != null){</b>
+<b class="nc">&nbsp;            Core.input.removeProcessor(detector);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(uiGroup != null){</b>
+<b class="nc">&nbsp;            uiGroup.remove();</b>
+<b class="nc">&nbsp;            uiGroup = null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(){
+<b class="nc">&nbsp;        Core.input.getInputProcessors().remove(i -&gt; i instanceof InputHandler || (i instanceof GestureDetector &amp;&amp; ((GestureDetector)i).getListener() instanceof InputHandler));</b>
+<b class="nc">&nbsp;        Core.input.addProcessor(detector = new GestureDetector(20, 0.5f, 0.3f, 0.15f, this));</b>
+<b class="nc">&nbsp;        Core.input.addProcessor(this);</b>
+<b class="nc">&nbsp;        if(Core.scene != null){</b>
+<b class="nc">&nbsp;            Table table = (Table)Core.scene.find(&quot;inputTable&quot;);</b>
+<b class="nc">&nbsp;            if(table != null){</b>
+<b class="nc">&nbsp;                table.clear();</b>
+<b class="nc">&nbsp;                buildPlacementUI(table);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            uiGroup = new WidgetGroup();</b>
+<b class="nc">&nbsp;            uiGroup.touchable = Touchable.childrenOnly;</b>
+<b class="nc">&nbsp;            uiGroup.setFillParent(true);</b>
+<b class="nc">&nbsp;            ui.hudGroup.addChild(uiGroup);</b>
+<b class="nc">&nbsp;            uiGroup.toBack();</b>
+<b class="nc">&nbsp;            buildUI(uiGroup);</b>
+&nbsp;
+<b class="nc">&nbsp;            group.setFillParent(true);</b>
+<b class="nc">&nbsp;            Vars.ui.hudGroup.addChildBefore(Core.scene.find(&quot;overlaymarker&quot;), group);</b>
+&nbsp;
+<b class="nc">&nbsp;            inv.build(group);</b>
+<b class="nc">&nbsp;            config.build(group);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canShoot(){
+<b class="nc">&nbsp;        return block == null &amp;&amp; !onConfigurable() &amp;&amp; !isDroppingItem() &amp;&amp; !player.unit().activelyBuilding() &amp;&amp;</b>
+<b class="nc">&nbsp;        !(player.unit() instanceof Mechc &amp;&amp; player.unit().isFlying()) &amp;&amp; !player.unit().mining() &amp;&amp; !commandMode;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean onConfigurable(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isDroppingItem(){
+<b class="nc">&nbsp;        return droppingItem;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canDropItem(){
+<b class="nc">&nbsp;        return droppingItem &amp;&amp; !canTapPlayer(Core.input.mouseWorldX(), Core.input.mouseWorldY());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void tryDropItems(@Nullable Building build, float x, float y){
+<b class="nc">&nbsp;        if(!droppingItem || player.unit().stack.amount &lt;= 0 || canTapPlayer(x, y) || state.isPaused() ){</b>
+<b class="nc">&nbsp;            droppingItem = false;</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        droppingItem = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        ItemStack stack = player.unit().stack;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(build != null &amp;&amp; build.acceptStack(stack.item, stack.amount, player.unit()) &gt; 0 &amp;&amp; build.interactable(player.team()) &amp;&amp;</b>
+<b class="nc">&nbsp;        build.block.hasItems &amp;&amp; player.unit().stack().amount &gt; 0 &amp;&amp; build.interactable(player.team())){</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!(state.rules.onlyDepositCore &amp;&amp; !(build instanceof CoreBuild)) &amp;&amp; itemDepositCooldown &lt;= 0f){</b>
+<b class="nc">&nbsp;                Call.transferInventory(player, build);</b>
+<b class="nc">&nbsp;                itemDepositCooldown = state.rules.itemDepositCooldown;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            Call.dropItem(player.angleTo(x, y));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void rebuildArea(int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        NormalizeResult result = Placement.normalizeArea(x1, y1, x2, y2, rotation, false, 999999999);</b>
+<b class="nc">&nbsp;        Tmp.r1.set(result.x * tilesize, result.y * tilesize, (result.x2 - result.x) * tilesize, (result.y2 - result.y) * tilesize);</b>
+&nbsp;
+<b class="nc">&nbsp;        Iterator&lt;BlockPlan&gt; broken = player.team().data().plans.iterator();</b>
+<b class="nc">&nbsp;        while(broken.hasNext()){</b>
+<b class="nc">&nbsp;            BlockPlan plan = broken.next();</b>
+<b class="nc">&nbsp;            Block block = content.block(plan.block);</b>
+<b class="nc">&nbsp;            if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){</b>
+<b class="nc">&nbsp;                player.unit().addBuild(new BuildPlan(plan.x, plan.y, plan.rotation, content.block(plan.block), plan.config));</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        intSet.clear();</b>
+<b class="nc">&nbsp;        for(int x = result.x; x &lt;= result.x2; x++){</b>
+<b class="nc">&nbsp;            for(int y = result.y; y &lt;= result.y2; y++){</b>
+&nbsp;
+<b class="nc">&nbsp;                Tile tile = world.tileBuilding(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(tile != null &amp;&amp; tile.build != null &amp;&amp; intSet.add(tile.pos())){</b>
+<b class="nc">&nbsp;                    tryRepairDerelict(tile);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void tryBreakBlock(int x, int y){
+<b class="nc">&nbsp;        if(validBreak(x, y)){</b>
+<b class="nc">&nbsp;            breakBlock(x, y);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean validPlace(int x, int y, Block type, int rotation){
+<b class="nc">&nbsp;        return validPlace(x, y, type, rotation, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean validPlace(int x, int y, Block type, int rotation, BuildPlan ignore){
+<b class="nc">&nbsp;        if(player.unit().plans.size &gt; 0){</b>
+<b class="nc">&nbsp;            Tmp.r1.setCentered(x * tilesize + type.offset, y * tilesize + type.offset, type.size * tilesize);</b>
+<b class="nc">&nbsp;            plansOut.clear();</b>
+<b class="nc">&nbsp;            playerPlanTree.intersect(Tmp.r1, plansOut);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; plansOut.size; i++){</b>
+<b class="nc">&nbsp;                var plan = plansOut.items[i];</b>
+<b class="nc">&nbsp;                if(plan != ignore</b>
+&nbsp;                &amp;&amp; !plan.breaking
+<b class="nc">&nbsp;                &amp;&amp; plan.block.bounds(plan.x, plan.y, Tmp.r1).overlaps(type.bounds(x, y, Tmp.r2))</b>
+<b class="nc">&nbsp;                &amp;&amp; !(type.canReplace(plan.block) &amp;&amp; Tmp.r1.equals(Tmp.r2))){</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return Build.validPlace(type, player.team(), x, y, rotation);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean validBreak(int x, int y){
+<b class="nc">&nbsp;        return Build.validBreak(player.team(), x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void breakBlock(int x, int y){
+<b class="nc">&nbsp;        Tile tile = world.tile(x, y);</b>
+<b class="nc">&nbsp;        if(tile != null &amp;&amp; tile.build != null) tile = tile.build.tile;</b>
+<b class="nc">&nbsp;        player.unit().addBuild(new BuildPlan(tile.x, tile.y));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawArrow(Block block, int x, int y, int rotation){
+<b class="nc">&nbsp;        drawArrow(block, x, y, rotation, validPlace(x, y, block, rotation));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawArrow(Block block, int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        float trns = (block.size / 2) * tilesize;</b>
+<b class="nc">&nbsp;        int dx = Geometry.d4(rotation).x, dy = Geometry.d4(rotation).y;</b>
+<b class="nc">&nbsp;        float offsetx = x * tilesize + block.offset + dx*trns;</b>
+<b class="nc">&nbsp;        float offsety = y * tilesize + block.offset + dy*trns;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(!valid ? Pal.removeBack : Pal.accentBack);</b>
+<b class="nc">&nbsp;        TextureRegion regionArrow = Core.atlas.find(&quot;place-arrow&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.rect(regionArrow,</b>
+&nbsp;        offsetx,
+&nbsp;        offsety - 1,
+<b class="nc">&nbsp;        regionArrow.width * regionArrow.scl(),</b>
+<b class="nc">&nbsp;        regionArrow.height * regionArrow.scl(),</b>
+&nbsp;        rotation * 90 - 90);
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(!valid ? Pal.remove : Pal.accent);</b>
+<b class="nc">&nbsp;        Draw.rect(regionArrow,</b>
+&nbsp;        offsetx,
+&nbsp;        offsety,
+<b class="nc">&nbsp;        regionArrow.width * regionArrow.scl(),</b>
+<b class="nc">&nbsp;        regionArrow.height * regionArrow.scl(),</b>
+&nbsp;        rotation * 90 - 90);
+&nbsp;    }
+&nbsp;
+&nbsp;    void iterateLine(int startX, int startY, int endX, int endY, Cons&lt;PlaceLine&gt; cons){
+&nbsp;        Seq&lt;Point2&gt; points;
+<b class="nc">&nbsp;        boolean diagonal = Core.input.keyDown(Binding.diagonal_placement);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.settings.getBool(&quot;swapdiagonal&quot;) &amp;&amp; mobile){</b>
+<b class="nc">&nbsp;            diagonal = !diagonal;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(block != null &amp;&amp; block.swapDiagonalPlacement){</b>
+<b class="nc">&nbsp;            diagonal = !diagonal;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int endRotation = -1;</b>
+<b class="nc">&nbsp;        var start = world.build(startX, startY);</b>
+<b class="nc">&nbsp;        var end = world.build(endX, endY);</b>
+<b class="nc">&nbsp;        if(diagonal &amp;&amp; (block == null || block.allowDiagonal)){</b>
+<b class="nc">&nbsp;            if(block != null &amp;&amp; start instanceof ChainedBuilding &amp;&amp; end instanceof ChainedBuilding</b>
+<b class="nc">&nbsp;            &amp;&amp; block.canReplace(end.block) &amp;&amp; block.canReplace(start.block)){</b>
+<b class="nc">&nbsp;                points = Placement.upgradeLine(startX, startY, endX, endY);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                points = Placement.pathfindLine(block != null &amp;&amp; block.conveyorPlacement, startX, startY, endX, endY);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(block != null &amp;&amp; block.allowRectanglePlacement){</b>
+<b class="nc">&nbsp;            points = Placement.normalizeRectangle(startX, startY, endX, endY, block.size);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            points = Placement.normalizeLine(startX, startY, endX, endY);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(points.size &gt; 1 &amp;&amp; end instanceof ChainedBuilding){</b>
+<b class="nc">&nbsp;            Point2 secondToLast = points.get(points.size - 2);</b>
+<b class="nc">&nbsp;            if(!(world.build(secondToLast.x, secondToLast.y) instanceof ChainedBuilding)){</b>
+<b class="nc">&nbsp;                endRotation = end.rotation;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(block != null){</b>
+<b class="nc">&nbsp;            block.changePlacementPath(points, rotation, diagonal);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float angle = Angles.angle(startX, startY, endX, endY);</b>
+<b class="nc">&nbsp;        int baseRotation = rotation;</b>
+<b class="nc">&nbsp;        if(!overrideLineRotation || diagonal){</b>
+<b class="nc">&nbsp;            baseRotation = (startX == endX &amp;&amp; startY == endY) ? rotation : ((int)((angle + 45) / 90f)) % 4;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Tmp.r3.set(-1, -1, 0, 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; points.size; i++){</b>
+<b class="nc">&nbsp;            Point2 point = points.get(i);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(block != null &amp;&amp; Tmp.r2.setSize(block.size * tilesize).setCenter(point.x * tilesize + block.offset, point.y * tilesize + block.offset).overlaps(Tmp.r3)){</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Point2 next = i == points.size - 1 ? null : points.get(i + 1);</b>
+<b class="nc">&nbsp;            line.x = point.x;</b>
+<b class="nc">&nbsp;            line.y = point.y;</b>
+<b class="nc">&nbsp;            if(!overrideLineRotation || diagonal){</b>
+<b class="nc">&nbsp;                int result = baseRotation;</b>
+<b class="nc">&nbsp;                if(next != null){</b>
+<b class="nc">&nbsp;                    result = Tile.relativeTo(point.x, point.y, next.x, next.y);</b>
+<b class="nc">&nbsp;                }else if(endRotation != -1){</b>
+<b class="nc">&nbsp;                    result = endRotation;</b>
+<b class="nc">&nbsp;                }else if(block.conveyorPlacement &amp;&amp; i &gt; 0){</b>
+<b class="nc">&nbsp;                    Point2 prev = points.get(i - 1);</b>
+<b class="nc">&nbsp;                    result = Tile.relativeTo(prev.x, prev.y, point.x, point.y);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                if(result != -1){</b>
+<b class="nc">&nbsp;                    line.rotation = result;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                line.rotation = rotation;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            line.last = next == null;</b>
+<b class="nc">&nbsp;            cons.get(line);</b>
+&nbsp;
+<b class="nc">&nbsp;            Tmp.r3.setSize(block.size * tilesize).setCenter(point.x * tilesize + block.offset, point.y * tilesize + block.offset);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static class PlaceLine{</b>
+&nbsp;        public int x, y, rotation;
+&nbsp;        public boolean last;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

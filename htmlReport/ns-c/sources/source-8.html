@@ -1,0 +1,411 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Planets</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.content</a>
+</div>
+
+<h1>Coverage Summary for Class: Planets (mindustry.content)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Planets</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (5/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    95.5%
+  </span>
+  <span class="absValue">
+    (21/22)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Planets$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (4/10)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Planets$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    94.6%
+  </span>
+  <span class="absValue">
+    (35/37)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Planets$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.3%
+  </span>
+  <span class="absValue">
+    (12/13)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Planets$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.3%
+  </span>
+  <span class="absValue">
+    (24/26)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Planets$5</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    56%
+  </span>
+  <span class="absValue">
+    (14/25)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (12/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    82.7%
+  </span>
+  <span class="absValue">
+    (110/133)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.content;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.graphics.g3d.*;
+&nbsp;import mindustry.graphics.g3d.PlanetGrid.*;
+&nbsp;import mindustry.maps.planet.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+<b class="nc">&nbsp;public class Planets{</b>
+&nbsp;    public static Planet
+&nbsp;    sun,
+&nbsp;    erekir,
+&nbsp;    tantros,
+&nbsp;    serpulo,
+&nbsp;    gier,
+&nbsp;    notva,
+&nbsp;    verilus;
+&nbsp;
+&nbsp;    public static void load(){
+<b class="fc">&nbsp;        sun = new Planet(&quot;sun&quot;, null, 4f){{</b>
+<b class="fc">&nbsp;            bloom = true;</b>
+<b class="fc">&nbsp;            accessible = false;</b>
+&nbsp;
+<b class="fc">&nbsp;            meshLoader = () -&gt; new SunMesh(</b>
+&nbsp;                this, 4,
+&nbsp;                5, 0.3, 1.7, 1.2, 1,
+&nbsp;                1.1f,
+<b class="nc">&nbsp;                Color.valueOf(&quot;ff7a38&quot;),</b>
+<b class="nc">&nbsp;                Color.valueOf(&quot;ff9638&quot;),</b>
+<b class="nc">&nbsp;                Color.valueOf(&quot;ffc64c&quot;),</b>
+<b class="nc">&nbsp;                Color.valueOf(&quot;ffc64c&quot;),</b>
+<b class="nc">&nbsp;                Color.valueOf(&quot;ffe371&quot;),</b>
+<b class="nc">&nbsp;                Color.valueOf(&quot;f4ee8e&quot;)</b>
+&nbsp;            );
+&nbsp;        }};
+&nbsp;
+<b class="fc">&nbsp;        erekir = new Planet(&quot;erekir&quot;, sun, 1f, 2){{</b>
+<b class="fc">&nbsp;            generator = new ErekirPlanetGenerator();</b>
+<b class="fc">&nbsp;            meshLoader = () -&gt; new HexMesh(this, 5);</b>
+<b class="fc">&nbsp;            cloudMeshLoader = () -&gt; new MultiMesh(</b>
+<b class="nc">&nbsp;                new HexSkyMesh(this, 2, 0.15f, 0.14f, 5, Color.valueOf(&quot;eba768&quot;).a(0.75f), 2, 0.42f, 1f, 0.43f),</b>
+<b class="nc">&nbsp;                new HexSkyMesh(this, 3, 0.6f, 0.15f, 5, Color.valueOf(&quot;eea293&quot;).a(0.75f), 2, 0.42f, 1.2f, 0.45f)</b>
+&nbsp;            );
+<b class="fc">&nbsp;            alwaysUnlocked = true;</b>
+<b class="fc">&nbsp;            landCloudColor = Color.valueOf(&quot;ed6542&quot;);</b>
+<b class="fc">&nbsp;            atmosphereColor = Color.valueOf(&quot;f07218&quot;);</b>
+<b class="fc">&nbsp;            defaultEnv = Env.scorching | Env.terrestrial;</b>
+<b class="fc">&nbsp;            startSector = 10;</b>
+<b class="fc">&nbsp;            atmosphereRadIn = 0.02f;</b>
+<b class="fc">&nbsp;            atmosphereRadOut = 0.3f;</b>
+<b class="fc">&nbsp;            tidalLock = true;</b>
+<b class="fc">&nbsp;            orbitSpacing = 2f;</b>
+<b class="fc">&nbsp;            totalRadius += 2.6f;</b>
+<b class="fc">&nbsp;            lightSrcTo = 0.5f;</b>
+<b class="fc">&nbsp;            lightDstFrom = 0.2f;</b>
+<b class="fc">&nbsp;            clearSectorOnLose = true;</b>
+<b class="fc">&nbsp;            defaultCore = Blocks.coreBastion;</b>
+<b class="fc">&nbsp;            iconColor = Color.valueOf(&quot;ff9266&quot;);</b>
+<b class="fc">&nbsp;            enemyBuildSpeedMultiplier = 0.4f;</b>
+&nbsp;
+&nbsp;            //TODO disallowed for now
+<b class="fc">&nbsp;            allowLaunchToNumbered = false;</b>
+&nbsp;
+&nbsp;            //TODO SHOULD there be lighting?
+<b class="fc">&nbsp;            updateLighting = false;</b>
+&nbsp;
+<b class="fc">&nbsp;            defaultAttributes.set(Attribute.heat, 0.8f);</b>
+&nbsp;
+<b class="fc">&nbsp;            ruleSetter = r -&gt; {</b>
+<b class="fc">&nbsp;                r.waveTeam = Team.malis;</b>
+<b class="fc">&nbsp;                r.placeRangeCheck = false;</b>
+<b class="fc">&nbsp;                r.showSpawns = true;</b>
+<b class="fc">&nbsp;                r.fog = true;</b>
+<b class="fc">&nbsp;                r.staticFog = true;</b>
+<b class="fc">&nbsp;                r.lighting = false;</b>
+<b class="fc">&nbsp;                r.coreDestroyClear = true;</b>
+<b class="fc">&nbsp;                r.onlyDepositCore = true;</b>
+&nbsp;            };
+<b class="fc">&nbsp;            campaignRuleDefaults.fog = true;</b>
+<b class="fc">&nbsp;            campaignRuleDefaults.showSpawns = true;</b>
+&nbsp;
+<b class="fc">&nbsp;            unlockedOnLand.add(Blocks.coreBastion);</b>
+&nbsp;        }};
+&nbsp;
+&nbsp;        //TODO names
+<b class="fc">&nbsp;        gier = makeAsteroid(&quot;gier&quot;, erekir, Blocks.ferricStoneWall, Blocks.carbonWall, 0.4f, 7, 1f, gen -&gt; {</b>
+<b class="fc">&nbsp;            gen.min = 25;</b>
+<b class="fc">&nbsp;            gen.max = 35;</b>
+<b class="fc">&nbsp;            gen.carbonChance = 0.6f;</b>
+<b class="fc">&nbsp;            gen.iceChance = 0f;</b>
+<b class="fc">&nbsp;            gen.berylChance = 0.1f;</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        notva = makeAsteroid(&quot;notva&quot;, sun, Blocks.ferricStoneWall, Blocks.beryllicStoneWall, 0.55f, 9, 1.3f, gen -&gt; {</b>
+<b class="fc">&nbsp;            gen.berylChance = 0.8f;</b>
+<b class="fc">&nbsp;            gen.iceChance = 0f;</b>
+<b class="fc">&nbsp;            gen.carbonChance = 0.01f;</b>
+<b class="fc">&nbsp;            gen.max += 2;</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        tantros = new Planet(&quot;tantros&quot;, sun, 1f, 2){{</b>
+<b class="fc">&nbsp;            generator = new TantrosPlanetGenerator();</b>
+<b class="fc">&nbsp;            meshLoader = () -&gt; new HexMesh(this, 4);</b>
+<b class="fc">&nbsp;            accessible = false;</b>
+<b class="fc">&nbsp;            visible = false;</b>
+<b class="fc">&nbsp;            atmosphereColor = Color.valueOf(&quot;3db899&quot;);</b>
+<b class="fc">&nbsp;            iconColor = Color.valueOf(&quot;597be3&quot;);</b>
+<b class="fc">&nbsp;            startSector = 10;</b>
+<b class="fc">&nbsp;            atmosphereRadIn = -0.01f;</b>
+<b class="fc">&nbsp;            atmosphereRadOut = 0.3f;</b>
+<b class="fc">&nbsp;            defaultEnv = Env.underwater | Env.terrestrial;</b>
+<b class="fc">&nbsp;            ruleSetter = r -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;            };</b>
+&nbsp;        }};
+&nbsp;
+<b class="fc">&nbsp;        serpulo = new Planet(&quot;serpulo&quot;, sun, 1f, 3){{</b>
+<b class="fc">&nbsp;            generator = new SerpuloPlanetGenerator();</b>
+<b class="fc">&nbsp;            meshLoader = () -&gt; new HexMesh(this, 6);</b>
+<b class="fc">&nbsp;            cloudMeshLoader = () -&gt; new MultiMesh(</b>
+<b class="nc">&nbsp;                new HexSkyMesh(this, 11, 0.15f, 0.13f, 5, new Color().set(Pal.spore).mul(0.9f).a(0.75f), 2, 0.45f, 0.9f, 0.38f),</b>
+<b class="nc">&nbsp;                new HexSkyMesh(this, 1, 0.6f, 0.16f, 5, Color.white.cpy().lerp(Pal.spore, 0.55f).a(0.75f), 2, 0.45f, 1f, 0.41f)</b>
+&nbsp;            );
+&nbsp;
+<b class="fc">&nbsp;            launchCapacityMultiplier = 0.5f;</b>
+<b class="fc">&nbsp;            sectorSeed = 2;</b>
+<b class="fc">&nbsp;            allowWaves = true;</b>
+<b class="fc">&nbsp;            allowWaveSimulation = true;</b>
+<b class="fc">&nbsp;            allowSectorInvasion = true;</b>
+<b class="fc">&nbsp;            allowLaunchSchematics = true;</b>
+<b class="fc">&nbsp;            enemyCoreSpawnReplace = true;</b>
+<b class="fc">&nbsp;            allowLaunchLoadout = true;</b>
+&nbsp;            //doesn&#39;t play well with configs
+<b class="fc">&nbsp;            prebuildBase = false;</b>
+<b class="fc">&nbsp;            ruleSetter = r -&gt; {</b>
+<b class="fc">&nbsp;                r.waveTeam = Team.crux;</b>
+<b class="fc">&nbsp;                r.placeRangeCheck = false;</b>
+<b class="fc">&nbsp;                r.showSpawns = false;</b>
+&nbsp;            };
+<b class="fc">&nbsp;            iconColor = Color.valueOf(&quot;7d4dff&quot;);</b>
+<b class="fc">&nbsp;            atmosphereColor = Color.valueOf(&quot;3c1b8f&quot;);</b>
+<b class="fc">&nbsp;            atmosphereRadIn = 0.02f;</b>
+<b class="fc">&nbsp;            atmosphereRadOut = 0.3f;</b>
+<b class="fc">&nbsp;            startSector = 15;</b>
+<b class="fc">&nbsp;            alwaysUnlocked = true;</b>
+<b class="fc">&nbsp;            landCloudColor = Pal.spore.cpy().a(0.5f);</b>
+&nbsp;        }};
+&nbsp;
+<b class="fc">&nbsp;        verilus = makeAsteroid(&quot;verlius&quot;, sun, Blocks.stoneWall, Blocks.iceWall, 0.5f, 12, 2f, gen -&gt; {</b>
+<b class="fc">&nbsp;            gen.berylChance = 0f;</b>
+<b class="fc">&nbsp;            gen.iceChance = 0.6f;</b>
+<b class="fc">&nbsp;            gen.carbonChance = 0.1f;</b>
+<b class="fc">&nbsp;            gen.ferricChance = 0f;</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Planet makeAsteroid(String name, Planet parent, Block base, Block tint, float tintThresh, int pieces, float scale, Cons&lt;AsteroidGenerator&gt; cgen){
+<b class="fc">&nbsp;        return new Planet(name, parent, 0.12f){{</b>
+<b class="fc">&nbsp;            hasAtmosphere = false;</b>
+<b class="fc">&nbsp;            updateLighting = false;</b>
+<b class="fc">&nbsp;            sectors.add(new Sector(this, Ptile.empty));</b>
+<b class="fc">&nbsp;            camRadius = 0.68f * scale;</b>
+<b class="fc">&nbsp;            minZoom = 0.6f;</b>
+<b class="fc">&nbsp;            drawOrbit = false;</b>
+<b class="fc">&nbsp;            accessible = false;</b>
+<b class="fc">&nbsp;            clipRadius = 2f;</b>
+<b class="fc">&nbsp;            defaultEnv = Env.space;</b>
+<b class="fc">&nbsp;            icon = &quot;commandRally&quot;;</b>
+<b class="fc">&nbsp;            generator = new AsteroidGenerator();</b>
+<b class="fc">&nbsp;            cgen.get((AsteroidGenerator)generator);</b>
+&nbsp;
+<b class="fc">&nbsp;            meshLoader = () -&gt; {</b>
+<b class="nc">&nbsp;                iconColor = tint.mapColor;</b>
+<b class="nc">&nbsp;                Color tinted = tint.mapColor.cpy().a(1f - tint.mapColor.a);</b>
+<b class="nc">&nbsp;                Seq&lt;GenericMesh&gt; meshes = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;                Color color = base.mapColor;</b>
+<b class="nc">&nbsp;                Rand rand = new Rand(id + 2);</b>
+&nbsp;
+<b class="nc">&nbsp;                meshes.add(new NoiseMesh(</b>
+&nbsp;                    this, 0, 2, radius, 2, 0.55f, 0.45f, 14f,
+&nbsp;                    color, tinted, 3, 0.6f, 0.38f, tintThresh
+&nbsp;                ));
+&nbsp;
+<b class="nc">&nbsp;                for(int j = 0; j &lt; pieces; j++){</b>
+<b class="nc">&nbsp;                    meshes.add(new MatMesh(</b>
+<b class="nc">&nbsp;                        new NoiseMesh(this, j + 1, 1, 0.022f + rand.random(0.039f) * scale, 2, 0.6f, 0.38f, 20f,</b>
+&nbsp;                        color, tinted, 3, 0.6f, 0.38f, tintThresh),
+<b class="nc">&nbsp;                        new Mat3D().setToTranslation(Tmp.v31.setToRandomDirection(rand).setLength(rand.random(0.44f, 1.4f) * scale)))</b>
+&nbsp;                    );
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return new MultiMesh(meshes.toArray(GenericMesh.class));</b>
+&nbsp;            };
+&nbsp;        }};
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

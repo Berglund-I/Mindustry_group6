@@ -1,0 +1,895 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Turret</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense.turrets</a>
+</div>
+
+<h1>Coverage Summary for Class: Turret (mindustry.world.blocks.defense.turrets)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Turret</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.5%
+  </span>
+  <span class="absValue">
+    (5/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    81.5%
+  </span>
+  <span class="absValue">
+    (66/81)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Turret$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Turret$AmmoEntry</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Turret$BulletEntry</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Turret$TurretBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    46.7%
+  </span>
+  <span class="absValue">
+    (21/45)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.7%
+  </span>
+  <span class="absValue">
+    (77/210)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    44.3%
+  </span>
+  <span class="absValue">
+    (27/61)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48.2%
+  </span>
+  <span class="absValue">
+    (144/299)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense.turrets;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.Units.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.pattern.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.draw.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Turret extends ReloadTurret{
+&nbsp;    //after being logic-controlled and this amount of time passes, the turret will resume normal AI
+&nbsp;    public final static float logicControlCooldown = 60 * 2;
+&nbsp;
+<b class="fc">&nbsp;    public final int timerTarget = timers++;</b>
+&nbsp;    /** Ticks between attempt at finding a target. */
+<b class="fc">&nbsp;    public float targetInterval = 20;</b>
+&nbsp;    /** Target interval for when this turret already has a valid target. -1 = targetInterval */
+<b class="fc">&nbsp;    public float newTargetInterval = -1f;</b>
+&nbsp;
+&nbsp;    /** Maximum ammo units stored. */
+<b class="fc">&nbsp;    public int maxAmmo = 30;</b>
+&nbsp;    /** Ammo units used per shot. */
+<b class="fc">&nbsp;    public int ammoPerShot = 1;</b>
+&nbsp;    /** If true, ammo is only consumed once per shot regardless of bullet count. */
+<b class="fc">&nbsp;    public boolean consumeAmmoOnce = true;</b>
+&nbsp;    /** Minimum input heat required to fire. */
+<b class="fc">&nbsp;    public float heatRequirement = -1f;</b>
+&nbsp;    /** Maximum efficiency possible, if this turret uses heat. */
+<b class="fc">&nbsp;    public float maxHeatEfficiency = 3f;</b>
+&nbsp;
+&nbsp;    /** Bullet angle randomness in degrees. */
+<b class="fc">&nbsp;    public float inaccuracy = 0f;</b>
+&nbsp;    /** Fraction of bullet velocity that is random. */
+<b class="fc">&nbsp;    public float velocityRnd = 0f;</b>
+&nbsp;    /** Maximum angle difference in degrees at which turret will still try to shoot. */
+<b class="fc">&nbsp;    public float shootCone = 8f;</b>
+&nbsp;    /** Turret shoot point. */
+<b class="fc">&nbsp;    public float shootX = 0f, shootY = Float.NEGATIVE_INFINITY;</b>
+&nbsp;    /** Random spread on the X axis. */
+<b class="fc">&nbsp;    public float xRand = 0f;</b>
+&nbsp;    /** Range at which it finds and locks on to the target, but does not shoot. */
+<b class="fc">&nbsp;    public float trackingRange = 0f;</b>
+&nbsp;    /** Minimum bullet range. Used for artillery only. */
+<b class="fc">&nbsp;    public float minRange = 0f;</b>
+&nbsp;    /** Minimum warmup needed to fire. */
+<b class="fc">&nbsp;    public float minWarmup = 0f;</b>
+&nbsp;    /** If true, this turret will accurately target moving targets with respect to charge time. */
+<b class="fc">&nbsp;    public boolean accurateDelay = true;</b>
+&nbsp;    /** If false, this turret can&#39;t move while charging. */
+<b class="fc">&nbsp;    public boolean moveWhileCharging = true;</b>
+&nbsp;    /** How long warmup is maintained even if this turret isn&#39;t shooting. */
+<b class="fc">&nbsp;    public float warmupMaintainTime = 0f;</b>
+&nbsp;    /** pattern used for bullets */
+<b class="fc">&nbsp;    public ShootPattern shoot = new ShootPattern();</b>
+&nbsp;
+&nbsp;    /** If true, this block targets air units. */
+<b class="fc">&nbsp;    public boolean targetAir = true;</b>
+&nbsp;    /** If true, this block targets ground units and structures. */
+<b class="fc">&nbsp;    public boolean targetGround = true;</b>
+&nbsp;    /** If true, this block targets friend blocks, to heal them. */
+<b class="fc">&nbsp;    public boolean targetHealing = false;</b>
+&nbsp;    /** If true, this turret can be controlled by players. */
+<b class="fc">&nbsp;    public boolean playerControllable = true;</b>
+&nbsp;    /** If true, this block will display ammo multipliers in its stats (irrelevant for certain types of turrets). */
+<b class="fc">&nbsp;    public boolean displayAmmoMultiplier = true;</b>
+&nbsp;    /** If false, &#39;under&#39; blocks like conveyors are not targeted. */
+<b class="fc">&nbsp;    public boolean targetUnderBlocks = true;</b>
+&nbsp;    /** If true, the turret will always shoot when it has ammo, regardless of targets in range or any control. */
+<b class="fc">&nbsp;    public boolean alwaysShooting = false;</b>
+&nbsp;    /** Whether this turret predicts unit movement. */
+<b class="fc">&nbsp;    public boolean predictTarget = true;</b>
+&nbsp;    /** Function for choosing which unit to target. */
+<b class="fc">&nbsp;    public Sortf unitSort = UnitSorts.closest;</b>
+&nbsp;    /** Filter for types of units to attack. */
+<b class="fc">&nbsp;    public Boolf&lt;Unit&gt; unitFilter = u -&gt; true;</b>
+&nbsp;    /** Filter for types of buildings to attack. */
+<b class="fc">&nbsp;    public Boolf&lt;Building&gt; buildingFilter = b -&gt; targetUnderBlocks || !b.block.underBullets;</b>
+&nbsp;
+&nbsp;    /** Color of heat region drawn on top (if found) */
+<b class="fc">&nbsp;    public Color heatColor = Pal.turretHeat;</b>
+&nbsp;    /** Optional override for all shoot effects. */
+&nbsp;    public @Nullable Effect shootEffect;
+&nbsp;    /** Optional override for all smoke effects. */
+&nbsp;    public @Nullable Effect smokeEffect;
+&nbsp;    /** Effect created when ammo is used. Not optional. */
+<b class="fc">&nbsp;    public Effect ammoUseEffect = Fx.none;</b>
+&nbsp;    /** Sound emitted when a single bullet is shot. */
+<b class="fc">&nbsp;    public Sound shootSound = Sounds.shoot;</b>
+&nbsp;    /** Sound emitted when shoot.firstShotDelay is &gt;0 and shooting begins. */
+<b class="fc">&nbsp;    public Sound chargeSound = Sounds.none;</b>
+&nbsp;    /** Range for pitch of shoot sound. */
+<b class="fc">&nbsp;    public float soundPitchMin = 0.9f, soundPitchMax = 1.1f;</b>
+&nbsp;    /** Backwards Y offset of ammo eject effect. */
+<b class="fc">&nbsp;    public float ammoEjectBack = 1f;</b>
+&nbsp;    /** Lerp speed of turret warmup. */
+<b class="fc">&nbsp;    public float shootWarmupSpeed = 0.1f;</b>
+&nbsp;    /** If true, turret warmup is linear instead of a curve. */
+<b class="fc">&nbsp;    public boolean linearWarmup = false;</b>
+&nbsp;    /** Visual amount by which the turret recoils back per shot. */
+<b class="fc">&nbsp;    public float recoil = 1f;</b>
+&nbsp;    /** Number of additional counters for recoil. */
+<b class="fc">&nbsp;    public int recoils = -1;</b>
+&nbsp;    /** ticks taken for turret to return to starting position in ticks. uses reload time by default  */
+<b class="fc">&nbsp;    public float recoilTime = -1f;</b>
+&nbsp;    /** power curve applied to visual recoil */
+<b class="fc">&nbsp;    public float recoilPow = 1.8f;</b>
+&nbsp;    /** ticks to cool down the heat region */
+<b class="fc">&nbsp;    public float cooldownTime = 20f;</b>
+&nbsp;    /** Visual elevation of turret shadow, -1 to use defaults. */
+<b class="fc">&nbsp;    public float elevation = -1f;</b>
+&nbsp;    /** How much the screen shakes per shot. */
+<b class="fc">&nbsp;    public float shake = 0f;</b>
+&nbsp;
+&nbsp;    /** Defines drawing behavior for this turret. */
+<b class="fc">&nbsp;    public DrawBlock drawer = new DrawTurret();</b>
+&nbsp;
+&nbsp;    public Turret(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        liquidCapacity = 20f;</b>
+<b class="fc">&nbsp;        quickRotate = false;</b>
+<b class="fc">&nbsp;        outlinedIcon = 1;</b>
+<b class="fc">&nbsp;        drawLiquidLight = false;</b>
+<b class="fc">&nbsp;        sync = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.inaccuracy, (int)inaccuracy, StatUnit.degrees);</b>
+<b class="nc">&nbsp;        stats.add(Stat.reload, 60f / (reload) * shoot.shots, StatUnit.perSecond);</b>
+<b class="nc">&nbsp;        stats.add(Stat.targetsAir, targetAir);</b>
+<b class="nc">&nbsp;        stats.add(Stat.targetsGround, targetGround);</b>
+<b class="nc">&nbsp;        if(ammoPerShot != 1) stats.add(Stat.ammoUse, ammoPerShot, StatUnit.perShot);</b>
+<b class="nc">&nbsp;        if(heatRequirement &gt; 0) stats.add(Stat.input, heatRequirement, StatUnit.heatUnits);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(heatRequirement &gt; 0){</b>
+<b class="fc">&nbsp;            addBar(&quot;heat&quot;, (TurretBuild entity) -&gt;</b>
+<b class="nc">&nbsp;            new Bar(() -&gt;</b>
+<b class="nc">&nbsp;            Core.bundle.format(&quot;bar.heatpercent&quot;, (int)entity.heatReq, (int)(Math.min(entity.heatReq / heatRequirement, maxHeatEfficiency) * 100)),</b>
+<b class="nc">&nbsp;            () -&gt; Pal.lightOrange,</b>
+<b class="nc">&nbsp;            () -&gt; entity.heatReq / heatRequirement));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        if(shootY == Float.NEGATIVE_INFINITY) shootY = size * tilesize / 2f;</b>
+<b class="fc">&nbsp;        if(elevation &lt; 0) elevation = size / 2f;</b>
+<b class="fc">&nbsp;        if(recoilTime &lt; 0f) recoilTime = reload;</b>
+<b class="fc">&nbsp;        if(cooldownTime &lt; 0f) cooldownTime = reload;</b>
+<b class="fc">&nbsp;        if(newTargetInterval &lt;= 0f) newTargetInterval = targetInterval;</b>
+&nbsp;
+<b class="fc">&nbsp;        super.init();</b>
+<b class="fc">&nbsp;        trackingRange = Math.max(range, trackingRange);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        drawer.load(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return drawer.finalIcons(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void getRegionsToOutline(Seq&lt;TextureRegion&gt; out){
+<b class="nc">&nbsp;        drawer.getRegionsToOutline(this, out);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void limitRange(BulletType bullet, float margin){
+<b class="fc">&nbsp;        float realRange = bullet.rangeChange + range;</b>
+&nbsp;        //doesn&#39;t handle drag
+<b class="fc">&nbsp;        bullet.lifetime = (realRange + margin) / bullet.speed;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static abstract class AmmoEntry{</b>
+&nbsp;        public int amount;
+&nbsp;
+&nbsp;        public abstract BulletType type();
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class TurretBuild extends ReloadTurretBuild implements ControlBlock{</b>
+&nbsp;        //TODO storing these as instance variables is horrible design
+&nbsp;        /** Turret sprite offset, based on recoil. Updated every frame. */
+<b class="fc">&nbsp;        public Vec2 recoilOffset = new Vec2();</b>
+&nbsp;
+<b class="fc">&nbsp;        public Seq&lt;AmmoEntry&gt; ammo = new Seq&lt;&gt;();</b>
+&nbsp;        public int totalAmmo;
+<b class="fc">&nbsp;        public float curRecoil, heat, logicControlTime = -1;</b>
+&nbsp;        public @Nullable float[] curRecoils;
+<b class="fc">&nbsp;        public float shootWarmup, charge, warmupHold = 0f;</b>
+&nbsp;        public int totalShots, barrelCounter;
+<b class="fc">&nbsp;        public boolean logicShooting = false;</b>
+&nbsp;        public @Nullable Posc target;
+<b class="fc">&nbsp;        public Vec2 targetPos = new Vec2();</b>
+<b class="fc">&nbsp;        public BlockUnitc unit = (BlockUnitc)UnitTypes.block.create(team);</b>
+&nbsp;        public boolean wasShooting;
+<b class="fc">&nbsp;        public int queuedBullets = 0;</b>
+&nbsp;
+&nbsp;        public float heatReq;
+<b class="fc">&nbsp;        public float[] sideHeat = new float[4];</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float estimateDps(){
+<b class="nc">&nbsp;            if(!hasAmmo()) return 0f;</b>
+<b class="nc">&nbsp;            return shoot.shots / reload * 60f * (peekAmmo() == null ? 0f : peekAmmo().estimateDPS()) * potentialEfficiency * timeScale;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float range(){
+<b class="fc">&nbsp;            if(peekAmmo() != null){</b>
+<b class="fc">&nbsp;                return range + peekAmmo().rangeChange;</b>
+&nbsp;            }
+<b class="fc">&nbsp;            return range;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public float trackingRange(){
+<b class="fc">&nbsp;            return range() + trackingRange - range;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float warmup(){
+<b class="nc">&nbsp;            return shootWarmup;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float drawrot(){
+<b class="nc">&nbsp;            return rotation - 90;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return isShooting() || reloadCounter &lt; reload;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean canControl(){
+<b class="nc">&nbsp;            return playerControllable;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void control(LAccess type, double p1, double p2, double p3, double p4){
+<b class="nc">&nbsp;            if(type == LAccess.shoot &amp;&amp; !unit.isPlayer()){</b>
+<b class="nc">&nbsp;                targetPos.set(World.unconv((float)p1), World.unconv((float)p2));</b>
+<b class="nc">&nbsp;                logicControlTime = logicControlCooldown;</b>
+<b class="nc">&nbsp;                logicShooting = !Mathf.zero(p3);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            super.control(type, p1, p2, p3, p4);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void control(LAccess type, Object p1, double p2, double p3, double p4){
+<b class="nc">&nbsp;            if(type == LAccess.shootp &amp;&amp; (unit == null || !unit.isPlayer())){</b>
+<b class="nc">&nbsp;                logicControlTime = logicControlCooldown;</b>
+<b class="nc">&nbsp;                logicShooting = !Mathf.zero(p2);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(p1 instanceof Posc pos){</b>
+<b class="nc">&nbsp;                    targetPosition(pos);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            super.control(type, p1, p2, p3, p4);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public double sense(LAccess sensor){
+<b class="nc">&nbsp;            return switch(sensor){</b>
+<b class="nc">&nbsp;                case ammo -&gt; totalAmmo;</b>
+<b class="nc">&nbsp;                case ammoCapacity -&gt; maxAmmo;</b>
+<b class="nc">&nbsp;                case rotation -&gt; rotation;</b>
+<b class="nc">&nbsp;                case shootX -&gt; World.conv(targetPos.x);</b>
+<b class="nc">&nbsp;                case shootY -&gt; World.conv(targetPos.y);</b>
+<b class="nc">&nbsp;                case shooting -&gt; isShooting() ? 1 : 0;</b>
+<b class="nc">&nbsp;                case progress -&gt; progress();</b>
+<b class="nc">&nbsp;                default -&gt; super.sense(sensor);</b>
+&nbsp;            };
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float progress(){
+<b class="nc">&nbsp;            return Mathf.clamp(reloadCounter / reload);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isShooting(){
+<b class="fc">&nbsp;            return alwaysShooting || (isControlled() ? unit.isShooting() : logicControlled() ? logicShooting : target != null);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Unit unit(){
+&nbsp;            //make sure stats are correct
+<b class="fc">&nbsp;            unit.tile(this);</b>
+<b class="fc">&nbsp;            unit.team(team);</b>
+<b class="fc">&nbsp;            return (Unit)unit;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean logicControlled(){
+<b class="fc">&nbsp;            return logicControlTime &gt; 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isActive(){
+<b class="fc">&nbsp;            return (target != null || wasShooting) &amp;&amp; enabled;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void targetPosition(Posc pos){
+<b class="nc">&nbsp;            if(!hasAmmo() || pos == null) return;</b>
+<b class="nc">&nbsp;            BulletType bullet = peekAmmo();</b>
+&nbsp;
+<b class="nc">&nbsp;            var offset = Tmp.v1.setZero();</b>
+&nbsp;
+&nbsp;            //when delay is accurate, assume unit has moved by chargeTime already
+<b class="nc">&nbsp;            if(accurateDelay &amp;&amp; !moveWhileCharging &amp;&amp; pos instanceof Hitboxc h){</b>
+<b class="nc">&nbsp;                offset.set(h.deltaX(), h.deltaY()).scl(shoot.firstShotDelay / Time.delta);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(predictTarget){</b>
+<b class="nc">&nbsp;                targetPos.set(Predict.intercept(this, pos, offset.x, offset.y, bullet.speed &lt;= 0.01f ? 99999999f : bullet.speed));</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                targetPos.set(pos);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(targetPos.isZero()){</b>
+<b class="nc">&nbsp;                targetPos.set(pos);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            drawer.draw(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(!validateTarget()) target = null;</b>
+&nbsp;
+<b class="fc">&nbsp;            float warmupTarget = (isShooting() &amp;&amp; canConsume()) || charging() ? 1f : 0f;</b>
+<b class="fc">&nbsp;            if(warmupTarget &gt; 0 &amp;&amp; !isControlled()){</b>
+<b class="nc">&nbsp;                warmupHold = 1f;</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if(warmupHold &gt; 0f){</b>
+<b class="nc">&nbsp;                warmupHold -= Time.delta / warmupMaintainTime;</b>
+<b class="nc">&nbsp;                warmupTarget = 1f;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(linearWarmup){</b>
+<b class="nc">&nbsp;                shootWarmup = Mathf.approachDelta(shootWarmup, warmupTarget, shootWarmupSpeed * (warmupTarget &gt; 0 ? efficiency : 1f));</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                shootWarmup = Mathf.lerpDelta(shootWarmup, warmupTarget, shootWarmupSpeed * (warmupTarget &gt; 0 ? efficiency : 1f));</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            wasShooting = false;</b>
+&nbsp;
+<b class="fc">&nbsp;            curRecoil = Mathf.approachDelta(curRecoil, 0, 1 / recoilTime);</b>
+<b class="fc">&nbsp;            if(recoils &gt; 0){</b>
+<b class="fc">&nbsp;                if(curRecoils == null) curRecoils = new float[recoils];</b>
+<b class="fc">&nbsp;                for(int i = 0; i &lt; recoils; i++){</b>
+<b class="fc">&nbsp;                    curRecoils[i] = Mathf.approachDelta(curRecoils[i], 0, 1 / recoilTime);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;            heat = Mathf.approachDelta(heat, 0, 1 / cooldownTime);</b>
+<b class="fc">&nbsp;            charge = charging() ? Mathf.approachDelta(charge, 1, 1 / shoot.firstShotDelay) : 0;</b>
+&nbsp;
+<b class="fc">&nbsp;            unit.tile(this);</b>
+<b class="fc">&nbsp;            unit.rotation(rotation);</b>
+<b class="fc">&nbsp;            unit.team(team);</b>
+<b class="fc">&nbsp;            recoilOffset.trns(rotation, -Mathf.pow(curRecoil, recoilPow) * recoil);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(logicControlTime &gt; 0){</b>
+<b class="nc">&nbsp;                logicControlTime -= Time.delta;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(heatRequirement &gt; 0){</b>
+<b class="fc">&nbsp;                heatReq = calculateHeat(sideHeat);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //turret always reloads regardless of whether it&#39;s targeting something
+<b class="fc">&nbsp;            updateReload();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(hasAmmo()){</b>
+<b class="fc">&nbsp;                if(Float.isNaN(reloadCounter)) reloadCounter = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;                if(timer(timerTarget, target != null ? newTargetInterval : targetInterval)){</b>
+<b class="fc">&nbsp;                    findTarget();</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(validateTarget()){</b>
+<b class="nc">&nbsp;                    boolean canShoot = true;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(isControlled()){ //player behavior</b>
+<b class="nc">&nbsp;                        targetPos.set(unit.aimX(), unit.aimY());</b>
+<b class="nc">&nbsp;                        canShoot = unit.isShooting();</b>
+<b class="nc">&nbsp;                    }else if(logicControlled()){ //logic behavior</b>
+<b class="nc">&nbsp;                        canShoot = logicShooting;</b>
+&nbsp;                    }else{ //default AI behavior
+<b class="nc">&nbsp;                        targetPosition(target);</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(Float.isNaN(rotation)) rotation = 0;</b>
+<b class="nc">&nbsp;                        canShoot = within(target, range() + (target instanceof Sized hb ? hb.hitSize()/1.9f : 0f));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(!isControlled()){</b>
+<b class="nc">&nbsp;                        unit.aimX(targetPos.x);</b>
+<b class="nc">&nbsp;                        unit.aimY(targetPos.y);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    float targetRot = angleTo(targetPos);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(shouldTurn()){</b>
+<b class="nc">&nbsp;                        turnToTarget(targetRot);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(!alwaysShooting &amp;&amp; Angles.angleDist(rotation, targetRot) &lt; shootCone &amp;&amp; canShoot){</b>
+<b class="nc">&nbsp;                        wasShooting = true;</b>
+<b class="nc">&nbsp;                        updateShooting();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }else{</b>
+<b class="fc">&nbsp;                    target = null;</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(alwaysShooting){</b>
+<b class="nc">&nbsp;                    wasShooting = true;</b>
+<b class="nc">&nbsp;                    updateShooting();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(coolant != null){</b>
+<b class="fc">&nbsp;                updateCooling();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleLiquid(Building source, Liquid liquid, float amount){
+<b class="nc">&nbsp;            if(coolant != null &amp;&amp; liquids.currentAmount() &lt;= 0.001f){</b>
+<b class="nc">&nbsp;                Events.fire(Trigger.turretCool);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            super.handleLiquid(source, liquid, amount);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected boolean validateTarget(){
+<b class="fc">&nbsp;            return !Units.invalidateTarget(target, canHeal() ? Team.derelict : team, x, y) || isControlled() || logicControlled();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected boolean canHeal(){
+<b class="fc">&nbsp;            return targetHealing &amp;&amp; hasAmmo() &amp;&amp; peekAmmo().collidesTeam &amp;&amp; peekAmmo().heals();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected Posc findEnemy(float range){
+<b class="fc">&nbsp;            if(targetAir &amp;&amp; !targetGround){</b>
+<b class="nc">&nbsp;                return Units.bestEnemy(team, x, y, range, e -&gt; !e.dead() &amp;&amp; !e.isGrounded() &amp;&amp; unitFilter.get(e), unitSort);</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                return Units.bestTarget(team, x, y, range, e -&gt; !e.dead() &amp;&amp; unitFilter.get(e) &amp;&amp; (e.isGrounded() || targetAir) &amp;&amp; (!e.isGrounded() || targetGround), b -&gt; targetGround &amp;&amp; buildingFilter.get(b), unitSort);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void findTarget(){
+<b class="fc">&nbsp;            float trackRange = trackingRange(), range = range();</b>
+&nbsp;
+<b class="fc">&nbsp;            target = findEnemy(range);</b>
+&nbsp;            //find another target within the tracking range, but only if there&#39;s nothing else (always prioritize standard target)
+<b class="fc">&nbsp;            if(!Mathf.equal(trackRange, range) &amp;&amp; target == null){</b>
+<b class="fc">&nbsp;                target = findEnemy(trackRange);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(target == null &amp;&amp; canHeal()){</b>
+<b class="nc">&nbsp;                target = Units.findAllyTile(team, x, y, range, b -&gt; b.damaged() &amp;&amp; b != this);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void turnToTarget(float targetRot){
+<b class="nc">&nbsp;            rotation = Angles.moveToward(rotation, targetRot, rotateSpeed * delta() * potentialEfficiency);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean shouldTurn(){
+<b class="nc">&nbsp;            return moveWhileCharging || !charging();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateEfficiencyMultiplier(){
+<b class="fc">&nbsp;            if(heatRequirement &gt; 0){</b>
+<b class="fc">&nbsp;                efficiency *= Math.min(Math.max(heatReq / heatRequirement, cheating() ? 1f : 0f), maxHeatEfficiency);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Consume ammo and return a type. */
+&nbsp;        public BulletType useAmmo(){
+<b class="nc">&nbsp;            if(cheating()) return peekAmmo();</b>
+&nbsp;
+<b class="nc">&nbsp;            AmmoEntry entry = ammo.peek();</b>
+<b class="nc">&nbsp;            entry.amount -= ammoPerShot;</b>
+<b class="nc">&nbsp;            if(entry.amount &lt;= 0) ammo.pop();</b>
+<b class="nc">&nbsp;            totalAmmo -= ammoPerShot;</b>
+<b class="nc">&nbsp;            totalAmmo = Math.max(totalAmmo, 0);</b>
+<b class="nc">&nbsp;            return entry.type();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** @return the ammo type that will be returned if useAmmo is called. */
+&nbsp;        public @Nullable BulletType peekAmmo(){
+<b class="fc">&nbsp;            return ammo.size == 0 ? null : ammo.peek().type();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** @return whether the turret has ammo. */
+&nbsp;        public boolean hasAmmo(){
+&nbsp;            //used for &quot;side-ammo&quot; like gas in some turrets
+<b class="fc">&nbsp;            if(!canConsume()) return false;</b>
+&nbsp;
+&nbsp;            //skip first entry if it has less than the required amount of ammo
+<b class="nc">&nbsp;            if(ammo.size &gt;= 2 &amp;&amp; ammo.peek().amount &lt; ammoPerShot &amp;&amp; ammo.get(ammo.size - 2).amount &gt;= ammoPerShot){</b>
+<b class="nc">&nbsp;                ammo.swap(ammo.size - 1, ammo.size - 2);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return ammo.size &gt; 0 &amp;&amp; (ammo.peek().amount &gt;= ammoPerShot || cheating());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean charging(){
+<b class="fc">&nbsp;            return queuedBullets &gt; 0 &amp;&amp; shoot.firstShotDelay &gt; 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void updateReload(){
+<b class="fc">&nbsp;            float multiplier = hasAmmo() ? peekAmmo().reloadMultiplier : 1f;</b>
+<b class="fc">&nbsp;            reloadCounter += delta() * multiplier * baseReloadSpeed();</b>
+&nbsp;
+&nbsp;            //cap reload for visual reasons
+<b class="fc">&nbsp;            reloadCounter = Math.min(reloadCounter, reload);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void updateShooting(){
+&nbsp;
+<b class="nc">&nbsp;            if(reloadCounter &gt;= reload &amp;&amp; !charging() &amp;&amp; shootWarmup &gt;= minWarmup){</b>
+<b class="nc">&nbsp;                BulletType type = peekAmmo();</b>
+&nbsp;
+<b class="nc">&nbsp;                shoot(type);</b>
+&nbsp;
+<b class="nc">&nbsp;                reloadCounter %= reload;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void shoot(BulletType type){
+&nbsp;            float
+<b class="nc">&nbsp;            bulletX = x + Angles.trnsx(rotation - 90, shootX, shootY),</b>
+<b class="nc">&nbsp;            bulletY = y + Angles.trnsy(rotation - 90, shootX, shootY);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(shoot.firstShotDelay &gt; 0){</b>
+<b class="nc">&nbsp;                chargeSound.at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax));</b>
+<b class="nc">&nbsp;                type.chargeEffect.at(bulletX, bulletY, rotation);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            shoot.shoot(barrelCounter, (xOffset, yOffset, angle, delay, mover) -&gt; {</b>
+<b class="nc">&nbsp;                queuedBullets++;</b>
+<b class="nc">&nbsp;                int barrel = barrelCounter;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(delay &gt; 0f){</b>
+<b class="nc">&nbsp;                    Time.run(delay, () -&gt; {</b>
+&nbsp;                        //hack: make sure the barrel is the same as what it was when the bullet was queued to fire
+<b class="nc">&nbsp;                        int prev = barrelCounter;</b>
+<b class="nc">&nbsp;                        barrelCounter = barrel;</b>
+<b class="nc">&nbsp;                        bullet(type, xOffset, yOffset, angle, mover);</b>
+<b class="nc">&nbsp;                        barrelCounter = prev;</b>
+&nbsp;                    });
+&nbsp;                }else{
+<b class="nc">&nbsp;                    bullet(type, xOffset, yOffset, angle, mover);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }, () -&gt; barrelCounter++);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(consumeAmmoOnce){</b>
+<b class="nc">&nbsp;                useAmmo();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void bullet(BulletType type, float xOffset, float yOffset, float angleOffset, Mover mover){
+<b class="nc">&nbsp;            queuedBullets --;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(dead || (!consumeAmmoOnce &amp;&amp; !hasAmmo())) return;</b>
+&nbsp;
+&nbsp;            float
+<b class="nc">&nbsp;            xSpread = Mathf.range(xRand),</b>
+<b class="nc">&nbsp;            bulletX = x + Angles.trnsx(rotation - 90, shootX + xOffset + xSpread, shootY + yOffset),</b>
+<b class="nc">&nbsp;            bulletY = y + Angles.trnsy(rotation - 90, shootX + xOffset + xSpread, shootY + yOffset),</b>
+<b class="nc">&nbsp;            shootAngle = rotation + angleOffset + Mathf.range(inaccuracy + type.inaccuracy);</b>
+&nbsp;
+<b class="nc">&nbsp;            float lifeScl = type.scaleLife ? Mathf.clamp(Mathf.dst(bulletX, bulletY, targetPos.x, targetPos.y) / type.range, minRange / type.range, range() / type.range) : 1f;</b>
+&nbsp;
+&nbsp;            //TODO aimX / aimY for multi shot turrets?
+<b class="nc">&nbsp;            handleBullet(type.create(this, team, bulletX, bulletY, shootAngle, -1f, (1f - velocityRnd) + Mathf.random(velocityRnd), lifeScl, null, mover, targetPos.x, targetPos.y), xOffset, yOffset, shootAngle - rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;            (shootEffect == null ? type.shootEffect : shootEffect).at(bulletX, bulletY, rotation + angleOffset, type.hitColor);</b>
+<b class="nc">&nbsp;            (smokeEffect == null ? type.smokeEffect : smokeEffect).at(bulletX, bulletY, rotation + angleOffset, type.hitColor);</b>
+<b class="nc">&nbsp;            shootSound.at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax));</b>
+&nbsp;
+<b class="nc">&nbsp;            ammoUseEffect.at(</b>
+<b class="nc">&nbsp;                x - Angles.trnsx(rotation, ammoEjectBack),</b>
+<b class="nc">&nbsp;                y - Angles.trnsy(rotation, ammoEjectBack),</b>
+<b class="nc">&nbsp;                rotation * Mathf.sign(xOffset)</b>
+&nbsp;            );
+&nbsp;
+<b class="nc">&nbsp;            if(shake &gt; 0){</b>
+<b class="nc">&nbsp;                Effect.shake(shake, shake, this);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            curRecoil = 1f;</b>
+<b class="nc">&nbsp;            if(recoils &gt; 0){</b>
+<b class="nc">&nbsp;                curRecoils[barrelCounter % recoils] = 1f;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            heat = 1f;</b>
+<b class="nc">&nbsp;            totalShots++;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!consumeAmmoOnce){</b>
+<b class="nc">&nbsp;                useAmmo();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void handleBullet(@Nullable Bullet bullet, float offsetX, float offsetY, float angleOffset){
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float activeSoundVolume(){
+<b class="nc">&nbsp;            return shootWarmup;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldActiveSound(){
+<b class="nc">&nbsp;            return shootWarmup &gt; 0.01f &amp;&amp; loopSound != Sounds.none;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.f(reloadCounter);</b>
+<b class="fc">&nbsp;            write.f(rotation);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                reloadCounter = read.f();</b>
+<b class="fc">&nbsp;                rotation = read.f();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void readSync(Reads read, byte revision){
+&nbsp;            //maintain rotation and reload when syncing so clients don&#39;t see turrets snapping around
+<b class="nc">&nbsp;            float oldRot = rotation, oldReload = reloadCounter;</b>
+&nbsp;
+<b class="nc">&nbsp;            readAll(read, revision);</b>
+&nbsp;
+<b class="nc">&nbsp;            rotation = oldRot;</b>
+<b class="nc">&nbsp;            reloadCounter = oldReload;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class BulletEntry{
+&nbsp;        public Bullet bullet;
+&nbsp;        public float x, y, rotation, life;
+&nbsp;
+<b class="nc">&nbsp;        public BulletEntry(Bullet bullet, float x, float y, float rotation, float life){</b>
+<b class="nc">&nbsp;            this.bullet = bullet;</b>
+<b class="nc">&nbsp;            this.x = x;</b>
+<b class="nc">&nbsp;            this.y = y;</b>
+<b class="nc">&nbsp;            this.rotation = rotation;</b>
+<b class="nc">&nbsp;            this.life = life;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

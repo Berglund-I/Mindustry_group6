@@ -1,0 +1,464 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BuilderComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: BuilderComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BuilderComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/160)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class BuilderComp implements Posc, Statusc, Teamc, Rotc{</b>
+&nbsp;    @Import float x, y, rotation, buildSpeedMultiplier;
+&nbsp;    @Import UnitType type;
+&nbsp;    @Import Team team;
+&nbsp;
+<b class="nc">&nbsp;    @SyncLocal Queue&lt;BuildPlan&gt; plans = new Queue&lt;&gt;(1);</b>
+<b class="nc">&nbsp;    @SyncLocal boolean updateBuilding = true;</b>
+&nbsp;
+&nbsp;    private transient float buildCounter;
+&nbsp;    private transient BuildPlan lastActive;
+&nbsp;    private transient int lastSize;
+<b class="nc">&nbsp;    transient float buildAlpha = 0f;</b>
+&nbsp;
+&nbsp;    public boolean canBuild(){
+<b class="nc">&nbsp;        return type.buildSpeed &gt; 0 &amp;&amp; buildSpeedMultiplier &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        updateBuildLogic();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void afterRead(){
+&nbsp;        //why would this happen?
+<b class="nc">&nbsp;        if(plans == null){</b>
+<b class="nc">&nbsp;            plans = new Queue&lt;&gt;(1);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void validatePlans(){
+<b class="nc">&nbsp;        if(plans.size &gt; 0){</b>
+<b class="nc">&nbsp;            Iterator&lt;BuildPlan&gt; it = plans.iterator();</b>
+<b class="nc">&nbsp;            while(it.hasNext()){</b>
+<b class="nc">&nbsp;                BuildPlan plan = it.next();</b>
+<b class="nc">&nbsp;                Tile tile = world.tile(plan.x, plan.y);</b>
+<b class="nc">&nbsp;                boolean isSameDerelict = (tile != null &amp;&amp; tile.build != null &amp;&amp; tile.block() == plan.block &amp;&amp; tile.build.tileX() == plan.x &amp;&amp; tile.build.tileY() == plan.y &amp;&amp; tile.team() == Team.derelict);</b>
+<b class="nc">&nbsp;                if(tile == null || (plan.breaking &amp;&amp; tile.block() == Blocks.air) || (!plan.breaking &amp;&amp; ((tile.build != null &amp;&amp; tile.build.rotation == plan.rotation &amp;&amp; !isSameDerelict) || !plan.block.rotate) &amp;&amp;</b>
+&nbsp;                    //th block must be the same, but not derelict and the same
+<b class="nc">&nbsp;                    ((tile.block() == plan.block &amp;&amp; !isSameDerelict) ||</b>
+&nbsp;                        //same floor or overlay
+<b class="nc">&nbsp;                        (plan.block != null &amp;&amp; (plan.block.isOverlay() &amp;&amp; plan.block == tile.overlay() || (plan.block.isFloor() &amp;&amp; plan.block == tile.floor())))))){</b>
+&nbsp;
+<b class="nc">&nbsp;                    it.remove();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateBuildLogic(){
+<b class="nc">&nbsp;        if(type.buildSpeed &lt;= 0f) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!headless){</b>
+&nbsp;            //visual activity update
+<b class="nc">&nbsp;            if(lastActive != null &amp;&amp; buildAlpha &lt;= 0.01f){</b>
+<b class="nc">&nbsp;                lastActive = null;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            buildAlpha = Mathf.lerpDelta(buildAlpha, activelyBuilding() ? 1f : 0f, 0.15f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        validatePlans();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!updateBuilding || !canBuild()){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float finalPlaceDst = state.rules.infiniteResources ? Float.MAX_VALUE : type.buildRange;</b>
+<b class="nc">&nbsp;        boolean infinite = state.rules.infiniteResources || team().rules().infiniteResources;</b>
+&nbsp;
+<b class="nc">&nbsp;        buildCounter += Time.delta;</b>
+<b class="nc">&nbsp;        if(Float.isNaN(buildCounter) || Float.isInfinite(buildCounter)) buildCounter = 0f;</b>
+<b class="nc">&nbsp;        buildCounter = Math.min(buildCounter, 10f);</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean instant = state.rules.instantBuild &amp;&amp; state.rules.infiniteResources;</b>
+&nbsp;
+&nbsp;        //random attempt to fix a freeze that only occurs on Android
+<b class="nc">&nbsp;        int maxPerFrame = instant ? plans.size : 10, count = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        var core = core();</b>
+&nbsp;
+<b class="nc">&nbsp;        if((core == null &amp;&amp; !infinite)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        while((buildCounter &gt;= 1 || instant) &amp;&amp; count++ &lt; maxPerFrame &amp;&amp; plans.size &gt; 0){</b>
+<b class="nc">&nbsp;            buildCounter -= 1f;</b>
+&nbsp;
+&nbsp;            //find the next build plan
+<b class="nc">&nbsp;            if(plans.size &gt; 1){</b>
+<b class="nc">&nbsp;                int total = 0;</b>
+<b class="nc">&nbsp;                int size = plans.size;</b>
+&nbsp;                BuildPlan plan;
+<b class="nc">&nbsp;                while((!within((plan = buildPlan()).tile(), finalPlaceDst) || shouldSkip(plan, core)) &amp;&amp; total &lt; size){</b>
+<b class="nc">&nbsp;                    plans.removeFirst();</b>
+<b class="nc">&nbsp;                    plans.addLast(plan);</b>
+<b class="nc">&nbsp;                    total++;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            BuildPlan current = buildPlan();</b>
+<b class="nc">&nbsp;            Tile tile = current.tile();</b>
+&nbsp;
+<b class="nc">&nbsp;            lastActive = current;</b>
+<b class="nc">&nbsp;            buildAlpha = 1f;</b>
+<b class="nc">&nbsp;            if(current.breaking) lastSize = tile.block().size;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!within(tile, finalPlaceDst)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!headless){</b>
+<b class="nc">&nbsp;                Vars.control.sound.loop(Sounds.build, tile, 0.15f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!(tile.build instanceof ConstructBuild cb)){</b>
+<b class="nc">&nbsp;                if(!current.initialized &amp;&amp; !current.breaking &amp;&amp; Build.validPlace(current.block, team, current.x, current.y, current.rotation)){</b>
+<b class="nc">&nbsp;                    boolean hasAll = infinite || current.isRotation(team) ||</b>
+&nbsp;                        //derelict repair
+<b class="nc">&nbsp;                        (tile.team() == Team.derelict &amp;&amp; tile.block() == current.block &amp;&amp; tile.build != null &amp;&amp; tile.block().allowDerelictRepair &amp;&amp; state.rules.derelictRepair) ||</b>
+&nbsp;                        //make sure there&#39;s at least 1 item of each type first
+<b class="nc">&nbsp;                        !Structs.contains(current.block.requirements, i -&gt; core != null &amp;&amp; !core.items.has(i.item, Math.min(Mathf.round(i.amount * state.rules.buildCostMultiplier), 1)));</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(hasAll){</b>
+<b class="nc">&nbsp;                        Call.beginPlace(self(), current.block, team, current.x, current.y, current.rotation);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        current.stuck = true;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }else if(!current.initialized &amp;&amp; current.breaking &amp;&amp; Build.validBreak(team, current.x, current.y)){</b>
+<b class="nc">&nbsp;                    Call.beginBreak(self(), team, current.x, current.y);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    plans.removeFirst();</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else if((tile.team() != team &amp;&amp; tile.team() != Team.derelict) || (!current.breaking &amp;&amp; (cb.current != current.block || cb.tile != current.tile()))){</b>
+<b class="nc">&nbsp;                plans.removeFirst();</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(tile.build instanceof ConstructBuild &amp;&amp; !current.initialized){</b>
+<b class="nc">&nbsp;                Events.fire(new BuildSelectEvent(tile, team, self(), current.breaking));</b>
+<b class="nc">&nbsp;                current.initialized = true;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //if there is no core to build with or no build entity, stop building!
+<b class="nc">&nbsp;            if(!(tile.build instanceof ConstructBuild entity)){</b>
+&nbsp;                continue;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float bs = 1f / entity.buildCost * type.buildSpeed * buildSpeedMultiplier * state.rules.buildSpeed(team);</b>
+&nbsp;
+&nbsp;            //otherwise, update it.
+<b class="nc">&nbsp;            if(current.breaking){</b>
+<b class="nc">&nbsp;                entity.deconstruct(self(), core, bs);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                entity.construct(self(), core, bs, current.config);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            current.stuck = Mathf.equal(current.progress, entity.progress);</b>
+<b class="nc">&nbsp;            current.progress = entity.progress;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Draw all current build plans. Does not draw the beam effect, only the positions. */
+&nbsp;    void drawBuildPlans(){
+<b class="nc">&nbsp;        Boolf&lt;BuildPlan&gt; skip = plan -&gt; plan.progress &gt; 0.01f || (buildPlan() == plan &amp;&amp; plan.initialized &amp;&amp; (within(plan.x * tilesize, plan.y * tilesize, type.buildRange) || state.isEditor()));</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 2; i++){</b>
+<b class="nc">&nbsp;            for(BuildPlan plan : plans){</b>
+<b class="nc">&nbsp;                if(skip.get(plan)) continue;</b>
+<b class="nc">&nbsp;                if(i == 0){</b>
+<b class="nc">&nbsp;                    drawPlan(plan, 1f);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    drawPlanTop(plan, 1f);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void drawPlan(BuildPlan plan, float alpha){
+<b class="nc">&nbsp;        plan.animScale = 1f;</b>
+<b class="nc">&nbsp;        if(plan.breaking){</b>
+<b class="nc">&nbsp;            control.input.drawBreaking(plan);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            plan.block.drawPlan(plan, control.input.allPlans(),</b>
+<b class="nc">&nbsp;            Build.validPlace(plan.block, team, plan.x, plan.y, plan.rotation) || control.input.planMatches(plan),</b>
+&nbsp;            alpha);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void drawPlanTop(BuildPlan plan, float alpha){
+<b class="nc">&nbsp;        if(!plan.breaking){</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+<b class="nc">&nbsp;            Draw.mixcol(Color.white, 0.24f + Mathf.absin(Time.globalTime, 6f, 0.28f));</b>
+<b class="nc">&nbsp;            Draw.alpha(alpha);</b>
+<b class="nc">&nbsp;            plan.block.drawPlanConfigTop(plan, plans);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this plan should be skipped, in favor of the next one. */
+&nbsp;    boolean shouldSkip(BuildPlan plan, @Nullable Building core){
+&nbsp;        //plans that you have at least *started* are considered
+<b class="nc">&nbsp;        if(state.rules.infiniteResources || team.rules().infiniteResources || plan.breaking || core == null || plan.isRotation(team) || (isBuilding() &amp;&amp; !within(plans.last(), type.buildRange))) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        return (plan.stuck &amp;&amp; !core.items.has(plan.block.requirements)) || (Structs.contains(plan.block.requirements, i -&gt; !core.items.has(i.item, Math.min(i.amount, 15)) &amp;&amp; Mathf.round(i.amount * state.rules.buildCostMultiplier) &gt; 0) &amp;&amp; !plan.initialized);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void removeBuild(int x, int y, boolean breaking){
+&nbsp;        //remove matching plan
+<b class="nc">&nbsp;        int idx = plans.indexOf(req -&gt; req.breaking == breaking &amp;&amp; req.x == x &amp;&amp; req.y == y);</b>
+<b class="nc">&nbsp;        if(idx != -1){</b>
+<b class="nc">&nbsp;            plans.removeIndex(idx);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Return whether this builder&#39;s place queue contains items. */
+&nbsp;    boolean isBuilding(){
+<b class="nc">&nbsp;        return plans.size != 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Clears the placement queue. */
+&nbsp;    void clearBuilding(){
+<b class="nc">&nbsp;        plans.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Add another build plans to the tail of the queue, if it doesn&#39;t exist there yet. */
+&nbsp;    void addBuild(BuildPlan place){
+<b class="nc">&nbsp;        addBuild(place, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Add another build plans to the queue, if it doesn&#39;t exist there yet. */
+&nbsp;    void addBuild(BuildPlan place, boolean tail){
+<b class="nc">&nbsp;        if(!canBuild()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        BuildPlan replace = null;</b>
+<b class="nc">&nbsp;        for(BuildPlan plan : plans){</b>
+<b class="nc">&nbsp;            if(plan.x == place.x &amp;&amp; plan.y == place.y){</b>
+<b class="nc">&nbsp;                replace = plan;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        if(replace != null){</b>
+<b class="nc">&nbsp;            plans.remove(replace);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Tile tile = world.tile(place.x, place.y);</b>
+<b class="nc">&nbsp;        if(tile != null &amp;&amp; tile.build instanceof ConstructBuild cons){</b>
+<b class="nc">&nbsp;            place.progress = cons.progress;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(tail){</b>
+<b class="nc">&nbsp;            plans.addLast(place);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            plans.addFirst(place);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean activelyBuilding(){
+&nbsp;        //not actively building when not near the build plan
+<b class="nc">&nbsp;        if(isBuilding()){</b>
+<b class="nc">&nbsp;            var plan = buildPlan();</b>
+<b class="nc">&nbsp;            if(!state.isEditor() &amp;&amp; plan != null &amp;&amp; !within(plan, state.rules.infiniteResources ? Float.MAX_VALUE : type.buildRange)){</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return isBuilding() &amp;&amp; updateBuilding;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return  the build plan currently active, or the one at the top of the queue.*/
+&nbsp;    @Nullable BuildPlan buildPlan(){
+<b class="nc">&nbsp;        return plans.size == 0 ? null : plans.first();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBuilding(){
+&nbsp;        //TODO make this more generic so it works with builder &quot;weapons&quot;
+<b class="nc">&nbsp;        boolean active = activelyBuilding();</b>
+<b class="nc">&nbsp;        if(!active &amp;&amp; lastActive == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(Layer.flyingUnit);</b>
+&nbsp;
+<b class="nc">&nbsp;        BuildPlan plan = active ? buildPlan() : lastActive;</b>
+<b class="nc">&nbsp;        Tile tile = plan.tile();</b>
+<b class="nc">&nbsp;        var core = team.core();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(tile == null || !within(plan, state.rules.infiniteResources ? Float.MAX_VALUE : type.buildRange)){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;        //draw remote plans.
+<b class="nc">&nbsp;        if(core != null &amp;&amp; active &amp;&amp; !isLocal() &amp;&amp; !(tile.block() instanceof ConstructBlock)){</b>
+<b class="nc">&nbsp;            Draw.z(Layer.plans - 1f);</b>
+<b class="nc">&nbsp;            drawPlan(plan, 0.5f);</b>
+<b class="nc">&nbsp;            drawPlanTop(plan, 0.5f);</b>
+<b class="nc">&nbsp;            Draw.z(Layer.flyingUnit);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(type.drawBuildBeam){</b>
+<b class="nc">&nbsp;            float focusLen = type.buildBeamOffset + Mathf.absin(Time.time, 3f, 0.6f);</b>
+<b class="nc">&nbsp;            float px = x + Angles.trnsx(rotation, focusLen);</b>
+<b class="nc">&nbsp;            float py = y + Angles.trnsy(rotation, focusLen);</b>
+&nbsp;
+<b class="nc">&nbsp;            drawBuildingBeam(px, py);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBuildingBeam(float px, float py){
+<b class="nc">&nbsp;        boolean active = activelyBuilding();</b>
+<b class="nc">&nbsp;        if(!active &amp;&amp; lastActive == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(Layer.flyingUnit);</b>
+&nbsp;
+<b class="nc">&nbsp;        BuildPlan plan = active ? buildPlan() : lastActive;</b>
+<b class="nc">&nbsp;        Tile tile = world.tile(plan.x, plan.y);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(tile == null || !within(plan, state.rules.infiniteResources ? Float.MAX_VALUE : type.buildRange)){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int size = plan.breaking ? active ? tile.block().size : lastSize : plan.block.size;</b>
+<b class="nc">&nbsp;        float tx = plan.drawx(), ty = plan.drawy();</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(1f, plan.breaking ? Pal.remove : Pal.accent);</b>
+<b class="nc">&nbsp;        Draw.z(Layer.buildBeam);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.alpha(buildAlpha);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!active &amp;&amp; !(tile.build instanceof ConstructBuild)){</b>
+<b class="nc">&nbsp;            Fill.square(plan.drawx(), plan.drawy(), size * tilesize/2f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Drawf.buildBeam(px, py, tx, ty, Vars.tilesize * size / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Fill.square(px, py, 1.8f + Mathf.absin(Time.time, 2.2f, 1.1f), rotation + 45);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Draw.z(Layer.flyingUnit);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

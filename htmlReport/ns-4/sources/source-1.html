@@ -1,0 +1,488 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Annotations</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations</a>
+</div>
+
+<h1>Coverage Summary for Class: Annotations (mindustry.annotations)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Annotations</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Annotations$BaseComponent</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$CallSuper</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$Component</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$EntityDef</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$EntityInterface</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$Final</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$GroupDef</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$Import</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$InternalImpl</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$Load</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$Loc</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$MethodPriority</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$NoSync</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$OverrideCallSuper</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$PacketPriority</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$ReadOnly</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$RegisterStatement</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$Remote</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$Replace</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$Struct</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$StructField</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$StyleDefaults</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$SyncField</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$SyncLocal</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$TypeIOHandler</td>
+  </tr>
+  <tr>
+    <td class="name">Annotations$Variant</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations;
+&nbsp;
+&nbsp;import java.lang.annotation.*;
+&nbsp;
+<b class="nc">&nbsp;public class Annotations{</b>
+&nbsp;    //region entity interfaces
+&nbsp;
+&nbsp;    /** Indicates that a method overrides other methods. */
+&nbsp;    @Target({ElementType.METHOD})
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface Replace{}
+&nbsp;
+&nbsp;    /** Indicates that a method should be final in all implementing classes. */
+&nbsp;    @Target({ElementType.METHOD})
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface Final{}
+&nbsp;
+&nbsp;    /** Indicates that a field will be interpolated when synced. */
+&nbsp;    @Target({ElementType.FIELD})
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface SyncField{
+&nbsp;        /** If true, the field will be linearly interpolated. If false, it will be interpolated as an angle. */
+&nbsp;        boolean value();
+&nbsp;        /** If true, the field is clamped to 0-1. */
+&nbsp;        boolean clamped() default false;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Indicates that a field will not be read from the server when syncing the local player state. */
+&nbsp;    @Target({ElementType.FIELD})
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface SyncLocal{}
+&nbsp;
+&nbsp;    /** Indicates that a field should not be synced to clients (but may still be non-transient) */
+&nbsp;    @Target({ElementType.FIELD})
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface NoSync{}
+&nbsp;
+&nbsp;
+&nbsp;    /** Indicates that a component field is imported from other components. This means it doesn&#39;t actually exist. */
+&nbsp;    @Target({ElementType.FIELD})
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface Import{}
+&nbsp;
+&nbsp;    /** Indicates that a component field is read-only. */
+&nbsp;    @Target({ElementType.FIELD, ElementType.METHOD})
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface ReadOnly{
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Indicates multiple inheritance on a component type. */
+&nbsp;    @Target(ElementType.TYPE)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface Component{
+&nbsp;        /** Whether to generate a base class for this components.
+&nbsp;         * An entity cannot have two base classes, so only one component can have base be true. */
+&nbsp;        boolean base() default false;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Indicates that a method is implemented by the annotation processor. */
+&nbsp;    @Target(ElementType.METHOD)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface InternalImpl{
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Indicates priority of a method in an entity. Methods with higher priority are done last. */
+&nbsp;    @Target(ElementType.METHOD)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface MethodPriority{
+&nbsp;        float value();
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Indicates that a component def is present on all entities. */
+&nbsp;    @Target(ElementType.TYPE)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface BaseComponent{
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Creates a group that only examines entities that have all the components listed. */
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface GroupDef{
+&nbsp;        Class[] value();
+&nbsp;        boolean collide() default false;
+&nbsp;        boolean spatial() default false;
+&nbsp;        boolean mapping() default false;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Indicates an entity definition. */
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface EntityDef{
+&nbsp;        /** List of component interfaces */
+&nbsp;        Class[] value();
+&nbsp;        /** Whether the class is final */
+&nbsp;        boolean isFinal() default true;
+&nbsp;        /** If true, entities are recycled. */
+&nbsp;        boolean pooled() default false;
+&nbsp;        /** Whether to serialize (makes the serialize method return this value).
+&nbsp;         * If true, this entity is automatically put into save files.
+&nbsp;         * If false, no serialization code is generated at all. */
+&nbsp;        boolean serialize() default true;
+&nbsp;        /** Whether to generate IO code. This is for advanced usage only. */
+&nbsp;        boolean genio() default true;
+&nbsp;        /** Whether I made a massive mistake by merging two different class branches */
+&nbsp;        boolean legacy() default false;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Indicates an internal interface for entity components. */
+&nbsp;    @Target(ElementType.TYPE)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface EntityInterface{}
+&nbsp;
+&nbsp;    //endregion
+&nbsp;    //region misc. utility
+&nbsp;
+&nbsp;    /** Automatically loads block regions annotated with this. */
+&nbsp;    @Target(ElementType.FIELD)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface Load{
+&nbsp;        /**
+&nbsp;         * The region name to load. Variables can be used:
+&nbsp;         * &quot;@&quot; -&gt; block name
+&nbsp;         * &quot;@size&quot; -&gt; block size
+&nbsp;         * &quot;#&quot; &quot;#1&quot; &quot;#2&quot; -&gt; index number, for arrays
+&nbsp;         * */
+&nbsp;        String value();
+&nbsp;        /** 1D Array length, if applicable.  */
+&nbsp;        int length() default 1;
+&nbsp;        /** 2D array lengths. */
+&nbsp;        int[] lengths() default {};
+&nbsp;        /** Fallback string used to replace &quot;@&quot; (the block name) if the region isn&#39;t found. */
+&nbsp;        String fallback() default &quot;error&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Registers a statement for auto serialization. */
+&nbsp;    @Target(ElementType.TYPE)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface RegisterStatement{
+&nbsp;        String value();
+&nbsp;    }
+&nbsp;
+&nbsp;    @Target(ElementType.TYPE)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface StyleDefaults{
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Indicates that a method should always call its super version. */
+&nbsp;    @Target(ElementType.METHOD)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface CallSuper{}
+&nbsp;
+&nbsp;    /** Annotation that allows overriding CallSuper annotation. To be used on method that overrides method with CallSuper annotation from parent class. */
+&nbsp;    @Target(ElementType.METHOD)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface OverrideCallSuper{}
+&nbsp;
+&nbsp;    //endregion
+&nbsp;    //region struct
+&nbsp;
+&nbsp;    /** Marks a class as a special value type struct. Class name must end in &#39;Struct&#39;. */
+&nbsp;    @Target(ElementType.TYPE)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface Struct{}
+&nbsp;
+&nbsp;    /** Marks a field of a struct. Optional. */
+&nbsp;    @Target(ElementType.FIELD)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface StructField{
+&nbsp;        /** Size of a struct field in bits. Not valid on booleans or floating point numbers. */
+&nbsp;        int value();
+&nbsp;    }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;    //region remote
+&nbsp;
+<b class="nc">&nbsp;    public enum PacketPriority{</b>
+&nbsp;        /** Does not get handled unless client is connected. */
+<b class="nc">&nbsp;        low,</b>
+&nbsp;        /** Gets put in a queue and processed if not connected. */
+<b class="nc">&nbsp;        normal,</b>
+&nbsp;        /** Gets handled immediately, regardless of connection status. */
+<b class="nc">&nbsp;        high,</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** A set of two booleans, one specifying server and one specifying client. */
+<b class="nc">&nbsp;    public enum Loc{</b>
+&nbsp;        /** Method can only be invoked on the client from the server. */
+<b class="nc">&nbsp;        server(true, false),</b>
+&nbsp;        /** Method can only be invoked on the server from the client. */
+<b class="nc">&nbsp;        client(false, true),</b>
+&nbsp;        /** Method can be invoked from anywhere */
+<b class="nc">&nbsp;        both(true, true),</b>
+&nbsp;        /** Neither server nor client. */
+<b class="nc">&nbsp;        none(false, false);</b>
+&nbsp;
+&nbsp;        /** If true, this method can be invoked ON clients FROM servers. */
+&nbsp;        public final boolean isServer;
+&nbsp;        /** If true, this method can be invoked ON servers FROM clients. */
+&nbsp;        public final boolean isClient;
+&nbsp;
+<b class="nc">&nbsp;        Loc(boolean server, boolean client){</b>
+<b class="nc">&nbsp;            this.isServer = server;</b>
+<b class="nc">&nbsp;            this.isClient = client;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public enum Variant{</b>
+&nbsp;        /** Method can only be invoked targeting one player. */
+<b class="nc">&nbsp;        one(true, false),</b>
+&nbsp;        /** Method can only be invoked targeting all players. */
+<b class="nc">&nbsp;        all(false, true),</b>
+&nbsp;        /** Method targets both one player and all players. */
+<b class="nc">&nbsp;        both(true, true);</b>
+&nbsp;
+&nbsp;        public final boolean isOne, isAll;
+&nbsp;
+<b class="nc">&nbsp;        Variant(boolean isOne, boolean isAll){</b>
+<b class="nc">&nbsp;            this.isOne = isOne;</b>
+<b class="nc">&nbsp;            this.isAll = isAll;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Marks a method as invokable remotely across a server/client connection. */
+&nbsp;    @Target(ElementType.METHOD)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface Remote{
+&nbsp;        /** Specifies the locations from which this method can be invoked. */
+&nbsp;        Loc targets() default Loc.server;
+&nbsp;
+&nbsp;        /** Specifies which methods are generated. Only affects server-to-client methods. */
+&nbsp;        Variant variants() default Variant.all;
+&nbsp;
+&nbsp;        /** The local locations where this method is called locally, when invoked. */
+&nbsp;        Loc called() default Loc.none;
+&nbsp;
+&nbsp;        /** Whether to forward this packet to all other clients upon receival. Client only. */
+&nbsp;        boolean forward() default false;
+&nbsp;
+&nbsp;        /**
+&nbsp;         * Whether the packet for this method is sent with UDP instead of TCP.
+&nbsp;         * UDP is faster, but is prone to packet loss and duplication.
+&nbsp;         */
+&nbsp;        boolean unreliable() default false;
+&nbsp;
+&nbsp;        /** Priority of this event. */
+&nbsp;        PacketPriority priority() default PacketPriority.normal;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Target(ElementType.TYPE)
+&nbsp;    @Retention(RetentionPolicy.SOURCE)
+&nbsp;    public @interface TypeIOHandler{ }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

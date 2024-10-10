@@ -1,0 +1,181 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MinerAI</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai.types</a>
+</div>
+
+<h1>Coverage Summary for Class: MinerAI (mindustry.ai.types)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MinerAI</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.5%
+  </span>
+  <span class="absValue">
+    (2/31)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai.types;
+&nbsp;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class MinerAI extends AIController{</b>
+<b class="fc">&nbsp;    public boolean mining = true;</b>
+&nbsp;    public Item targetItem;
+&nbsp;    public Tile ore;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateMovement(){
+<b class="nc">&nbsp;        Building core = unit.closestCore();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!(unit.canMine()) || core == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!unit.validMine(unit.mineTile)){</b>
+<b class="nc">&nbsp;            unit.mineTile(null);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(mining){</b>
+<b class="nc">&nbsp;            if(timer.get(timerTarget2, 60 * 4) || targetItem == null){</b>
+<b class="nc">&nbsp;                targetItem = unit.type.mineItems.min(i -&gt; indexer.hasOre(i) &amp;&amp; unit.canMine(i), i -&gt; core.items.get(i));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //core full of the target item, do nothing
+<b class="nc">&nbsp;            if(targetItem != null &amp;&amp; core.acceptStack(targetItem, 1, unit) == 0){</b>
+<b class="nc">&nbsp;                unit.clearItem();</b>
+<b class="nc">&nbsp;                unit.mineTile = null;</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+&nbsp;            //if inventory is full, drop it off.
+<b class="nc">&nbsp;            if(unit.stack.amount &gt;= unit.type.itemCapacity || (targetItem != null &amp;&amp; !unit.acceptsItem(targetItem))){</b>
+<b class="nc">&nbsp;                mining = false;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                if(timer.get(timerTarget3, 60) &amp;&amp; targetItem != null){</b>
+<b class="nc">&nbsp;                    ore = indexer.findClosestOre(unit, targetItem);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(ore != null){</b>
+<b class="nc">&nbsp;                    moveTo(ore, unit.type.mineRange / 2f, 20f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(ore.block() == Blocks.air &amp;&amp; unit.within(ore, unit.type.mineRange)){</b>
+<b class="nc">&nbsp;                        unit.mineTile = ore;</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(ore.block() != Blocks.air){</b>
+<b class="nc">&nbsp;                        mining = false;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            unit.mineTile = null;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(unit.stack.amount == 0){</b>
+<b class="nc">&nbsp;                mining = true;</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(unit.within(core, unit.type.range)){</b>
+<b class="nc">&nbsp;                if(core.acceptStack(unit.stack.item, unit.stack.amount, unit) &gt; 0){</b>
+<b class="nc">&nbsp;                    Call.transferItemTo(unit, unit.stack.item, unit.stack.amount, unit.x, unit.y, core);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                unit.clearItem();</b>
+<b class="nc">&nbsp;                mining = true;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            circle(core, unit.type.range / 1.8f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

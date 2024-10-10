@@ -1,0 +1,222 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ScriptMainGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.tools</a>
+</div>
+
+<h1>Coverage Summary for Class: ScriptMainGenerator (mindustry.tools)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ScriptMainGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/46)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.tools;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.g2d.TextureAtlas.*;
+&nbsp;import arc.graphics.gl.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.lang.reflect.*;
+&nbsp;
+<b class="nc">&nbsp;public class ScriptMainGenerator{</b>
+&nbsp;
+&nbsp;    public static void main(String[] args) throws Exception{
+<b class="nc">&nbsp;        String base = &quot;mindustry&quot;;</b>
+<b class="nc">&nbsp;        Seq&lt;String&gt; blacklist = Seq.with(&quot;plugin&quot;, &quot;mod&quot;, &quot;net&quot;, &quot;io&quot;, &quot;tools&quot;);</b>
+<b class="nc">&nbsp;        Seq&lt;String&gt; nameBlacklist = Seq.with();</b>
+<b class="nc">&nbsp;        Seq&lt;Class&lt;?&gt;&gt; whitelist = Seq.with(Draw.class, Fill.class, Lines.class, Core.class, TextureAtlas.class, TextureRegion.class, Time.class, System.class, PrintStream.class,</b>
+&nbsp;        AtlasRegion.class, String.class, Mathf.class, Angles.class, Color.class, Runnable.class, Object.class, Icon.class, Tex.class, Shader.class,
+&nbsp;        Sounds.class, Musics.class, Call.class, Texture.class, TextureData.class, Pixmap.class, I18NBundle.class, Interval.class, DataInput.class, DataOutput.class,
+&nbsp;        DataInputStream.class, DataOutputStream.class, Integer.class, Float.class, Double.class, Long.class, Boolean.class, Short.class, Byte.class, Character.class);
+<b class="nc">&nbsp;        Seq&lt;String&gt; nopackage = Seq.with(&quot;java.lang&quot;, &quot;java&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Class&lt;?&gt;&gt; classes = Seq.withArrays(</b>
+<b class="nc">&nbsp;            getClasses(&quot;mindustry&quot;),</b>
+<b class="nc">&nbsp;            getClasses(&quot;arc.func&quot;),</b>
+<b class="nc">&nbsp;            getClasses(&quot;arc.struct&quot;),</b>
+<b class="nc">&nbsp;            getClasses(&quot;arc.scene&quot;),</b>
+<b class="nc">&nbsp;            getClasses(&quot;arc.math&quot;),</b>
+<b class="nc">&nbsp;            getClasses(&quot;arc.audio&quot;),</b>
+<b class="nc">&nbsp;            getClasses(&quot;arc.input&quot;),</b>
+<b class="nc">&nbsp;            getClasses(&quot;arc.util&quot;),</b>
+<b class="nc">&nbsp;            getClasses(&quot;arc.struct&quot;)</b>
+&nbsp;        );
+<b class="nc">&nbsp;        classes.addAll(whitelist);</b>
+<b class="nc">&nbsp;        classes.sort(Structs.comparing(Class::getName));</b>
+&nbsp;
+<b class="nc">&nbsp;        classes.removeAll(type -&gt; type.isSynthetic() || type.isAnonymousClass() || type.getCanonicalName() == null || Modifier.isPrivate(type.getModifiers())</b>
+<b class="nc">&nbsp;        || blacklist.contains(s -&gt; type.getName().startsWith(base + &quot;.&quot; + s + &quot;.&quot;)) || nameBlacklist.contains(type.getSimpleName()));</b>
+<b class="nc">&nbsp;        classes.add(NetConnection.class, SaveIO.class, SystemCursor.class);</b>
+&nbsp;
+<b class="nc">&nbsp;        classes.distinct();</b>
+<b class="nc">&nbsp;        classes.sortComparing(Class::getName);</b>
+<b class="nc">&nbsp;        ObjectSet&lt;String&gt; used = ObjectSet.with();</b>
+&nbsp;
+<b class="nc">&nbsp;        StringBuilder result = new StringBuilder(&quot;//Generated class. Do not modify.\n&quot;);</b>
+<b class="nc">&nbsp;        result.append(&quot;\n&quot;).append(new Fi(&quot;core/assets/scripts/base.js&quot;).readString()).append(&quot;\n&quot;);</b>
+<b class="nc">&nbsp;        for(Class type : classes){</b>
+<b class="nc">&nbsp;            if(used.contains(type.getPackage().getName()) || nopackage.contains(s -&gt; type.getName().startsWith(s))) continue;</b>
+<b class="nc">&nbsp;            result.append(&quot;importPackage(Packages.&quot;).append(type.getPackage().getName()).append(&quot;)\n&quot;);</b>
+<b class="nc">&nbsp;            used.add(type.getPackage().getName());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Log.info(&quot;Imported @ packages.&quot;, used.size);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Class type : EventType.class.getClasses()){</b>
+<b class="nc">&nbsp;            result.append(&quot;const &quot;).append(type.getSimpleName()).append(&quot; = &quot;).append(&quot;Packages.&quot;).append(type.getName().replace(&#39;$&#39;, &#39;.&#39;)).append(&quot;\n&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        new Fi(&quot;core/assets/scripts/global.js&quot;).writeString(result.toString());</b>
+&nbsp;
+&nbsp;        //map simple name to type
+<b class="nc">&nbsp;        Seq&lt;String&gt; packages = Seq.with(</b>
+&nbsp;        &quot;mindustry.entities.effect&quot;,
+&nbsp;        &quot;mindustry.entities.bullet&quot;,
+&nbsp;        &quot;mindustry.entities.abilities&quot;,
+&nbsp;        &quot;mindustry.ai.types&quot;,
+&nbsp;        &quot;mindustry.type.weather&quot;,
+&nbsp;        &quot;mindustry.type.weapons&quot;,
+&nbsp;        &quot;mindustry.type.ammo&quot;,
+&nbsp;        &quot;mindustry.game.Objectives&quot;,
+&nbsp;        &quot;mindustry.world.blocks&quot;,
+&nbsp;        &quot;mindustry.world.consumers&quot;,
+&nbsp;        &quot;mindustry.world.draw&quot;,
+&nbsp;        &quot;mindustry.type&quot;,
+&nbsp;        &quot;mindustry.entities.pattern&quot;,
+&nbsp;        &quot;mindustry.entities.part&quot;
+&nbsp;        );
+&nbsp;
+<b class="nc">&nbsp;        String classTemplate = &quot;package mindustry.mod;\n&quot; +</b>
+&nbsp;        &quot;\n&quot; +
+&nbsp;        &quot;import arc.struct.*;\n&quot; +
+&nbsp;        &quot;/** Generated class. Maps simple class names to concrete classes. For use in JSON mods. */\n&quot; +
+&nbsp;        &quot;@SuppressWarnings(\&quot;deprecation\&quot;)\n&quot; +
+&nbsp;        &quot;public class ClassMap{\n&quot; +
+&nbsp;        &quot;    public static final ObjectMap&lt;String, Class&lt;?&gt;&gt; classes = new ObjectMap&lt;&gt;();\n&quot; +
+&nbsp;        &quot;    \n&quot; +
+&nbsp;        &quot;    static{\n$CLASSES$&quot; +
+&nbsp;        &quot;    }\n&quot; +
+&nbsp;        &quot;}\n&quot;;
+&nbsp;
+<b class="nc">&nbsp;        StringBuilder cdef = new StringBuilder();</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Class&lt;?&gt;&gt; mapped = classes.select(c -&gt; Modifier.isPublic(c.getModifiers()) &amp;&amp; packages.contains(c.getCanonicalName()::startsWith))</b>
+<b class="nc">&nbsp;        .add(Block.class); //special case</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Class&lt;?&gt; c : mapped){</b>
+<b class="nc">&nbsp;            cdef.append(&quot;        classes.put(\&quot;&quot;).append(c.getSimpleName()).append(&quot;\&quot;, &quot;).append(c.getCanonicalName()).append(&quot;.class);\n&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        new Fi(&quot;core/src/mindustry/mod/ClassMap.java&quot;).writeString(classTemplate.replace(&quot;$CLASSES$&quot;, cdef.toString()));</b>
+<b class="nc">&nbsp;        Log.info(&quot;Generated @ class mappings.&quot;, mapped.size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Seq&lt;Class&gt; getClasses(String packageName) throws Exception{
+&nbsp;        //TODO doesn&#39;t work, a java release broke it, look into alternative solutions (or just don&#39;t, Javascript modding is a bad idea anyway)
+<b class="nc">&nbsp;        return new Seq&lt;&gt;();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

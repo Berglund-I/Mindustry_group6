@@ -1,0 +1,357 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnlockableContent</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ctype</a>
+</div>
+
+<h1>Coverage Summary for Class: UnlockableContent (mindustry.ctype)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnlockableContent</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24.1%
+  </span>
+  <span class="absValue">
+    (7/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29.6%
+  </span>
+  <span class="absValue">
+    (24/81)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ctype;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.g2d.TextureAtlas.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.content.TechTree.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.graphics.MultiPacker.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Base interface for an unlockable content type. */
+&nbsp;public abstract class UnlockableContent extends MappableContent{
+&nbsp;    /** Stat storage for this content. Initialized on demand. */
+<b class="fc">&nbsp;    public Stats stats = new Stats();</b>
+&nbsp;    /** Localized, formal name. Never null. Set to internal name if not found in bundle. */
+&nbsp;    public String localizedName;
+&nbsp;    /** Localized description &amp; details. May be null. */
+&nbsp;    public @Nullable String description, details;
+&nbsp;    /** Whether this content is always unlocked in the tech tree. */
+<b class="fc">&nbsp;    public boolean alwaysUnlocked = false;</b>
+&nbsp;    /** Whether to show the description in the research dialog preview. */
+<b class="fc">&nbsp;    public boolean inlineDescription = true;</b>
+&nbsp;    /** Whether details of blocks are hidden in custom games if they haven&#39;t been unlocked in campaign mode. */
+<b class="fc">&nbsp;    public boolean hideDetails = true;</b>
+&nbsp;    /** If false, all icon generation is disabled for this content; createIcons is not called. */
+<b class="fc">&nbsp;    public boolean generateIcons = true;</b>
+&nbsp;    /** How big the content appears in certain selection menus */
+<b class="fc">&nbsp;    public float selectionSize = 24f;</b>
+&nbsp;    /** Icon of the content to use in UI. */
+&nbsp;    public TextureRegion uiIcon;
+&nbsp;    /** Icon of the full content. Unscaled.*/
+&nbsp;    public TextureRegion fullIcon;
+&nbsp;    /** Override for the full icon. Useful for mod content with duplicate icons. Overrides any other full icon.*/
+<b class="fc">&nbsp;    public String fullOverride = &quot;&quot;;</b>
+&nbsp;    /** If true, this content will appear in all database tabs. */
+<b class="fc">&nbsp;    public boolean allDatabaseTabs = false;</b>
+&nbsp;    /**
+&nbsp;     * Planets that this content is made for. If empty, a planet is decided based on item requirements.
+&nbsp;     * Currently, this is only meaningful for blocks.
+&nbsp;     * */
+<b class="fc">&nbsp;    public ObjectSet&lt;Planet&gt; shownPlanets = new ObjectSet&lt;&gt;();</b>
+&nbsp;    /**
+&nbsp;     * Content - usually a planet - that dictates which database tab(s) this content will appear in.
+&nbsp;     * If nothing is defined, it will use the values in shownPlanets.
+&nbsp;     * If shownPlanets is also empty, it will use Serpulo as the &quot;default&quot; tab.
+&nbsp;     * */
+<b class="fc">&nbsp;    public ObjectSet&lt;UnlockableContent&gt; databaseTabs = new ObjectSet&lt;&gt;();</b>
+&nbsp;    /** The tech tree node for this content, if applicable. Null if not part of a tech tree. */
+&nbsp;    public @Nullable TechNode techNode;
+&nbsp;    /** Tech nodes for all trees that this content is part of. */
+<b class="fc">&nbsp;    public Seq&lt;TechNode&gt; techNodes = new Seq&lt;&gt;();</b>
+&nbsp;    /** Unlock state. Loaded from settings. Do not modify outside the constructor. */
+&nbsp;    protected boolean unlocked;
+&nbsp;
+&nbsp;    public UnlockableContent(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        this.localizedName = Core.bundle.get(getContentType() + &quot;.&quot; + this.name + &quot;.name&quot;, this.name);</b>
+<b class="fc">&nbsp;        this.description = Core.bundle.getOrNull(getContentType() + &quot;.&quot; + this.name + &quot;.description&quot;);</b>
+<b class="fc">&nbsp;        this.details = Core.bundle.getOrNull(getContentType() + &quot;.&quot; + this.name + &quot;.details&quot;);</b>
+<b class="fc">&nbsp;        this.unlocked = Core.settings != null &amp;&amp; Core.settings.getBool(this.name + &quot;-unlocked&quot;, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void postInit(){
+<b class="fc">&nbsp;        super.postInit();</b>
+&nbsp;
+<b class="fc">&nbsp;        databaseTabs.addAll(shownPlanets);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void loadIcon(){
+<b class="nc">&nbsp;        fullIcon =</b>
+<b class="nc">&nbsp;            Core.atlas.find(fullOverride == null ? &quot;&quot; : fullOverride,</b>
+<b class="nc">&nbsp;            Core.atlas.find(getContentType().name() + &quot;-&quot; + name + &quot;-full&quot;,</b>
+<b class="nc">&nbsp;            Core.atlas.find(name + &quot;-full&quot;,</b>
+<b class="nc">&nbsp;            Core.atlas.find(name,</b>
+<b class="nc">&nbsp;            Core.atlas.find(getContentType().name() + &quot;-&quot; + name,</b>
+<b class="nc">&nbsp;            Core.atlas.find(name + &quot;1&quot;))))));</b>
+&nbsp;
+<b class="nc">&nbsp;        uiIcon = Core.atlas.find(getContentType().name() + &quot;-&quot; + name + &quot;-ui&quot;, fullIcon);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isOnPlanet(@Nullable Planet planet){
+<b class="fc">&nbsp;        return planet == null || planet == Planets.sun || shownPlanets.isEmpty() || shownPlanets.contains(planet);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getLogicId(){
+<b class="nc">&nbsp;        return logicVars.lookupLogicId(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String displayDescription(){
+<b class="nc">&nbsp;        return minfo.mod == null ? description : description + &quot;\n&quot; + Core.bundle.format(&quot;mod.display&quot;, minfo.mod.meta.displayName);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Checks stat initialization state. Call before displaying stats. */
+&nbsp;    public void checkStats(){
+<b class="nc">&nbsp;        if(!stats.intialized){</b>
+<b class="nc">&nbsp;            setStats();</b>
+<b class="nc">&nbsp;            stats.intialized = true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Initializes stats on demand. Should only be called once. Only called before something is displayed. */
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Display any extra info after details. */
+&nbsp;    public void displayExtra(Table table){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Generate any special icons for this content. Called synchronously.
+&nbsp;     * No regions are loaded at this point; grab pixmaps from the packer.
+&nbsp;     * */
+&nbsp;    @CallSuper
+&nbsp;    public void createIcons(MultiPacker packer){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void makeOutline(PageType page, MultiPacker packer, TextureRegion region, boolean makeNew, Color outlineColor, int outlineRadius){
+<b class="nc">&nbsp;        if(region instanceof AtlasRegion at &amp;&amp; region.found()){</b>
+<b class="nc">&nbsp;            String name = at.name;</b>
+<b class="nc">&nbsp;            if(!makeNew || !packer.has(name + &quot;-outline&quot;)){</b>
+<b class="nc">&nbsp;                String regName = name + (makeNew ? &quot;-outline&quot; : &quot;&quot;);</b>
+<b class="nc">&nbsp;                if(packer.registerOutlined(regName)){</b>
+<b class="nc">&nbsp;                    PixmapRegion base = Core.atlas.getPixmap(region);</b>
+<b class="nc">&nbsp;                    var result = Pixmaps.outline(base, outlineColor, outlineRadius);</b>
+<b class="nc">&nbsp;                    Drawf.checkBleed(result);</b>
+<b class="nc">&nbsp;                    packer.add(page, regName, result);</b>
+<b class="nc">&nbsp;                    result.dispose();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void makeOutline(MultiPacker packer, TextureRegion region, String name, Color outlineColor, int outlineRadius){
+<b class="nc">&nbsp;        if(region.found() &amp;&amp; packer.registerOutlined(name)){</b>
+<b class="nc">&nbsp;            PixmapRegion base = Core.atlas.getPixmap(region);</b>
+<b class="nc">&nbsp;            var result = Pixmaps.outline(base, outlineColor, outlineRadius);</b>
+<b class="nc">&nbsp;            Drawf.checkBleed(result);</b>
+<b class="nc">&nbsp;            packer.add(PageType.main, name, result);</b>
+<b class="nc">&nbsp;            result.dispose();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void makeOutline(MultiPacker packer, TextureRegion region, String name, Color outlineColor){
+<b class="nc">&nbsp;        makeOutline(packer, region, name, outlineColor, 4);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return items needed to research this content */
+&nbsp;    public ItemStack[] researchRequirements(){
+<b class="fc">&nbsp;        return ItemStack.empty;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String emoji(){
+<b class="nc">&nbsp;        return Fonts.getUnicodeStr(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int emojiChar(){
+<b class="nc">&nbsp;        return Fonts.getUnicode(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public boolean hasEmoji(){
+<b class="nc">&nbsp;        return Fonts.hasUnicodeStr(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates through any implicit dependencies of this content.
+&nbsp;     * For blocks, this would be the items required to build it. */
+&nbsp;    public void getDependencies(Cons&lt;UnlockableContent&gt; cons){
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called when this content is unlocked. Use this to unlock other related content. */
+&nbsp;    public void onUnlock(){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Whether this content is always hidden in the content database dialog. */
+&nbsp;    public boolean isHidden(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether to show a notification toast when this is unlocked */
+&nbsp;    public boolean showUnlock(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean logicVisible(){
+<b class="nc">&nbsp;        return !isHidden();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Makes this piece of content unlocked; if it already unlocked, nothing happens. */
+&nbsp;    public void unlock(){
+<b class="nc">&nbsp;        if(!unlocked &amp;&amp; !alwaysUnlocked){</b>
+<b class="nc">&nbsp;            unlocked = true;</b>
+<b class="nc">&nbsp;            Core.settings.put(name + &quot;-unlocked&quot;, true);</b>
+&nbsp;
+<b class="nc">&nbsp;            onUnlock();</b>
+<b class="nc">&nbsp;            Events.fire(new UnlockEvent(this));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Unlocks this content, but does not fire any events. */
+&nbsp;    public void quietUnlock(){
+<b class="nc">&nbsp;        if(!unlocked()){</b>
+<b class="nc">&nbsp;            unlocked = true;</b>
+<b class="nc">&nbsp;            Core.settings.put(name + &quot;-unlocked&quot;, true);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean unlockedNowHost(){
+<b class="nc">&nbsp;        if(!state.isCampaign()) return true;</b>
+<b class="nc">&nbsp;        return net != null &amp;&amp; net.client() ?</b>
+<b class="nc">&nbsp;            alwaysUnlocked || state.rules.researched.contains(name) :</b>
+<b class="nc">&nbsp;            unlocked || alwaysUnlocked;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean unlocked(){
+<b class="fc">&nbsp;        return net != null &amp;&amp; net.client() ?</b>
+<b class="nc">&nbsp;            alwaysUnlocked || unlocked || state.rules.researched.contains(name) :</b>
+<b class="fc">&nbsp;            unlocked || alwaysUnlocked;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Locks this content again. */
+&nbsp;    public void clearUnlock(){
+<b class="nc">&nbsp;        if(unlocked){</b>
+<b class="nc">&nbsp;            unlocked = false;</b>
+<b class="nc">&nbsp;            Core.settings.put(name + &quot;-unlocked&quot;, false);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this content is unlocked, or the player is in a custom (non-campaign) game. */
+&nbsp;    public boolean unlockedNow(){
+<b class="fc">&nbsp;        return unlocked() || !state.isCampaign();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean locked(){
+<b class="nc">&nbsp;        return !unlocked();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

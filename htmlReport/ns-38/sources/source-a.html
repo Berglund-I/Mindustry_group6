@@ -1,0 +1,650 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ItemBridge</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: ItemBridge (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ItemBridge</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (4/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.7%
+  </span>
+  <span class="absValue">
+    (29/77)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ItemBridge$ItemBridgeBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (8/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    19.3%
+  </span>
+  <span class="absValue">
+    (31/161)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (12/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25.2%
+  </span>
+  <span class="absValue">
+    (60/238)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class ItemBridge extends Block{
+&nbsp;    private static BuildPlan otherReq;
+&nbsp;
+<b class="fc">&nbsp;    public final int timerCheckMoved = timers ++;</b>
+&nbsp;
+&nbsp;    public int range;
+<b class="fc">&nbsp;    public float transportTime = 2f;</b>
+&nbsp;    public @Load(&quot;@-end&quot;) TextureRegion endRegion;
+&nbsp;    public @Load(&quot;@-bridge&quot;) TextureRegion bridgeRegion;
+&nbsp;    public @Load(&quot;@-arrow&quot;) TextureRegion arrowRegion;
+&nbsp;
+<b class="fc">&nbsp;    public boolean fadeIn = true;</b>
+<b class="fc">&nbsp;    public boolean moveArrows = true;</b>
+<b class="fc">&nbsp;    public boolean pulse = false;</b>
+<b class="fc">&nbsp;    public float arrowSpacing = 4f, arrowOffset = 2f, arrowPeriod = 0.4f;</b>
+<b class="fc">&nbsp;    public float arrowTimeScl = 6.2f;</b>
+<b class="fc">&nbsp;    public float bridgeWidth = 6.5f;</b>
+&nbsp;
+&nbsp;    //for autolink
+&nbsp;    public @Nullable ItemBridgeBuild lastBuild;
+&nbsp;
+&nbsp;    public ItemBridge(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+<b class="fc">&nbsp;        hasPower = true;</b>
+<b class="fc">&nbsp;        itemCapacity = 10;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        unloadable = false;</b>
+<b class="fc">&nbsp;        group = BlockGroup.transportation;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+<b class="fc">&nbsp;        allowDiagonal = false;</b>
+<b class="fc">&nbsp;        copyConfig = false;</b>
+&nbsp;        //disabled as to not be annoying
+<b class="fc">&nbsp;        allowConfigInventory = false;</b>
+<b class="fc">&nbsp;        priority = TargetPriority.transport;</b>
+&nbsp;
+&nbsp;        //point2 config is relative
+<b class="fc">&nbsp;        config(Point2.class, (ItemBridgeBuild tile, Point2 i) -&gt; tile.link = Point2.pack(i.x + tile.tileX(), i.y + tile.tileY()));</b>
+&nbsp;        //integer is not
+<b class="fc">&nbsp;        config(Integer.class, (ItemBridgeBuild tile, Integer i) -&gt; tile.link = i);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanConfigTop(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        otherReq = null;</b>
+<b class="nc">&nbsp;        list.each(other -&gt; {</b>
+<b class="nc">&nbsp;            if(other.block == this &amp;&amp; plan != other &amp;&amp; plan.config instanceof Point2 p &amp;&amp; p.equals(other.x - plan.x, other.y - plan.y)){</b>
+<b class="nc">&nbsp;                otherReq = other;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        if(otherReq != null){</b>
+<b class="nc">&nbsp;            drawBridge(plan, otherReq.drawx(), otherReq.drawy(), 0);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBridge(BuildPlan req, float ox, float oy, float flip){
+<b class="nc">&nbsp;        if(Mathf.zero(Renderer.bridgeOpacity)) return;</b>
+<b class="nc">&nbsp;        Draw.alpha(Renderer.bridgeOpacity);</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(bridgeWidth);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.v1.set(ox, oy).sub(req.drawx(), req.drawy()).setLength(tilesize/2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.line(</b>
+&nbsp;        bridgeRegion,
+<b class="nc">&nbsp;        req.drawx() + Tmp.v1.x,</b>
+<b class="nc">&nbsp;        req.drawy() + Tmp.v1.y,</b>
+&nbsp;        ox - Tmp.v1.x,
+&nbsp;        oy - Tmp.v1.y, false
+&nbsp;        );
+&nbsp;
+<b class="nc">&nbsp;        Draw.rect(arrowRegion, (req.drawx() + ox) / 2f, (req.drawy() + oy) / 2f,</b>
+<b class="nc">&nbsp;        Angles.angle(req.drawx(), req.drawy(), ox, oy) + flip);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        super.drawPlace(x, y, rotation, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tile link = findLink(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            Drawf.dashLine(Pal.placing,</b>
+&nbsp;            x * tilesize + Geometry.d4[i].x * (tilesize / 2f + 2),
+&nbsp;            y * tilesize + Geometry.d4[i].y * (tilesize / 2f + 2),
+&nbsp;            x * tilesize + Geometry.d4[i].x * (range) * tilesize,
+&nbsp;            y * tilesize + Geometry.d4[i].y * (range) * tilesize);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Draw.color(Pal.placing);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f);</b>
+<b class="nc">&nbsp;        if(link != null &amp;&amp; Math.abs(link.x - x) + Math.abs(link.y - y) &gt; 1){</b>
+<b class="nc">&nbsp;            int rot = link.absoluteRelativeTo(x, y);</b>
+<b class="nc">&nbsp;            float w = (link.x == x ? tilesize : Math.abs(link.x - x) * tilesize - tilesize);</b>
+<b class="nc">&nbsp;            float h = (link.y == y ? tilesize : Math.abs(link.y - y) * tilesize - tilesize);</b>
+<b class="nc">&nbsp;            Lines.rect((x + link.x) / 2f * tilesize - w / 2f, (y + link.y) / 2f * tilesize - h / 2f, w, h);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(&quot;bridge-arrow&quot;, link.x * tilesize + Geometry.d4(rot).x * tilesize, link.y * tilesize + Geometry.d4(rot).y * tilesize, link.absoluteRelativeTo(x, y) * 90);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean linkValid(Tile tile, Tile other){
+<b class="fc">&nbsp;        return linkValid(tile, other, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean linkValid(Tile tile, Tile other, boolean checkDouble){
+<b class="fc">&nbsp;        if(other == null || tile == null || !positionsValid(tile.x, tile.y, other.x, other.y)) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        return ((other.block() == tile.block() &amp;&amp; tile.block() == this) || (!(tile.block() instanceof ItemBridge) &amp;&amp; other.block() == this))</b>
+<b class="nc">&nbsp;            &amp;&amp; (other.team() == tile.team() || tile.block() != this)</b>
+<b class="nc">&nbsp;            &amp;&amp; (!checkDouble || ((ItemBridgeBuild)other.build).link != tile.pos());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean positionsValid(int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        if(x1 == x2){</b>
+<b class="nc">&nbsp;            return Math.abs(y1 - y2) &lt;= range;</b>
+<b class="nc">&nbsp;        }else if(y1 == y2){</b>
+<b class="nc">&nbsp;            return Math.abs(x1 - x2) &lt;= range;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Tile findLink(int x, int y){
+<b class="nc">&nbsp;        Tile tile = world.tile(x, y);</b>
+<b class="nc">&nbsp;        if(tile != null &amp;&amp; lastBuild != null &amp;&amp; linkValid(tile, lastBuild.tile) &amp;&amp; lastBuild.tile != tile &amp;&amp; lastBuild.link == -1){</b>
+<b class="nc">&nbsp;            return lastBuild.tile;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+<b class="fc">&nbsp;        updateClipRadius((range + 0.5f) * tilesize);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void handlePlacementLine(Seq&lt;BuildPlan&gt; plans){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; plans.size - 1; i++){</b>
+<b class="nc">&nbsp;            var cur = plans.get(i);</b>
+<b class="nc">&nbsp;            var next = plans.get(i + 1);</b>
+<b class="nc">&nbsp;            if(positionsValid(cur.x, cur.y, next.x, next.y)){</b>
+<b class="nc">&nbsp;                cur.config = new Point2(next.x - cur.x, next.y - cur.y);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void changePlacementPath(Seq&lt;Point2&gt; points, int rotation){
+<b class="nc">&nbsp;        Placement.calculateNodes(points, this, rotation, (point, other) -&gt; Math.max(Math.abs(point.x - other.x), Math.abs(point.y - other.y)) &lt;= range);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ItemBridgeBuild extends Building{</b>
+<b class="fc">&nbsp;        public int link = -1;</b>
+<b class="fc">&nbsp;        public IntSeq incoming = new IntSeq(false, 4);</b>
+&nbsp;        public float warmup;
+<b class="fc">&nbsp;        public float time = -8f, timeSpeed;</b>
+&nbsp;        public boolean wasMoved, moved;
+&nbsp;        public float transportCounter;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void pickedUp(){
+<b class="nc">&nbsp;            link = -1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void playerPlaced(Object config){
+<b class="nc">&nbsp;            super.playerPlaced(config);</b>
+&nbsp;
+<b class="nc">&nbsp;            Tile link = findLink(tile.x, tile.y);</b>
+<b class="nc">&nbsp;            if(linkValid(tile, link) &amp;&amp; this.link != link.pos() &amp;&amp; !proximity.contains(link.build)){</b>
+<b class="nc">&nbsp;                link.build.configure(tile.pos());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            lastBuild = this;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawSelect(){
+<b class="nc">&nbsp;            if(linkValid(tile, world.tile(link))){</b>
+<b class="nc">&nbsp;                drawInput(world.tile(link));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            incoming.each(pos -&gt; drawInput(world.tile(pos)));</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private void drawInput(Tile other){
+<b class="nc">&nbsp;            if(!linkValid(tile, other, false)) return;</b>
+<b class="nc">&nbsp;            boolean linked = other.pos() == link;</b>
+&nbsp;
+<b class="nc">&nbsp;            Tmp.v2.trns(tile.angleTo(other), 2f);</b>
+<b class="nc">&nbsp;            float tx = tile.drawx(), ty = tile.drawy();</b>
+<b class="nc">&nbsp;            float ox = other.drawx(), oy = other.drawy();</b>
+<b class="nc">&nbsp;            float alpha = Math.abs((linked ? 100 : 0)-(Time.time * 2f) % 100f) / 100f;</b>
+<b class="nc">&nbsp;            float x = Mathf.lerp(ox, tx, alpha);</b>
+<b class="nc">&nbsp;            float y = Mathf.lerp(oy, ty, alpha);</b>
+&nbsp;
+<b class="nc">&nbsp;            Tile otherLink = linked ? other : tile;</b>
+<b class="nc">&nbsp;            int rel = (linked ? tile : other).absoluteRelativeTo(otherLink.x, otherLink.y);</b>
+&nbsp;
+&nbsp;            //draw &quot;background&quot;
+<b class="nc">&nbsp;            Draw.color(Pal.gray);</b>
+<b class="nc">&nbsp;            Lines.stroke(2.5f);</b>
+<b class="nc">&nbsp;            Lines.square(ox, oy, 2f, 45f);</b>
+<b class="nc">&nbsp;            Lines.stroke(2.5f);</b>
+<b class="nc">&nbsp;            Lines.line(tx + Tmp.v2.x, ty + Tmp.v2.y, ox - Tmp.v2.x, oy - Tmp.v2.y);</b>
+&nbsp;
+<b class="nc">&nbsp;            float color = (linked ? Pal.place : Pal.accent).toFloatBits();</b>
+&nbsp;
+&nbsp;            //draw foreground colors
+<b class="nc">&nbsp;            Draw.color(color);</b>
+<b class="nc">&nbsp;            Lines.stroke(1f);</b>
+<b class="nc">&nbsp;            Lines.line(tx + Tmp.v2.x, ty + Tmp.v2.y, ox - Tmp.v2.x, oy - Tmp.v2.y);</b>
+&nbsp;
+<b class="nc">&nbsp;            Lines.square(ox, oy, 2f, 45f);</b>
+<b class="nc">&nbsp;            Draw.mixcol(color);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+<b class="nc">&nbsp;            Draw.rect(arrowRegion, x, y, rel * 90);</b>
+<b class="nc">&nbsp;            Draw.mixcol();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawConfigure(){
+<b class="nc">&nbsp;            Drawf.select(x, y, tile.block().size * tilesize / 2f + 2f, Pal.accent);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 1; i &lt;= range; i++){</b>
+<b class="nc">&nbsp;                for(int j = 0; j &lt; 4; j++){</b>
+<b class="nc">&nbsp;                    Tile other = tile.nearby(Geometry.d4[j].x * i, Geometry.d4[j].y * i);</b>
+<b class="nc">&nbsp;                    if(linkValid(tile, other)){</b>
+<b class="nc">&nbsp;                        boolean linked = other.pos() == link;</b>
+&nbsp;
+<b class="nc">&nbsp;                        Drawf.select(other.drawx(), other.drawy(),</b>
+<b class="nc">&nbsp;                            other.block().size * tilesize / 2f + 2f + (linked ? 0f : Mathf.absin(Time.time, 4f, 1f)), linked ? Pal.place : Pal.breakInvalid);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean onConfigureBuildTapped(Building other){
+&nbsp;            //reverse connection
+<b class="nc">&nbsp;            if(other instanceof ItemBridgeBuild b &amp;&amp; b.link == pos()){</b>
+<b class="nc">&nbsp;                configure(other.pos());</b>
+<b class="nc">&nbsp;                other.configure(-1);</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(linkValid(tile, other.tile)){</b>
+<b class="nc">&nbsp;                if(link == other.pos()){</b>
+<b class="nc">&nbsp;                    configure(-1);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    configure(other.pos());</b>
+&nbsp;                }
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void checkIncoming(){
+<b class="fc">&nbsp;            int idx = 0;</b>
+<b class="fc">&nbsp;            while(idx &lt; incoming.size){</b>
+<b class="nc">&nbsp;                int i = incoming.items[idx];</b>
+<b class="nc">&nbsp;                Tile other = world.tile(i);</b>
+<b class="nc">&nbsp;                if(!linkValid(tile, other, false) || ((ItemBridgeBuild)other.build).link != tile.pos()){</b>
+<b class="nc">&nbsp;                    incoming.removeIndex(idx);</b>
+<b class="nc">&nbsp;                    idx --;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                idx ++;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(timer(timerCheckMoved, 30f)){</b>
+<b class="nc">&nbsp;                wasMoved = moved;</b>
+<b class="nc">&nbsp;                moved = false;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //smooth out animation, so it doesn&#39;t stop/start immediately
+<b class="fc">&nbsp;            timeSpeed = Mathf.approachDelta(timeSpeed, wasMoved ? 1f : 0f, 1f / 60f);</b>
+&nbsp;
+<b class="fc">&nbsp;            time += timeSpeed * delta();</b>
+&nbsp;
+<b class="fc">&nbsp;            checkIncoming();</b>
+&nbsp;
+<b class="fc">&nbsp;            Tile other = world.tile(link);</b>
+<b class="fc">&nbsp;            if(!linkValid(tile, other)){</b>
+<b class="fc">&nbsp;                doDump();</b>
+<b class="fc">&nbsp;                warmup = 0f;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                var inc = ((ItemBridgeBuild)other.build).incoming;</b>
+<b class="nc">&nbsp;                int pos = tile.pos();</b>
+<b class="nc">&nbsp;                if(!inc.contains(pos)){</b>
+<b class="nc">&nbsp;                    inc.add(pos);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                warmup = Mathf.approachDelta(warmup, efficiency, 1f / 30f);</b>
+<b class="nc">&nbsp;                updateTransport(other.build);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void doDump(){
+&nbsp;            //allow dumping multiple times per frame
+<b class="fc">&nbsp;            dumpAccumulate();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void updateTransport(Building other){
+<b class="nc">&nbsp;            transportCounter += edelta();</b>
+<b class="nc">&nbsp;            while(transportCounter &gt;= transportTime){</b>
+<b class="nc">&nbsp;                Item item = items.take();</b>
+<b class="nc">&nbsp;                if(item != null &amp;&amp; other.acceptItem(this, item)){</b>
+<b class="nc">&nbsp;                    other.handleItem(this, item);</b>
+<b class="nc">&nbsp;                    moved = true;</b>
+<b class="nc">&nbsp;                }else if(item != null){</b>
+<b class="nc">&nbsp;                    items.add(item, 1);</b>
+<b class="nc">&nbsp;                    items.undoFlow(item);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                transportCounter -= transportTime;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.power);</b>
+&nbsp;
+<b class="nc">&nbsp;            Tile other = world.tile(link);</b>
+<b class="nc">&nbsp;            if(!linkValid(tile, other)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Mathf.zero(Renderer.bridgeOpacity)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            int i = relativeTo(other.x, other.y);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(pulse){</b>
+<b class="nc">&nbsp;                Draw.color(Color.white, Color.black, Mathf.absin(Time.time, 6f, 0.07f));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float warmup = hasPower ? this.warmup : 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.alpha((fadeIn ? Math.max(warmup, 0.25f) : 1f) * Renderer.bridgeOpacity);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(endRegion, x, y, i * 90 + 90);</b>
+<b class="nc">&nbsp;            Draw.rect(endRegion, other.drawx(), other.drawy(), i * 90 + 270);</b>
+&nbsp;
+<b class="nc">&nbsp;            Lines.stroke(bridgeWidth);</b>
+&nbsp;
+<b class="nc">&nbsp;            Tmp.v1.set(x, y).sub(other.worldx(), other.worldy()).setLength(tilesize/2f).scl(-1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Lines.line(bridgeRegion,</b>
+&nbsp;            x + Tmp.v1.x,
+&nbsp;            y + Tmp.v1.y,
+<b class="nc">&nbsp;            other.worldx() - Tmp.v1.x,</b>
+<b class="nc">&nbsp;            other.worldy() - Tmp.v1.y, false);</b>
+&nbsp;
+<b class="nc">&nbsp;            int dist = Math.max(Math.abs(other.x - tile.x), Math.abs(other.y - tile.y)) - 1;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;
+<b class="nc">&nbsp;            int arrows = (int)(dist * tilesize / arrowSpacing), dx = Geometry.d4x(i), dy = Geometry.d4y(i);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int a = 0; a &lt; arrows; a++){</b>
+<b class="nc">&nbsp;                Draw.alpha(Mathf.absin(a - time / arrowTimeScl, arrowPeriod, 1f) * warmup * Renderer.bridgeOpacity);</b>
+<b class="nc">&nbsp;                Draw.rect(arrowRegion,</b>
+&nbsp;                x + dx * (tilesize / 2f + a * arrowSpacing + arrowOffset),
+&nbsp;                y + dy * (tilesize / 2f + a * arrowSpacing + arrowOffset),
+&nbsp;                i * 90f);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            return hasItems &amp;&amp; team == source.team &amp;&amp; items.total() &lt; itemCapacity &amp;&amp; checkAccept(source, world.tile(link));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean canDumpLiquid(Building to, Liquid liquid){
+<b class="nc">&nbsp;            return checkDump(to);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptLiquid(Building source, Liquid liquid){
+<b class="nc">&nbsp;            return</b>
+&nbsp;                hasLiquids &amp;&amp; team == source.team &amp;&amp;
+<b class="nc">&nbsp;                (liquids.current() == liquid || liquids.get(liquids.current()) &lt; 0.2f) &amp;&amp;</b>
+<b class="nc">&nbsp;                checkAccept(source, world.tile(link));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected boolean checkAccept(Building source, Tile link){
+<b class="nc">&nbsp;            if(tile == null || linked(source)) return true;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(linkValid(tile, link)){</b>
+<b class="nc">&nbsp;                int rel = relativeTo(link);</b>
+<b class="nc">&nbsp;                var facing = Edges.getFacingEdge(source, this);</b>
+<b class="nc">&nbsp;                int rel2 = facing == null ? -1 : relativeTo(facing);</b>
+&nbsp;
+&nbsp;                //this is a bug, but it is kept for compatibility, see: https://github.com/Anuken/Mindustry/issues/9257#issuecomment-1801998747
+&nbsp;                /*
+&nbsp;                for(int j = 0; j &lt; incoming.size; j++){
+&nbsp;                    int v = incoming.items[j];
+&nbsp;                    if(relativeTo(Point2.x(v), Point2.y(v)) == rel2){
+&nbsp;                        return false;
+&nbsp;                    }
+&nbsp;                }*/
+&nbsp;
+<b class="nc">&nbsp;                return rel != rel2;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected boolean linked(Building source){
+<b class="nc">&nbsp;            return source instanceof ItemBridgeBuild &amp;&amp; linkValid(source.tile, tile) &amp;&amp; ((ItemBridgeBuild)source).link == pos();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean canDump(Building to, Item item){
+<b class="nc">&nbsp;            return checkDump(to);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected boolean checkDump(Building to){
+<b class="nc">&nbsp;            Tile other = world.tile(link);</b>
+<b class="nc">&nbsp;            if(!linkValid(tile, other)){</b>
+<b class="nc">&nbsp;                Tile edge = Edges.getFacingEdge(to.tile, tile);</b>
+<b class="nc">&nbsp;                int i = relativeTo(edge.x, edge.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int j = 0; j &lt; incoming.size; j++){</b>
+<b class="nc">&nbsp;                    int v = incoming.items[j];</b>
+<b class="nc">&nbsp;                    if(relativeTo(Point2.x(v), Point2.y(v)) == i){</b>
+<b class="nc">&nbsp;                        return false;</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            int rel = relativeTo(other.x, other.y);</b>
+<b class="nc">&nbsp;            int rel2 = relativeTo(to.tileX(), to.tileY());</b>
+&nbsp;
+<b class="nc">&nbsp;            return rel != rel2;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return linkValid(tile, world.tile(link)) &amp;&amp; enabled;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Point2 config(){
+<b class="nc">&nbsp;            return Point2.unpack(link).sub(tile.x, tile.y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.i(link);</b>
+<b class="fc">&nbsp;            write.f(warmup);</b>
+<b class="fc">&nbsp;            write.b(incoming.size);</b>
+&nbsp;
+<b class="fc">&nbsp;            for(int i = 0; i &lt; incoming.size; i++){</b>
+<b class="nc">&nbsp;                write.i(incoming.items[i]);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            write.bool(wasMoved || moved);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            link = read.i();</b>
+<b class="fc">&nbsp;            warmup = read.f();</b>
+<b class="fc">&nbsp;            byte links = read.b();</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; links; i++){</b>
+<b class="fc">&nbsp;                incoming.add(read.i());</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                wasMoved = moved = read.bool();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

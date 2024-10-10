@@ -1,0 +1,328 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: LParser (mindustry.logic)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    77.8%
+  </span>
+  <span class="absValue">
+    (7/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    74.2%
+  </span>
+  <span class="absValue">
+    (66/89)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LParser$JumpIndex</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    70%
+  </span>
+  <span class="absValue">
+    (7/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.7%
+  </span>
+  <span class="absValue">
+    (66/92)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.logic;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.logic.LStatements.*;
+&nbsp;
+&nbsp;public class LParser{
+<b class="fc">&nbsp;    private static final String[] tokens = new String[16];</b>
+&nbsp;    private static final int maxJumps = 500;
+<b class="fc">&nbsp;    private static final StringMap opNameChanges = StringMap.of(</b>
+&nbsp;    &quot;atan2&quot;, &quot;angle&quot;,
+&nbsp;    &quot;dst&quot;, &quot;len&quot;
+&nbsp;    );
+&nbsp;
+<b class="fc">&nbsp;    private static final Seq&lt;JumpIndex&gt; jumps = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private static final ObjectIntMap&lt;String&gt; jumpLocations = new ObjectIntMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    Seq&lt;LStatement&gt; statements = new Seq&lt;&gt;();</b>
+&nbsp;    char[] chars;
+&nbsp;    int pos, line, tok;
+&nbsp;    boolean privileged;
+&nbsp;
+<b class="fc">&nbsp;    LParser(String text, boolean privileged){</b>
+<b class="fc">&nbsp;        this.privileged = privileged;</b>
+<b class="fc">&nbsp;        this.chars = text.toCharArray();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void comment(){
+&nbsp;        //read until \n or eof
+<b class="nc">&nbsp;        while(pos &lt; chars.length &amp;&amp; chars[pos++] != &#39;\n&#39;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void error(String message){
+<b class="nc">&nbsp;        throw new RuntimeException(&quot;Invalid code. &quot; + message);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    String string(){
+<b class="fc">&nbsp;        int from = pos;</b>
+&nbsp;
+<b class="fc">&nbsp;        while(++pos &lt; chars.length){</b>
+<b class="fc">&nbsp;            var c = chars[pos];</b>
+<b class="fc">&nbsp;            if(c == &#39;\n&#39;){</b>
+<b class="nc">&nbsp;                error(&quot;Missing closing quote \&quot; before end of line.&quot;);</b>
+<b class="fc">&nbsp;            }else if(c == &#39;&quot;&#39;){</b>
+<b class="fc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        if(pos &gt;= chars.length || chars[pos] != &#39;&quot;&#39;) error(&quot;Missing closing quote \&quot; before end of file.&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        return new String(chars, from, ++pos - from);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    String token(){
+<b class="fc">&nbsp;        int from = pos;</b>
+&nbsp;
+<b class="fc">&nbsp;        while(pos &lt; chars.length){</b>
+<b class="fc">&nbsp;            char c = chars[pos];</b>
+<b class="fc">&nbsp;            if(c == &#39;\n&#39; || c == &#39; &#39; || c == &#39;#&#39; || c == &#39;\t&#39; || c == &#39;;&#39;) break;</b>
+<b class="fc">&nbsp;            pos ++;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        return new String(chars, from, pos - from);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Apply changes after reading a list of tokens. */
+&nbsp;    void checkRead(){
+<b class="fc">&nbsp;        if(tokens[0].equals(&quot;op&quot;)){</b>
+&nbsp;            //legacy name change
+<b class="fc">&nbsp;            tokens[1] = opNameChanges.get(tokens[1], tokens[1]);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Reads the next statement until EOL/EOF. */
+&nbsp;    void statement(){
+<b class="fc">&nbsp;        boolean expectNext = false;</b>
+<b class="fc">&nbsp;        tok = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        while(pos &lt; chars.length){</b>
+<b class="fc">&nbsp;            char c = chars[pos];</b>
+<b class="fc">&nbsp;            if(tok &gt;= tokens.length) error(&quot;Line too long; may only contain &quot; + tokens.length + &quot; tokens&quot;);</b>
+&nbsp;
+&nbsp;            //reached end of line, bail out.
+<b class="fc">&nbsp;            if(c == &#39;\n&#39; || c == &#39;;&#39;) break;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(expectNext &amp;&amp; c != &#39; &#39; &amp;&amp; c != &#39;#&#39; &amp;&amp; c != &#39;\t&#39;){</b>
+<b class="nc">&nbsp;                error(&quot;Expected space after string/token.&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            expectNext = false;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(c == &#39;#&#39;){</b>
+<b class="nc">&nbsp;                comment();</b>
+<b class="nc">&nbsp;                break;</b>
+<b class="fc">&nbsp;            }else if(c == &#39;&quot;&#39;){</b>
+<b class="fc">&nbsp;                tokens[tok ++] = string();</b>
+<b class="fc">&nbsp;                expectNext = true;</b>
+<b class="fc">&nbsp;            }else if(c != &#39; &#39; &amp;&amp; c != &#39;\t&#39;){</b>
+<b class="fc">&nbsp;                tokens[tok ++] = token();</b>
+<b class="fc">&nbsp;                expectNext = true;</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                pos ++;</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //only process lines with at least 1 token
+<b class="fc">&nbsp;        if(tok &gt; 0){</b>
+<b class="fc">&nbsp;            checkRead();</b>
+&nbsp;
+&nbsp;            //store jump location, always ends with colon
+<b class="fc">&nbsp;            if(tok == 1 &amp;&amp; tokens[0].charAt(tokens[0].length() - 1) == &#39;:&#39;){</b>
+<b class="nc">&nbsp;                if(jumpLocations.size &gt;= maxJumps){</b>
+<b class="nc">&nbsp;                    error(&quot;Too many jump locations. Max jumps: &quot; + maxJumps);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                jumpLocations.put(tokens[0].substring(0, tokens[0].length() - 1), line);</b>
+&nbsp;            }else{
+&nbsp;                boolean wasJump;
+<b class="fc">&nbsp;                String jumpLoc = null;</b>
+&nbsp;                //clean up jump position before parsing
+<b class="fc">&nbsp;                if(wasJump = (tokens[0].equals(&quot;jump&quot;) &amp;&amp; tok &gt; 1 &amp;&amp; !Strings.canParseInt(tokens[1]))){</b>
+<b class="nc">&nbsp;                    jumpLoc = tokens[1];</b>
+<b class="nc">&nbsp;                    tokens[1] = &quot;-1&quot;;</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                for(int i = 1; i &lt; tok; i++){</b>
+<b class="fc">&nbsp;                    if(tokens[i].equals(&quot;@configure&quot;)) tokens[i] = &quot;@config&quot;;</b>
+<b class="fc">&nbsp;                    if(tokens[i].equals(&quot;configure&quot;)) tokens[i] = &quot;config&quot;;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                LStatement st;
+&nbsp;
+&nbsp;                try{
+<b class="fc">&nbsp;                    st = LogicIO.read(tokens, tok);</b>
+<b class="nc">&nbsp;                }catch(Exception e){</b>
+&nbsp;                    //replace invalid statements
+<b class="nc">&nbsp;                    st = new InvalidStatement();</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                //discard misplaced privileged instructions
+<b class="fc">&nbsp;                if(!privileged &amp;&amp; st != null &amp;&amp; st.privileged()){</b>
+<b class="nc">&nbsp;                    st = new InvalidStatement();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //store jumps that use labels
+<b class="fc">&nbsp;                if(st instanceof JumpStatement jump &amp;&amp; wasJump){</b>
+<b class="nc">&nbsp;                    jumps.add(new JumpIndex(jump, jumpLoc));</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(st != null){</b>
+<b class="fc">&nbsp;                    statements.add(st);</b>
+&nbsp;                }else{
+&nbsp;                    //attempt parsing using custom parser if a match is found; this is for mods
+<b class="nc">&nbsp;                    if(LAssembler.customParsers.containsKey(tokens[0])){</b>
+<b class="nc">&nbsp;                        statements.add(LAssembler.customParsers.get(tokens[0]).get(tokens));</b>
+&nbsp;                    }else{
+&nbsp;                        //unparseable statement
+<b class="nc">&nbsp;                        statements.add(new InvalidStatement());</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;                line ++;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    Seq&lt;LStatement&gt; parse(){
+<b class="fc">&nbsp;        jumps.clear();</b>
+<b class="fc">&nbsp;        jumpLocations.clear();</b>
+&nbsp;
+<b class="fc">&nbsp;        while(pos &lt; chars.length &amp;&amp; line &lt; LExecutor.maxInstructions){</b>
+<b class="fc">&nbsp;            switch(chars[pos]){</b>
+<b class="fc">&nbsp;                case &#39;\n&#39;, &#39;;&#39;, &#39; &#39; -&gt; pos ++; //skip newlines and spaces</b>
+<b class="nc">&nbsp;                case &#39;\r&#39; -&gt; pos += 2; //skip the newline after the \r</b>
+<b class="fc">&nbsp;                default -&gt; statement();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //load destination indices
+<b class="fc">&nbsp;        for(var i : jumps){</b>
+<b class="nc">&nbsp;            if(!jumpLocations.containsKey(i.location)){</b>
+<b class="nc">&nbsp;                error(&quot;Undefined jump location: \&quot;&quot; + i.location + &quot;\&quot;. Make sure the jump label exists and is typed correctly.&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            i.jump.destIndex = jumpLocations.get(i.location, -1);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        return statements;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static class JumpIndex{
+&nbsp;        JumpStatement jump;
+&nbsp;        String location;
+&nbsp;
+<b class="nc">&nbsp;        public JumpIndex(JumpStatement jump, String location){</b>
+<b class="nc">&nbsp;            this.jump = jump;</b>
+<b class="nc">&nbsp;            this.location = location;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

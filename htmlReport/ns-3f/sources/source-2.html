@@ -1,0 +1,424 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BeamNode</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.power</a>
+</div>
+
+<h1>Coverage Summary for Class: BeamNode (mindustry.world.blocks.power)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BeamNode</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (3/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.9%
+  </span>
+  <span class="absValue">
+    (17/61)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BeamNode$BeamNodeBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (3/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    39.7%
+  </span>
+  <span class="absValue">
+    (27/68)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (6/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.1%
+  </span>
+  <span class="absValue">
+    (44/129)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.power;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class BeamNode extends PowerBlock{
+&nbsp;    //maximum expected range of any beam node; used for previews
+&nbsp;    private static final int maxRange = 30;
+&nbsp;
+<b class="fc">&nbsp;    public int range = 5;</b>
+&nbsp;
+&nbsp;    public @Load(value = &quot;@-beam&quot;, fallback = &quot;power-beam&quot;) TextureRegion laser;
+&nbsp;    public @Load(value = &quot;@-beam-end&quot;, fallback = &quot;power-beam-end&quot;) TextureRegion laserEnd;
+&nbsp;
+<b class="fc">&nbsp;    public Color laserColor1 = Color.white;</b>
+<b class="fc">&nbsp;    public Color laserColor2 = Color.valueOf(&quot;ffd9c2&quot;);</b>
+<b class="fc">&nbsp;    public float pulseScl = 7, pulseMag = 0.05f;</b>
+<b class="fc">&nbsp;    public float laserWidth = 0.4f;</b>
+&nbsp;
+&nbsp;    public BeamNode(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        consumesPower = outputsPower = false;</b>
+<b class="fc">&nbsp;        drawDisabled = false;</b>
+<b class="fc">&nbsp;        envEnabled |= Env.space;</b>
+<b class="fc">&nbsp;        allowDiagonal = false;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+<b class="fc">&nbsp;        priority = TargetPriority.transport;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;power&quot;, PowerNode.makePowerBalance());</b>
+<b class="fc">&nbsp;        addBar(&quot;batteries&quot;, PowerNode.makeBatteryBalance());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.powerRange, range, StatUnit.blocks);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        updateClipRadius((range + 1) * tilesize);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            int maxLen = range + size/2;</b>
+<b class="nc">&nbsp;            Building dest = null;</b>
+<b class="nc">&nbsp;            var dir = Geometry.d4[i];</b>
+<b class="nc">&nbsp;            int dx = dir.x, dy = dir.y;</b>
+<b class="nc">&nbsp;            int offset = size/2;</b>
+<b class="nc">&nbsp;            for(int j = 1 + offset; j &lt;= range + offset; j++){</b>
+<b class="nc">&nbsp;                var other = world.build(x + j * dir.x, y + j * dir.y);</b>
+&nbsp;
+&nbsp;                //hit insulated wall
+<b class="nc">&nbsp;                if(other != null &amp;&amp; other.isInsulated()){</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(other != null &amp;&amp; other.block.hasPower &amp;&amp; other.team == Vars.player.team() &amp;&amp; !(other.block instanceof PowerNode)){</b>
+<b class="nc">&nbsp;                    maxLen = j;</b>
+<b class="nc">&nbsp;                    dest = other;</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Drawf.dashLine(Pal.placing,</b>
+&nbsp;                x * tilesize + dx * (tilesize * size / 2f + 2),
+&nbsp;                y * tilesize + dy * (tilesize * size / 2f + 2),
+&nbsp;                x * tilesize + dx * (maxLen) * tilesize,
+&nbsp;                y * tilesize + dy * (maxLen) * tilesize
+&nbsp;            );
+&nbsp;
+<b class="nc">&nbsp;            if(dest != null){</b>
+<b class="nc">&nbsp;                Drawf.square(dest.x, dest.y, dest.block.size * tilesize/2f + 2.5f, 0f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void changePlacementPath(Seq&lt;Point2&gt; points, int rotation, boolean diagonal){
+<b class="nc">&nbsp;        if(!diagonal){</b>
+<b class="nc">&nbsp;            Placement.calculateNodes(points, this, rotation, (point, other) -&gt; Math.max(Math.abs(point.x - other.x), Math.abs(point.y - other.y)) &lt;= range);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates through linked nodes of a block at a tile. All returned buildings are beam nodes. */
+&nbsp;    public static void getNodeLinks(Tile tile, Block block, Team team, Cons&lt;Building&gt; others){
+<b class="nc">&nbsp;        var tree = team.data().buildingTree;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(tree == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float cx = tile.worldx() + block.offset, cy = tile.worldy() + block.offset, s = block.size * tilesize/2f, r = maxRange * tilesize;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            switch(i){</b>
+<b class="nc">&nbsp;                case 0 -&gt; Tmp.r1.set(cx - s, cy - s, r, s * 2f);</b>
+<b class="nc">&nbsp;                case 1 -&gt; Tmp.r1.set(cx - s, cy - s, s * 2f, r);</b>
+<b class="nc">&nbsp;                case 2 -&gt; Tmp.r1.set(cx + s, cy - s, -r, s * 2f).normalize();</b>
+<b class="nc">&nbsp;                case 3 -&gt; Tmp.r1.set(cx - s, cy + s, s * 2f, -r).normalize();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            tempBuilds.clear();</b>
+<b class="nc">&nbsp;            tree.intersect(Tmp.r1, tempBuilds);</b>
+<b class="nc">&nbsp;            int fi = i;</b>
+<b class="nc">&nbsp;            Building closest = tempBuilds.min(b -&gt; b instanceof BeamNodeBuild node &amp;&amp; node.couldConnect((fi + 2) % 4, block, tile.x, tile.y), b -&gt; b.dst2(cx, cy));</b>
+<b class="nc">&nbsp;            tempBuilds.clear();</b>
+<b class="nc">&nbsp;            if(closest != null){</b>
+<b class="nc">&nbsp;                others.get(closest);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Note that x1 and y1 are expected to be coordinates of the node to draw the beam from. */
+&nbsp;    public void drawLaser(float x1, float y1, float x2, float y2, int size1, int size2){
+<b class="nc">&nbsp;        float w = laserWidth;</b>
+<b class="nc">&nbsp;        float dst = Math.max(Math.abs(x1 - x2),  Math.abs(y2 - y1)) / tilesize;</b>
+<b class="nc">&nbsp;        float sizeOff = dst * tilesize - (size1 + size2) * tilesize/2f;</b>
+&nbsp;
+&nbsp;        //don&#39;t draw lasers for adjacent blocks
+<b class="nc">&nbsp;        if(dst &gt; 1 + size/2){</b>
+<b class="nc">&nbsp;            var point = Geometry.d4(Tile.relativeTo(x1, y1, x2, y2));</b>
+<b class="nc">&nbsp;            float poff = tilesize/2f;</b>
+<b class="nc">&nbsp;            Drawf.laser(laser, laserEnd, x1 + poff*size*point.x, y1 + poff*size*point.y, x1 + (poff*size + sizeOff) * point.x, y1 + (poff*size + sizeOff) * point.y, w);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class BeamNodeBuild extends Building{</b>
+&nbsp;        //current links in cardinal directions
+<b class="fc">&nbsp;        public Building[] links = new Building[4];</b>
+<b class="fc">&nbsp;        public Tile[] dests = new Tile[4];</b>
+<b class="fc">&nbsp;        public int lastChange = -2;</b>
+&nbsp;
+&nbsp;        /** @return whether a beam could theoretically connect with the specified block at a position */
+&nbsp;        public boolean couldConnect(int direction, Block target, int targetX, int targetY){
+<b class="nc">&nbsp;            int offset = -(target.size - 1) / 2;</b>
+<b class="nc">&nbsp;            int minX = targetX + offset, minY = targetY + offset, maxX = targetX + offset + target.size - 1, maxY = targetY + offset + target.size - 1;</b>
+<b class="nc">&nbsp;            var dir = Geometry.d4[direction];</b>
+&nbsp;
+<b class="nc">&nbsp;            int rangeOffset = size/2;</b>
+&nbsp;
+&nbsp;            //find first block with power in range
+<b class="nc">&nbsp;            for(int j = 1 + rangeOffset; j &lt;= range + rangeOffset; j++){</b>
+<b class="nc">&nbsp;                var other = world.tile(tile.x + j * dir.x, tile.y + j * dir.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(other == null) return false;</b>
+&nbsp;
+&nbsp;                //hit insulated wall
+<b class="nc">&nbsp;                if((other.build != null &amp;&amp; other.build.isInsulated()) || (other.block().hasPower &amp;&amp; other.block().connectedPower &amp;&amp; other.team() == team)){</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //within target rectangle
+<b class="nc">&nbsp;                if(other.x &gt;= minX &amp;&amp; other.y &gt;= minY &amp;&amp; other.x &lt;= maxX &amp;&amp; other.y &lt;= maxY){</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+&nbsp;            //TODO this block technically does not need to update every frame, perhaps put it in a special list.
+<b class="fc">&nbsp;            if(lastChange != world.tileChanges){</b>
+<b class="fc">&nbsp;                lastChange = world.tileChanges;</b>
+<b class="fc">&nbsp;                updateDirections();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public BlockStatus status(){
+<b class="nc">&nbsp;            float balance = power.graph.getPowerBalance();</b>
+<b class="nc">&nbsp;            if(balance &gt; 0f) return BlockStatus.active;</b>
+<b class="nc">&nbsp;            if(balance &lt; 0f &amp;&amp; power.graph.getLastPowerStored() &gt; 0) return BlockStatus.noOutput;</b>
+<b class="nc">&nbsp;            return BlockStatus.noInput;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Mathf.zero(Renderer.laserOpacity)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.power);</b>
+<b class="nc">&nbsp;            Draw.color(laserColor1, laserColor2, (1f - power.graph.getSatisfaction()) * 0.86f + Mathf.absin(3f, 0.1f));</b>
+<b class="nc">&nbsp;            Draw.alpha(Renderer.laserOpacity);</b>
+<b class="nc">&nbsp;            float w = laserWidth + Mathf.absin(pulseScl, pulseMag);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i ++){</b>
+<b class="nc">&nbsp;                if(dests[i] != null &amp;&amp; links[i].wasVisible &amp;&amp; (!(links[i].block instanceof BeamNode node) ||</b>
+<b class="nc">&nbsp;                    (links[i].tileX() != tileX() &amp;&amp; links[i].tileY() != tileY()) ||</b>
+&nbsp;                    (links[i].id &gt; id &amp;&amp; range &gt;= node.range) || range &gt; node.range)){
+&nbsp;
+<b class="nc">&nbsp;                    int dst = Math.max(Math.abs(dests[i].x - tile.x),  Math.abs(dests[i].y - tile.y));</b>
+&nbsp;                    //don&#39;t draw lasers for adjacent blocks
+<b class="nc">&nbsp;                    if(dst &gt; 1 + size/2){</b>
+<b class="nc">&nbsp;                        var point = Geometry.d4[i];</b>
+<b class="nc">&nbsp;                        float poff = tilesize/2f;</b>
+<b class="nc">&nbsp;                        Drawf.laser(laser, laserEnd, x + poff*size*point.x, y + poff*size*point.y, dests[i].worldx() - poff*point.x, dests[i].worldy() - poff*point.y, w);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void pickedUp(){
+<b class="nc">&nbsp;            Arrays.fill(links, null);</b>
+<b class="nc">&nbsp;            Arrays.fill(dests, null);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void updateDirections(){
+<b class="fc">&nbsp;            for(int i = 0; i &lt; 4; i ++){</b>
+<b class="fc">&nbsp;                var prev = links[i];</b>
+<b class="fc">&nbsp;                var dir = Geometry.d4[i];</b>
+<b class="fc">&nbsp;                links[i] = null;</b>
+<b class="fc">&nbsp;                dests[i] = null;</b>
+<b class="fc">&nbsp;                int offset = size/2;</b>
+&nbsp;                //find first block with power in range
+<b class="fc">&nbsp;                for(int j = 1 + offset; j &lt;= range + offset; j++){</b>
+<b class="fc">&nbsp;                    var other = world.build(tile.x + j * dir.x, tile.y + j * dir.y);</b>
+&nbsp;
+&nbsp;                    //hit insulated wall
+<b class="fc">&nbsp;                    if(other != null &amp;&amp; other.isInsulated()){</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //power nodes do NOT play nice with beam nodes, do not touch them as that forcefully modifies their links
+<b class="fc">&nbsp;                    if(other != null &amp;&amp; other.block.hasPower &amp;&amp; other.block.connectedPower &amp;&amp; other.team == team &amp;&amp; !(other.block instanceof PowerNode)){</b>
+<b class="fc">&nbsp;                        links[i] = other;</b>
+<b class="fc">&nbsp;                        dests[i] = world.tile(tile.x + j * dir.x, tile.y + j * dir.y);</b>
+<b class="fc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                var next = links[i];</b>
+&nbsp;
+<b class="fc">&nbsp;                if(next != prev){</b>
+&nbsp;                    //unlinked, disconnect and reflow
+<b class="fc">&nbsp;                    if(prev != null &amp;&amp; prev.isAdded()){</b>
+<b class="nc">&nbsp;                        prev.power.links.removeValue(pos());</b>
+<b class="nc">&nbsp;                        power.links.removeValue(prev.pos());</b>
+&nbsp;
+<b class="nc">&nbsp;                        PowerGraph newgraph = new PowerGraph();</b>
+&nbsp;                        //reflow from this point, covering all tiles on this side
+<b class="nc">&nbsp;                        newgraph.reflow(this);</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(prev.power.graph != newgraph){</b>
+&nbsp;                            //reflow power for other end
+<b class="nc">&nbsp;                            PowerGraph og = new PowerGraph();</b>
+<b class="nc">&nbsp;                            og.reflow(prev);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //linked to a new one, connect graphs
+<b class="fc">&nbsp;                    if(next != null){</b>
+<b class="fc">&nbsp;                        power.links.addUnique(next.pos());</b>
+<b class="fc">&nbsp;                        next.power.links.addUnique(pos());</b>
+&nbsp;
+<b class="fc">&nbsp;                        power.graph.addGraph(next.power.graph);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

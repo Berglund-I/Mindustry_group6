@@ -1,0 +1,530 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > StackConveyor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: StackConveyor (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StackConveyor</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (28/44)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">StackConveyor$StackConveyorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (5/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.9%
+  </span>
+  <span class="absValue">
+    (32/134)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    32%
+  </span>
+  <span class="absValue">
+    (8/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.7%
+  </span>
+  <span class="absValue">
+    (60/178)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.distribution.Conveyor.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class StackConveyor extends Block implements Autotiler{
+&nbsp;    protected static final int stateMove = 0, stateLoad = 1, stateUnload = 2;
+&nbsp;
+&nbsp;    public @Load(value = &quot;@-#&quot;, length = 3) TextureRegion[] regions;
+&nbsp;    public @Load(&quot;@-edge&quot;) TextureRegion edgeRegion;
+&nbsp;    public @Load(&quot;@-stack&quot;) TextureRegion stackRegion;
+&nbsp;    /** requires power to work properly */
+&nbsp;    public @Load(value = &quot;@-glow&quot;) TextureRegion glowRegion;
+&nbsp;    public @Load(value = &quot;@-edge-glow&quot;, fallback = &quot;@-glow&quot;) TextureRegion edgeGlowRegion;
+&nbsp;
+<b class="fc">&nbsp;    public float glowAlpha = 1f;</b>
+<b class="fc">&nbsp;    public Color glowColor = Pal.redLight;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float baseEfficiency = 0f;</b>
+<b class="fc">&nbsp;    public float speed = 0f;</b>
+<b class="fc">&nbsp;    public boolean outputRouter = true;</b>
+&nbsp;    /** (minimum) amount of loading docks needed to fill a line. */
+<b class="fc">&nbsp;    public float recharge = 2f;</b>
+<b class="fc">&nbsp;    public Effect loadEffect = Fx.conveyorPoof;</b>
+<b class="fc">&nbsp;    public Effect unloadEffect = Fx.conveyorPoof;</b>
+&nbsp;
+&nbsp;    public StackConveyor(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.transportation;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        itemCapacity = 10;</b>
+<b class="fc">&nbsp;        conveyorPlacement = true;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+<b class="fc">&nbsp;        priority = TargetPriority.transport;</b>
+&nbsp;
+<b class="fc">&nbsp;        ambientSound = Sounds.conveyor;</b>
+<b class="fc">&nbsp;        ambientSoundVolume = 0.004f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.itemsMoved, Mathf.round(itemCapacity * speed * 60), StatUnit.itemsSecond);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean blends(Tile tile, int rotation, int otherx, int othery, int otherrot, Block otherblock){
+<b class="fc">&nbsp;        if(tile.build instanceof StackConveyorBuild b){</b>
+<b class="fc">&nbsp;            int state = b.state;</b>
+<b class="fc">&nbsp;            if(state == stateLoad){ //standard conveyor mode</b>
+<b class="fc">&nbsp;                return otherblock.outputsItems() &amp;&amp; lookingAtEither(tile, rotation, otherx, othery, otherrot, otherblock);</b>
+<b class="fc">&nbsp;            }else if(state == stateUnload &amp;&amp; !outputRouter){ //router mode</b>
+&nbsp;                return otherblock.acceptsItems &amp;&amp;
+<b class="nc">&nbsp;                    (!otherblock.noSideBlend || lookingAtEither(tile, rotation, otherx, othery, otherrot, otherblock)) &amp;&amp;</b>
+<b class="nc">&nbsp;                    (notLookingAt(tile, rotation, otherx, othery, otherrot, otherblock) ||</b>
+<b class="nc">&nbsp;                    (otherblock instanceof StackConveyor &amp;&amp; facing(otherx, othery, otherrot, tile.x, tile.y))) &amp;&amp;</b>
+<b class="nc">&nbsp;                    !(world.build(otherx, othery) instanceof StackConveyorBuild s &amp;&amp; s.state == stateUnload) &amp;&amp;</b>
+<b class="nc">&nbsp;                    !(world.build(otherx, othery) instanceof StackConveyorBuild s2 &amp;&amp; s2.state == stateMove &amp;&amp;</b>
+<b class="nc">&nbsp;                        !facing(otherx, othery, otherrot, tile.x, tile.y));</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return otherblock.outputsItems() &amp;&amp; blendsArmored(tile, rotation, otherx, othery, otherrot, otherblock) &amp;&amp; otherblock instanceof StackConveyor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        int[] bits = getTiling(plan, list);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(bits == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        TextureRegion region = regions[0];</b>
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            if((bits[3] &amp; (1 &lt;&lt; i)) == 0){</b>
+<b class="nc">&nbsp;                Draw.rect(edgeRegion, plan.drawx(), plan.drawy(), (plan.rotation - i) * 90);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean rotatedOutput(int x, int y){
+<b class="fc">&nbsp;        Building tile = world.build(x, y);</b>
+<b class="fc">&nbsp;        if(tile instanceof StackConveyorBuild s){</b>
+<b class="fc">&nbsp;            return s.state != stateUnload;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return super.rotatedOutput(x, y);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class StackConveyorBuild extends Building{</b>
+&nbsp;        public int state, blendprox;
+&nbsp;
+<b class="fc">&nbsp;        public int link = -1;</b>
+&nbsp;        public float cooldown;
+&nbsp;        public Item lastItem;
+&nbsp;
+<b class="fc">&nbsp;        boolean proxUpdating = false;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.z(Layer.block - 0.2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(regions[state], x, y, rotdeg());</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                if((blendprox &amp; (1 &lt;&lt; i)) == 0){</b>
+<b class="nc">&nbsp;                    Draw.rect(edgeRegion, x, y, (rotation - i) * 90);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //draw inputs
+<b class="nc">&nbsp;            if(state == stateLoad){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                    int dir = rotation - i;</b>
+<b class="nc">&nbsp;                    var near = nearby(dir);</b>
+<b class="nc">&nbsp;                    if((blendprox &amp; (1 &lt;&lt; i)) != 0 &amp;&amp; i != 0 &amp;&amp; near != null &amp;&amp; !near.block.squareSprite){</b>
+<b class="nc">&nbsp;                        Draw.rect(sliced(regions[0], SliceMode.bottom), x + Geometry.d4x(dir) * tilesize*0.75f, y + Geometry.d4y(dir) * tilesize*0.75f, (float)(dir*90));</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(state == stateUnload){ //front unload</b>
+&nbsp;                //TOOD hacky front check
+<b class="nc">&nbsp;                if((blendprox &amp; (1)) != 0 &amp;&amp; !front().block.squareSprite){</b>
+<b class="nc">&nbsp;                    Draw.rect(sliced(regions[0], SliceMode.top), x + Geometry.d4x(rotation) * tilesize*0.75f, y + Geometry.d4y(rotation) * tilesize*0.75f, rotation * 90f);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.block - 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Tile from = world.tile(link);</b>
+&nbsp;
+&nbsp;            //TODO do not draw for certain configurations?
+<b class="nc">&nbsp;            if(glowRegion.found() &amp;&amp; power != null &amp;&amp; power.status &gt; 0f){</b>
+<b class="nc">&nbsp;                Draw.z(Layer.blockAdditive);</b>
+<b class="nc">&nbsp;                Draw.color(glowColor, glowAlpha * power.status);</b>
+<b class="nc">&nbsp;                Draw.blend(Blending.additive);</b>
+<b class="nc">&nbsp;                Draw.rect(state == stateLoad ? edgeGlowRegion : glowRegion, x, y, rotation * 90);</b>
+<b class="nc">&nbsp;                Draw.blend();</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+<b class="nc">&nbsp;                Draw.z(Layer.block - 0.1f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(link == -1 || from == null || lastItem == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            int fromRot = from.build == null ? rotation : from.build.rotation;</b>
+&nbsp;
+&nbsp;            //offset
+<b class="nc">&nbsp;            Tmp.v1.set(from.worldx(), from.worldy());</b>
+<b class="nc">&nbsp;            Tmp.v2.set(x, y);</b>
+<b class="nc">&nbsp;            Tmp.v1.interpolate(Tmp.v2, 1f - cooldown, Interp.linear);</b>
+&nbsp;
+&nbsp;            //rotation
+<b class="nc">&nbsp;            float a = (fromRot%4) * 90;</b>
+<b class="nc">&nbsp;            float b = (rotation%4) * 90;</b>
+<b class="nc">&nbsp;            if((fromRot%4) == 3 &amp;&amp; (rotation%4) == 0) a = -1 * 90;</b>
+<b class="nc">&nbsp;            if((fromRot%4) == 0 &amp;&amp; (rotation%4) == 3) a =  4 * 90;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(glowRegion.found()){</b>
+<b class="nc">&nbsp;                Draw.z(Layer.blockAdditive + 0.01f);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //stack
+<b class="nc">&nbsp;            Draw.rect(stackRegion, Tmp.v1.x, Tmp.v1.y, Mathf.lerp(a, b, Interp.smooth.apply(1f - Mathf.clamp(cooldown * 2, 0f, 1f))));</b>
+&nbsp;
+&nbsp;            //item
+<b class="nc">&nbsp;            float size = itemSize * Mathf.lerp(Math.min((float)items.total() / itemCapacity, 1), 1f, 0.4f);</b>
+<b class="nc">&nbsp;            Drawf.shadow(Tmp.v1.x, Tmp.v1.y, size * 1.2f);</b>
+<b class="nc">&nbsp;            Draw.rect(lastItem.fullIcon, Tmp.v1.x, Tmp.v1.y, size, size, 0);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void dropped(){
+<b class="nc">&nbsp;            super.dropped();</b>
+<b class="nc">&nbsp;            var prev = Geometry.d4[(rotation + 2) % 4];</b>
+<b class="nc">&nbsp;            link = Point2.pack(tile.x + prev.x, tile.y + prev.y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawCracks(){
+<b class="nc">&nbsp;            Draw.z(Layer.block - 0.15f);</b>
+<b class="nc">&nbsp;            super.drawCracks();</b>
+&nbsp;        }
+&nbsp;        
+&nbsp;        @Override
+&nbsp;        public void payloadDraw(){
+<b class="nc">&nbsp;            Draw.rect(block.fullIcon, x, y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityUpdate(){
+<b class="fc">&nbsp;            super.onProximityUpdate();</b>
+&nbsp;
+<b class="fc">&nbsp;            int lastState = state;</b>
+&nbsp;
+<b class="fc">&nbsp;            state = stateMove;</b>
+&nbsp;
+<b class="fc">&nbsp;            int[] bits = buildBlending(tile, rotation, null, true);</b>
+<b class="fc">&nbsp;            if(bits[0] == 0 &amp;&amp; blends(tile, rotation, 0) &amp;&amp; (!blends(tile, rotation, 2) || back() instanceof StackConveyorBuild b &amp;&amp; b.state == stateUnload)) state = stateLoad;  // a 0 that faces into a conveyor with none behind it</b>
+<b class="fc">&nbsp;            if(outputRouter &amp;&amp; bits[0] == 0 &amp;&amp; !blends(tile, rotation, 0) &amp;&amp; blends(tile, rotation, 2)) state = stateUnload; // a 0 that faces into none with a conveyor behind it</b>
+<b class="fc">&nbsp;            if(!outputRouter &amp;&amp; !(front() instanceof StackConveyorBuild)) state = stateUnload; // a 0 that faces into none with a conveyor behind it</b>
+&nbsp;
+<b class="fc">&nbsp;            if(!headless){</b>
+<b class="nc">&nbsp;                blendprox = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                    if(blends(tile, rotation, i) &amp;&amp; (state != stateUnload || outputRouter || i == 0 || nearby(Mathf.mod(rotation - i, 4)) instanceof StackConveyorBuild)){</b>
+<b class="nc">&nbsp;                        blendprox |= (1 &lt;&lt; i);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //cannot load when facing
+<b class="fc">&nbsp;            if(state == stateLoad){</b>
+<b class="fc">&nbsp;                for(Building near : proximity){</b>
+<b class="fc">&nbsp;                    if(near instanceof StackConveyorBuild &amp;&amp; near.front() == this){</b>
+<b class="nc">&nbsp;                        state = stateMove;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //update other conveyor state when this conveyor&#39;s state changes
+<b class="fc">&nbsp;            if(state != lastState){</b>
+<b class="fc">&nbsp;                proxUpdating = true;</b>
+<b class="fc">&nbsp;                for(Building near : proximity){</b>
+<b class="fc">&nbsp;                    if(!(near instanceof StackConveyorBuild b &amp;&amp; b.proxUpdating &amp;&amp; b.state != stateUnload)){</b>
+<b class="fc">&nbsp;                        near.onProximityUpdate();</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;                proxUpdating = false;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean canUnload(){
+<b class="nc">&nbsp;            return state != stateLoad;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+&nbsp;            //the item still needs to be &quot;reeled&quot; in when disabled
+<b class="fc">&nbsp;            float eff = enabled ? (efficiency + baseEfficiency) : 1f;</b>
+&nbsp;
+&nbsp;            //reel in crater
+<b class="fc">&nbsp;            if(cooldown &gt; 0f) cooldown = Mathf.clamp(cooldown - speed * eff * delta(), 0f, recharge);</b>
+&nbsp;
+&nbsp;            //indicates empty state
+<b class="fc">&nbsp;            if(link == -1) return;</b>
+&nbsp;
+&nbsp;            //crater needs to be centered
+<b class="nc">&nbsp;            if(cooldown &gt; 0f) return;</b>
+&nbsp;
+&nbsp;            //get current item
+<b class="nc">&nbsp;            if(lastItem == null || !items.has(lastItem)){</b>
+<b class="nc">&nbsp;                lastItem = items.first();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //do not continue if disabled, will still allow one to be reeled in to prevent visual stacking
+<b class="nc">&nbsp;            if(!enabled) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(state == stateUnload){ //unload</b>
+<b class="nc">&nbsp;                while(lastItem != null &amp;&amp; !outputRouter ? moveForward(lastItem) : dump(lastItem)){</b>
+<b class="nc">&nbsp;                    if(!outputRouter){</b>
+<b class="nc">&nbsp;                        items.remove(lastItem, 1);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(!items.has(lastItem)){</b>
+<b class="nc">&nbsp;                        poofOut();</b>
+<b class="nc">&nbsp;                        lastItem = null;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }else{ //transfer
+<b class="nc">&nbsp;                if(state != stateLoad || (items.total() &gt;= getMaximumAccepted(lastItem))){</b>
+<b class="nc">&nbsp;                    if(front() instanceof StackConveyorBuild e &amp;&amp; e.team == team){</b>
+&nbsp;                        //sleep if its occupied
+<b class="nc">&nbsp;                        if(e.link == -1){</b>
+<b class="nc">&nbsp;                            e.items.add(items);</b>
+<b class="nc">&nbsp;                            e.lastItem = lastItem;</b>
+<b class="nc">&nbsp;                            e.link = tile.pos();</b>
+&nbsp;                            //? to | from ?
+<b class="nc">&nbsp;                            link = -1;</b>
+<b class="nc">&nbsp;                            items.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;                            cooldown = recharge;</b>
+<b class="nc">&nbsp;                            e.cooldown = 1;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void overwrote(Seq&lt;Building&gt; builds){
+<b class="nc">&nbsp;            if(builds.first() instanceof ConveyorBuild build){</b>
+<b class="nc">&nbsp;                Item item = build.items.first();</b>
+<b class="nc">&nbsp;                if(item != null){</b>
+<b class="nc">&nbsp;                    handleStack(item, build.items.get(item), null);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldAmbientSound(){
+<b class="nc">&nbsp;            return false; //has no moving parts;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void poofIn(){
+<b class="nc">&nbsp;            link = tile.pos();</b>
+<b class="nc">&nbsp;            loadEffect.at(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void poofOut(){
+<b class="nc">&nbsp;            unloadEffect.at(this);</b>
+<b class="nc">&nbsp;            link = -1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int acceptStack(Item item, int amount, Teamc source){
+<b class="nc">&nbsp;            if(items.any() &amp;&amp; !items.has(item)) return 0;</b>
+<b class="nc">&nbsp;            return super.acceptStack(item, amount, source);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleItem(Building source, Item item){
+<b class="nc">&nbsp;            if(items.empty() &amp;&amp; tile != null) poofIn();</b>
+<b class="nc">&nbsp;            super.handleItem(source, item);</b>
+<b class="nc">&nbsp;            lastItem = item;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleStack(Item item, int amount, Teamc source){
+<b class="nc">&nbsp;            if(amount &lt;= 0) return;</b>
+<b class="nc">&nbsp;            if(items.empty() &amp;&amp; tile != null) poofIn();</b>
+<b class="nc">&nbsp;            super.handleStack(item, amount, source);</b>
+<b class="nc">&nbsp;            lastItem = item;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int removeStack(Item item, int amount){
+&nbsp;            try{
+<b class="nc">&nbsp;                return super.removeStack(item, amount);</b>
+&nbsp;            }finally{
+<b class="nc">&nbsp;                if(items.empty()) poofOut();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void itemTaken(Item item){
+<b class="nc">&nbsp;            if(items.empty()) poofOut();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            if(this == source) return items.total() &lt; itemCapacity &amp;&amp; (!items.any() || items.has(item)); //player threw items</b>
+<b class="nc">&nbsp;            if(cooldown &gt; recharge - 1f) return false; //still cooling down</b>
+<b class="nc">&nbsp;            return !((state != stateLoad) //not a loading dock</b>
+<b class="nc">&nbsp;            ||  (items.any() &amp;&amp; !items.has(item)) //incompatible items</b>
+<b class="nc">&nbsp;            ||  (items.total() &gt;= getMaximumAccepted(item)) //filled to capacity</b>
+<b class="nc">&nbsp;            ||  (front()  == source));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            write.i(link);</b>
+<b class="fc">&nbsp;            write.f(cooldown);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            link = read.i();</b>
+<b class="fc">&nbsp;            cooldown = read.f();</b>
+<b class="fc">&nbsp;            lastItem = items.first();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

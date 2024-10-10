@@ -1,0 +1,554 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BeamDrill</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.production</a>
+</div>
+
+<h1>Coverage Summary for Class: BeamDrill (mindustry.world.blocks.production)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BeamDrill</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (7/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.8%
+  </span>
+  <span class="absValue">
+    (34/90)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BeamDrill$BeamDrillBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    81.8%
+  </span>
+  <span class="absValue">
+    (9/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.2%
+  </span>
+  <span class="absValue">
+    (49/116)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    64%
+  </span>
+  <span class="absValue">
+    (16/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40.3%
+  </span>
+  <span class="absValue">
+    (83/206)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.production;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class BeamDrill extends Block{</b>
+<b class="fc">&nbsp;    protected Rand rand = new Rand();</b>
+&nbsp;
+&nbsp;    public @Load(value = &quot;@-beam&quot;, fallback = &quot;drill-laser&quot;) TextureRegion laser;
+&nbsp;    public @Load(value = &quot;@-beam-end&quot;, fallback = &quot;drill-laser-end&quot;) TextureRegion laserEnd;
+&nbsp;    public @Load(value = &quot;@-beam-center&quot;, fallback = &quot;drill-laser-center&quot;) TextureRegion laserCenter;
+&nbsp;
+&nbsp;    public @Load(value = &quot;@-beam-boost&quot;, fallback = &quot;drill-laser-boost&quot;) TextureRegion laserBoost;
+&nbsp;    public @Load(value = &quot;@-beam-boost-end&quot;, fallback = &quot;drill-laser-boost-end&quot;) TextureRegion laserEndBoost;
+&nbsp;    public @Load(value = &quot;@-beam-boost-center&quot;, fallback = &quot;drill-laser-boost-center&quot;) TextureRegion laserCenterBoost;
+&nbsp;
+&nbsp;    public @Load(&quot;@-top&quot;) TextureRegion topRegion;
+&nbsp;    public @Load(&quot;@-glow&quot;) TextureRegion glowRegion;
+&nbsp;
+<b class="fc">&nbsp;    public float drillTime = 200f;</b>
+<b class="fc">&nbsp;    public int range = 5;</b>
+<b class="fc">&nbsp;    public int tier = 1;</b>
+<b class="fc">&nbsp;    public float laserWidth = 0.65f;</b>
+&nbsp;    /** How many times faster the drill will progress when boosted by an optional consumer. */
+<b class="fc">&nbsp;    public float optionalBoostIntensity = 2.5f;</b>
+&nbsp;
+&nbsp;    /** Multipliers of drill speed for each item. Defaults to 1. */
+<b class="fc">&nbsp;    public ObjectFloatMap&lt;Item&gt; drillMultipliers = new ObjectFloatMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    public Color sparkColor = Color.valueOf(&quot;fd9e81&quot;), glowColor = Color.white;</b>
+<b class="fc">&nbsp;    public float glowIntensity = 0.2f, pulseIntensity = 0.07f;</b>
+<b class="fc">&nbsp;    public float glowScl = 3f;</b>
+<b class="fc">&nbsp;    public int sparks = 7;</b>
+<b class="fc">&nbsp;    public float sparkRange = 10f, sparkLife = 27f, sparkRecurrence = 4f, sparkSpread = 45f, sparkSize = 3.5f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public Color boostHeatColor = Color.sky.cpy().mul(0.87f);</b>
+<b class="fc">&nbsp;    public Color heatColor = new Color(1f, 0.35f, 0.35f, 0.9f);</b>
+<b class="fc">&nbsp;    public float heatPulse = 0.3f, heatPulseScl = 7f;</b>
+&nbsp;
+&nbsp;    public BeamDrill(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        drawArrow = false;</b>
+<b class="fc">&nbsp;        regionRotated1 = 1;</b>
+<b class="fc">&nbsp;        ambientSoundVolume = 0.05f;</b>
+<b class="fc">&nbsp;        ambientSound = Sounds.minebeam;</b>
+&nbsp;
+<b class="fc">&nbsp;        envEnabled |= Env.space;</b>
+<b class="fc">&nbsp;        flags = EnumSet.of(BlockFlag.drill);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        updateClipRadius((range + 2) * tilesize);</b>
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;drillspeed&quot;, (BeamDrillBuild e) -&gt;</b>
+<b class="nc">&nbsp;            new Bar(() -&gt; Core.bundle.format(&quot;bar.drillspeed&quot;, Strings.fixed(e.lastDrillSpeed * 60, 2)), () -&gt; Pal.ammo, () -&gt; e.warmup));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean rotatedOutput(int x, int y){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{region, topRegion};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy());</b>
+<b class="nc">&nbsp;        Draw.rect(topRegion, plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.drillTier, StatValues.drillables(drillTime, 0f, size, drillMultipliers, b -&gt; (b instanceof Floor f &amp;&amp; f.wallOre &amp;&amp; f.itemDrop != null &amp;&amp; f.itemDrop.hardness &lt;= tier) || (b instanceof StaticWall w &amp;&amp; w.itemDrop != null &amp;&amp; w.itemDrop.hardness &lt;= tier)));</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.drillSpeed, 60f / drillTime * size, StatUnit.itemsSecond);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(optionalBoostIntensity != 1 &amp;&amp; findConsumer(f -&gt; f instanceof ConsumeLiquidBase &amp;&amp; f.booster) instanceof ConsumeLiquidBase consBase){</b>
+<b class="nc">&nbsp;            stats.remove(Stat.booster);</b>
+<b class="nc">&nbsp;            stats.add(Stat.booster,</b>
+<b class="nc">&nbsp;                StatValues.speedBoosters(&quot;{0}&quot; + StatUnit.timesSpeed.localized(),</b>
+&nbsp;                consBase.amount, optionalBoostIntensity, false,
+<b class="nc">&nbsp;                l -&gt; (consumesLiquid(l) &amp;&amp; (findConsumer(f -&gt; f instanceof ConsumeLiquid).booster || ((ConsumeLiquid)findConsumer(f -&gt; f instanceof ConsumeLiquid)).liquid != l)))</b>
+&nbsp;            );
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        Item item = null, invalidItem = null;</b>
+<b class="nc">&nbsp;        boolean multiple = false;</b>
+<b class="nc">&nbsp;        int count = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; size; i++){</b>
+<b class="nc">&nbsp;            nearbySide(x, y, rotation, i, Tmp.p1);</b>
+&nbsp;
+<b class="nc">&nbsp;            int j = 0;</b>
+<b class="nc">&nbsp;            Item found = null;</b>
+<b class="nc">&nbsp;            for(; j &lt; range; j++){</b>
+<b class="nc">&nbsp;                int rx = Tmp.p1.x + Geometry.d4x(rotation)*j, ry = Tmp.p1.y + Geometry.d4y(rotation)*j;</b>
+<b class="nc">&nbsp;                Tile other = world.tile(rx, ry);</b>
+<b class="nc">&nbsp;                if(other != null &amp;&amp; other.solid()){</b>
+<b class="nc">&nbsp;                    Item drop = other.wallDrop();</b>
+<b class="nc">&nbsp;                    if(drop != null){</b>
+<b class="nc">&nbsp;                        if(drop.hardness &lt;= tier){</b>
+<b class="nc">&nbsp;                            found = drop;</b>
+<b class="nc">&nbsp;                            count++;</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            invalidItem = drop;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                    break;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(found != null){</b>
+&nbsp;                //check if multiple items will be drilled
+<b class="nc">&nbsp;                if(item != found &amp;&amp; item != null){</b>
+<b class="nc">&nbsp;                    multiple = true;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                item = found;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            int len = Math.min(j, range - 1);</b>
+<b class="nc">&nbsp;            Drawf.dashLine(found == null ? Pal.remove : Pal.placing,</b>
+&nbsp;            Tmp.p1.x * tilesize,
+&nbsp;            Tmp.p1.y *tilesize,
+<b class="nc">&nbsp;            (Tmp.p1.x + Geometry.d4x(rotation)*len) * tilesize,</b>
+<b class="nc">&nbsp;            (Tmp.p1.y + Geometry.d4y(rotation)*len) * tilesize</b>
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(item != null){</b>
+<b class="nc">&nbsp;            float width = drawPlaceText(Core.bundle.formatFloat(&quot;bar.drillspeed&quot;, 60f / getDrillTime(item) * count, 2), x, y, valid);</b>
+<b class="nc">&nbsp;            if(!multiple){</b>
+<b class="nc">&nbsp;                float dx = x * tilesize + offset - width/2f - 4f, dy = y * tilesize + offset + size * tilesize / 2f + 5, s = iconSmall / 4f;</b>
+<b class="nc">&nbsp;                Draw.mixcol(Color.darkGray, 1f);</b>
+<b class="nc">&nbsp;                Draw.rect(item.fullIcon, dx, dy - 1, s, s);</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+<b class="nc">&nbsp;                Draw.rect(item.fullIcon, dx, dy, s, s);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(invalidItem != null){</b>
+<b class="nc">&nbsp;            drawPlaceText(Core.bundle.get(&quot;bar.drilltierreq&quot;), x, y, false);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean canPlaceOn(Tile tile, Team team, int rotation){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; size; i++){</b>
+<b class="nc">&nbsp;            nearbySide(tile.x, tile.y, rotation, i, Tmp.p1);</b>
+<b class="nc">&nbsp;            for(int j = 0; j &lt; range; j++){</b>
+<b class="nc">&nbsp;                Tile other = world.tile(Tmp.p1.x + Geometry.d4x(rotation)*j, Tmp.p1.y + Geometry.d4y(rotation)*j);</b>
+<b class="nc">&nbsp;                if(other != null &amp;&amp; other.solid()){</b>
+<b class="nc">&nbsp;                    Item drop = other.wallDrop();</b>
+<b class="nc">&nbsp;                    if(drop != null &amp;&amp; drop.hardness &lt;= tier){</b>
+<b class="nc">&nbsp;                        return true;</b>
+&nbsp;                    }
+&nbsp;                    break;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getDrillTime(Item item){
+<b class="fc">&nbsp;        return drillTime / drillMultipliers.get(item, 1f);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class BeamDrillBuild extends Building{</b>
+<b class="fc">&nbsp;        public Tile[] facing = new Tile[size];</b>
+<b class="fc">&nbsp;        public Point2[] lasers = new Point2[size];</b>
+&nbsp;        public @Nullable Item lastItem;
+&nbsp;
+&nbsp;        public float time;
+&nbsp;        public float warmup, boostWarmup;
+&nbsp;        public float lastDrillSpeed;
+&nbsp;        public int facingAmount;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawSelect(){
+&nbsp;
+<b class="nc">&nbsp;            if(lastItem != null){</b>
+<b class="nc">&nbsp;                float dx = x - size * tilesize/2f, dy = y + size * tilesize/2f, s = iconSmall / 4f;</b>
+<b class="nc">&nbsp;                Draw.mixcol(Color.darkGray, 1f);</b>
+<b class="nc">&nbsp;                Draw.rect(lastItem.fullIcon, dx, dy - 1, s, s);</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+<b class="nc">&nbsp;                Draw.rect(lastItem.fullIcon, dx, dy, s, s);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            super.updateTile();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(lasers[0] == null) updateLasers();</b>
+&nbsp;
+<b class="fc">&nbsp;            warmup = Mathf.approachDelta(warmup, Mathf.num(efficiency &gt; 0), 1f / 60f);</b>
+&nbsp;            
+<b class="fc">&nbsp;            updateFacing();</b>
+&nbsp;
+<b class="fc">&nbsp;            float multiplier = Mathf.lerp(1f, optionalBoostIntensity, optionalEfficiency);</b>
+<b class="fc">&nbsp;            float drillTime = getDrillTime(lastItem);</b>
+<b class="fc">&nbsp;            boostWarmup = Mathf.lerpDelta(boostWarmup, optionalEfficiency, 0.1f);</b>
+<b class="fc">&nbsp;            lastDrillSpeed = (facingAmount * multiplier * timeScale) / drillTime;</b>
+&nbsp;
+<b class="fc">&nbsp;            time += edelta() * multiplier;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(time &gt;= drillTime){</b>
+<b class="nc">&nbsp;                for(Tile tile : facing){</b>
+<b class="nc">&nbsp;                    Item drop = tile == null ? null : tile.wallDrop();</b>
+<b class="nc">&nbsp;                    if(items.total() &lt; itemCapacity &amp;&amp; drop != null){</b>
+<b class="nc">&nbsp;                        items.add(drop, 1);</b>
+<b class="nc">&nbsp;                        produced(drop);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;                time %= drillTime;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(timer(timerDump, dumpTime)){</b>
+<b class="fc">&nbsp;                dump();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return items.total() &lt; itemCapacity &amp;&amp; facingAmount &gt; 0 &amp;&amp; enabled;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(block.region, x, y);</b>
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y, rotdeg());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(isPayload()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            var dir = Geometry.d4(rotation);</b>
+<b class="nc">&nbsp;            int ddx = Geometry.d4x(rotation + 1), ddy = Geometry.d4y(rotation + 1);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; size; i++){</b>
+<b class="nc">&nbsp;                Tile face = facing[i];</b>
+<b class="nc">&nbsp;                if(face != null){</b>
+<b class="nc">&nbsp;                    Point2 p = lasers[i];</b>
+<b class="nc">&nbsp;                    float lx = face.worldx() - (dir.x/2f)*tilesize, ly = face.worldy() - (dir.y/2f)*tilesize;</b>
+&nbsp;
+<b class="nc">&nbsp;                    float width = (laserWidth + Mathf.absin(Time.time + i*5 + (id % 9)*9, glowScl, pulseIntensity)) * warmup;</b>
+&nbsp;
+<b class="nc">&nbsp;                    Draw.z(Layer.power - 1);</b>
+<b class="nc">&nbsp;                    Draw.mixcol(glowColor, Mathf.absin(Time.time + i*5 + id*9, glowScl, glowIntensity));</b>
+<b class="nc">&nbsp;                    if(Math.abs(p.x - face.x) + Math.abs(p.y - face.y) == 0){</b>
+<b class="nc">&nbsp;                        Draw.scl(width);</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(boostWarmup &lt; 0.99f){</b>
+<b class="nc">&nbsp;                            Draw.alpha(1f - boostWarmup);</b>
+<b class="nc">&nbsp;                            Draw.rect(laserCenter, lx, ly);</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        if(boostWarmup &gt; 0.01f){</b>
+<b class="nc">&nbsp;                            Draw.alpha(boostWarmup);</b>
+<b class="nc">&nbsp;                            Draw.rect(laserCenterBoost, lx, ly);</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        Draw.scl();</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        float lsx = (p.x - dir.x/2f) * tilesize, lsy = (p.y - dir.y/2f) * tilesize;</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(boostWarmup &lt; 0.99f){</b>
+<b class="nc">&nbsp;                            Draw.alpha(1f - boostWarmup);</b>
+<b class="nc">&nbsp;                            Drawf.laser(laser, laserEnd, lsx, lsy, lx, ly, width);</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        if(boostWarmup &gt; 0.001f){</b>
+<b class="nc">&nbsp;                            Draw.alpha(boostWarmup);</b>
+<b class="nc">&nbsp;                            Drawf.laser(laserBoost, laserEndBoost, lsx, lsy, lx, ly, width);</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    Draw.color();</b>
+<b class="nc">&nbsp;                    Draw.mixcol();</b>
+&nbsp;
+<b class="nc">&nbsp;                    Draw.z(Layer.effect);</b>
+<b class="nc">&nbsp;                    Lines.stroke(warmup);</b>
+<b class="nc">&nbsp;                    rand.setState(i, id);</b>
+<b class="nc">&nbsp;                    Color col = face.wallDrop().color;</b>
+<b class="nc">&nbsp;                    Color spark = Tmp.c3.set(sparkColor).lerp(boostHeatColor, boostWarmup);</b>
+<b class="nc">&nbsp;                    for(int j = 0; j &lt; sparks; j++){</b>
+<b class="nc">&nbsp;                        float fin = (Time.time / sparkLife + rand.random(sparkRecurrence + 1f)) % sparkRecurrence;</b>
+<b class="nc">&nbsp;                        float or = rand.range(2f);</b>
+<b class="nc">&nbsp;                        Tmp.v1.set(sparkRange * fin, 0).rotate(rotdeg() + rand.range(sparkSpread));</b>
+&nbsp;
+<b class="nc">&nbsp;                        Draw.color(spark, col, fin);</b>
+<b class="nc">&nbsp;                        float px = Tmp.v1.x, py = Tmp.v1.y;</b>
+<b class="nc">&nbsp;                        if(fin &lt;= 1f) Lines.lineAngle(lx + px + or * ddx, ly + py + or * ddy, Angles.angle(px, py), Mathf.slope(fin) * sparkSize);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    Draw.reset();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(glowRegion.found()){</b>
+<b class="nc">&nbsp;                Draw.z(Layer.blockAdditive);</b>
+<b class="nc">&nbsp;                Draw.blend(Blending.additive);</b>
+<b class="nc">&nbsp;                Draw.color(Tmp.c1.set(heatColor).lerp(boostHeatColor, boostWarmup), warmup * (heatColor.a * (1f - heatPulse + Mathf.absin(heatPulseScl, heatPulse))));</b>
+<b class="nc">&nbsp;                Draw.rect(glowRegion, x, y, rotdeg());</b>
+<b class="nc">&nbsp;                Draw.blend();</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.blend();</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityUpdate(){
+&nbsp;            //when rotated.
+<b class="fc">&nbsp;            updateLasers();</b>
+<b class="fc">&nbsp;            updateFacing();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void updateLasers(){
+<b class="fc">&nbsp;            for(int i = 0; i &lt; size; i++){</b>
+<b class="fc">&nbsp;                if(lasers[i] == null) lasers[i] = new Point2();</b>
+<b class="fc">&nbsp;                nearbySide(tileX(), tileY(), rotation, i, lasers[i]);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void updateFacing(){
+<b class="fc">&nbsp;            lastItem = null;</b>
+<b class="fc">&nbsp;            boolean multiple = false;</b>
+<b class="fc">&nbsp;            int dx = Geometry.d4x(rotation), dy = Geometry.d4y(rotation);</b>
+<b class="fc">&nbsp;            facingAmount = 0;</b>
+&nbsp;
+&nbsp;            //update facing tiles
+<b class="fc">&nbsp;            for(int p = 0; p &lt; size; p++){</b>
+<b class="fc">&nbsp;                Point2 l = lasers[p];</b>
+<b class="fc">&nbsp;                Tile dest = null;</b>
+<b class="fc">&nbsp;                for(int i = 0; i &lt; range; i++){</b>
+<b class="fc">&nbsp;                    int rx = l.x + dx*i, ry = l.y + dy*i;</b>
+<b class="fc">&nbsp;                    Tile other = world.tile(rx, ry);</b>
+<b class="fc">&nbsp;                    if(other != null){</b>
+<b class="fc">&nbsp;                        if(other.solid()){</b>
+<b class="fc">&nbsp;                            Item drop = other.wallDrop();</b>
+<b class="fc">&nbsp;                            if(drop != null &amp;&amp; drop.hardness &lt;= tier){</b>
+<b class="fc">&nbsp;                                facingAmount ++;</b>
+<b class="fc">&nbsp;                                if(lastItem != drop &amp;&amp; lastItem != null){</b>
+<b class="nc">&nbsp;                                    multiple = true;</b>
+&nbsp;                                }
+<b class="fc">&nbsp;                                lastItem = drop;</b>
+<b class="fc">&nbsp;                                dest = other;</b>
+&nbsp;                            }
+&nbsp;                            break;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                facing[p] = dest;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //when multiple items are present, count that as no item
+<b class="fc">&nbsp;            if(multiple){</b>
+<b class="nc">&nbsp;                lastItem = null;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.f(time);</b>
+<b class="fc">&nbsp;            write.f(warmup);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                time = read.f();</b>
+<b class="fc">&nbsp;                warmup = read.f();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

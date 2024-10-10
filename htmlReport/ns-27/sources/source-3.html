@@ -1,0 +1,299 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BeControl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.net</a>
+</div>
+
+<h1>Coverage Summary for Class: BeControl (mindustry.net)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BeControl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.5%
+  </span>
+  <span class="absValue">
+    (2/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.7%
+  </span>
+  <span class="absValue">
+    (5/107)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.net;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.net.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Handles control of bleeding edge builds. */
+&nbsp;public class BeControl{
+&nbsp;    private static final int updateInterval = 60;
+&nbsp;
+<b class="fc">&nbsp;    private boolean checkUpdates = true;</b>
+&nbsp;    private boolean updateAvailable;
+&nbsp;    private String updateUrl;
+&nbsp;    private int updateBuild;
+&nbsp;
+&nbsp;    /** @return whether this is a bleeding edge build. */
+&nbsp;    public boolean active(){
+<b class="fc">&nbsp;        return Version.type.equals(&quot;bleeding-edge&quot;) &amp;&amp; !steam;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public BeControl(){</b>
+<b class="fc">&nbsp;        if(active()){</b>
+<b class="nc">&nbsp;            Timer.schedule(() -&gt; {</b>
+<b class="nc">&nbsp;                if((Vars.clientLoaded || headless) &amp;&amp; checkUpdates &amp;&amp; !mobile){</b>
+<b class="nc">&nbsp;                    checkUpdate(t -&gt; {});</b>
+&nbsp;                }
+&nbsp;            }, updateInterval, updateInterval);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(OS.hasProp(&quot;becopy&quot;)){</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                Fi dest = Fi.get(OS.prop(&quot;becopy&quot;));</b>
+<b class="nc">&nbsp;                Fi self = Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());</b>
+&nbsp;                
+<b class="nc">&nbsp;                for(Fi file : self.parent().findAll(f -&gt; !f.equals(self))) file.delete();</b>
+&nbsp;
+<b class="nc">&nbsp;                self.copyTo(dest);</b>
+<b class="nc">&nbsp;            }catch(Throwable e){</b>
+<b class="nc">&nbsp;                e.printStackTrace();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** asynchronously checks for updates. */
+&nbsp;    public void checkUpdate(Boolc done){
+<b class="nc">&nbsp;        Http.get(&quot;https://api.github.com/repos/Anuken/MindustryBuilds/releases/latest&quot;)</b>
+<b class="nc">&nbsp;        .error(e -&gt; {</b>
+&nbsp;            //don&#39;t log the error, as it would clog output if there is no internet. make sure it&#39;s handled to prevent infinite loading.
+<b class="nc">&nbsp;            done.get(false);</b>
+&nbsp;        })
+<b class="nc">&nbsp;        .submit(res -&gt; {</b>
+<b class="nc">&nbsp;            Jval val = Jval.read(res.getResultAsString());</b>
+<b class="nc">&nbsp;            int newBuild = Strings.parseInt(val.getString(&quot;tag_name&quot;, &quot;0&quot;));</b>
+<b class="nc">&nbsp;            if(newBuild &gt; Version.build){</b>
+<b class="nc">&nbsp;                Jval asset = val.get(&quot;assets&quot;).asArray().find(v -&gt; v.getString(&quot;name&quot;, &quot;&quot;).startsWith(headless ? &quot;Mindustry-BE-Server&quot; : &quot;Mindustry-BE-Desktop&quot;));</b>
+<b class="nc">&nbsp;                String url = asset.getString(&quot;browser_download_url&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;                updateAvailable = true;</b>
+<b class="nc">&nbsp;                updateBuild = newBuild;</b>
+<b class="nc">&nbsp;                updateUrl = url;</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                    showUpdateDialog();</b>
+<b class="nc">&nbsp;                    done.get(true);</b>
+&nbsp;                });
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; done.get(false));</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether a new update is available */
+&nbsp;    public boolean isUpdateAvailable(){
+<b class="nc">&nbsp;        return updateAvailable;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** shows the dialog for updating the game on desktop, or a prompt for doing so on the server */
+&nbsp;    public void showUpdateDialog(){
+<b class="nc">&nbsp;        if(!updateAvailable) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!headless){</b>
+<b class="nc">&nbsp;            checkUpdates = false;</b>
+<b class="nc">&nbsp;            ui.showCustomConfirm(Core.bundle.format(&quot;be.update&quot;, &quot;&quot;) + &quot; &quot; + updateBuild, &quot;@be.update.confirm&quot;, &quot;@ok&quot;, &quot;@be.ignore&quot;, () -&gt; {</b>
+&nbsp;                try{
+<b class="nc">&nbsp;                    boolean[] cancel = {false};</b>
+<b class="nc">&nbsp;                    float[] progress = {0};</b>
+<b class="nc">&nbsp;                    int[] length = {0};</b>
+<b class="nc">&nbsp;                    Fi file = bebuildDirectory.child(&quot;client-be-&quot; + updateBuild + &quot;.jar&quot;);</b>
+<b class="nc">&nbsp;                    Fi fileDest = OS.hasProp(&quot;becopy&quot;) ?</b>
+<b class="nc">&nbsp;                        Fi.get(OS.prop(&quot;becopy&quot;)) :</b>
+<b class="nc">&nbsp;                        Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());</b>
+&nbsp;
+<b class="nc">&nbsp;                    BaseDialog dialog = new BaseDialog(&quot;@be.updating&quot;);</b>
+<b class="nc">&nbsp;                    download(updateUrl, file, i -&gt; length[0] = i, v -&gt; progress[0] = v, () -&gt; cancel[0], () -&gt; {</b>
+&nbsp;                        try{
+<b class="nc">&nbsp;                            Runtime.getRuntime().exec(OS.isMac ?</b>
+<b class="nc">&nbsp;                                new String[]{javaPath, &quot;-XstartOnFirstThread&quot;, &quot;-DlastBuild=&quot; + Version.build, &quot;-Dberestart&quot;, &quot;-Dbecopy=&quot; + fileDest.absolutePath(), &quot;-jar&quot;, file.absolutePath()} :</b>
+<b class="nc">&nbsp;                                new String[]{javaPath, &quot;-DlastBuild=&quot; + Version.build, &quot;-Dberestart&quot;, &quot;-Dbecopy=&quot; + fileDest.absolutePath(), &quot;-jar&quot;, file.absolutePath()}</b>
+&nbsp;                            );
+<b class="nc">&nbsp;                            System.exit(0);</b>
+<b class="nc">&nbsp;                        }catch(IOException e){</b>
+<b class="nc">&nbsp;                            ui.showException(e);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }, e -&gt; {
+<b class="nc">&nbsp;                        dialog.hide();</b>
+<b class="nc">&nbsp;                        ui.showException(e);</b>
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    dialog.cont.add(new Bar(() -&gt; length[0] == 0 ? Core.bundle.get(&quot;be.updating&quot;) : (int)(progress[0] * length[0]) / 1024/ 1024 + &quot;/&quot; + length[0]/1024/1024 + &quot; MB&quot;, () -&gt; Pal.accent, () -&gt; progress[0])).width(400f).height(70f);</b>
+<b class="nc">&nbsp;                    dialog.buttons.button(&quot;@cancel&quot;, Icon.cancel, () -&gt; {</b>
+<b class="nc">&nbsp;                        cancel[0] = true;</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+<b class="nc">&nbsp;                    }).size(210f, 64f);</b>
+<b class="nc">&nbsp;                    dialog.setFillParent(false);</b>
+<b class="nc">&nbsp;                    dialog.show();</b>
+<b class="nc">&nbsp;                }catch(Exception e){</b>
+<b class="nc">&nbsp;                    ui.showException(e);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }, () -&gt; checkUpdates = false);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Log.info(&quot;&amp;lcA new update is available: &amp;lyBleeding Edge build @&quot;, updateBuild);</b>
+<b class="nc">&nbsp;            if(Config.autoUpdate.bool()){</b>
+<b class="nc">&nbsp;                Log.info(&quot;&amp;lcAuto-downloading next version...&quot;);</b>
+&nbsp;
+&nbsp;                try{
+&nbsp;                    //download new file from github
+<b class="nc">&nbsp;                    Fi source = Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());</b>
+<b class="nc">&nbsp;                    Fi dest = source.sibling(&quot;server-be-&quot; + updateBuild + &quot;.jar&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                    download(updateUrl, dest,</b>
+<b class="nc">&nbsp;                    len -&gt; Core.app.post(() -&gt; Log.info(&quot;&amp;ly| Size: @ MB.&quot;, Strings.fixed((float)len / 1024 / 1024, 2))),</b>
+<b class="nc">&nbsp;                    progress -&gt; {},</b>
+<b class="nc">&nbsp;                    () -&gt; false,</b>
+<b class="nc">&nbsp;                    () -&gt; Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                        Log.info(&quot;&amp;lcSaving...&quot;);</b>
+<b class="nc">&nbsp;                        SaveIO.save(saveDirectory.child(&quot;autosavebe.&quot; + saveExtension));</b>
+<b class="nc">&nbsp;                        Log.info(&quot;&amp;lcAutosaved.&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                        netServer.kickAll(KickReason.serverRestarting);</b>
+<b class="nc">&nbsp;                        Threads.sleep(500);</b>
+&nbsp;
+<b class="nc">&nbsp;                        Log.info(&quot;&amp;lcVersion downloaded, exiting. Note that if you are not using a auto-restart script, the server will not restart automatically.&quot;);</b>
+&nbsp;                        //replace old file with new
+<b class="nc">&nbsp;                        dest.copyTo(source);</b>
+<b class="nc">&nbsp;                        dest.delete();</b>
+<b class="nc">&nbsp;                        System.exit(2); //this will cause a restart if using the script</b>
+&nbsp;                    }),
+&nbsp;                    Throwable::printStackTrace);
+<b class="nc">&nbsp;                }catch(Exception e){</b>
+<b class="nc">&nbsp;                    e.printStackTrace();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;            checkUpdates = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void download(String furl, Fi dest, Intc length, Floatc progressor, Boolp canceled, Runnable done, Cons&lt;Throwable&gt; error){
+<b class="nc">&nbsp;        mainExecutor.submit(() -&gt; {</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                HttpURLConnection con = (HttpURLConnection)new URL(furl).openConnection();</b>
+<b class="nc">&nbsp;                BufferedInputStream in = new BufferedInputStream(con.getInputStream());</b>
+<b class="nc">&nbsp;                OutputStream out = dest.write(false, 4096);</b>
+&nbsp;
+<b class="nc">&nbsp;                byte[] data = new byte[4096];</b>
+<b class="nc">&nbsp;                long size = con.getContentLength();</b>
+<b class="nc">&nbsp;                long counter = 0;</b>
+<b class="nc">&nbsp;                length.get((int)size);</b>
+&nbsp;                int x;
+<b class="nc">&nbsp;                while((x = in.read(data, 0, data.length)) &gt;= 0 &amp;&amp; !canceled.get()){</b>
+<b class="nc">&nbsp;                    counter += x;</b>
+<b class="nc">&nbsp;                    progressor.get((float)counter / (float)size);</b>
+<b class="nc">&nbsp;                    out.write(data, 0, x);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                out.close();</b>
+<b class="nc">&nbsp;                in.close();</b>
+<b class="nc">&nbsp;                if(!canceled.get()) done.run();</b>
+<b class="nc">&nbsp;            }catch(Throwable e){</b>
+<b class="nc">&nbsp;                error.get(e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

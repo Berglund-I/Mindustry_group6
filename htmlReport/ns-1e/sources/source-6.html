@@ -1,0 +1,621 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Placement</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.input</a>
+</div>
+
+<h1>Coverage Summary for Class: Placement (mindustry.input)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Placement</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/235)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Placement$NormalizeDrawResult</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Placement$NormalizeResult</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/237)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.input;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.distribution.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Placement{</b>
+<b class="nc">&nbsp;    private static final Seq&lt;BuildPlan&gt; plans1 = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    private static final Seq&lt;Point2&gt; tmpPoints = new Seq&lt;&gt;(), tmpPoints2 = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    private static final NormalizeResult result = new NormalizeResult();</b>
+<b class="nc">&nbsp;    private static final NormalizeDrawResult drawResult = new NormalizeDrawResult();</b>
+<b class="nc">&nbsp;    private static final Bresenham2 bres = new Bresenham2();</b>
+<b class="nc">&nbsp;    private static final Seq&lt;Point2&gt; points = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    //for pathfinding
+<b class="nc">&nbsp;    private static final IntFloatMap costs = new IntFloatMap();</b>
+<b class="nc">&nbsp;    private static final IntIntMap parents = new IntIntMap();</b>
+<b class="nc">&nbsp;    private static final IntSet closed = new IntSet();</b>
+&nbsp;
+&nbsp;    /** Normalize a diagonal line into points. */
+&nbsp;    public static Seq&lt;Point2&gt; pathfindLine(boolean conveyors, int startX, int startY, int endX, int endY){
+<b class="nc">&nbsp;        Pools.freeAll(points);</b>
+<b class="nc">&nbsp;        points.clear();</b>
+<b class="nc">&nbsp;        if(conveyors &amp;&amp; Core.settings.getBool(&quot;conveyorpathfinding&quot;)){</b>
+<b class="nc">&nbsp;            if(astar(startX, startY, endX, endY)){</b>
+<b class="nc">&nbsp;                return points;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                return normalizeLine(startX, startY, endX, endY);</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            return bres.lineNoDiagonal(startX, startY, endX, endY, Pools.get(Point2.class, Point2::new), points);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Normalize two points into one straight line, no diagonals. */
+&nbsp;    public static Seq&lt;Point2&gt; normalizeLine(int startX, int startY, int endX, int endY){
+<b class="nc">&nbsp;        Pools.freeAll(points);</b>
+<b class="nc">&nbsp;        points.clear();</b>
+<b class="nc">&nbsp;        if(Math.abs(startX - endX) &gt; Math.abs(startY - endY)){</b>
+&nbsp;            //go width
+<b class="nc">&nbsp;            for(int i = 0; i &lt;= Math.abs(startX - endX); i++){</b>
+<b class="nc">&nbsp;                points.add(Pools.obtain(Point2.class, Point2::new).set(startX + i * Mathf.sign(endX - startX), startY));</b>
+&nbsp;            }
+&nbsp;        }else{
+&nbsp;            //go height
+<b class="nc">&nbsp;            for(int i = 0; i &lt;= Math.abs(startY - endY); i++){</b>
+<b class="nc">&nbsp;                points.add(Pools.obtain(Point2.class, Point2::new).set(startX, startY + i * Mathf.sign(endY - startY)));</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return points;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Normalize two points into a rectangle. */
+&nbsp;    public static Seq&lt;Point2&gt; normalizeRectangle(int startX, int startY, int endX, int endY, int blockSize){
+<b class="nc">&nbsp;        Pools.freeAll(points);</b>
+<b class="nc">&nbsp;        points.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        int minX = Math.min(startX, endX), minY = Math.min(startY, endY), maxX = Math.max(startX, endX), maxY = Math.max(startY, endY);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int y = 0; y &lt;= maxY - minY; y += blockSize){</b>
+<b class="nc">&nbsp;            for(int x = 0; x &lt;= maxX - minX; x += blockSize){</b>
+<b class="nc">&nbsp;                points.add(Pools.obtain(Point2.class, Point2::new).set(startX + x * Mathf.sign(endX - startX), startY + y * Mathf.sign(endY - startY)));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return points;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Seq&lt;Point2&gt; upgradeLine(int startX, int startY, int endX, int endY){
+<b class="nc">&nbsp;        closed.clear();</b>
+<b class="nc">&nbsp;        Pools.freeAll(points);</b>
+<b class="nc">&nbsp;        points.clear();</b>
+<b class="nc">&nbsp;        var build = world.build(startX, startY);</b>
+<b class="nc">&nbsp;        points.add(Pools.obtain(Point2.class, Point2::new).set(startX, startY));</b>
+<b class="nc">&nbsp;        while(build instanceof ChainedBuilding chain &amp;&amp; (build.tile.x != endX || build.tile.y != endY) &amp;&amp; closed.add(build.id)){</b>
+<b class="nc">&nbsp;            if(chain.next() == null) return pathfindLine(true, startX, startY, endX, endY);</b>
+<b class="nc">&nbsp;            build = chain.next();</b>
+<b class="nc">&nbsp;            points.add(Pools.obtain(Point2.class, Point2::new).set(build.tile.x, build.tile.y));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return points;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Calculates optimal node placement for nodes with spacing. Used for bridges and power nodes. */
+&nbsp;    public static void calculateNodes(Seq&lt;Point2&gt; points, Block block, int rotation, Boolf2&lt;Point2, Point2&gt; overlapper){
+<b class="nc">&nbsp;        var base = tmpPoints2;</b>
+<b class="nc">&nbsp;        var result = tmpPoints.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        base.selectFrom(points, p -&gt; p == points.first() || p == points.peek() || Build.validPlace(block, player.team(), p.x, p.y, rotation));</b>
+<b class="nc">&nbsp;        boolean addedLast = false;</b>
+&nbsp;
+&nbsp;        outer:
+<b class="nc">&nbsp;        for(int i = 0; i &lt; base.size;){</b>
+<b class="nc">&nbsp;            var point = base.get(i);</b>
+<b class="nc">&nbsp;            result.add(point);</b>
+<b class="nc">&nbsp;            if(i == base.size - 1) addedLast = true;</b>
+&nbsp;
+&nbsp;            //find the furthest node that overlaps this one
+<b class="nc">&nbsp;            for(int j = base.size - 1; j &gt; i; j--){</b>
+<b class="nc">&nbsp;                var other = base.get(j);</b>
+<b class="nc">&nbsp;                boolean over = overlapper.get(point, other);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(over){</b>
+&nbsp;                    //add node to list and start searching for node that overlaps the next one
+<b class="nc">&nbsp;                    i = j;</b>
+<b class="nc">&nbsp;                    continue outer;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //if it got here, that means nothing was found. try to proceed to the next node anyway
+<b class="nc">&nbsp;            i ++;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!addedLast &amp;&amp; !base.isEmpty()) result.add(base.peek());</b>
+&nbsp;
+<b class="nc">&nbsp;        points.clear();</b>
+<b class="nc">&nbsp;        points.addAll(result);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isSidePlace(Seq&lt;BuildPlan&gt; plans){
+<b class="nc">&nbsp;        return plans.size &gt; 1 &amp;&amp; Mathf.mod(Tile.relativeTo(plans.first().x, plans.first().y, plans.get(1).x, plans.get(1).y) - plans.first().rotation, 2) == 1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void calculateBridges(Seq&lt;BuildPlan&gt; plans, ItemBridge bridge){
+<b class="nc">&nbsp;        calculateBridges(plans, bridge, t -&gt; false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void calculateBridges(Seq&lt;BuildPlan&gt; plans, ItemBridge bridge, Boolf&lt;Block&gt; avoid){
+<b class="nc">&nbsp;        if(isSidePlace(plans) || plans.size == 0) return;</b>
+&nbsp;
+&nbsp;        //check for orthogonal placement + unlocked state
+<b class="nc">&nbsp;        if(!(plans.first().x == plans.peek().x || plans.first().y == plans.peek().y) || !bridge.unlockedNow()){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Boolf&lt;BuildPlan&gt; placeable = plan -&gt;</b>
+<b class="nc">&nbsp;            (plan.placeable(player.team()) || (plan.tile() != null &amp;&amp; plan.tile().block() == plan.block)) &amp;&amp;  //don&#39;t count the same block as inaccessible</b>
+<b class="nc">&nbsp;           !(plan.build() != null &amp;&amp; plan.build().rotation != plan.rotation &amp;&amp; avoid.get(plan.tile().block()));</b>
+&nbsp;
+<b class="nc">&nbsp;        var result = plans1.clear();</b>
+<b class="nc">&nbsp;        var rotated = plans.first().tile() != null &amp;&amp; plans.first().tile().absoluteRelativeTo(plans.peek().x, plans.peek().y) == Mathf.mod(plans.first().rotation + 2, 4);</b>
+&nbsp;
+&nbsp;        outer:
+<b class="nc">&nbsp;        for(int i = 0; i &lt; plans.size;){</b>
+<b class="nc">&nbsp;            var cur = plans.get(i);</b>
+<b class="nc">&nbsp;            result.add(cur);</b>
+&nbsp;
+&nbsp;            //gap found
+<b class="nc">&nbsp;            if(i &lt; plans.size - 1 &amp;&amp; placeable.get(cur) &amp;&amp; !placeable.get(plans.get(i + 1))){</b>
+<b class="nc">&nbsp;                boolean wereSame = true;</b>
+&nbsp;
+&nbsp;                //find the closest valid position within range
+<b class="nc">&nbsp;                for(int j = i + 1; j &lt; plans.size; j++){</b>
+<b class="nc">&nbsp;                    var other = plans.get(j);</b>
+&nbsp;
+&nbsp;                    //out of range now, set to current position and keep scanning forward for next occurrence
+<b class="nc">&nbsp;                    if(!bridge.positionsValid(cur.x, cur.y, other.x, other.y)){</b>
+&nbsp;                        //add &#39;missed&#39; conveyors
+<b class="nc">&nbsp;                        for(int k = i + 1; k &lt; j; k++){</b>
+<b class="nc">&nbsp;                            result.add(plans.get(k));</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        i = j;</b>
+<b class="nc">&nbsp;                        continue outer;</b>
+<b class="nc">&nbsp;                    }else if(placeable.get(other)){</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(wereSame){</b>
+&nbsp;                            //the gap is fake, it&#39;s just conveyors that can be replaced with junctions
+<b class="nc">&nbsp;                            i ++;</b>
+<b class="nc">&nbsp;                            continue outer;</b>
+&nbsp;                        }else{
+&nbsp;                            //found a link, assign bridges
+<b class="nc">&nbsp;                            cur.block = bridge;</b>
+<b class="nc">&nbsp;                            other.block = bridge;</b>
+<b class="nc">&nbsp;                            if(rotated){</b>
+<b class="nc">&nbsp;                                other.config = new Point2(cur.x - other.x,  cur.y - other.y);</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                cur.config = new Point2(other.x - cur.x, other.y - cur.y);</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            i = j;</b>
+<b class="nc">&nbsp;                            continue outer;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(other.tile() != null &amp;&amp; !avoid.get(other.tile().block())){</b>
+<b class="nc">&nbsp;                        wereSame = false;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //if it got here, that means nothing was found. this likely means there&#39;s a bunch of stuff at the end; add it and bail out
+<b class="nc">&nbsp;                for(int j = i + 1; j &lt; plans.size; j++){</b>
+<b class="nc">&nbsp;                    result.add(plans.get(j));</b>
+&nbsp;                }
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                i ++;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        plans.set(result);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void calculateBridges(Seq&lt;BuildPlan&gt; plans, DirectionBridge bridge, boolean hasJunction, Boolf&lt;Block&gt; avoid){
+<b class="nc">&nbsp;        if(isSidePlace(plans) || plans.size == 0) return;</b>
+&nbsp;
+&nbsp;        //check for orthogonal placement + unlocked state
+<b class="nc">&nbsp;        if(!(plans.first().x == plans.peek().x || plans.first().y == plans.peek().y) || !bridge.unlockedNow()){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Boolf&lt;BuildPlan&gt; placeable = plan -&gt;</b>
+<b class="nc">&nbsp;            (plan.placeable(player.team()) || (plan.tile() != null &amp;&amp; plan.tile().block() == plan.block)) &amp;&amp;  //don&#39;t count the same block as inaccessible</b>
+<b class="nc">&nbsp;            !(plan.build() != null &amp;&amp; plan.build().rotation != plan.rotation &amp;&amp; avoid.get(plan.tile().block()));</b>
+&nbsp;
+<b class="nc">&nbsp;        var result = plans1.clear();</b>
+&nbsp;
+&nbsp;        outer:
+<b class="nc">&nbsp;        for(int i = 0; i &lt; plans.size;){</b>
+<b class="nc">&nbsp;            var cur = plans.get(i);</b>
+<b class="nc">&nbsp;            result.add(cur);</b>
+&nbsp;
+&nbsp;            //gap found
+<b class="nc">&nbsp;            if(i &lt; plans.size - 1 &amp;&amp; placeable.get(cur) &amp;&amp; !placeable.get(plans.get(i + 1))){</b>
+<b class="nc">&nbsp;                boolean wereSame = true;</b>
+&nbsp;
+&nbsp;                //find the closest valid position within range
+<b class="nc">&nbsp;                for(int j = i + 1; j &lt; plans.size; j++){</b>
+<b class="nc">&nbsp;                    var other = plans.get(j);</b>
+&nbsp;
+&nbsp;                    //out of range now, set to current position and keep scanning forward for next occurrence
+<b class="nc">&nbsp;                    if(!bridge.positionsValid(cur.x, cur.y, other.x, other.y)){</b>
+&nbsp;                        //add &#39;missed&#39; conveyors
+<b class="nc">&nbsp;                        for(int k = i + 1; k &lt; j; k++){</b>
+<b class="nc">&nbsp;                            result.add(plans.get(k));</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        i = j;</b>
+<b class="nc">&nbsp;                        continue outer;</b>
+<b class="nc">&nbsp;                    }else if(placeable.get(other)){</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(wereSame &amp;&amp; hasJunction){</b>
+&nbsp;                            //the gap is fake, it&#39;s just conveyors that can be replaced with junctions
+<b class="nc">&nbsp;                            i ++;</b>
+<b class="nc">&nbsp;                            continue outer;</b>
+&nbsp;                        }else{
+&nbsp;                            //found a link, assign bridges
+<b class="nc">&nbsp;                            cur.block = bridge;</b>
+<b class="nc">&nbsp;                            other.block = bridge;</b>
+<b class="nc">&nbsp;                            i = j;</b>
+<b class="nc">&nbsp;                            continue outer;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(other.tile() != null &amp;&amp; !avoid.get(other.tile().block())){</b>
+<b class="nc">&nbsp;                        wereSame = false;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //if it got here, that means nothing was found. this likely means there&#39;s a bunch of stuff at the end; add it and bail out
+<b class="nc">&nbsp;                for(int j = i + 1; j &lt; plans.size; j++){</b>
+<b class="nc">&nbsp;                    result.add(plans.get(j));</b>
+&nbsp;                }
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                i ++;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        plans.set(result);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static float tileHeuristic(Tile tile, Tile other){
+<b class="nc">&nbsp;        Block block = control.input.block;</b>
+&nbsp;
+<b class="nc">&nbsp;        if((!other.block().alwaysReplace &amp;&amp; !(block != null &amp;&amp; block.canReplace(other.block()))) || other.floor().isDeep()){</b>
+<b class="nc">&nbsp;            return 20;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            if(parents.containsKey(tile.pos())){</b>
+<b class="nc">&nbsp;                Tile prev = world.tile(parents.get(tile.pos(), 0));</b>
+<b class="nc">&nbsp;                if(tile.relativeTo(prev) != other.relativeTo(tile)){</b>
+<b class="nc">&nbsp;                    return 8;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return 1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static float distanceHeuristic(int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        return Math.abs(x1 - x2) + Math.abs(y1 - y2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean validNode(Tile tile, Tile other){
+<b class="nc">&nbsp;        Block block = control.input.block;</b>
+<b class="nc">&nbsp;        if(block != null &amp;&amp; block.canReplace(other.block())){</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return other.block().alwaysReplace;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean astar(int startX, int startY, int endX, int endY){
+<b class="nc">&nbsp;        Tile start = world.tile(startX, startY);</b>
+<b class="nc">&nbsp;        Tile end = world.tile(endX, endY);</b>
+<b class="nc">&nbsp;        if(start == end || start == null || end == null) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        costs.clear();</b>
+<b class="nc">&nbsp;        closed.clear();</b>
+<b class="nc">&nbsp;        parents.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        int nodeLimit = 1000;</b>
+<b class="nc">&nbsp;        int totalNodes = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        PQueue&lt;Tile&gt; queue = new PQueue&lt;&gt;(10, (a, b) -&gt; Float.compare(costs.get(a.pos(), 0f) + distanceHeuristic(a.x, a.y, end.x, end.y), costs.get(b.pos(), 0f) + distanceHeuristic(b.x, b.y, end.x, end.y)));</b>
+<b class="nc">&nbsp;        queue.add(start);</b>
+<b class="nc">&nbsp;        boolean found = false;</b>
+<b class="nc">&nbsp;        while(!queue.empty() &amp;&amp; totalNodes++ &lt; nodeLimit){</b>
+<b class="nc">&nbsp;            Tile next = queue.poll();</b>
+<b class="nc">&nbsp;            float baseCost = costs.get(next.pos(), 0f);</b>
+<b class="nc">&nbsp;            if(next == end){</b>
+<b class="nc">&nbsp;                found = true;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            closed.add(Point2.pack(next.x, next.y));</b>
+<b class="nc">&nbsp;            for(Point2 point : Geometry.d4){</b>
+<b class="nc">&nbsp;                int newx = next.x + point.x, newy = next.y + point.y;</b>
+<b class="nc">&nbsp;                Tile child = world.tile(newx, newy);</b>
+<b class="nc">&nbsp;                if(child != null &amp;&amp; validNode(next, child)){</b>
+<b class="nc">&nbsp;                    if(closed.add(child.pos())){</b>
+<b class="nc">&nbsp;                        parents.put(child.pos(), next.pos());</b>
+<b class="nc">&nbsp;                        costs.put(child.pos(), tileHeuristic(next, child) + baseCost);</b>
+<b class="nc">&nbsp;                        queue.add(child);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!found) return false;</b>
+<b class="nc">&nbsp;        int total = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        points.add(Pools.obtain(Point2.class, Point2::new).set(endX, endY));</b>
+&nbsp;
+<b class="nc">&nbsp;        Tile current = end;</b>
+<b class="nc">&nbsp;        while(current != start &amp;&amp; total++ &lt; nodeLimit){</b>
+<b class="nc">&nbsp;            if(current == null) return false;</b>
+<b class="nc">&nbsp;            int newPos = parents.get(current.pos(), -1);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(newPos == -1) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;            points.add(Pools.obtain(Point2.class, Point2::new).set(Point2.x(newPos), Point2.y(newPos)));</b>
+<b class="nc">&nbsp;            current = world.tile(newPos);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        points.reverse();</b>
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Normalizes a placement area and returns the result, ready to be used for drawing a rectangle.
+&nbsp;     * Returned x2 and y2 will &lt;i&gt;always&lt;/i&gt; be greater than x and y.
+&nbsp;     * @param block block that will be drawn
+&nbsp;     * @param startx starting X coordinate
+&nbsp;     * @param starty starting Y coordinate
+&nbsp;     * @param endx ending X coordinate
+&nbsp;     * @param endy ending Y coordinate
+&nbsp;     * @param snap whether to snap to a line
+&nbsp;     * @param maxLength maximum length of area
+&nbsp;     */
+&nbsp;    public static NormalizeDrawResult normalizeDrawArea(Block block, int startx, int starty, int endx, int endy, boolean snap, int maxLength, float scaling){
+<b class="nc">&nbsp;        normalizeArea(startx, starty, endx, endy, 0, snap, maxLength);</b>
+&nbsp;
+<b class="nc">&nbsp;        float offset = block.offset;</b>
+&nbsp;
+<b class="nc">&nbsp;        drawResult.x = result.x * tilesize;</b>
+<b class="nc">&nbsp;        drawResult.y = result.y * tilesize;</b>
+<b class="nc">&nbsp;        drawResult.x2 = result.x2 * tilesize;</b>
+<b class="nc">&nbsp;        drawResult.y2 = result.y2 * tilesize;</b>
+&nbsp;
+<b class="nc">&nbsp;        drawResult.x -= block.size * scaling * tilesize / 2;</b>
+<b class="nc">&nbsp;        drawResult.x2 += block.size * scaling * tilesize / 2;</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        drawResult.y -= block.size * scaling * tilesize / 2;</b>
+<b class="nc">&nbsp;        drawResult.y2 += block.size * scaling * tilesize / 2;</b>
+&nbsp;
+<b class="nc">&nbsp;        drawResult.x += offset;</b>
+<b class="nc">&nbsp;        drawResult.y += offset;</b>
+<b class="nc">&nbsp;        drawResult.x2 += offset;</b>
+<b class="nc">&nbsp;        drawResult.y2 += offset;</b>
+&nbsp;
+<b class="nc">&nbsp;        return drawResult;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Normalizes a placement area and returns the result.
+&nbsp;     * Returned x2 and y2 will &lt;i&gt;always&lt;/i&gt; be greater than x and y.
+&nbsp;     * @param tilex starting X coordinate
+&nbsp;     * @param tiley starting Y coordinate
+&nbsp;     * @param endx ending X coordinate
+&nbsp;     * @param endy ending Y coordinate
+&nbsp;     * @param snap whether to snap to a line
+&nbsp;     * @param rotation placement rotation
+&nbsp;     * @param maxLength maximum length of area
+&nbsp;     */
+&nbsp;    public static NormalizeResult normalizeArea(int tilex, int tiley, int endx, int endy, int rotation, boolean snap, int maxLength){
+<b class="nc">&nbsp;        if(snap){</b>
+<b class="nc">&nbsp;            if(Math.abs(tilex - endx) &gt; Math.abs(tiley - endy)){</b>
+<b class="nc">&nbsp;                endy = tiley;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                endx = tilex;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(maxLength &gt; 0){</b>
+<b class="nc">&nbsp;            if(Math.abs(endx - tilex) &gt; maxLength){</b>
+<b class="nc">&nbsp;                endx = Mathf.sign(endx - tilex) * maxLength + tilex;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Math.abs(endy - tiley) &gt; maxLength){</b>
+<b class="nc">&nbsp;                endy = Mathf.sign(endy - tiley) * maxLength + tiley;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int dx = endx - tilex, dy = endy - tiley;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Math.abs(dx) &gt; Math.abs(dy)){</b>
+<b class="nc">&nbsp;            if(dx &gt;= 0){</b>
+<b class="nc">&nbsp;                rotation = 0;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                rotation = 2;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(Math.abs(dx) &lt; Math.abs(dy)){</b>
+<b class="nc">&nbsp;            if(dy &gt;= 0){</b>
+<b class="nc">&nbsp;                rotation = 1;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                rotation = 3;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(endx &lt; tilex){</b>
+<b class="nc">&nbsp;            int t = endx;</b>
+<b class="nc">&nbsp;            endx = tilex;</b>
+<b class="nc">&nbsp;            tilex = t;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(endy &lt; tiley){</b>
+<b class="nc">&nbsp;            int t = endy;</b>
+<b class="nc">&nbsp;            endy = tiley;</b>
+<b class="nc">&nbsp;            tiley = t;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        result.x2 = endx;</b>
+<b class="nc">&nbsp;        result.y2 = endy;</b>
+<b class="nc">&nbsp;        result.x = tilex;</b>
+<b class="nc">&nbsp;        result.y = tiley;</b>
+<b class="nc">&nbsp;        result.rotation = rotation;</b>
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static class NormalizeDrawResult{</b>
+&nbsp;        public float x, y, x2, y2;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static class NormalizeResult{</b>
+&nbsp;        public int x, y, x2, y2, rotation;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

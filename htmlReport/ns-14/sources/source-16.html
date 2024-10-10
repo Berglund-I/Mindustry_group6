@@ -1,0 +1,174 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ShrapnelBulletType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.bullet</a>
+</div>
+
+<h1>Coverage Summary for Class: ShrapnelBulletType (mindustry.entities.bullet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ShrapnelBulletType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    61.8%
+  </span>
+  <span class="absValue">
+    (21/34)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.bullet;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;
+&nbsp;public class ShrapnelBulletType extends BulletType{
+<b class="fc">&nbsp;    public float length = 100f;</b>
+<b class="fc">&nbsp;    public float width = 20f;</b>
+<b class="fc">&nbsp;    public Color fromColor = Color.white, toColor = Pal.lancerLaser;</b>
+<b class="fc">&nbsp;    public boolean hitLarge = false;</b>
+&nbsp;
+<b class="fc">&nbsp;    public int serrations = 7;</b>
+<b class="fc">&nbsp;    public float serrationLenScl = 10f, serrationWidth = 4f, serrationSpacing = 8f, serrationSpaceOffset = 80f, serrationFadeOffset = 0.5f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public ShrapnelBulletType(){</b>
+<b class="fc">&nbsp;        speed = 0f;</b>
+<b class="fc">&nbsp;        hitEffect = Fx.hitLancer;</b>
+<b class="fc">&nbsp;        shootEffect = smokeEffect = Fx.lightningShoot;</b>
+<b class="fc">&nbsp;        lifetime = 10f;</b>
+<b class="fc">&nbsp;        despawnEffect = Fx.none;</b>
+<b class="fc">&nbsp;        keepVelocity = false;</b>
+<b class="fc">&nbsp;        collides = false;</b>
+<b class="fc">&nbsp;        pierce = true;</b>
+<b class="fc">&nbsp;        hittable = false;</b>
+<b class="fc">&nbsp;        absorbable = false;</b>
+<b class="fc">&nbsp;        lightOpacity = 0.6f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(Bullet b){
+<b class="nc">&nbsp;        super.init(b);</b>
+&nbsp;
+<b class="nc">&nbsp;        Damage.collideLaser(b, length, hitLarge, laserAbsorb, pierceCap);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        drawSize = Math.max(drawSize, length*2f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected float calculateRange(){
+<b class="fc">&nbsp;        return Math.max(length, maxRange);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Bullet b){
+<b class="nc">&nbsp;        float realLength = b.fdata, rot = b.rotation();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(fromColor, toColor, b.fin());</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; (int)(serrations * realLength / length); i++){</b>
+<b class="nc">&nbsp;            Tmp.v1.trns(rot, i * serrationSpacing);</b>
+<b class="nc">&nbsp;            float sl = Mathf.clamp(b.fout() - serrationFadeOffset) * (serrationSpaceOffset - i * serrationLenScl);</b>
+<b class="nc">&nbsp;            Drawf.tri(b.x + Tmp.v1.x, b.y + Tmp.v1.y, serrationWidth, sl, b.rotation() + 90);</b>
+<b class="nc">&nbsp;            Drawf.tri(b.x + Tmp.v1.x, b.y + Tmp.v1.y, serrationWidth, sl, b.rotation() - 90);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Drawf.tri(b.x, b.y, width * b.fout(), (realLength + 50), b.rotation());</b>
+<b class="nc">&nbsp;        Drawf.tri(b.x, b.y, width * b.fout(), 10f, b.rotation() + 180f);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(b.x, b.y, b.x + Angles.trnsx(rot, realLength), b.y + Angles.trnsy(rot, realLength), width * 2.5f * b.fout(), toColor, lightOpacity);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,437 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LaunchPad</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.campaign</a>
+</div>
+
+<h1>Coverage Summary for Class: LaunchPad (mindustry.world.blocks.campaign)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LaunchPad</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    86.7%
+  </span>
+  <span class="absValue">
+    (13/15)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LaunchPad$LaunchPadBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (6/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.3%
+  </span>
+  <span class="absValue">
+    (9/59)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">LaunchPad$LaunchPayloadComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/43)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    36%
+  </span>
+  <span class="absValue">
+    (9/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.8%
+  </span>
+  <span class="absValue">
+    (22/117)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.campaign;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class LaunchPad extends Block{
+&nbsp;    /** Time inbetween launches. */
+<b class="fc">&nbsp;    public float launchTime = 1f;</b>
+<b class="fc">&nbsp;    public Sound launchSound = Sounds.none;</b>
+&nbsp;
+&nbsp;    public @Load(&quot;@-light&quot;) TextureRegion lightRegion;
+&nbsp;    public @Load(value = &quot;@-pod&quot;, fallback = &quot;launchpod&quot;) TextureRegion podRegion;
+<b class="fc">&nbsp;    public Color lightColor = Color.valueOf(&quot;eab678&quot;);</b>
+&nbsp;
+&nbsp;    public LaunchPad(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        flags = EnumSet.of(BlockFlag.launchPad);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.launchTime, launchTime / 60f, StatUnit.seconds);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;items&quot;, entity -&gt; new Bar(() -&gt; Core.bundle.format(&quot;bar.items&quot;, entity.items.total()), () -&gt; Pal.items, () -&gt; (float)entity.items.total() / itemCapacity));</b>
+&nbsp;
+&nbsp;        //TODO is &quot;bar.launchcooldown&quot; the right terminology?
+<b class="fc">&nbsp;        addBar(&quot;progress&quot;, (LaunchPadBuild build) -&gt; new Bar(() -&gt; Core.bundle.get(&quot;bar.launchcooldown&quot;), () -&gt; Pal.ammo, () -&gt; Mathf.clamp(build.launchCounter / launchTime)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class LaunchPadBuild extends Building{</b>
+&nbsp;        public float launchCounter;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Cursor getCursor(){
+<b class="nc">&nbsp;            return !state.isCampaign() || net.client() ? SystemCursor.arrow : super.getCursor();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+&nbsp;            //TODO add launch costs, maybe legacy version
+<b class="fc">&nbsp;            return launchCounter &lt; launchTime;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public double sense(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.progress) return Mathf.clamp(launchCounter / launchTime);</b>
+<b class="nc">&nbsp;            return super.sense(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!state.isCampaign()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(lightRegion.found()){</b>
+<b class="nc">&nbsp;                Draw.color(lightColor);</b>
+<b class="nc">&nbsp;                float progress = Math.min((float)items.total() / itemCapacity, launchCounter / launchTime);</b>
+<b class="nc">&nbsp;                int steps = 3;</b>
+<b class="nc">&nbsp;                float step = 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                    for(int j = 0; j &lt; steps; j++){</b>
+<b class="nc">&nbsp;                        float alpha = Mathf.curve(progress, (float)j / steps, (j+1f) / steps);</b>
+<b class="nc">&nbsp;                        float offset = -(j - 1f) * step;</b>
+&nbsp;
+<b class="nc">&nbsp;                        Draw.color(Pal.metalGrayDark, lightColor, alpha);</b>
+<b class="nc">&nbsp;                        Draw.rect(lightRegion, x + Geometry.d8edge(i).x * offset, y + Geometry.d8edge(i).y * offset, i * 90);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Draw.reset();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(podRegion, x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            return items.total() &lt; itemCapacity;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(!state.isCampaign()) return;</b>
+&nbsp;
+&nbsp;            //increment launchCounter then launch when full and base conditions are met
+<b class="nc">&nbsp;            if((launchCounter += edelta()) &gt;= launchTime &amp;&amp; items.total() &gt;= itemCapacity){</b>
+&nbsp;                //if there are item requirements, use those.
+<b class="nc">&nbsp;                consume();</b>
+<b class="nc">&nbsp;                launchSound.at(x, y);</b>
+<b class="nc">&nbsp;                LaunchPayload entity = LaunchPayload.create();</b>
+<b class="nc">&nbsp;                items.each((item, amount) -&gt; entity.stacks.add(new ItemStack(item, amount)));</b>
+<b class="nc">&nbsp;                entity.set(this);</b>
+<b class="nc">&nbsp;                entity.lifetime(120f);</b>
+<b class="nc">&nbsp;                entity.team(team);</b>
+<b class="nc">&nbsp;                entity.add();</b>
+<b class="nc">&nbsp;                Fx.launchPod.at(this);</b>
+<b class="nc">&nbsp;                items.clear();</b>
+<b class="nc">&nbsp;                Effect.shake(3f, 3f, this);</b>
+<b class="nc">&nbsp;                launchCounter = 0f;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void display(Table table){
+<b class="nc">&nbsp;            super.display(table);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!state.isCampaign() || net.client() || team != player.team()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.label(() -&gt; {</b>
+<b class="nc">&nbsp;                Sector dest = state.rules.sector == null ? null : state.rules.sector.info.getRealDestination();</b>
+&nbsp;
+<b class="nc">&nbsp;                return Core.bundle.format(&quot;launch.destination&quot;,</b>
+<b class="nc">&nbsp;                    dest == null || !dest.hasBase() ? Core.bundle.get(&quot;sectors.nonelaunch&quot;) :</b>
+<b class="nc">&nbsp;                    &quot;[accent]&quot; + dest.name());</b>
+<b class="nc">&nbsp;            }).pad(4).wrap().width(200f).left();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            if(!state.isCampaign() || net.client()){</b>
+<b class="nc">&nbsp;                deselect();</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            table.button(Icon.upOpen, Styles.cleari, () -&gt; {</b>
+<b class="nc">&nbsp;                ui.planet.showSelect(state.rules.sector, other -&gt; {</b>
+<b class="nc">&nbsp;                    if(state.isCampaign() &amp;&amp; other.planet == state.rules.sector.planet){</b>
+<b class="nc">&nbsp;                        state.rules.sector.info.destination = other;</b>
+&nbsp;                    }
+&nbsp;                });
+<b class="nc">&nbsp;                deselect();</b>
+<b class="nc">&nbsp;            }).size(40f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.f(launchCounter);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                launchCounter = read.f();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @EntityDef(LaunchPayloadc.class)
+&nbsp;    @Component(base = true)
+<b class="nc">&nbsp;    static abstract class LaunchPayloadComp implements Drawc, Timedc, Teamc{</b>
+&nbsp;        @Import float x,y;
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;ItemStack&gt; stacks = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        transient Interval in = new Interval();</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            float alpha = fout(Interp.pow5Out);</b>
+<b class="nc">&nbsp;            float scale = (1f - alpha) * 1.3f + 1f;</b>
+<b class="nc">&nbsp;            float cx = cx(), cy = cy();</b>
+<b class="nc">&nbsp;            float rotation = fin() * (130f + Mathf.randomSeedRange(id(), 50f));</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.effect + 0.001f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(Pal.engine);</b>
+&nbsp;
+<b class="nc">&nbsp;            float rad = 0.2f + fslope();</b>
+&nbsp;
+<b class="nc">&nbsp;            Fill.light(cx, cy, 10, 25f * (rad + scale-1f), Tmp.c2.set(Pal.engine).a(alpha), Tmp.c1.set(Pal.engine).a(0f));</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.alpha(alpha);</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                Drawf.tri(cx, cy, 6f, 40f * (rad + scale-1f), i * 90f + rotation);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.weather - 1);</b>
+&nbsp;
+<b class="nc">&nbsp;            TextureRegion region = blockOn() instanceof mindustry.world.blocks.campaign.LaunchPad p ? p.podRegion : Core.atlas.find(&quot;launchpod&quot;);</b>
+<b class="nc">&nbsp;            scale *= region.scl();</b>
+<b class="nc">&nbsp;            float rw = region.width * scale, rh = region.height * scale;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.alpha(alpha);</b>
+<b class="nc">&nbsp;            Draw.rect(region, cx, cy, rw, rh, rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;            Tmp.v1.trns(225f, fin(Interp.pow3In) * 250f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.flyingUnit + 1);</b>
+<b class="nc">&nbsp;            Draw.color(0, 0, 0, 0.22f * alpha);</b>
+<b class="nc">&nbsp;            Draw.rect(region, cx + Tmp.v1.x, cy + Tmp.v1.y, rw, rh, rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        float cx(){
+<b class="nc">&nbsp;            return x + fin(Interp.pow2In) * (12f + Mathf.randomSeedRange(id() + 3, 4f));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        float cy(){
+<b class="nc">&nbsp;            return y + fin(Interp.pow5In) * (100f + Mathf.randomSeedRange(id() + 2, 30f));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void update(){
+<b class="nc">&nbsp;            float r = 3f;</b>
+<b class="nc">&nbsp;            if(in.get(4f - fin()*2f)){</b>
+<b class="nc">&nbsp;                Fx.rocketSmoke.at(cx() + Mathf.range(r), cy() + Mathf.range(r), fin());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void remove(){
+<b class="nc">&nbsp;            if(!state.isCampaign()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            Sector destsec = state.rules.sector.info.getRealDestination();</b>
+&nbsp;
+&nbsp;            //actually launch the items upon removal
+<b class="nc">&nbsp;            if(team() == state.rules.defaultTeam){</b>
+<b class="nc">&nbsp;                if(destsec != null &amp;&amp; (destsec != state.rules.sector || net.client())){</b>
+<b class="nc">&nbsp;                    ItemSeq dest = new ItemSeq();</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(ItemStack stack : stacks){</b>
+<b class="nc">&nbsp;                        dest.add(stack);</b>
+&nbsp;
+&nbsp;                        //update export
+<b class="nc">&nbsp;                        state.rules.sector.info.handleItemExport(stack);</b>
+<b class="nc">&nbsp;                        Events.fire(new LaunchItemEvent(stack));</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(!net.client()){</b>
+<b class="nc">&nbsp;                        destsec.addItems(dest);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

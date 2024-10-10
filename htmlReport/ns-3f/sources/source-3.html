@@ -1,0 +1,280 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ConsumeGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.power</a>
+</div>
+
+<h1>Coverage Summary for Class: ConsumeGenerator (mindustry.world.blocks.power)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConsumeGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76%
+  </span>
+  <span class="absValue">
+    (19/25)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ConsumeGenerator$ConsumeGeneratorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80.6%
+  </span>
+  <span class="absValue">
+    (25/31)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (7/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78.6%
+  </span>
+  <span class="absValue">
+    (44/56)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.power;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;/** A generator that just takes in certain items or liquids. */
+&nbsp;public class ConsumeGenerator extends PowerGenerator{
+&nbsp;    /** The time in number of ticks during which a single item will produce power. */
+<b class="fc">&nbsp;    public float itemDuration = 120f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float warmupSpeed = 0.05f;</b>
+<b class="fc">&nbsp;    public float effectChance = 0.01f;</b>
+<b class="fc">&nbsp;    public Effect generateEffect = Fx.none, consumeEffect = Fx.none;</b>
+<b class="fc">&nbsp;    public float generateEffectRange = 3f;</b>
+&nbsp;
+&nbsp;    public @Nullable LiquidStack outputLiquid;
+&nbsp;    /** If true, this block explodes when outputLiquid exceeds capacity. */
+<b class="fc">&nbsp;    public boolean explodeOnFull = false;</b>
+&nbsp;
+&nbsp;    public @Nullable ConsumeItemFilter filterItem;
+&nbsp;    public @Nullable ConsumeLiquidFilter filterLiquid;
+&nbsp;
+&nbsp;    public ConsumeGenerator(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(outputLiquid != null){</b>
+<b class="fc">&nbsp;            addLiquidBar(outputLiquid.liquid);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        filterItem = findConsumer(c -&gt; c instanceof ConsumeItemFilter);</b>
+<b class="fc">&nbsp;        filterLiquid = findConsumer(c -&gt; c instanceof ConsumeLiquidFilter);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(outputLiquid != null){</b>
+<b class="fc">&nbsp;            outputsLiquid = true;</b>
+<b class="fc">&nbsp;            hasLiquids = true;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(explodeOnFull &amp;&amp; outputLiquid != null &amp;&amp; explosionPuddleLiquid == null){</b>
+<b class="nc">&nbsp;            explosionPuddleLiquid = outputLiquid.liquid;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //TODO hardcoded
+<b class="fc">&nbsp;        emitLight = true;</b>
+<b class="fc">&nbsp;        lightRadius = 65f * size;</b>
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(hasItems){</b>
+<b class="nc">&nbsp;            stats.add(Stat.productionTime, itemDuration / 60f, StatUnit.seconds);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(outputLiquid != null){</b>
+<b class="nc">&nbsp;            stats.add(Stat.output, StatValues.liquid(outputLiquid.liquid, outputLiquid.amount * 60f, true));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ConsumeGeneratorBuild extends GeneratorBuild{</b>
+<b class="fc">&nbsp;        public float warmup, totalTime, efficiencyMultiplier = 1f;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateEfficiencyMultiplier(){
+<b class="fc">&nbsp;            if(filterItem != null){</b>
+<b class="fc">&nbsp;                float m = filterItem.efficiencyMultiplier(this);</b>
+<b class="fc">&nbsp;                if(m &gt; 0) efficiencyMultiplier = m;</b>
+<b class="fc">&nbsp;            }else if(filterLiquid != null){</b>
+<b class="fc">&nbsp;                float m = filterLiquid.efficiencyMultiplier(this);</b>
+<b class="fc">&nbsp;                if(m &gt; 0) efficiencyMultiplier = m;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            boolean valid = efficiency &gt; 0;</b>
+&nbsp;
+<b class="fc">&nbsp;            warmup = Mathf.lerpDelta(warmup, valid ? 1f : 0f, warmupSpeed);</b>
+&nbsp;
+<b class="fc">&nbsp;            productionEfficiency = efficiency * efficiencyMultiplier;</b>
+<b class="fc">&nbsp;            totalTime += warmup * Time.delta;</b>
+&nbsp;
+&nbsp;            //randomly produce the effect
+<b class="fc">&nbsp;            if(valid &amp;&amp; Mathf.chanceDelta(effectChance)){</b>
+<b class="fc">&nbsp;                generateEffect.at(x + Mathf.range(generateEffectRange), y + Mathf.range(generateEffectRange));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //take in items periodically
+<b class="fc">&nbsp;            if(hasItems &amp;&amp; valid &amp;&amp; generateTime &lt;= 0f){</b>
+<b class="fc">&nbsp;                consume();</b>
+<b class="fc">&nbsp;                consumeEffect.at(x + Mathf.range(generateEffectRange), y + Mathf.range(generateEffectRange));</b>
+<b class="fc">&nbsp;                generateTime = 1f;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(outputLiquid != null){</b>
+<b class="fc">&nbsp;                float added = Math.min(productionEfficiency * delta() * outputLiquid.amount, liquidCapacity - liquids.get(outputLiquid.liquid));</b>
+<b class="fc">&nbsp;                liquids.add(outputLiquid.liquid, added);</b>
+<b class="fc">&nbsp;                dumpLiquid(outputLiquid.liquid);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(explodeOnFull &amp;&amp; liquids.get(outputLiquid.liquid) &gt;= liquidCapacity - 0.01f){</b>
+<b class="nc">&nbsp;                    kill();</b>
+<b class="nc">&nbsp;                    Events.fire(new GeneratorPressureExplodeEvent(this));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //generation time always goes down, but only at the end so consumeTriggerValid doesn&#39;t assume fake items
+<b class="fc">&nbsp;            generateTime -= delta() / itemDuration;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean consumeTriggerValid(){
+<b class="fc">&nbsp;            return generateTime &gt; 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float warmup(){
+<b class="nc">&nbsp;            return warmup;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float totalProgress(){
+<b class="nc">&nbsp;            return totalTime;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawLight(){
+&nbsp;            //???
+<b class="nc">&nbsp;            drawer.drawLight(this);</b>
+&nbsp;            //TODO hard coded
+<b class="nc">&nbsp;            Drawf.light(x, y, (60f + Mathf.absin(10f, 5f)) * size, Color.orange, 0.5f * warmup);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

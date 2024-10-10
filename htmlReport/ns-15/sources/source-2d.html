@@ -1,0 +1,202 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > WaterMoveComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: WaterMoveComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WaterMoveComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class WaterMoveComp implements Posc, Velc, Hitboxc, Flyingc, Unitc{</b>
+&nbsp;    @Import float x, y, rotation, speedMultiplier;
+&nbsp;    @Import UnitType type;
+&nbsp;
+<b class="nc">&nbsp;    private transient Trail tleft = new Trail(1), tright = new Trail(1);</b>
+<b class="nc">&nbsp;    private transient Color trailColor = Blocks.water.mapColor.cpy().mul(1.5f);</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        boolean flying = isFlying();</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 2; i++){</b>
+<b class="nc">&nbsp;            Trail t = i == 0 ? tleft : tright;</b>
+<b class="nc">&nbsp;            t.length = type.trailLength;</b>
+&nbsp;
+<b class="nc">&nbsp;            int sign = i == 0 ? -1 : 1;</b>
+<b class="nc">&nbsp;            float cx = Angles.trnsx(rotation - 90, type.waveTrailX * sign, type.waveTrailY) + x, cy = Angles.trnsy(rotation - 90, type.waveTrailX * sign, type.waveTrailY) + y;</b>
+<b class="nc">&nbsp;            t.update(cx, cy, world.floorWorld(cx, cy).isLiquid &amp;&amp; !flying ? 1 : 0);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public int pathType(){
+<b class="nc">&nbsp;        return Pathfinder.costNaval;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //don&#39;t want obnoxious splashing
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public boolean emitWalkSound(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void add(){
+<b class="nc">&nbsp;        tleft.clear();</b>
+<b class="nc">&nbsp;        tright.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        float z = Draw.z();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(Layer.debris);</b>
+&nbsp;
+<b class="nc">&nbsp;        Floor floor = tileOn() == null ? Blocks.air.asFloor() : tileOn().floor();</b>
+<b class="nc">&nbsp;        Color color = Tmp.c1.set(floor.mapColor.equals(Color.black) ? Blocks.water.mapColor : floor.mapColor).mul(1.5f);</b>
+<b class="nc">&nbsp;        trailColor.lerp(color, Mathf.clamp(Time.delta * 0.04f));</b>
+&nbsp;
+<b class="nc">&nbsp;        tleft.draw(trailColor, type.trailScl);</b>
+<b class="nc">&nbsp;        tright.draw(trailColor, type.trailScl);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(z);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public SolidPred solidity(){
+<b class="nc">&nbsp;        return isFlying() ? null : EntityCollisions::waterSolid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public boolean onSolid(){
+<b class="nc">&nbsp;        return EntityCollisions.waterSolid(tileX(), tileY());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    public float floorSpeedMultiplier(){
+<b class="nc">&nbsp;        Floor on = isFlying() ? Blocks.air.asFloor() : floorOn();</b>
+<b class="nc">&nbsp;        return (on.shallow ? 1f : 1.3f) * speedMultiplier;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean onLiquid(){
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile != null &amp;&amp; tile.floor().isLiquid;</b>
+&nbsp;    }
+&nbsp;}
+&nbsp;
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

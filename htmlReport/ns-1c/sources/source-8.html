@@ -1,0 +1,322 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > IndexedRenderer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: IndexedRenderer (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">IndexedRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/117)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.gl.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;
+&nbsp;public class IndexedRenderer implements Disposable{
+&nbsp;    private static final int vsize = 5;
+&nbsp;
+<b class="nc">&nbsp;    private final static Shader program = new Shader(</b>
+&nbsp;    &quot;&quot;&quot;
+&nbsp;    attribute vec4 a_position;
+&nbsp;    attribute vec4 a_color;
+&nbsp;    attribute vec2 a_texCoord0;
+&nbsp;    uniform mat4 u_projTrans;
+&nbsp;    varying vec4 v_color;
+&nbsp;    varying vec2 v_texCoords;
+&nbsp;    void main(){
+&nbsp;       v_color = a_color;
+&nbsp;       v_color.a = v_color.a * (255.0/254.0);
+&nbsp;       v_texCoords = a_texCoord0;
+&nbsp;       gl_Position = u_projTrans * a_position;
+&nbsp;    }
+&nbsp;    &quot;&quot;&quot;,
+&nbsp;
+&nbsp;    &quot;&quot;&quot;
+&nbsp;    varying lowp vec4 v_color;
+&nbsp;    varying vec2 v_texCoords;
+&nbsp;    uniform sampler2D u_texture;
+&nbsp;    void main(){
+&nbsp;      gl_FragColor = v_color * texture2D(u_texture, v_texCoords);
+&nbsp;    }
+&nbsp;    &quot;&quot;&quot;
+&nbsp;    );
+<b class="nc">&nbsp;    private static final float[] tmpVerts = new float[vsize * 6];</b>
+&nbsp;
+&nbsp;    private Mesh mesh;
+&nbsp;
+<b class="nc">&nbsp;    private Mat projMatrix = new Mat();</b>
+<b class="nc">&nbsp;    private Mat transMatrix = new Mat();</b>
+<b class="nc">&nbsp;    private Mat combined = new Mat();</b>
+<b class="nc">&nbsp;    private float color = Color.white.toFloatBits();</b>
+&nbsp;
+<b class="nc">&nbsp;    public IndexedRenderer(int sprites){</b>
+<b class="nc">&nbsp;        resize(sprites);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void render(Texture texture){
+<b class="nc">&nbsp;        Gl.enable(Gl.blend);</b>
+&nbsp;
+<b class="nc">&nbsp;        updateMatrix();</b>
+&nbsp;
+<b class="nc">&nbsp;        program.bind();</b>
+<b class="nc">&nbsp;        texture.bind();</b>
+&nbsp;
+<b class="nc">&nbsp;        program.setUniformMatrix4(&quot;u_projTrans&quot;, combined);</b>
+&nbsp;
+<b class="nc">&nbsp;        mesh.render(program, Gl.triangles, 0, mesh.getMaxVertices());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setColor(Color color){
+<b class="nc">&nbsp;        this.color = color.toFloatBits();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(int index, TextureRegion region, float x, float y, float w, float h){
+<b class="nc">&nbsp;        float fx2 = x + w;</b>
+<b class="nc">&nbsp;        float fy2 = y + h;</b>
+<b class="nc">&nbsp;        float u = region.u;</b>
+<b class="nc">&nbsp;        float v = region.v2;</b>
+<b class="nc">&nbsp;        float u2 = region.u2;</b>
+<b class="nc">&nbsp;        float v2 = region.v;</b>
+&nbsp;
+<b class="nc">&nbsp;        float[] vertices = tmpVerts;</b>
+<b class="nc">&nbsp;        float color = this.color;</b>
+&nbsp;
+<b class="nc">&nbsp;        int idx = 0;</b>
+<b class="nc">&nbsp;        vertices[idx++] = x;</b>
+<b class="nc">&nbsp;        vertices[idx++] = y;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v;</b>
+&nbsp;
+<b class="nc">&nbsp;        vertices[idx++] = x;</b>
+<b class="nc">&nbsp;        vertices[idx++] = fy2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v2;</b>
+&nbsp;
+<b class="nc">&nbsp;        vertices[idx++] = fx2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = fy2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v2;</b>
+&nbsp;
+&nbsp;        //tri2
+<b class="nc">&nbsp;        vertices[idx++] = fx2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = fy2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v2;</b>
+&nbsp;
+<b class="nc">&nbsp;        vertices[idx++] = fx2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = y;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v;</b>
+&nbsp;
+<b class="nc">&nbsp;        vertices[idx++] = x;</b>
+<b class="nc">&nbsp;        vertices[idx++] = y;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v;</b>
+&nbsp;
+<b class="nc">&nbsp;        mesh.updateVertices(index * vsize * 6, vertices);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(int index, TextureRegion region, float x, float y, float w, float h, float rotation){
+<b class="nc">&nbsp;        float u = region.u;</b>
+<b class="nc">&nbsp;        float v = region.v2;</b>
+<b class="nc">&nbsp;        float u2 = region.u2;</b>
+<b class="nc">&nbsp;        float v2 = region.v;</b>
+&nbsp;
+<b class="nc">&nbsp;        float originX = w / 2, originY = h / 2;</b>
+&nbsp;
+<b class="nc">&nbsp;        float cos = Mathf.cosDeg(rotation);</b>
+<b class="nc">&nbsp;        float sin = Mathf.sinDeg(rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;        float fx = -originX;</b>
+<b class="nc">&nbsp;        float fy = -originY;</b>
+<b class="nc">&nbsp;        float fx2 = w - originX;</b>
+<b class="nc">&nbsp;        float fy2 = h - originY;</b>
+&nbsp;
+<b class="nc">&nbsp;        float worldOriginX = x + originX;</b>
+<b class="nc">&nbsp;        float worldOriginY = y + originY;</b>
+&nbsp;
+<b class="nc">&nbsp;        float x1 = cos * fx - sin * fy + worldOriginX;</b>
+<b class="nc">&nbsp;        float y1 = sin * fx + cos * fy + worldOriginY;</b>
+<b class="nc">&nbsp;        float x2 = cos * fx - sin * fy2 + worldOriginX;</b>
+<b class="nc">&nbsp;        float y2 = sin * fx + cos * fy2 + worldOriginY;</b>
+<b class="nc">&nbsp;        float x3 = cos * fx2 - sin * fy2 + worldOriginX;</b>
+<b class="nc">&nbsp;        float y3 = sin * fx2 + cos * fy2 + worldOriginY;</b>
+<b class="nc">&nbsp;        float x4 = x1 + (x3 - x2);</b>
+<b class="nc">&nbsp;        float y4 = y3 - (y2 - y1);</b>
+&nbsp;
+<b class="nc">&nbsp;        float[] vertices = tmpVerts;</b>
+<b class="nc">&nbsp;        float color = this.color;</b>
+&nbsp;
+<b class="nc">&nbsp;        int idx = 0;</b>
+<b class="nc">&nbsp;        vertices[idx++] = x1;</b>
+<b class="nc">&nbsp;        vertices[idx++] = y1;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v;</b>
+&nbsp;
+<b class="nc">&nbsp;        vertices[idx++] = x2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = y2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v2;</b>
+&nbsp;
+<b class="nc">&nbsp;        vertices[idx++] = x3;</b>
+<b class="nc">&nbsp;        vertices[idx++] = y3;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v2;</b>
+&nbsp;
+&nbsp;        //tri2
+<b class="nc">&nbsp;        vertices[idx++] = x3;</b>
+<b class="nc">&nbsp;        vertices[idx++] = y3;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v2;</b>
+&nbsp;
+<b class="nc">&nbsp;        vertices[idx++] = x4;</b>
+<b class="nc">&nbsp;        vertices[idx++] = y4;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u2;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v;</b>
+&nbsp;
+<b class="nc">&nbsp;        vertices[idx++] = x1;</b>
+<b class="nc">&nbsp;        vertices[idx++] = y1;</b>
+<b class="nc">&nbsp;        vertices[idx++] = color;</b>
+<b class="nc">&nbsp;        vertices[idx++] = u;</b>
+<b class="nc">&nbsp;        vertices[idx++] = v;</b>
+&nbsp;
+<b class="nc">&nbsp;        mesh.updateVertices(index * vsize * 6, vertices);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Mat getTransformMatrix(){
+<b class="nc">&nbsp;        return transMatrix;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setProjectionMatrix(Mat matrix){
+<b class="nc">&nbsp;        projMatrix = matrix;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resize(int sprites){
+<b class="nc">&nbsp;        if(mesh != null) mesh.dispose();</b>
+&nbsp;
+<b class="nc">&nbsp;        mesh = new Mesh(true, 6 * sprites, 0,</b>
+&nbsp;        VertexAttribute.position,
+&nbsp;        VertexAttribute.color,
+&nbsp;        VertexAttribute.texCoords);
+&nbsp;
+&nbsp;        //TODO why is this the only way to get it working properly? it should not need an array
+<b class="nc">&nbsp;        mesh.setVertices(new float[6 * sprites * vsize]);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateMatrix(){
+<b class="nc">&nbsp;        combined.set(projMatrix).mul(transMatrix);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+<b class="nc">&nbsp;        mesh.dispose();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

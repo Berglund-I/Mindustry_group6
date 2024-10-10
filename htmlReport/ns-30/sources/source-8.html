@@ -1,0 +1,212 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ContentInfoDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: ContentInfoDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ContentInfoDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/52)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.scene.actions.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class ContentInfoDialog extends BaseDialog{
+&nbsp;
+&nbsp;    public ContentInfoDialog(){
+<b class="nc">&nbsp;        super(&quot;@info.title&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseButton();</b>
+&nbsp;
+<b class="nc">&nbsp;        keyDown(key -&gt; {</b>
+<b class="nc">&nbsp;            if(key == keybinds.get(Binding.block_info).key){</b>
+<b class="nc">&nbsp;                Core.app.post(this::hide);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void show(UnlockableContent content){
+<b class="nc">&nbsp;        cont.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        Table table = new Table();</b>
+<b class="nc">&nbsp;        table.margin(10);</b>
+&nbsp;
+&nbsp;        //initialize stats if they haven&#39;t been yet
+<b class="nc">&nbsp;        content.checkStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        table.table(title1 -&gt; {</b>
+<b class="nc">&nbsp;            title1.image(content.uiIcon).size(iconXLarge).scaling(Scaling.fit);</b>
+<b class="nc">&nbsp;            title1.add(&quot;[accent]&quot; + content.localizedName + (settings.getBool(&quot;console&quot;) ? &quot;\n[gray]&quot; + content.name : &quot;&quot;)).padLeft(5);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        table.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(content.description != null){</b>
+<b class="nc">&nbsp;            var any = content.stats.toMap().size &gt; 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(any){</b>
+<b class="nc">&nbsp;                table.add(&quot;@category.purpose&quot;).color(Pal.accent).fillX().padTop(10);</b>
+<b class="nc">&nbsp;                table.row();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            table.add(&quot;[lightgray]&quot; + content.displayDescription()).wrap().fillX().padLeft(any ? 10 : 0).width(500f).padTop(any ? 0 : 10).left();</b>
+<b class="nc">&nbsp;            table.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!content.stats.useCategories &amp;&amp; any){</b>
+<b class="nc">&nbsp;                table.add(&quot;@category.general&quot;).fillX().color(Pal.accent);</b>
+<b class="nc">&nbsp;                table.row();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Stats stats = content.stats;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(StatCat cat : stats.toMap().keys()){</b>
+<b class="nc">&nbsp;            OrderedMap&lt;Stat, Seq&lt;StatValue&gt;&gt; map = stats.toMap().get(cat);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(map.size == 0) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(stats.useCategories){</b>
+<b class="nc">&nbsp;                table.add(&quot;@category.&quot; + cat.name).color(Pal.accent).fillX();</b>
+<b class="nc">&nbsp;                table.row();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(Stat stat : map.keys()){</b>
+<b class="nc">&nbsp;                table.table(inset -&gt; {</b>
+<b class="nc">&nbsp;                    inset.left();</b>
+<b class="nc">&nbsp;                    inset.add(&quot;[lightgray]&quot; + stat.localized() + &quot;:[] &quot;).left().top();</b>
+<b class="nc">&nbsp;                    Seq&lt;StatValue&gt; arr = map.get(stat);</b>
+<b class="nc">&nbsp;                    for(StatValue value : arr){</b>
+<b class="nc">&nbsp;                        value.display(inset);</b>
+<b class="nc">&nbsp;                        inset.add().size(10f);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                }).fillX().padLeft(10);</b>
+<b class="nc">&nbsp;                table.row();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(content.details != null){</b>
+<b class="nc">&nbsp;            table.add(&quot;[gray]&quot; + (content.unlocked() || !content.hideDetails ? content.details : Iconc.lock + &quot; &quot; + Core.bundle.get(&quot;unlock.incampaign&quot;))).pad(6).padTop(20).width(400f).wrap().fillX();</b>
+<b class="nc">&nbsp;            table.row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        content.displayExtra(table);</b>
+&nbsp;
+<b class="nc">&nbsp;        ScrollPane pane = new ScrollPane(table);</b>
+<b class="nc">&nbsp;        cont.add(pane);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(isShown()){</b>
+<b class="nc">&nbsp;            show(scene, Actions.fadeIn(0f));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            show();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

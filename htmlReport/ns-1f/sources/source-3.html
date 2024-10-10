@@ -1,0 +1,352 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SaveFileReader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.io</a>
+</div>
+
+<h1>Coverage Summary for Class: SaveFileReader (mindustry.io)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SaveFileReader</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.3%
+  </span>
+  <span class="absValue">
+    (12/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.1%
+  </span>
+  <span class="absValue">
+    (54/62)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SaveFileReader$CustomChunk</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">SaveFileReader$IORunner</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (12/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    84.4%
+  </span>
+  <span class="absValue">
+    (54/64)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.io;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.ObjectMap.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;
+<b class="fc">&nbsp;public abstract class SaveFileReader{</b>
+<b class="fc">&nbsp;    public static final ObjectMap&lt;String, String&gt; fallback = ObjectMap.of(</b>
+&nbsp;    &quot;dart-mech-pad&quot;, &quot;legacy-mech-pad&quot;,
+&nbsp;    &quot;dart-ship-pad&quot;, &quot;legacy-mech-pad&quot;,
+&nbsp;    &quot;javelin-ship-pad&quot;, &quot;legacy-mech-pad&quot;,
+&nbsp;    &quot;trident-ship-pad&quot;, &quot;legacy-mech-pad&quot;,
+&nbsp;    &quot;glaive-ship-pad&quot;, &quot;legacy-mech-pad&quot;,
+&nbsp;    &quot;alpha-mech-pad&quot;, &quot;legacy-mech-pad&quot;,
+&nbsp;    &quot;tau-mech-pad&quot;, &quot;legacy-mech-pad&quot;,
+&nbsp;    &quot;omega-mech-pad&quot;, &quot;legacy-mech-pad&quot;,
+&nbsp;    &quot;delta-mech-pad&quot;, &quot;legacy-mech-pad&quot;,
+&nbsp;
+&nbsp;    &quot;draug-factory&quot;, &quot;legacy-unit-factory&quot;,
+&nbsp;    &quot;spirit-factory&quot;, &quot;legacy-unit-factory&quot;,
+&nbsp;    &quot;phantom-factory&quot;, &quot;legacy-unit-factory&quot;,
+&nbsp;    &quot;wraith-factory&quot;, &quot;legacy-unit-factory&quot;,
+&nbsp;    &quot;ghoul-factory&quot;, &quot;legacy-unit-factory-air&quot;,
+&nbsp;    &quot;revenant-factory&quot;, &quot;legacy-unit-factory-air&quot;,
+&nbsp;    &quot;dagger-factory&quot;, &quot;legacy-unit-factory&quot;,
+&nbsp;    &quot;crawler-factory&quot;, &quot;legacy-unit-factory&quot;,
+&nbsp;    &quot;titan-factory&quot;, &quot;legacy-unit-factory-ground&quot;,
+&nbsp;    &quot;fortress-factory&quot;, &quot;legacy-unit-factory-ground&quot;,
+&nbsp;
+&nbsp;    &quot;mass-conveyor&quot;, &quot;payload-conveyor&quot;,
+&nbsp;    &quot;vestige&quot;, &quot;scepter&quot;,
+&nbsp;    &quot;turbine-generator&quot;, &quot;steam-generator&quot;,
+&nbsp;
+&nbsp;    &quot;rocks&quot;, &quot;stone-wall&quot;,
+&nbsp;    &quot;sporerocks&quot;, &quot;spore-wall&quot;,
+&nbsp;    &quot;icerocks&quot;, &quot;ice-wall&quot;,
+&nbsp;    &quot;dunerocks&quot;, &quot;dune-wall&quot;,
+&nbsp;    &quot;sandrocks&quot;, &quot;sand-wall&quot;,
+&nbsp;    &quot;shalerocks&quot;, &quot;shale-wall&quot;,
+&nbsp;    &quot;snowrocks&quot;, &quot;snow-wall&quot;,
+&nbsp;    &quot;saltrocks&quot;, &quot;salt-wall&quot;,
+&nbsp;    &quot;dirtwall&quot;, &quot;dirt-wall&quot;,
+&nbsp;
+&nbsp;    &quot;ignarock&quot;, &quot;basalt&quot;,
+&nbsp;    &quot;holostone&quot;, &quot;dacite&quot;,
+&nbsp;    &quot;holostone-wall&quot;, &quot;dacite-wall&quot;,
+&nbsp;    &quot;rock&quot;, &quot;boulder&quot;,
+&nbsp;    &quot;snowrock&quot;, &quot;snow-boulder&quot;,
+&nbsp;    &quot;cliffs&quot;, &quot;stone-wall&quot;,
+&nbsp;    &quot;craters&quot;, &quot;crater-stone&quot;,
+&nbsp;    &quot;deepwater&quot;, &quot;deep-water&quot;,
+&nbsp;    &quot;water&quot;, &quot;shallow-water&quot;,
+&nbsp;    &quot;sand&quot;, &quot;sand-floor&quot;,
+&nbsp;    &quot;slag&quot;, &quot;molten-slag&quot;,
+&nbsp;
+&nbsp;    &quot;cryofluidmixer&quot;, &quot;cryofluid-mixer&quot;,
+&nbsp;    &quot;block-forge&quot;, &quot;constructor&quot;,
+&nbsp;    &quot;block-unloader&quot;, &quot;payload-unloader&quot;,
+&nbsp;    &quot;block-loader&quot;, &quot;payload-loader&quot;,
+&nbsp;    &quot;thermal-pump&quot;, &quot;impulse-pump&quot;,
+&nbsp;    &quot;alloy-smelter&quot;, &quot;surge-smelter&quot;,
+&nbsp;    &quot;steam-vent&quot;, &quot;rhyolite-vent&quot;,
+&nbsp;    &quot;fabricator&quot;, &quot;tank-fabricator&quot;,
+&nbsp;    &quot;basic-reconstructor&quot;, &quot;refabricator&quot;
+&nbsp;    );
+&nbsp;
+<b class="fc">&nbsp;    public static final ObjectMap&lt;String, String&gt; modContentNameMap = ObjectMap.of(</b>
+&nbsp;    &quot;craters&quot;, &quot;crater-stone&quot;,
+&nbsp;    &quot;deepwater&quot;, &quot;deep-water&quot;,
+&nbsp;    &quot;water&quot;, &quot;shallow-water&quot;,
+&nbsp;    &quot;slag&quot;, &quot;molten-slag&quot;
+&nbsp;    );
+&nbsp;
+<b class="fc">&nbsp;    protected final ReusableByteOutStream byteOutput = new ReusableByteOutStream(), byteOutput2 = new ReusableByteOutStream();</b>
+<b class="fc">&nbsp;    protected final DataOutputStream dataBytes = new DataOutputStream(byteOutput), dataBytes2 = new DataOutputStream(byteOutput2);</b>
+<b class="fc">&nbsp;    protected final ReusableByteOutStream byteOutputSmall = new ReusableByteOutStream();</b>
+<b class="fc">&nbsp;    protected final DataOutputStream dataBytesSmall = new DataOutputStream(byteOutputSmall);</b>
+<b class="fc">&nbsp;    protected boolean chunkNested = false;</b>
+&nbsp;
+&nbsp;    protected int lastRegionLength;
+&nbsp;    protected @Nullable CounterInputStream currCounter;
+&nbsp;
+&nbsp;    public static String mapFallback(String name){
+<b class="fc">&nbsp;        return fallback.get(name, name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void region(String name, DataInput stream, CounterInputStream counter, IORunner&lt;DataInput&gt; cons) throws IOException{
+<b class="fc">&nbsp;        counter.resetCount();</b>
+<b class="fc">&nbsp;        this.currCounter = counter;</b>
+&nbsp;        int length;
+&nbsp;        try{
+<b class="fc">&nbsp;            length = readChunk(stream, cons);</b>
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;Error reading region \&quot;&quot; + name + &quot;\&quot;.&quot;, e);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        if(length != counter.count - 4){</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;Error reading region \&quot;&quot; + name + &quot;\&quot;: read length mismatch. Expected: &quot; + length + &quot;; Actual: &quot; + (counter.count - 4));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void region(String name, DataOutput stream, IORunner&lt;DataOutput&gt; cons) throws IOException{
+&nbsp;        try{
+<b class="fc">&nbsp;            writeChunk(stream, cons);</b>
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;Error writing region \&quot;&quot; + name + &quot;\&quot;.&quot;, e);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeChunk(DataOutput output, IORunner&lt;DataOutput&gt; runner) throws IOException{
+<b class="fc">&nbsp;        writeChunk(output, false, runner);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Write a chunk of input to the stream. An integer of some length is written first, followed by the data. */
+&nbsp;    public void writeChunk(DataOutput output, boolean isShort, IORunner&lt;DataOutput&gt; runner) throws IOException{
+&nbsp;
+&nbsp;        //TODO awful
+<b class="fc">&nbsp;        boolean wasNested = chunkNested;</b>
+<b class="fc">&nbsp;        if(!isShort){</b>
+<b class="fc">&nbsp;            chunkNested = true;</b>
+&nbsp;        }
+&nbsp;        ReusableByteOutStream dout =
+<b class="fc">&nbsp;            isShort ? byteOutputSmall :</b>
+<b class="fc">&nbsp;            wasNested ? byteOutput2 :</b>
+<b class="fc">&nbsp;            byteOutput;</b>
+&nbsp;        try{
+&nbsp;            //reset output position
+<b class="fc">&nbsp;            dout.reset();</b>
+&nbsp;            //write the needed info
+<b class="fc">&nbsp;            runner.accept(</b>
+<b class="fc">&nbsp;                isShort ? dataBytesSmall :</b>
+<b class="fc">&nbsp;                wasNested ? dataBytes2 :</b>
+<b class="fc">&nbsp;                dataBytes</b>
+&nbsp;            );
+&nbsp;
+<b class="fc">&nbsp;            int length = dout.size();</b>
+&nbsp;            //write length (either int or byte) followed by the output bytes
+<b class="fc">&nbsp;            if(!isShort){</b>
+<b class="fc">&nbsp;                output.writeInt(length);</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                if(length &gt; 65535){</b>
+<b class="nc">&nbsp;                    throw new IOException(&quot;Byte write length exceeded: &quot; + length + &quot; &gt; 65535&quot;);</b>
+&nbsp;                }
+<b class="fc">&nbsp;                output.writeShort(length);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            output.write(dout.getBytes(), 0, length);</b>
+&nbsp;        }finally{
+<b class="fc">&nbsp;            chunkNested = wasNested;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int readChunk(DataInput input, IORunner&lt;DataInput&gt; runner) throws IOException{
+<b class="fc">&nbsp;        return readChunk(input, false, runner);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Reads a chunk of some length. Use the runner for reading to catch more descriptive errors. */
+&nbsp;    public int readChunk(DataInput input, boolean isShort, IORunner&lt;DataInput&gt; runner) throws IOException{
+<b class="fc">&nbsp;        int length = isShort ? input.readUnsignedShort() : input.readInt();</b>
+<b class="fc">&nbsp;        lastRegionLength = length;</b>
+<b class="fc">&nbsp;        runner.accept(input);</b>
+<b class="fc">&nbsp;        return length;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void skipChunk(DataInput input) throws IOException{
+<b class="nc">&nbsp;        skipChunk(input, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Skip a chunk completely, discarding the bytes. */
+&nbsp;    public void skipChunk(DataInput input, boolean isShort) throws IOException{
+<b class="fc">&nbsp;        int length = readChunk(input, isShort, t -&gt; {});</b>
+<b class="fc">&nbsp;        int skipped = input.skipBytes(length);</b>
+<b class="fc">&nbsp;        if(length != skipped){</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;Could not skip bytes. Expected length: &quot; + length + &quot;; Actual length: &quot; + skipped);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeStringMap(DataOutput stream, ObjectMap&lt;String, String&gt; map) throws IOException{
+<b class="fc">&nbsp;        stream.writeShort(map.size);</b>
+<b class="fc">&nbsp;        for(Entry&lt;String, String&gt; entry : map.entries()){</b>
+<b class="fc">&nbsp;            stream.writeUTF(entry.key);</b>
+<b class="fc">&nbsp;            stream.writeUTF(entry.value);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public StringMap readStringMap(DataInput stream) throws IOException{
+<b class="fc">&nbsp;        StringMap map = new StringMap();</b>
+<b class="fc">&nbsp;        short size = stream.readShort();</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; size; i++){</b>
+<b class="fc">&nbsp;            map.put(stream.readUTF(), stream.readUTF());</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return map;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract void read(DataInputStream stream, CounterInputStream counter, WorldContext context) throws IOException;
+&nbsp;
+&nbsp;    public abstract void write(DataOutputStream stream) throws IOException;
+&nbsp;
+&nbsp;    public interface IORunner&lt;T&gt;{
+&nbsp;        void accept(T stream) throws IOException;
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface CustomChunk{
+&nbsp;        void write(DataOutput stream) throws IOException;
+&nbsp;        void read(DataInput stream) throws IOException;
+&nbsp;
+&nbsp;        /** @return whether this chunk is enabled at all */
+&nbsp;        default boolean shouldWrite(){
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** @return whether this chunk should be written to connecting clients (default true) */
+&nbsp;        default boolean writeNet(){
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

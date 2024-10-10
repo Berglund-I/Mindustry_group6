@@ -1,0 +1,190 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DisplayCmd</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: DisplayCmd (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DisplayCmd</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;/**
+&nbsp; * Bits used: 64 / 64
+&nbsp; * &lt;br&gt;  type [0..4]
+&nbsp; * &lt;br&gt;  x [4..14]
+&nbsp; * &lt;br&gt;  y [14..24]
+&nbsp; * &lt;br&gt;  p1 [24..34]
+&nbsp; * &lt;br&gt;  p2 [34..44]
+&nbsp; * &lt;br&gt;  p3 [44..54]
+&nbsp; * &lt;br&gt;  p4 [54..64]
+&nbsp; */
+<b class="nc">&nbsp;public final class DisplayCmd {</b>
+&nbsp;  public static final long bitMaskType = (long)(0b0000000000000000000000000000000000000000000000000000000000001111L);
+&nbsp;
+&nbsp;  public static final long bitMaskX = (long)(0b0000000000000000000000000000000000000000000000000011111111110000L);
+&nbsp;
+&nbsp;  public static final long bitMaskY = (long)(0b0000000000000000000000000000000000000000111111111100000000000000L);
+&nbsp;
+&nbsp;  public static final long bitMaskP1 = (long)(0b0000000000000000000000000000001111111111000000000000000000000000L);
+&nbsp;
+&nbsp;  public static final long bitMaskP2 = (long)(0b0000000000000000000011111111110000000000000000000000000000000000L);
+&nbsp;
+&nbsp;  public static final long bitMaskP3 = (long)(0b0000000000111111111100000000000000000000000000000000000000000000L);
+&nbsp;
+&nbsp;  public static final long bitMaskP4 = (long)(0b1111111111000000000000000000000000000000000000000000000000000000L);
+&nbsp;
+&nbsp;  public static int type(long displaycmd) {
+<b class="nc">&nbsp;    return (int)((displaycmd &gt;&gt;&gt; 0) &amp; 0b0000000000000000000000000000000000000000000000000000000000001111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long type(long displaycmd, int value) {
+<b class="nc">&nbsp;    return (long)((displaycmd &amp; (~0b0000000000000000000000000000000000000000000000000000000000001111L)) | ((long)value &lt;&lt; 0L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int x(long displaycmd) {
+<b class="nc">&nbsp;    return (int)((displaycmd &gt;&gt;&gt; 4) &amp; 0b0000000000000000000000000000000000000000000000000000001111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long x(long displaycmd, int value) {
+<b class="nc">&nbsp;    return (long)((displaycmd &amp; (~0b0000000000000000000000000000000000000000000000000011111111110000L)) | ((long)value &lt;&lt; 4L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int y(long displaycmd) {
+<b class="nc">&nbsp;    return (int)((displaycmd &gt;&gt;&gt; 14) &amp; 0b0000000000000000000000000000000000000000000000000000001111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long y(long displaycmd, int value) {
+<b class="nc">&nbsp;    return (long)((displaycmd &amp; (~0b0000000000000000000000000000000000000000111111111100000000000000L)) | ((long)value &lt;&lt; 14L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int p1(long displaycmd) {
+<b class="nc">&nbsp;    return (int)((displaycmd &gt;&gt;&gt; 24) &amp; 0b0000000000000000000000000000000000000000000000000000001111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long p1(long displaycmd, int value) {
+<b class="nc">&nbsp;    return (long)((displaycmd &amp; (~0b0000000000000000000000000000001111111111000000000000000000000000L)) | ((long)value &lt;&lt; 24L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int p2(long displaycmd) {
+<b class="nc">&nbsp;    return (int)((displaycmd &gt;&gt;&gt; 34) &amp; 0b0000000000000000000000000000000000000000000000000000001111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long p2(long displaycmd, int value) {
+<b class="nc">&nbsp;    return (long)((displaycmd &amp; (~0b0000000000000000000011111111110000000000000000000000000000000000L)) | ((long)value &lt;&lt; 34L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int p3(long displaycmd) {
+<b class="nc">&nbsp;    return (int)((displaycmd &gt;&gt;&gt; 44) &amp; 0b0000000000000000000000000000000000000000000000000000001111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long p3(long displaycmd, int value) {
+<b class="nc">&nbsp;    return (long)((displaycmd &amp; (~0b0000000000111111111100000000000000000000000000000000000000000000L)) | ((long)value &lt;&lt; 44L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int p4(long displaycmd) {
+<b class="nc">&nbsp;    return (int)((displaycmd &gt;&gt;&gt; 54) &amp; 0b0000000000000000000000000000000000000000000000000000001111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long p4(long displaycmd, int value) {
+<b class="nc">&nbsp;    return (long)((displaycmd &amp; (~0b1111111111000000000000000000000000000000000000000000000000000000L)) | ((long)value &lt;&lt; 54L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long get(int type, int x, int y, int p1, int p2, int p3, int p4) {
+<b class="nc">&nbsp;    return (long)((((long)type &lt;&lt; 0L) &amp; 0b0000000000000000000000000000000000000000000000000000000000001111L) | (((long)x &lt;&lt; 4L) &amp; 0b0000000000000000000000000000000000000000000000000011111111110000L) | (((long)y &lt;&lt; 14L) &amp; 0b0000000000000000000000000000000000000000111111111100000000000000L) | (((long)p1 &lt;&lt; 24L) &amp; 0b0000000000000000000000000000001111111111000000000000000000000000L) | (((long)p2 &lt;&lt; 34L) &amp; 0b0000000000000000000011111111110000000000000000000000000000000000L) | (((long)p3 &lt;&lt; 44L) &amp; 0b0000000000111111111100000000000000000000000000000000000000000000L) | (((long)p4 &lt;&lt; 54L) &amp; 0b1111111111000000000000000000000000000000000000000000000000000000L));</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

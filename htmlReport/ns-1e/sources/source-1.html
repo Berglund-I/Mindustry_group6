@@ -1,0 +1,229 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Binding</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.input</a>
+</div>
+
+<h1>Coverage Summary for Class: Binding (mindustry.input)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Binding</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (4/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    97.7%
+  </span>
+  <span class="absValue">
+    (86/88)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.input;
+&nbsp;
+&nbsp;import arc.KeyBinds.*;
+&nbsp;import arc.input.InputDevice.*;
+&nbsp;import arc.input.*;
+&nbsp;import mindustry.*;
+&nbsp;
+<b class="fc">&nbsp;public enum Binding implements KeyBind{</b>
+<b class="fc">&nbsp;    move_x(new Axis(KeyCode.a, KeyCode.d), &quot;general&quot;),</b>
+<b class="fc">&nbsp;    move_y(new Axis(KeyCode.s, KeyCode.w)),</b>
+<b class="fc">&nbsp;    mouse_move(KeyCode.mouseBack),</b>
+<b class="fc">&nbsp;    pan(KeyCode.mouseForward),</b>
+&nbsp;
+<b class="fc">&nbsp;    boost(KeyCode.shiftLeft),</b>
+<b class="fc">&nbsp;    respawn(KeyCode.v),</b>
+<b class="fc">&nbsp;    control(KeyCode.controlLeft),</b>
+<b class="fc">&nbsp;    select(KeyCode.mouseLeft),</b>
+<b class="fc">&nbsp;    deselect(KeyCode.mouseRight),</b>
+<b class="fc">&nbsp;    break_block(KeyCode.mouseRight),</b>
+&nbsp;
+<b class="fc">&nbsp;    pickupCargo(KeyCode.leftBracket),</b>
+<b class="fc">&nbsp;    dropCargo(KeyCode.rightBracket),</b>
+&nbsp;
+<b class="fc">&nbsp;    clear_building(KeyCode.q),</b>
+<b class="fc">&nbsp;    pause_building(KeyCode.e),</b>
+<b class="fc">&nbsp;    rotate(new Axis(KeyCode.scroll)),</b>
+<b class="fc">&nbsp;    rotateplaced(KeyCode.r),</b>
+<b class="fc">&nbsp;    diagonal_placement(KeyCode.controlLeft),</b>
+<b class="fc">&nbsp;    pick(KeyCode.mouseMiddle),</b>
+&nbsp;
+<b class="fc">&nbsp;    rebuild_select(KeyCode.b),</b>
+<b class="fc">&nbsp;    schematic_select(KeyCode.f),</b>
+<b class="fc">&nbsp;    schematic_flip_x(KeyCode.z),</b>
+<b class="fc">&nbsp;    schematic_flip_y(KeyCode.x),</b>
+<b class="fc">&nbsp;    schematic_menu(KeyCode.t),</b>
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;    command_mode(KeyCode.shiftLeft, &quot;command&quot;),</b>
+<b class="fc">&nbsp;    command_queue(KeyCode.mouseMiddle),</b>
+<b class="fc">&nbsp;    create_control_group(KeyCode.controlLeft),</b>
+&nbsp;
+<b class="fc">&nbsp;    select_all_units(KeyCode.g),</b>
+<b class="fc">&nbsp;    select_all_unit_factories(KeyCode.h),</b>
+&nbsp;
+<b class="fc">&nbsp;    cancel_orders(KeyCode.unset),</b>
+&nbsp;
+<b class="fc">&nbsp;    unit_stance_shoot(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_stance_hold_fire(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_stance_pursue_target(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_stance_patrol(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_stance_ram(KeyCode.unset),</b>
+&nbsp;
+<b class="fc">&nbsp;    unit_command_move(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_command_repair(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_command_rebuild(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_command_assist(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_command_mine(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_command_boost(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_command_enter_payload(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_command_load_units(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_command_load_blocks(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_command_unload_payload(KeyCode.unset),</b>
+<b class="fc">&nbsp;    unit_command_loop_payload(KeyCode.unset),</b>
+&nbsp;
+<b class="fc">&nbsp;    category_prev(KeyCode.comma, &quot;blocks&quot;),</b>
+<b class="fc">&nbsp;    category_next(KeyCode.period),</b>
+&nbsp;
+<b class="fc">&nbsp;    block_select_left(KeyCode.left),</b>
+<b class="fc">&nbsp;    block_select_right(KeyCode.right),</b>
+<b class="fc">&nbsp;    block_select_up(KeyCode.up),</b>
+<b class="fc">&nbsp;    block_select_down(KeyCode.down),</b>
+<b class="fc">&nbsp;    block_select_01(KeyCode.num1),</b>
+<b class="fc">&nbsp;    block_select_02(KeyCode.num2),</b>
+<b class="fc">&nbsp;    block_select_03(KeyCode.num3),</b>
+<b class="fc">&nbsp;    block_select_04(KeyCode.num4),</b>
+<b class="fc">&nbsp;    block_select_05(KeyCode.num5),</b>
+<b class="fc">&nbsp;    block_select_06(KeyCode.num6),</b>
+<b class="fc">&nbsp;    block_select_07(KeyCode.num7),</b>
+<b class="fc">&nbsp;    block_select_08(KeyCode.num8),</b>
+<b class="fc">&nbsp;    block_select_09(KeyCode.num9),</b>
+<b class="fc">&nbsp;    block_select_10(KeyCode.num0),</b>
+&nbsp;
+<b class="fc">&nbsp;    zoom(new Axis(KeyCode.scroll), &quot;view&quot;),</b>
+<b class="fc">&nbsp;    detach_camera(KeyCode.unset),</b>
+<b class="fc">&nbsp;    menu(Vars.android ? KeyCode.back : KeyCode.escape),</b>
+<b class="fc">&nbsp;    fullscreen(KeyCode.f11),</b>
+<b class="fc">&nbsp;    pause(KeyCode.space),</b>
+<b class="fc">&nbsp;    minimap(KeyCode.m),</b>
+<b class="fc">&nbsp;    research(KeyCode.j),</b>
+<b class="fc">&nbsp;    planet_map(KeyCode.n),</b>
+<b class="fc">&nbsp;    block_info(KeyCode.f1),</b>
+<b class="fc">&nbsp;    toggle_menus(KeyCode.c),</b>
+<b class="fc">&nbsp;    screenshot(KeyCode.p),</b>
+<b class="fc">&nbsp;    toggle_power_lines(KeyCode.f5),</b>
+<b class="fc">&nbsp;    toggle_block_status(KeyCode.f6),</b>
+<b class="fc">&nbsp;    player_list(KeyCode.tab, &quot;multiplayer&quot;),</b>
+<b class="fc">&nbsp;    chat(KeyCode.enter),</b>
+<b class="fc">&nbsp;    chat_history_prev(KeyCode.up),</b>
+<b class="fc">&nbsp;    chat_history_next(KeyCode.down),</b>
+<b class="fc">&nbsp;    chat_scroll(new Axis(KeyCode.scroll)),</b>
+<b class="fc">&nbsp;    chat_mode(KeyCode.tab),</b>
+<b class="fc">&nbsp;    console(KeyCode.f8),</b>
+&nbsp;    ;
+&nbsp;
+&nbsp;    private final KeybindValue defaultValue;
+&nbsp;    private final String category;
+&nbsp;
+<b class="fc">&nbsp;    Binding(KeybindValue defaultValue, String category){</b>
+<b class="fc">&nbsp;        this.defaultValue = defaultValue;</b>
+<b class="fc">&nbsp;        this.category = category;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Binding(KeybindValue defaultValue){
+<b class="fc">&nbsp;        this(defaultValue, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public KeybindValue defaultValue(DeviceType type){
+<b class="nc">&nbsp;        return defaultValue;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String category(){
+<b class="nc">&nbsp;        return category;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

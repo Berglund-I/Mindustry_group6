@@ -1,0 +1,642 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > FloorRenderer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: FloorRenderer (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FloorRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/161)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">FloorRenderer$FloorRenderBatch</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/79)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/240)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.gl.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.IntSet.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * general implementation:
+&nbsp; *
+&nbsp; * caching:
+&nbsp; * 1. create fixed-size float array for rendering into
+&nbsp; * 2. for each chunk, cache each layer into buffer; record layer boundary indices (alternatively, create mesh per layer for fast recache)
+&nbsp; * 3. create mesh for this chunk based on buffer size, copy buffer into mesh
+&nbsp; *
+&nbsp; * rendering:
+&nbsp; * 1. iterate through visible chunks
+&nbsp; * 2. activate the shader vertex attributes beforehand
+&nbsp; * 3. bind each mesh individually, draw it
+&nbsp; *
+&nbsp; * */
+<b class="nc">&nbsp;public class FloorRenderer{</b>
+<b class="nc">&nbsp;    private static final VertexAttribute[] attributes = {VertexAttribute.position, VertexAttribute.color, VertexAttribute.texCoords};</b>
+&nbsp;    private static final int
+&nbsp;        chunksize = 30, //todo 32?
+&nbsp;        chunkunits = chunksize * tilesize,
+&nbsp;        vertexSize = 2 + 1 + 2,
+&nbsp;        spriteSize = vertexSize * 4,
+&nbsp;        maxSprites = chunksize * chunksize * 9;
+&nbsp;    private static final float pad = tilesize/2f;
+&nbsp;    //if true, chunks are rendered on-demand; this causes small lag spikes and is generally not needed for most maps
+&nbsp;    private static final boolean dynamic = false;
+&nbsp;
+<b class="nc">&nbsp;    private float[] vertices = new float[maxSprites * vertexSize * 4];</b>
+<b class="nc">&nbsp;    private short[] indices = new short[maxSprites * 6];</b>
+&nbsp;    private int vidx;
+<b class="nc">&nbsp;    private FloorRenderBatch batch = new FloorRenderBatch();</b>
+&nbsp;    private Shader shader;
+&nbsp;    private Texture texture;
+&nbsp;    private TextureRegion error;
+&nbsp;
+&nbsp;    private Mesh[][][] cache;
+<b class="nc">&nbsp;    private IntSet drawnLayerSet = new IntSet();</b>
+<b class="nc">&nbsp;    private IntSet recacheSet = new IntSet();</b>
+<b class="nc">&nbsp;    private IntSeq drawnLayers = new IntSeq();</b>
+<b class="nc">&nbsp;    private ObjectSet&lt;CacheLayer&gt; used = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;    public FloorRenderer(){</b>
+<b class="nc">&nbsp;        short j = 0;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; indices.length; i += 6, j += 4){</b>
+<b class="nc">&nbsp;            indices[i] = j;</b>
+<b class="nc">&nbsp;            indices[i + 1] = (short)(j + 1);</b>
+<b class="nc">&nbsp;            indices[i + 2] = (short)(j + 2);</b>
+<b class="nc">&nbsp;            indices[i + 3] = (short)(j + 2);</b>
+<b class="nc">&nbsp;            indices[i + 4] = (short)(j + 3);</b>
+<b class="nc">&nbsp;            indices[i + 5] = j;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        shader = new Shader(</b>
+&nbsp;        &quot;&quot;&quot;
+&nbsp;        attribute vec4 a_position;
+&nbsp;        attribute vec4 a_color;
+&nbsp;        attribute vec2 a_texCoord0;
+&nbsp;        uniform mat4 u_projectionViewMatrix;
+&nbsp;        varying vec4 v_color;
+&nbsp;        varying vec2 v_texCoords;
+&nbsp;
+&nbsp;        void main(){
+&nbsp;           v_color = a_color;
+&nbsp;           v_color.a = v_color.a * (255.0/254.0);
+&nbsp;           v_texCoords = a_texCoord0;
+&nbsp;           gl_Position =  u_projectionViewMatrix * a_position;
+&nbsp;        }
+&nbsp;        &quot;&quot;&quot;,
+&nbsp;        &quot;&quot;&quot;
+&nbsp;        varying vec4 v_color;
+&nbsp;        varying vec2 v_texCoords;
+&nbsp;        uniform sampler2D u_texture;
+&nbsp;
+&nbsp;        void main(){
+&nbsp;          gl_FragColor = v_color * texture2D(u_texture, v_texCoords);
+&nbsp;        }
+&nbsp;        &quot;&quot;&quot;);
+&nbsp;
+<b class="nc">&nbsp;        Events.on(WorldLoadEvent.class, event -&gt; clearTiles());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Queues up a cache change for a tile. Only runs in render loop. */
+&nbsp;    public void recacheTile(Tile tile){
+&nbsp;        //recaching all layers may not be necessary
+<b class="nc">&nbsp;        recacheSet.add(Point2.pack(tile.x / chunksize, tile.y / chunksize));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawFloor(){
+<b class="nc">&nbsp;        if(cache == null){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Camera camera = Core.camera;</b>
+&nbsp;
+<b class="nc">&nbsp;        float pad = tilesize/2f;</b>
+&nbsp;
+&nbsp;        int
+<b class="nc">&nbsp;            minx = (int)((camera.position.x - camera.width/2f - pad) / chunkunits),</b>
+<b class="nc">&nbsp;            miny = (int)((camera.position.y - camera.height/2f - pad) / chunkunits),</b>
+<b class="nc">&nbsp;            maxx = Mathf.ceil((camera.position.x + camera.width/2f + pad) / chunkunits),</b>
+<b class="nc">&nbsp;            maxy = Mathf.ceil((camera.position.y + camera.height/2f + pad) / chunkunits);</b>
+&nbsp;
+<b class="nc">&nbsp;        int layers = CacheLayer.all.length;</b>
+&nbsp;
+<b class="nc">&nbsp;        drawnLayers.clear();</b>
+<b class="nc">&nbsp;        drawnLayerSet.clear();</b>
+&nbsp;
+&nbsp;        //preliminary layer check
+<b class="nc">&nbsp;        for(int x = minx; x &lt;= maxx; x++){</b>
+<b class="nc">&nbsp;            for(int y = miny; y &lt;= maxy; y++){</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!Structs.inBounds(x, y, cache)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(cache[x][y].length == 0){</b>
+<b class="nc">&nbsp;                    cacheChunk(x, y);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Mesh[] chunk = cache[x][y];</b>
+&nbsp;
+&nbsp;                //loop through all layers, and add layer index if it exists
+<b class="nc">&nbsp;                for(int i = 0; i &lt; layers; i++){</b>
+<b class="nc">&nbsp;                    if(chunk[i] != null &amp;&amp; i != CacheLayer.walls.id){</b>
+<b class="nc">&nbsp;                        drawnLayerSet.add(i);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        IntSetIterator it = drawnLayerSet.iterator();</b>
+<b class="nc">&nbsp;        while(it.hasNext){</b>
+<b class="nc">&nbsp;            drawnLayers.add(it.next());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        drawnLayers.sort();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.flush();</b>
+<b class="nc">&nbsp;        beginDraw();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; drawnLayers.size; i++){</b>
+<b class="nc">&nbsp;            CacheLayer layer = CacheLayer.all[drawnLayers.get(i)];</b>
+&nbsp;
+<b class="nc">&nbsp;            drawLayer(layer);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        endDraw();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beginc(){
+<b class="nc">&nbsp;        shader.bind();</b>
+<b class="nc">&nbsp;        shader.setUniformMatrix4(&quot;u_projectionViewMatrix&quot;, Core.camera.mat);</b>
+&nbsp;
+&nbsp;        //only ever use the base environment texture
+<b class="nc">&nbsp;        texture.bind(0);</b>
+&nbsp;
+&nbsp;        //enable all mesh attributes; TODO remove once the attribute cache bug is fixed
+<b class="nc">&nbsp;        if(Core.gl30 == null){</b>
+<b class="nc">&nbsp;            for(VertexAttribute attribute : attributes){</b>
+<b class="nc">&nbsp;                int loc = shader.getAttributeLocation(attribute.alias);</b>
+<b class="nc">&nbsp;                if(loc != -1) Gl.enableVertexAttribArray(loc);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void endc(){
+&nbsp;        //disable all mesh attributes; TODO remove once the attribute cache bug is fixed
+<b class="nc">&nbsp;        if(Core.gl30 == null){</b>
+<b class="nc">&nbsp;            for(VertexAttribute attribute : attributes){</b>
+<b class="nc">&nbsp;                int loc = shader.getAttributeLocation(attribute.alias);</b>
+<b class="nc">&nbsp;                if(loc != -1) Gl.disableVertexAttribArray(loc);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //unbind last buffer
+<b class="nc">&nbsp;        Gl.bindBuffer(Gl.arrayBuffer, 0);</b>
+<b class="nc">&nbsp;        Gl.bindBuffer(Gl.elementArrayBuffer, 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void checkChanges(){
+<b class="nc">&nbsp;        if(recacheSet.size &gt; 0){</b>
+&nbsp;            //recache one chunk at a time
+<b class="nc">&nbsp;            IntSetIterator iterator = recacheSet.iterator();</b>
+<b class="nc">&nbsp;            while(iterator.hasNext){</b>
+<b class="nc">&nbsp;                int chunk = iterator.next();</b>
+<b class="nc">&nbsp;                cacheChunk(Point2.x(chunk), Point2.y(chunk));</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            recacheSet.clear();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beginDraw(){
+<b class="nc">&nbsp;        if(cache == null){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.flush();</b>
+&nbsp;
+<b class="nc">&nbsp;        beginc();</b>
+&nbsp;
+<b class="nc">&nbsp;        Gl.enable(Gl.blend);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void endDraw(){
+<b class="nc">&nbsp;        if(cache == null){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        endc();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawLayer(CacheLayer layer){
+<b class="nc">&nbsp;        if(cache == null){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Camera camera = Core.camera;</b>
+&nbsp;
+&nbsp;        int
+<b class="nc">&nbsp;            minx = (int)((camera.position.x - camera.width/2f - pad) / chunkunits),</b>
+<b class="nc">&nbsp;            miny = (int)((camera.position.y - camera.height/2f - pad) / chunkunits),</b>
+<b class="nc">&nbsp;            maxx = Mathf.ceil((camera.position.x + camera.width/2f + pad) / chunkunits),</b>
+<b class="nc">&nbsp;            maxy = Mathf.ceil((camera.position.y + camera.height/2f + pad) / chunkunits);</b>
+&nbsp;
+<b class="nc">&nbsp;        layer.begin();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = minx; x &lt;= maxx; x++){</b>
+<b class="nc">&nbsp;            for(int y = miny; y &lt;= maxy; y++){</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!Structs.inBounds(x, y, cache) || cache[x][y].length == 0){</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                var mesh = cache[x][y][layer.id];</b>
+&nbsp;
+&nbsp;                //this *must* be a vertexbufferobject on gles2, so cast it and render it directly
+<b class="nc">&nbsp;                if(mesh != null &amp;&amp; mesh.vertices instanceof VertexBufferObject vbo &amp;&amp; mesh.indices instanceof IndexBufferObject ibo){</b>
+&nbsp;
+&nbsp;                    //bindi the buffer and update its contents, but do not unnecessarily enable all the attributes again
+<b class="nc">&nbsp;                    vbo.bind();</b>
+&nbsp;                    //set up vertex attribute pointers for this specific VBO
+<b class="nc">&nbsp;                    int offset = 0;</b>
+<b class="nc">&nbsp;                    for(VertexAttribute attribute : attributes){</b>
+<b class="nc">&nbsp;                        int location = shader.getAttributeLocation(attribute.alias);</b>
+<b class="nc">&nbsp;                        int aoffset = offset;</b>
+<b class="nc">&nbsp;                        offset += attribute.size;</b>
+<b class="nc">&nbsp;                        if(location &lt; 0) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                        Gl.vertexAttribPointer(location, attribute.components, attribute.type, attribute.normalized, vertexSize * 4, aoffset);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    ibo.bind();</b>
+&nbsp;
+<b class="nc">&nbsp;                    mesh.vertices.render(mesh.indices, Gl.triangles, 0, mesh.getNumIndices());</b>
+<b class="nc">&nbsp;                }else if(mesh != null){</b>
+&nbsp;                    //TODO this should be the default branch!
+<b class="nc">&nbsp;                    mesh.bind(shader);</b>
+<b class="nc">&nbsp;                    mesh.render(shader, Gl.triangles);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        layer.end();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void cacheChunk(int cx, int cy){
+<b class="nc">&nbsp;        used.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int tilex = Math.max(cx * chunksize - 1, 0); tilex &lt; (cx + 1) * chunksize + 1 &amp;&amp; tilex &lt; world.width(); tilex++){</b>
+<b class="nc">&nbsp;            for(int tiley = Math.max(cy * chunksize - 1, 0); tiley &lt; (cy + 1) * chunksize + 1 &amp;&amp; tiley &lt; world.height(); tiley++){</b>
+<b class="nc">&nbsp;                Tile tile = world.rawTile(tilex, tiley);</b>
+<b class="nc">&nbsp;                boolean wall = tile.block().cacheLayer != CacheLayer.normal;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(wall){</b>
+<b class="nc">&nbsp;                    used.add(tile.block().cacheLayer);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(!wall || world.isAccessible(tilex, tiley)){</b>
+<b class="nc">&nbsp;                    used.add(tile.floor().cacheLayer);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(cache[cx][cy].length == 0){</b>
+<b class="nc">&nbsp;            cache[cx][cy] = new Mesh[CacheLayer.all.length];</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var meshes = cache[cx][cy];</b>
+&nbsp;
+<b class="nc">&nbsp;        for(CacheLayer layer : CacheLayer.all){</b>
+<b class="nc">&nbsp;            if(meshes[layer.id] != null){</b>
+<b class="nc">&nbsp;                meshes[layer.id].dispose();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            meshes[layer.id] = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(CacheLayer layer : used){</b>
+<b class="nc">&nbsp;            meshes[layer.id] = cacheChunkLayer(cx, cy, layer);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Mesh cacheChunkLayer(int cx, int cy, CacheLayer layer){
+<b class="nc">&nbsp;        vidx = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        Batch current = Core.batch;</b>
+<b class="nc">&nbsp;        Core.batch = batch;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int tilex = cx * chunksize; tilex &lt; (cx + 1) * chunksize; tilex++){</b>
+<b class="nc">&nbsp;            for(int tiley = cy * chunksize; tiley &lt; (cy + 1) * chunksize; tiley++){</b>
+<b class="nc">&nbsp;                Tile tile = world.tile(tilex, tiley);</b>
+&nbsp;                Floor floor;
+&nbsp;
+<b class="nc">&nbsp;                if(tile == null){</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    floor = tile.floor();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(tile.block().cacheLayer == layer &amp;&amp; layer == CacheLayer.walls &amp;&amp; !(tile.isDarkened() &amp;&amp; tile.data &gt;= 5)){</b>
+<b class="nc">&nbsp;                    tile.block().drawBase(tile);</b>
+<b class="nc">&nbsp;                }else if(floor.cacheLayer == layer &amp;&amp; (world.isAccessible(tile.x, tile.y) || tile.block().cacheLayer != CacheLayer.walls || !tile.block().fillsTile)){</b>
+<b class="nc">&nbsp;                    floor.drawBase(tile);</b>
+<b class="nc">&nbsp;                }else if(floor.cacheLayer != layer &amp;&amp; layer != CacheLayer.walls){</b>
+<b class="nc">&nbsp;                    floor.drawNonLayer(tile, layer);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Core.batch = current;</b>
+&nbsp;
+<b class="nc">&nbsp;        int floats = vidx;</b>
+&nbsp;        //every 4 vertices need 6 indices
+<b class="nc">&nbsp;        int vertCount = floats / vertexSize, indCount = vertCount * 6/4;</b>
+&nbsp;
+<b class="nc">&nbsp;        Mesh mesh = new Mesh(true, vertCount, indCount, attributes);</b>
+<b class="nc">&nbsp;        mesh.setVertices(vertices, 0, vidx);</b>
+<b class="nc">&nbsp;        mesh.setAutoBind(false);</b>
+<b class="nc">&nbsp;        mesh.setIndices(indices, 0, indCount);</b>
+&nbsp;
+<b class="nc">&nbsp;        return mesh;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clearTiles(){
+&nbsp;        //dispose all old meshes
+<b class="nc">&nbsp;        if(cache != null){</b>
+<b class="nc">&nbsp;            for(var x : cache){</b>
+<b class="nc">&nbsp;                for(var y : x){</b>
+<b class="nc">&nbsp;                    for(var mesh : y){</b>
+<b class="nc">&nbsp;                        if(mesh != null){</b>
+<b class="nc">&nbsp;                            mesh.dispose();</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        recacheSet.clear();</b>
+<b class="nc">&nbsp;        int chunksx = Mathf.ceil((float)(world.width()) / chunksize), chunksy = Mathf.ceil((float)(world.height()) / chunksize);</b>
+<b class="nc">&nbsp;        cache = new Mesh[chunksx][chunksy][dynamic ? 0 : CacheLayer.all.length];</b>
+&nbsp;
+<b class="nc">&nbsp;        texture = Core.atlas.find(&quot;grass1&quot;).texture;</b>
+<b class="nc">&nbsp;        error = Core.atlas.find(&quot;env-error&quot;);</b>
+&nbsp;
+&nbsp;        //pre-cache chunks
+&nbsp;        if(!dynamic){
+<b class="nc">&nbsp;            Time.mark();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int x = 0; x &lt; chunksx; x++){</b>
+<b class="nc">&nbsp;                for(int y = 0; y &lt; chunksy; y++){</b>
+<b class="nc">&nbsp;                    cacheChunk(x, y);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Log.debug(&quot;Generated world mesh: @ms&quot;, Time.elapsed());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    class FloorRenderBatch extends Batch{</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
+&nbsp;
+&nbsp;            //substitute invalid regions with error
+<b class="nc">&nbsp;            if(region.texture != texture &amp;&amp; region != error){</b>
+<b class="nc">&nbsp;                draw(error, x, y, originX, originY, width, height, rotation);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float[] verts = vertices;</b>
+<b class="nc">&nbsp;            int idx = vidx;</b>
+<b class="nc">&nbsp;            vidx += spriteSize;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!Mathf.zero(rotation)){</b>
+&nbsp;                //bottom left and top right corner points relative to origin
+<b class="nc">&nbsp;                float worldOriginX = x + originX;</b>
+<b class="nc">&nbsp;                float worldOriginY = y + originY;</b>
+<b class="nc">&nbsp;                float fx = -originX;</b>
+<b class="nc">&nbsp;                float fy = -originY;</b>
+<b class="nc">&nbsp;                float fx2 = width - originX;</b>
+<b class="nc">&nbsp;                float fy2 = height - originY;</b>
+&nbsp;
+&nbsp;                // rotate
+<b class="nc">&nbsp;                float cos = Mathf.cosDeg(rotation);</b>
+<b class="nc">&nbsp;                float sin = Mathf.sinDeg(rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;                float x1 = cos * fx - sin * fy + worldOriginX;</b>
+<b class="nc">&nbsp;                float y1 = sin * fx + cos * fy + worldOriginY;</b>
+<b class="nc">&nbsp;                float x2 = cos * fx - sin * fy2 + worldOriginX;</b>
+<b class="nc">&nbsp;                float y2 = sin * fx + cos * fy2 + worldOriginY;</b>
+<b class="nc">&nbsp;                float x3 = cos * fx2 - sin * fy2 + worldOriginX;</b>
+<b class="nc">&nbsp;                float y3 = sin * fx2 + cos * fy2 + worldOriginY;</b>
+<b class="nc">&nbsp;                float x4 = x1 + (x3 - x2);</b>
+<b class="nc">&nbsp;                float y4 = y3 - (y2 - y1);</b>
+&nbsp;
+<b class="nc">&nbsp;                float u = region.u;</b>
+<b class="nc">&nbsp;                float v = region.v2;</b>
+<b class="nc">&nbsp;                float u2 = region.u2;</b>
+<b class="nc">&nbsp;                float v2 = region.v;</b>
+&nbsp;
+<b class="nc">&nbsp;                float color = this.colorPacked;</b>
+&nbsp;
+<b class="nc">&nbsp;                verts[idx] = x1;</b>
+<b class="nc">&nbsp;                verts[idx + 1] = y1;</b>
+<b class="nc">&nbsp;                verts[idx + 2] = color;</b>
+<b class="nc">&nbsp;                verts[idx + 3] = u;</b>
+<b class="nc">&nbsp;                verts[idx + 4] = v;</b>
+&nbsp;
+<b class="nc">&nbsp;                verts[idx + 5] = x2;</b>
+<b class="nc">&nbsp;                verts[idx + 6] = y2;</b>
+<b class="nc">&nbsp;                verts[idx + 7] = color;</b>
+<b class="nc">&nbsp;                verts[idx + 8] = u;</b>
+<b class="nc">&nbsp;                verts[idx + 9] = v2;</b>
+&nbsp;
+<b class="nc">&nbsp;                verts[idx + 10] = x3;</b>
+<b class="nc">&nbsp;                verts[idx + 11] = y3;</b>
+<b class="nc">&nbsp;                verts[idx + 12] = color;</b>
+<b class="nc">&nbsp;                verts[idx + 13] = u2;</b>
+<b class="nc">&nbsp;                verts[idx + 14] = v2;</b>
+&nbsp;
+<b class="nc">&nbsp;                verts[idx + 15] = x4;</b>
+<b class="nc">&nbsp;                verts[idx + 16] = y4;</b>
+<b class="nc">&nbsp;                verts[idx + 17] = color;</b>
+<b class="nc">&nbsp;                verts[idx + 18] = u2;</b>
+<b class="nc">&nbsp;                verts[idx + 19] = v;</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                float fx2 = x + width;</b>
+<b class="nc">&nbsp;                float fy2 = y + height;</b>
+<b class="nc">&nbsp;                float u = region.u;</b>
+<b class="nc">&nbsp;                float v = region.v2;</b>
+<b class="nc">&nbsp;                float u2 = region.u2;</b>
+<b class="nc">&nbsp;                float v2 = region.v;</b>
+&nbsp;
+<b class="nc">&nbsp;                float color = this.colorPacked;</b>
+&nbsp;
+<b class="nc">&nbsp;                verts[idx] = x;</b>
+<b class="nc">&nbsp;                verts[idx + 1] = y;</b>
+<b class="nc">&nbsp;                verts[idx + 2] = color;</b>
+<b class="nc">&nbsp;                verts[idx + 3] = u;</b>
+<b class="nc">&nbsp;                verts[idx + 4] = v;</b>
+&nbsp;
+<b class="nc">&nbsp;                verts[idx + 5] = x;</b>
+<b class="nc">&nbsp;                verts[idx + 6] = fy2;</b>
+<b class="nc">&nbsp;                verts[idx + 7] = color;</b>
+<b class="nc">&nbsp;                verts[idx + 8] = u;</b>
+<b class="nc">&nbsp;                verts[idx + 9] = v2;</b>
+&nbsp;
+<b class="nc">&nbsp;                verts[idx + 10] = fx2;</b>
+<b class="nc">&nbsp;                verts[idx + 11] = fy2;</b>
+<b class="nc">&nbsp;                verts[idx + 12] = color;</b>
+<b class="nc">&nbsp;                verts[idx + 13] = u2;</b>
+<b class="nc">&nbsp;                verts[idx + 14] = v2;</b>
+&nbsp;
+<b class="nc">&nbsp;                verts[idx + 15] = fx2;</b>
+<b class="nc">&nbsp;                verts[idx + 16] = y;</b>
+<b class="nc">&nbsp;                verts[idx + 17] = color;</b>
+<b class="nc">&nbsp;                verts[idx + 18] = u2;</b>
+<b class="nc">&nbsp;                verts[idx + 19] = v;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void flush(){
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void setShader(Shader shader, boolean apply){
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;cache shader unsupported&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void draw(Texture texture, float[] spriteVertices, int offset, int count){
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;cache vertices unsupported&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

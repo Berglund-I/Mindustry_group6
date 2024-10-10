@@ -1,0 +1,241 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AboutDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: AboutDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AboutDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/55)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AboutDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/63)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.Links.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class AboutDialog extends BaseDialog{
+<b class="nc">&nbsp;    Seq&lt;String&gt; contributors = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    static ObjectSet&lt;String&gt; bannedItems = ObjectSet.with(&quot;google-play&quot;, &quot;itch.io&quot;, &quot;dev-builds&quot;, &quot;f-droid&quot;);</b>
+&nbsp;
+&nbsp;    public AboutDialog(){
+<b class="nc">&nbsp;        super(&quot;@about.button&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(() -&gt; {</b>
+<b class="nc">&nbsp;            contributors = Seq.with(Core.files.internal(&quot;contributors&quot;).readString(&quot;UTF-8&quot;).split(&quot;\n&quot;));</b>
+<b class="nc">&nbsp;            Core.app.post(this::setup);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        shown(this::setup);</b>
+<b class="nc">&nbsp;        onResize(this::setup);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void setup(){
+<b class="nc">&nbsp;        cont.clear();</b>
+<b class="nc">&nbsp;        buttons.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        float h = Core.graphics.isPortrait() ? 90f : 80f;</b>
+<b class="nc">&nbsp;        float w = Core.graphics.isPortrait() ? 400f : 600f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Table in = new Table();</b>
+<b class="nc">&nbsp;        ScrollPane pane = new ScrollPane(in);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(LinkEntry link : Links.getLinks()){</b>
+<b class="nc">&nbsp;            if((ios || OS.isMac || steam) &amp;&amp; bannedItems.contains(link.name)){</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Table table = new Table(Styles.grayPanel);</b>
+<b class="nc">&nbsp;            table.margin(0);</b>
+<b class="nc">&nbsp;            table.table(img -&gt; {</b>
+<b class="nc">&nbsp;                img.image().height(h - 5).width(40f).color(link.color);</b>
+<b class="nc">&nbsp;                img.row();</b>
+<b class="nc">&nbsp;                img.image().height(5).width(40f).color(link.color.cpy().mul(0.8f, 0.8f, 0.8f, 1f));</b>
+<b class="nc">&nbsp;            }).expandY();</b>
+&nbsp;
+<b class="nc">&nbsp;            table.table(i -&gt; {</b>
+<b class="nc">&nbsp;                i.background(Styles.grayPanel);</b>
+<b class="nc">&nbsp;                i.image(link.icon);</b>
+<b class="nc">&nbsp;            }).size(h - 5, h);</b>
+&nbsp;
+<b class="nc">&nbsp;            table.table(inset -&gt; {</b>
+<b class="nc">&nbsp;                inset.add(&quot;[accent]&quot; + link.title).growX().left();</b>
+<b class="nc">&nbsp;                inset.row();</b>
+<b class="nc">&nbsp;                inset.labelWrap(link.description).width(w - 100f - h).color(Color.lightGray).growX();</b>
+<b class="nc">&nbsp;            }).padLeft(8);</b>
+&nbsp;
+<b class="nc">&nbsp;            table.button(Icon.link, Styles.clearNoneTogglei, () -&gt; {</b>
+<b class="nc">&nbsp;                if(link.name.equals(&quot;wiki&quot;)) Events.fire(Trigger.openWiki);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!Core.app.openURI(link.link)){</b>
+<b class="nc">&nbsp;                    ui.showErrorMessage(&quot;@linkfail&quot;);</b>
+<b class="nc">&nbsp;                    Core.app.setClipboardText(link.link);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }).size(h - 5, h);</b>
+&nbsp;
+<b class="nc">&nbsp;            in.add(table).size(w, h).padTop(5).row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        shown(() -&gt; Time.run(1f, () -&gt; Core.scene.setScrollFocus(pane)));</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.add(pane).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseButton();</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@credits&quot;, this::showCredits).size(200f, 64f);</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void showCredits(){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;@credits&quot;);</b>
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.cont.add(&quot;@credits.text&quot;).fillX().wrap().get().setAlignment(Align.center);</b>
+<b class="nc">&nbsp;        dialog.cont.row();</b>
+<b class="nc">&nbsp;        if(!contributors.isEmpty()){</b>
+<b class="nc">&nbsp;            dialog.cont.image().color(Pal.accent).fillX().height(3f).pad(3f);</b>
+<b class="nc">&nbsp;            dialog.cont.row();</b>
+<b class="nc">&nbsp;            dialog.cont.add(&quot;@contributors&quot;);</b>
+<b class="nc">&nbsp;            dialog.cont.row();</b>
+<b class="nc">&nbsp;            dialog.cont.pane(new Table(){{</b>
+<b class="nc">&nbsp;                int i = 0;</b>
+<b class="nc">&nbsp;                left();</b>
+<b class="nc">&nbsp;                for(String c : contributors){</b>
+<b class="nc">&nbsp;                    add(&quot;[lightgray]&quot; + c).left().pad(3).padLeft(6).padRight(6);</b>
+<b class="nc">&nbsp;                    if(++i % 3 == 0){</b>
+<b class="nc">&nbsp;                        row();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }});
+&nbsp;        }
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

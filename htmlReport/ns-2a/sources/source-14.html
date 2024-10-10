@@ -1,0 +1,510 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Weather</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: Weather (mindustry.type)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Weather</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.2%
+  </span>
+  <span class="absValue">
+    (4/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.7%
+  </span>
+  <span class="absValue">
+    (14/145)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Weather$WeatherEntry</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (3/11)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Weather$WeatherStateComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/21)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    19.4%
+  </span>
+  <span class="absValue">
+    (6/31)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.6%
+  </span>
+  <span class="absValue">
+    (17/177)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Weather extends UnlockableContent{
+&nbsp;    /** Global random variable used for rendering. */
+<b class="fc">&nbsp;    public static final Rand rand = new Rand();</b>
+&nbsp;
+&nbsp;    /** Default duration of this weather event in ticks. */
+<b class="fc">&nbsp;    public float duration = 10f * Time.toMinutes;</b>
+<b class="fc">&nbsp;    public float opacityMultiplier = 1f;</b>
+<b class="fc">&nbsp;    public Attributes attrs = new Attributes();</b>
+<b class="fc">&nbsp;    public Sound sound = Sounds.none;</b>
+<b class="fc">&nbsp;    public float soundVol = 0.1f, soundVolMin = 0f;</b>
+<b class="fc">&nbsp;    public float soundVolOscMag = 0f, soundVolOscScl = 20f;</b>
+<b class="fc">&nbsp;    public boolean hidden = false;</b>
+&nbsp;
+&nbsp;    //internals
+<b class="fc">&nbsp;    public Prov&lt;WeatherState&gt; type = WeatherState::create;</b>
+<b class="fc">&nbsp;    public StatusEffect status = StatusEffects.none;</b>
+<b class="fc">&nbsp;    public float statusDuration = 60f * 2;</b>
+<b class="fc">&nbsp;    public boolean statusAir = true, statusGround = true;</b>
+&nbsp;
+&nbsp;    public Weather(String name, Prov&lt;WeatherState&gt; type){
+<b class="nc">&nbsp;        super(name);</b>
+<b class="nc">&nbsp;        this.type = type;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Weather(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public WeatherState create(){
+<b class="nc">&nbsp;        return create(1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public WeatherState create(float intensity){
+<b class="nc">&nbsp;        return create(intensity, duration);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public WeatherState create(float intensity, float duration){
+<b class="nc">&nbsp;        WeatherState entity = type.get();</b>
+<b class="nc">&nbsp;        entity.intensity(Mathf.clamp(intensity));</b>
+<b class="nc">&nbsp;        entity.init(this);</b>
+<b class="nc">&nbsp;        entity.life(duration);</b>
+<b class="nc">&nbsp;        entity.add();</b>
+<b class="nc">&nbsp;        return entity;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public WeatherState instance(){
+<b class="nc">&nbsp;        return Groups.weather.find(w -&gt; w.weather() == this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isActive(){
+<b class="nc">&nbsp;        return instance() != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(){
+<b class="nc">&nbsp;        var e = instance();</b>
+<b class="nc">&nbsp;        if(e != null) e.remove();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(WeatherState state){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void updateEffect(WeatherState state){
+<b class="nc">&nbsp;        if(status != StatusEffects.none){</b>
+<b class="nc">&nbsp;            if(state.effectTimer &lt;= 0){</b>
+<b class="nc">&nbsp;                state.effectTimer = statusDuration - 5f;</b>
+&nbsp;
+<b class="nc">&nbsp;                Groups.unit.each(u -&gt; {</b>
+<b class="nc">&nbsp;                    if(u.checkTarget(statusAir, statusGround)){</b>
+<b class="nc">&nbsp;                        u.apply(status, statusDuration);</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            }else{
+<b class="nc">&nbsp;                state.effectTimer -= Time.delta;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!headless &amp;&amp; sound != Sounds.none){</b>
+<b class="nc">&nbsp;            float noise = soundVolOscMag &gt; 0 ? (float)Math.abs(Noise.rawNoise(Time.time / soundVolOscScl)) * soundVolOscMag : 0;</b>
+<b class="nc">&nbsp;            control.sound.loop(sound, Math.max((soundVol + noise) * state.opacity, soundVolMin));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawOver(WeatherState state){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void drawUnder(WeatherState state){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static void drawParticles(TextureRegion region, Color color,
+&nbsp;                              float sizeMin, float sizeMax,
+&nbsp;                              float density, float intensity, float opacity,
+&nbsp;                              float windx, float windy,
+&nbsp;                              float minAlpha, float maxAlpha,
+&nbsp;                              float sinSclMin, float sinSclMax, float sinMagMin, float sinMagMax,
+&nbsp;                              boolean randomParticleRotation){
+<b class="nc">&nbsp;        rand.setSeed(0);</b>
+<b class="nc">&nbsp;        Tmp.r1.setCentered(Core.camera.position.x, Core.camera.position.y, Core.graphics.getWidth() / renderer.minScale(), Core.graphics.getHeight() / renderer.minScale());</b>
+<b class="nc">&nbsp;        Tmp.r1.grow(sizeMax * 1.5f);</b>
+<b class="nc">&nbsp;        Core.camera.bounds(Tmp.r2);</b>
+<b class="nc">&nbsp;        int total = (int)(Tmp.r1.area() / density * intensity);</b>
+<b class="nc">&nbsp;        Draw.color(color, opacity);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; total; i++){</b>
+<b class="nc">&nbsp;            float scl = rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;            float scl2 = rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;            float size = rand.random(sizeMin, sizeMax);</b>
+<b class="nc">&nbsp;            float x = (rand.random(0f, world.unitWidth()) + Time.time * windx * scl2);</b>
+<b class="nc">&nbsp;            float y = (rand.random(0f, world.unitHeight()) + Time.time * windy * scl);</b>
+<b class="nc">&nbsp;            float alpha = rand.random(minAlpha, maxAlpha);</b>
+<b class="nc">&nbsp;            float rotation = randomParticleRotation ? rand.random(0f, 360f) : 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;            x += Mathf.sin(y, rand.random(sinSclMin, sinSclMax), rand.random(sinMagMin, sinMagMax));</b>
+&nbsp;
+<b class="nc">&nbsp;            x -= Tmp.r1.x;</b>
+<b class="nc">&nbsp;            y -= Tmp.r1.y;</b>
+<b class="nc">&nbsp;            x = Mathf.mod(x, Tmp.r1.width);</b>
+<b class="nc">&nbsp;            y = Mathf.mod(y, Tmp.r1.height);</b>
+<b class="nc">&nbsp;            x += Tmp.r1.x;</b>
+<b class="nc">&nbsp;            y += Tmp.r1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Tmp.r3.setCentered(x, y, size).overlaps(Tmp.r2)){</b>
+<b class="nc">&nbsp;                Draw.alpha(alpha * opacity);</b>
+<b class="nc">&nbsp;                Draw.rect(region, x, y, size, size, rotation);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void drawRain(float sizeMin, float sizeMax, float xspeed, float yspeed, float density, float intensity, float stroke, Color color){
+<b class="nc">&nbsp;        rand.setSeed(0);</b>
+<b class="nc">&nbsp;        float padding = sizeMax*0.9f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.r1.setCentered(Core.camera.position.x, Core.camera.position.y, Core.graphics.getWidth() / renderer.minScale(), Core.graphics.getHeight() / renderer.minScale());</b>
+<b class="nc">&nbsp;        Tmp.r1.grow(padding);</b>
+<b class="nc">&nbsp;        Core.camera.bounds(Tmp.r2);</b>
+<b class="nc">&nbsp;        int total = (int)(Tmp.r1.area() / density * intensity);</b>
+<b class="nc">&nbsp;        Lines.stroke(stroke);</b>
+<b class="nc">&nbsp;        float alpha = Draw.getColorAlpha();</b>
+<b class="nc">&nbsp;        Draw.color(color);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; total; i++){</b>
+<b class="nc">&nbsp;            float scl = rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;            float scl2 = rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;            float size = rand.random(sizeMin, sizeMax);</b>
+<b class="nc">&nbsp;            float x = (rand.random(0f, world.unitWidth()) + Time.time * xspeed * scl2);</b>
+<b class="nc">&nbsp;            float y = (rand.random(0f, world.unitHeight()) - Time.time * yspeed * scl);</b>
+<b class="nc">&nbsp;            float tint = rand.random(1f) * alpha;</b>
+&nbsp;
+<b class="nc">&nbsp;            x -= Tmp.r1.x;</b>
+<b class="nc">&nbsp;            y -= Tmp.r1.y;</b>
+<b class="nc">&nbsp;            x = Mathf.mod(x, Tmp.r1.width);</b>
+<b class="nc">&nbsp;            y = Mathf.mod(y, Tmp.r1.height);</b>
+<b class="nc">&nbsp;            x += Tmp.r1.x;</b>
+<b class="nc">&nbsp;            y += Tmp.r1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Tmp.r3.setCentered(x, y, size).overlaps(Tmp.r2)){</b>
+<b class="nc">&nbsp;                Draw.alpha(tint);</b>
+<b class="nc">&nbsp;                Lines.lineAngle(x, y, Angles.angle(xspeed * scl2, - yspeed * scl), size/2f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void drawSplashes(TextureRegion[] splashes, float padding, float density, float intensity, float opacity, float timeScale, float stroke, Color color, Liquid splasher){
+<b class="nc">&nbsp;        Tmp.r1.setCentered(Core.camera.position.x, Core.camera.position.y, Core.graphics.getWidth() / renderer.minScale(), Core.graphics.getHeight() / renderer.minScale());</b>
+<b class="nc">&nbsp;        Tmp.r1.grow(padding);</b>
+<b class="nc">&nbsp;        Core.camera.bounds(Tmp.r2);</b>
+<b class="nc">&nbsp;        int total = (int)(Tmp.r1.area() / density * intensity) / 2;</b>
+<b class="nc">&nbsp;        Lines.stroke(stroke);</b>
+<b class="nc">&nbsp;        rand.setSeed(0);</b>
+&nbsp;
+<b class="nc">&nbsp;        float t = Time.time / timeScale;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; total; i++){</b>
+<b class="nc">&nbsp;            float offset = rand.random(0f, 1f);</b>
+<b class="nc">&nbsp;            float time = t + offset;</b>
+&nbsp;
+<b class="nc">&nbsp;            int pos = (int)((time));</b>
+<b class="nc">&nbsp;            float life = time % 1f;</b>
+<b class="nc">&nbsp;            float x = (rand.random(0f, world.unitWidth()) + pos*953);</b>
+<b class="nc">&nbsp;            float y = (rand.random(0f, world.unitHeight()) - pos*453);</b>
+&nbsp;
+<b class="nc">&nbsp;            x -= Tmp.r1.x;</b>
+<b class="nc">&nbsp;            y -= Tmp.r1.y;</b>
+<b class="nc">&nbsp;            x = Mathf.mod(x, Tmp.r1.width);</b>
+<b class="nc">&nbsp;            y = Mathf.mod(y, Tmp.r1.height);</b>
+<b class="nc">&nbsp;            x += Tmp.r1.x;</b>
+<b class="nc">&nbsp;            y += Tmp.r1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Tmp.r3.setCentered(x, y, life * 4f).overlaps(Tmp.r2)){</b>
+<b class="nc">&nbsp;                Tile tile = world.tileWorld(x, y);</b>
+&nbsp;
+&nbsp;                //only create splashes on specific liquid.
+<b class="nc">&nbsp;                if(tile != null &amp;&amp; tile.floor().liquidDrop == splasher){</b>
+<b class="nc">&nbsp;                    Draw.color(Tmp.c1.set(tile.floor().mapColor).mul(1.5f).a(opacity));</b>
+<b class="nc">&nbsp;                    Draw.rect(splashes[(int)(life * (splashes.length - 1))], x, y);</b>
+<b class="nc">&nbsp;                }else if(tile != null &amp;&amp; tile.floor().liquidDrop == null &amp;&amp; !tile.floor().solid){</b>
+<b class="nc">&nbsp;                    Draw.color(color);</b>
+<b class="nc">&nbsp;                    Draw.alpha(Mathf.slope(life) * opacity);</b>
+&nbsp;
+<b class="nc">&nbsp;                    float space = 45f;</b>
+<b class="nc">&nbsp;                    for(int j : new int[]{-1, 1}){</b>
+<b class="nc">&nbsp;                        Tmp.v1.trns(90f + j*space, 1f + 5f * life);</b>
+<b class="nc">&nbsp;                        Lines.lineAngle(x + Tmp.v1.x, y + Tmp.v1.y, 90f + j*space, 3f * (1f - life));</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void drawNoiseLayers(Texture noise, Color color, float noisescl, float opacity, float baseSpeed, float intensity, float vwindx, float vwindy,
+&nbsp;                                       int layers, float layerSpeedM , float layerAlphaM, float layerSclM, float layerColorM){
+<b class="nc">&nbsp;        float sspeed = 1f, sscl = 1f, salpha = 1f, offset = 0f;</b>
+<b class="nc">&nbsp;        Color col = Tmp.c1.set(color);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; layers; i++){</b>
+<b class="nc">&nbsp;            drawNoise(noise, col, noisescl * sscl, salpha * opacity, sspeed * baseSpeed, intensity, vwindx, vwindy, offset);</b>
+<b class="nc">&nbsp;            sspeed *= layerSpeedM;</b>
+<b class="nc">&nbsp;            salpha *= layerAlphaM;</b>
+<b class="nc">&nbsp;            sscl *= layerSclM;</b>
+<b class="nc">&nbsp;            offset += 0.29f;</b>
+<b class="nc">&nbsp;            col.mul(layerColorM);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void drawNoise(Texture noise, Color color, float noisescl, float opacity, float baseSpeed, float intensity, float vwindx, float vwindy, float offset){
+<b class="nc">&nbsp;        Draw.alpha(opacity);</b>
+<b class="nc">&nbsp;        Draw.tint(color);</b>
+&nbsp;
+<b class="nc">&nbsp;        float speed = baseSpeed * intensity;</b>
+<b class="nc">&nbsp;        float windx = vwindx * speed, windy = vwindy * speed;</b>
+&nbsp;
+<b class="nc">&nbsp;        float scale = 1f / noisescl;</b>
+<b class="nc">&nbsp;        float scroll = Time.time * scale + offset;</b>
+<b class="nc">&nbsp;        Tmp.tr1.texture = noise;</b>
+<b class="nc">&nbsp;        Core.camera.bounds(Tmp.r1);</b>
+<b class="nc">&nbsp;        Tmp.tr1.set(Tmp.r1.x*scale, Tmp.r1.y*scale, (Tmp.r1.x + Tmp.r1.width)*scale, (Tmp.r1.y + Tmp.r1.height)*scale);</b>
+<b class="nc">&nbsp;        Tmp.tr1.scroll(-windx * scroll, -windy * scroll);</b>
+<b class="nc">&nbsp;        Draw.rect(Tmp.tr1, Core.camera.position.x, Core.camera.position.y, Core.camera.width, -Core.camera.height);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isHidden(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ContentType getContentType(){
+<b class="fc">&nbsp;        return ContentType.weather;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void createWeather(Weather weather, float intensity, float duration, float windX, float windY){
+<b class="nc">&nbsp;        weather.create(intensity, duration).windVector.set(windX, windY);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class WeatherEntry{
+&nbsp;        /** The type of weather used. */
+&nbsp;        public Weather weather;
+&nbsp;        /** Minimum and maximum spacing between weather events. Does not include the time of the event itself. */
+&nbsp;        public float minFrequency, maxFrequency, minDuration, maxDuration;
+&nbsp;        /** Cooldown time before the next weather event takes place This is *state*, not configuration. */
+&nbsp;        public float cooldown;
+&nbsp;        /** Intensity of the weather produced. */
+<b class="fc">&nbsp;        public float intensity = 1f;</b>
+&nbsp;        /** If true, this weather is always active. */
+<b class="fc">&nbsp;        public boolean always = false;</b>
+&nbsp;
+&nbsp;        /** Creates a weather entry with some approximate weather values. */
+&nbsp;        public WeatherEntry(Weather weather){
+<b class="nc">&nbsp;            this(weather, weather.duration * 2f, weather.duration * 6f, weather.duration / 2f, weather.duration * 1.5f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public WeatherEntry(Weather weather, float minFrequency, float maxFrequency, float minDuration, float maxDuration){</b>
+<b class="nc">&nbsp;            this.weather = weather;</b>
+<b class="nc">&nbsp;            this.minFrequency = minFrequency;</b>
+<b class="nc">&nbsp;            this.maxFrequency = maxFrequency;</b>
+<b class="nc">&nbsp;            this.minDuration = minDuration;</b>
+<b class="nc">&nbsp;            this.maxDuration = maxDuration;</b>
+&nbsp;            //specifies cooldown to something random
+<b class="nc">&nbsp;            this.cooldown = Mathf.random(minFrequency, maxFrequency);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //mods
+<b class="fc">&nbsp;        public WeatherEntry(){</b>
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @EntityDef(value = {WeatherStatec.class}, pooled = true, isFinal = false)
+&nbsp;    @Component(base = true)
+<b class="nc">&nbsp;    abstract static class WeatherStateComp implements Drawc, Syncc{</b>
+&nbsp;        public static final float fadeTime = 60 * 4;
+&nbsp;
+&nbsp;        Weather weather;
+<b class="nc">&nbsp;        float intensity = 1f, opacity = 0f, life, effectTimer;</b>
+<b class="nc">&nbsp;        Vec2 windVector = new Vec2().setToRandomDirection();</b>
+&nbsp;
+&nbsp;        void init(Weather weather){
+<b class="nc">&nbsp;            this.weather = weather;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void update(){
+<b class="nc">&nbsp;            if(life &lt; fadeTime){</b>
+<b class="nc">&nbsp;                opacity = Math.min(life / fadeTime, opacity);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                opacity = Mathf.lerpDelta(opacity, 1f, 0.004f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            life -= Time.delta;</b>
+&nbsp;
+<b class="nc">&nbsp;            weather.update(self());</b>
+<b class="nc">&nbsp;            weather.updateEffect(self());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(life &lt; 0){</b>
+<b class="nc">&nbsp;                remove();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            if(renderer.weatherAlpha &gt; 0.0001f &amp;&amp; renderer.drawWeather &amp;&amp; Core.settings.getBool(&quot;showweather&quot;)){</b>
+<b class="nc">&nbsp;                Draw.draw(Layer.weather, () -&gt; {</b>
+<b class="nc">&nbsp;                    Draw.alpha(renderer.weatherAlpha * opacity * weather.opacityMultiplier);</b>
+<b class="nc">&nbsp;                    weather.drawOver(self());</b>
+<b class="nc">&nbsp;                    Draw.reset();</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                Draw.draw(Layer.debris, () -&gt; {</b>
+<b class="nc">&nbsp;                    Draw.alpha(renderer.weatherAlpha * opacity * weather.opacityMultiplier);</b>
+<b class="nc">&nbsp;                    weather.drawUnder(self());</b>
+<b class="nc">&nbsp;                    Draw.reset();</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

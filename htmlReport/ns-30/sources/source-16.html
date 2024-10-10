@@ -1,0 +1,232 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LanguageDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: LanguageDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LanguageDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (2/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.9%
+  </span>
+  <span class="absValue">
+    (3/38)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class LanguageDialog extends BaseDialog{
+<b class="fc">&nbsp;    public static final ObjectMap&lt;String, String&gt; displayNames = ObjectMap.of(</b>
+&nbsp;    &quot;ca&quot;, &quot;Català&quot;,
+&nbsp;    &quot;id_ID&quot;, &quot;Bahasa Indonesia&quot;,
+&nbsp;    &quot;da&quot;, &quot;Dansk&quot;,
+&nbsp;    &quot;de&quot;, &quot;Deutsch&quot;,
+&nbsp;    &quot;et&quot;, &quot;Eesti&quot;,
+&nbsp;    &quot;en&quot;, &quot;English&quot;,
+&nbsp;    &quot;es&quot;, &quot;Español&quot;,
+&nbsp;    &quot;eu&quot;, &quot;Euskara&quot;,
+&nbsp;    &quot;fil&quot;, &quot;Filipino&quot;,
+&nbsp;    &quot;fr&quot;, &quot;Français&quot;,
+&nbsp;    &quot;it&quot;, &quot;Italiano&quot;,
+&nbsp;    &quot;lt&quot;, &quot;Lietuvi?&quot;,
+&nbsp;    &quot;hu&quot;, &quot;Magyar&quot;,
+&nbsp;    &quot;nl&quot;, &quot;Nederlands&quot;,
+&nbsp;    &quot;nl_BE&quot;, &quot;Nederlands (België)&quot;,
+&nbsp;    &quot;pl&quot;, &quot;Polski&quot;,
+&nbsp;    &quot;pt_BR&quot;, &quot;Português (Brasil)&quot;,
+&nbsp;    &quot;pt_PT&quot;, &quot;Português (Portugal)&quot;,
+&nbsp;    &quot;ro&quot;, &quot;Român?&quot;,
+&nbsp;    &quot;fi&quot;, &quot;Suomi&quot;,
+&nbsp;    &quot;sv&quot;, &quot;Svenska&quot;,
+&nbsp;    &quot;vi&quot;, &quot;Ti?ng Vi?t&quot;,
+&nbsp;    &quot;tk&quot;, &quot;Türkmen dili&quot;,
+&nbsp;    &quot;tr&quot;, &quot;Türkçe&quot;,
+&nbsp;    &quot;cs&quot;, &quot;?eština&quot;,
+&nbsp;    &quot;be&quot;, &quot;??????????&quot;,
+&nbsp;    &quot;bg&quot;, &quot;?????????&quot;,
+&nbsp;    &quot;ru&quot;, &quot;???????&quot;,
+&nbsp;    &quot;sr&quot;, &quot;??????&quot;,
+&nbsp;    &quot;uk_UA&quot;, &quot;??????????&quot;,
+&nbsp;    &quot;th&quot;, &quot;???&quot;,
+&nbsp;    &quot;zh_CN&quot;, &quot;????&quot;,
+&nbsp;    &quot;zh_TW&quot;, &quot;????&quot;,
+&nbsp;    &quot;ja&quot;, &quot;???&quot;,
+&nbsp;    &quot;ko&quot;, &quot;???&quot;,
+&nbsp;    &quot;router&quot;, &quot;router&quot;
+&nbsp;    );
+&nbsp;
+&nbsp;    private Locale lastLocale;
+&nbsp;
+&nbsp;    public LanguageDialog(){
+<b class="nc">&nbsp;        super(&quot;@settings.language&quot;);</b>
+<b class="nc">&nbsp;        addCloseButton();</b>
+<b class="nc">&nbsp;        setup();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String getDisplayName(Locale locale){
+<b class="fc">&nbsp;        String str = locale.toString().replace(&quot;in_ID&quot;, &quot;id_ID&quot;);</b>
+<b class="fc">&nbsp;        return displayNames.get(str, str);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setup(){
+<b class="nc">&nbsp;        Table langs = new Table();</b>
+<b class="nc">&nbsp;        langs.marginRight(24f).marginLeft(24f);</b>
+<b class="nc">&nbsp;        ScrollPane pane = new ScrollPane(langs);</b>
+<b class="nc">&nbsp;        pane.setScrollingDisabled(true, false);</b>
+&nbsp;
+<b class="nc">&nbsp;        ButtonGroup&lt;TextButton&gt; group = new ButtonGroup&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Locale loc : locales){</b>
+<b class="nc">&nbsp;            TextButton button = new TextButton(getDisplayName(loc), Styles.flatTogglet);</b>
+<b class="nc">&nbsp;            button.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;                if(getLocale().equals(loc)) return;</b>
+<b class="nc">&nbsp;                Core.settings.put(&quot;locale&quot;, loc.toString());</b>
+<b class="nc">&nbsp;                Log.info(&quot;Setting locale: @&quot;, loc.toString());</b>
+<b class="nc">&nbsp;                player.locale = loc.toString();</b>
+<b class="nc">&nbsp;                ui.showInfo(&quot;@language.restart&quot;);</b>
+&nbsp;            });
+<b class="nc">&nbsp;            langs.add(button).group(group).update(t -&gt; t.setChecked(loc.equals(getLocale()))).size(400f, 50f).row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        cont.add(pane);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Locale getLocale(){
+<b class="nc">&nbsp;        String loc = Core.settings.getString(&quot;locale&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(loc.equals(&quot;default&quot;)){</b>
+<b class="nc">&nbsp;            findClosestLocale();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(lastLocale == null || !lastLocale.toString().equals(loc)){</b>
+<b class="nc">&nbsp;            if(loc.contains(&quot;_&quot;)){</b>
+<b class="nc">&nbsp;                String[] split = loc.split(&quot;_&quot;);</b>
+<b class="nc">&nbsp;                lastLocale = new Locale(split[0], split[1]);</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                lastLocale = new Locale(loc);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return lastLocale;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void findClosestLocale(){
+&nbsp;        //check exact locale
+<b class="nc">&nbsp;        for(Locale l : locales){</b>
+<b class="nc">&nbsp;            if(l.equals(Locale.getDefault())){</b>
+<b class="nc">&nbsp;                Core.settings.put(&quot;locale&quot;, l.toString());</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //find by language
+<b class="nc">&nbsp;        for(Locale l : locales){</b>
+<b class="nc">&nbsp;            if(l.getLanguage().equals(Locale.getDefault().getLanguage())){</b>
+<b class="nc">&nbsp;                Core.settings.put(&quot;locale&quot;, l.toString());</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Core.settings.put(&quot;locale&quot;, new Locale(&quot;en&quot;).toString());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

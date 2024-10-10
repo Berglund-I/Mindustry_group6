@@ -1,0 +1,318 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ContinuousTurret</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense.turrets</a>
+</div>
+
+<h1>Coverage Summary for Class: ContinuousTurret (mindustry.world.blocks.defense.turrets)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ContinuousTurret</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (6/10)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ContinuousTurret$ContinuousTurretBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (9/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.4%
+  </span>
+  <span class="absValue">
+    (20/55)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (10/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (26/65)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense.turrets;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;/** A turret that fires a continuous beam bullet with no reload or coolant necessary. The bullet only disappears when the turret stops shooting. */
+&nbsp;public class ContinuousTurret extends Turret{
+<b class="fc">&nbsp;    public BulletType shootType = Bullets.placeholder;</b>
+&nbsp;    /** Speed at which the turret can change its bullet &quot;aim&quot; distance. This is only used for point laser bullets. */
+<b class="fc">&nbsp;    public float aimChangeSpeed = Float.POSITIVE_INFINITY;</b>
+&nbsp;
+&nbsp;    public ContinuousTurret(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        coolantMultiplier = 1f;</b>
+<b class="fc">&nbsp;        envEnabled |= Env.space;</b>
+<b class="fc">&nbsp;        displayAmmoMultiplier = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.ammo, StatValues.ammo(ObjectMap.of(this, shootType)));</b>
+<b class="nc">&nbsp;        stats.remove(Stat.reload);</b>
+<b class="nc">&nbsp;        stats.remove(Stat.inaccuracy);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO LaserTurret shared code
+<b class="fc">&nbsp;    public class ContinuousTurretBuild extends TurretBuild{</b>
+<b class="fc">&nbsp;        public Seq&lt;BulletEntry&gt; bullets = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;        public float lastLength = size * 4f;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float estimateDps(){
+<b class="nc">&nbsp;            if(!hasAmmo()) return 0f;</b>
+<b class="nc">&nbsp;            return shootType.damage * 60f / (shootType instanceof ContinuousBulletType c ? c.damageInterval : 5f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void updateCooling(){
+&nbsp;            //TODO how does coolant work here, if at all?
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public BulletType useAmmo(){
+&nbsp;            //nothing used directly
+<b class="nc">&nbsp;            return shootType;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean hasAmmo(){
+<b class="fc">&nbsp;            return canConsume();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return isShooting();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public BulletType peekAmmo(){
+<b class="fc">&nbsp;            return shootType;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            super.updateTile();</b>
+&nbsp;
+&nbsp;            //TODO unclean way of calculating ammo fraction to display
+<b class="fc">&nbsp;            float ammoFract = efficiency;</b>
+<b class="fc">&nbsp;            if(findConsumer(f -&gt; f instanceof ConsumeLiquidBase) instanceof ConsumeLiquid cons){</b>
+<b class="fc">&nbsp;                ammoFract = Math.min(ammoFract, liquids.get(cons.liquid) / liquidCapacity);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            unit.ammo(unit.type().ammoCapacity * ammoFract);</b>
+&nbsp;
+<b class="fc">&nbsp;            bullets.removeAll(b -&gt; !b.bullet.isAdded() || b.bullet.type == null || b.bullet.owner != this);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(bullets.any()){</b>
+<b class="nc">&nbsp;                for(var entry : bullets){</b>
+<b class="nc">&nbsp;                    updateBullet(entry);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                wasShooting = true;</b>
+<b class="nc">&nbsp;                heat = 1f;</b>
+<b class="nc">&nbsp;                curRecoil = recoil;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void updateBullet(BulletEntry entry){
+&nbsp;            float
+<b class="nc">&nbsp;                bulletX = x + Angles.trnsx(rotation - 90, shootX + entry.x, shootY + entry.y),</b>
+<b class="nc">&nbsp;                bulletY = y + Angles.trnsy(rotation - 90, shootX + entry.x, shootY + entry.y),</b>
+<b class="nc">&nbsp;                angle = rotation + entry.rotation;</b>
+&nbsp;
+<b class="nc">&nbsp;            entry.bullet.rotation(angle);</b>
+<b class="nc">&nbsp;            entry.bullet.set(bulletX, bulletY);</b>
+&nbsp;
+&nbsp;            //target length of laser
+<b class="nc">&nbsp;            float shootLength = Math.min(dst(targetPos), range);</b>
+&nbsp;            //current length of laser
+<b class="nc">&nbsp;            float curLength = dst(entry.bullet.aimX, entry.bullet.aimY);</b>
+&nbsp;            //resulting length of the bullet (smoothed)
+<b class="nc">&nbsp;            float resultLength = Mathf.approachDelta(curLength, shootLength, aimChangeSpeed);</b>
+&nbsp;            //actual aim end point based on length
+<b class="nc">&nbsp;            Tmp.v1.trns(rotation, lastLength = resultLength).add(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            entry.bullet.aimX = Tmp.v1.x;</b>
+<b class="nc">&nbsp;            entry.bullet.aimY = Tmp.v1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(isShooting() &amp;&amp; hasAmmo()){</b>
+<b class="nc">&nbsp;                entry.bullet.time = entry.bullet.lifetime * entry.bullet.type.optimalLifeFract * Math.min(shootWarmup, efficiency);</b>
+<b class="nc">&nbsp;                entry.bullet.keepAlive = true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void updateReload(){
+&nbsp;            //continuous turrets don&#39;t have a concept of reload, they are always firing when possible
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void updateShooting(){
+<b class="nc">&nbsp;            if(bullets.any()){</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(canConsume() &amp;&amp; !charging() &amp;&amp; shootWarmup &gt;= minWarmup){</b>
+<b class="nc">&nbsp;                shoot(peekAmmo());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void turnToTarget(float targetRot){
+<b class="nc">&nbsp;            rotation = Angles.moveToward(rotation, targetRot, efficiency * rotateSpeed * delta());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void handleBullet(@Nullable Bullet bullet, float offsetX, float offsetY, float angleOffset){
+<b class="nc">&nbsp;            if(bullet != null){</b>
+<b class="nc">&nbsp;                bullets.add(new BulletEntry(bullet, offsetX, offsetY, angleOffset, 0f));</b>
+&nbsp;
+&nbsp;                //make sure the length updates to the last set value
+<b class="nc">&nbsp;                Tmp.v1.trns(rotation, shootY + lastLength).add(x, y);</b>
+<b class="nc">&nbsp;                bullet.aimX = Tmp.v1.x;</b>
+<b class="nc">&nbsp;                bullet.aimY = Tmp.v1.y;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldActiveSound(){
+<b class="nc">&nbsp;            return bullets.any();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float activeSoundVolume(){
+<b class="nc">&nbsp;            return 1f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 3;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            write.f(lastLength);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(revision &gt;= 3){</b>
+<b class="fc">&nbsp;                lastLength = read.f();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

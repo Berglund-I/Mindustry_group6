@@ -1,0 +1,377 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AnnotationProxyMaker</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.util</a>
+</div>
+
+<h1>Coverage Summary for Class: AnnotationProxyMaker (mindustry.annotations.util)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AnnotationProxyMaker</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/37)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AnnotationProxyMaker$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">AnnotationProxyMaker$ValueVisitor</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/55)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/94)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.util;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import com.sun.tools.javac.code.*;
+&nbsp;import com.sun.tools.javac.code.Attribute.Array;
+&nbsp;import com.sun.tools.javac.code.Attribute.Enum;
+&nbsp;import com.sun.tools.javac.code.Attribute.Error;
+&nbsp;import com.sun.tools.javac.code.Attribute.Visitor;
+&nbsp;import com.sun.tools.javac.code.Attribute.*;
+&nbsp;import com.sun.tools.javac.code.Scope.*;
+&nbsp;import com.sun.tools.javac.code.Type;
+&nbsp;import com.sun.tools.javac.code.Symbol.*;
+&nbsp;import com.sun.tools.javac.code.Type.ArrayType;
+&nbsp;import com.sun.tools.javac.util.List;
+&nbsp;import com.sun.tools.javac.util.Name;
+&nbsp;import com.sun.tools.javac.util.*;
+&nbsp;import sun.reflect.annotation.*;
+&nbsp;
+&nbsp;import javax.lang.model.element.*;
+&nbsp;import javax.lang.model.type.*;
+&nbsp;import java.lang.Class;
+&nbsp;import java.lang.annotation.*;
+&nbsp;import java.lang.reflect.*;
+&nbsp;import java.util.*;
+&nbsp;import java.util.Map.*;
+&nbsp;
+&nbsp;//replaces the standard Java AnnotationProxyMaker with one that doesn&#39;t crash
+&nbsp;//thanks, oracle.
+&nbsp;@SuppressWarnings({&quot;sunapi&quot;, &quot;unchecked&quot;})
+<b class="nc">&nbsp;public class AnnotationProxyMaker{</b>
+&nbsp;    private final Compound anno;
+&nbsp;    private final Class&lt;? extends Annotation&gt; annoType;
+&nbsp;
+<b class="nc">&nbsp;    private AnnotationProxyMaker(Compound var1, Class&lt;? extends Annotation&gt; var2){</b>
+<b class="nc">&nbsp;        this.anno = var1;</b>
+<b class="nc">&nbsp;        this.annoType = var2;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;A extends Annotation&gt; A generateAnnotation(Compound var0, Class&lt;A&gt; var1){
+<b class="nc">&nbsp;        AnnotationProxyMaker var2 = new AnnotationProxyMaker(var0, var1);</b>
+<b class="nc">&nbsp;        return (A)var1.cast(var2.generateAnnotation());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Annotation generateAnnotation(){
+<b class="nc">&nbsp;        return AnnotationParser.annotationForMap(this.annoType, this.getAllReflectedValues());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Map&lt;String, Object&gt; getAllReflectedValues(){
+<b class="nc">&nbsp;        LinkedHashMap var1 = new LinkedHashMap();</b>
+<b class="nc">&nbsp;        Iterator var2 = this.getAllValues().entrySet().iterator();</b>
+&nbsp;
+<b class="nc">&nbsp;        while(var2.hasNext()){</b>
+<b class="nc">&nbsp;            Entry var3 = (Entry)var2.next();</b>
+<b class="nc">&nbsp;            MethodSymbol var4 = (MethodSymbol)var3.getKey();</b>
+<b class="nc">&nbsp;            Object var5 = this.generateValue(var4, (Attribute)var3.getValue());</b>
+<b class="nc">&nbsp;            if(var5 != null){</b>
+<b class="nc">&nbsp;                var1.put(var4.name.toString(), var5);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return var1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Map&lt;MethodSymbol, Attribute&gt; getAllValues(){
+<b class="nc">&nbsp;        LinkedHashMap map = new LinkedHashMap();</b>
+<b class="nc">&nbsp;        ClassSymbol cl = (ClassSymbol)this.anno.type.tsym;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Symbol s : cl.members().getSymbols(LookupKind.NON_RECURSIVE)){</b>
+<b class="nc">&nbsp;            if(s.getKind() == ElementKind.METHOD){</b>
+<b class="nc">&nbsp;                MethodSymbol var4 = (MethodSymbol)s;</b>
+<b class="nc">&nbsp;                Attribute var5 = var4.getDefaultValue();</b>
+<b class="nc">&nbsp;                if(var5 != null){</b>
+<b class="nc">&nbsp;                    map.put(var4, var5);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Pair var7 : this.anno.values){</b>
+<b class="nc">&nbsp;            map.put(var7.fst, var7.snd);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return map;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Object generateValue(MethodSymbol var1, Attribute var2){
+<b class="nc">&nbsp;        AnnotationProxyMaker.ValueVisitor var3 = new AnnotationProxyMaker.ValueVisitor(var1);</b>
+<b class="nc">&nbsp;        return var3.getValue(var2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private class ValueVisitor implements Visitor{
+&nbsp;        private MethodSymbol meth;
+&nbsp;        private Class&lt;?&gt; returnClass;
+&nbsp;        private Object value;
+&nbsp;
+<b class="nc">&nbsp;        ValueVisitor(MethodSymbol var2){</b>
+<b class="nc">&nbsp;            this.meth = var2;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        Object getValue(Attribute var1){
+&nbsp;            Method var2;
+&nbsp;            try{
+<b class="nc">&nbsp;                var2 = AnnotationProxyMaker.this.annoType.getMethod(this.meth.name.toString());</b>
+<b class="nc">&nbsp;            }catch(NoSuchMethodException var4){</b>
+<b class="nc">&nbsp;                return null;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            this.returnClass = var2.getReturnType();</b>
+<b class="nc">&nbsp;            var1.accept(this);</b>
+<b class="nc">&nbsp;            if(!(this.value instanceof ExceptionProxy) &amp;&amp; !AnnotationType.invocationHandlerReturnType(this.returnClass).isInstance(this.value)){</b>
+<b class="nc">&nbsp;                this.typeMismatch(var2, var1);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return this.value;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void visitConstant(Constant var1){
+<b class="nc">&nbsp;            this.value = var1.getValue();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void visitClass(com.sun.tools.javac.code.Attribute.Class var1){
+<b class="nc">&nbsp;            this.value = mirrorProxy(var1.classType);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void visitArray(Array var1){
+<b class="nc">&nbsp;            Name var2 = ((ArrayType)var1.type).elemtype.tsym.getQualifiedName();</b>
+&nbsp;            int var6;
+<b class="nc">&nbsp;            if(var2.equals(var2.table.names.java_lang_Class)){</b>
+<b class="nc">&nbsp;                ListBuffer var14 = new ListBuffer();</b>
+<b class="nc">&nbsp;                Attribute[] var15 = var1.values;</b>
+<b class="nc">&nbsp;                int var16 = var15.length;</b>
+&nbsp;
+<b class="nc">&nbsp;                for(var6 = 0; var6 &lt; var16; ++var6){</b>
+<b class="nc">&nbsp;                    Attribute var7 = var15[var6];</b>
+<b class="nc">&nbsp;                    Type var8 = var7 instanceof UnresolvedClass ? ((UnresolvedClass)var7).classType : ((com.sun.tools.javac.code.Attribute.Class)var7).classType;</b>
+<b class="nc">&nbsp;                    var14.append(var8);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                this.value = mirrorProxy(var14.toList());</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                int var3 = var1.values.length;</b>
+<b class="nc">&nbsp;                Class var4 = this.returnClass;</b>
+<b class="nc">&nbsp;                this.returnClass = this.returnClass.getComponentType();</b>
+&nbsp;
+&nbsp;                try{
+<b class="nc">&nbsp;                    Object var5 = java.lang.reflect.Array.newInstance(this.returnClass, var3);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(var6 = 0; var6 &lt; var3; ++var6){</b>
+<b class="nc">&nbsp;                        var1.values[var6].accept(this);</b>
+<b class="nc">&nbsp;                        if(this.value == null || this.value instanceof ExceptionProxy){</b>
+&nbsp;                            return;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        try{
+<b class="nc">&nbsp;                            java.lang.reflect.Array.set(var5, var6, this.value);</b>
+<b class="nc">&nbsp;                        }catch(IllegalArgumentException var12){</b>
+<b class="nc">&nbsp;                            this.value = null;</b>
+&nbsp;                            return;
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    this.value = var5;</b>
+&nbsp;                }finally{
+<b class="nc">&nbsp;                    this.returnClass = var4;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void visitEnum(Enum var1){
+<b class="nc">&nbsp;            if(this.returnClass.isEnum()){</b>
+<b class="nc">&nbsp;                String var2 = var1.value.toString();</b>
+&nbsp;
+&nbsp;                try{
+<b class="nc">&nbsp;                    this.value = java.lang.Enum.valueOf((Class)this.returnClass, var2);</b>
+<b class="nc">&nbsp;                }catch(IllegalArgumentException var4){</b>
+<b class="nc">&nbsp;                    this.value = proxify(() -&gt; new EnumConstantNotPresentException((Class)this.returnClass, var2));</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                this.value = null;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void visitCompound(Compound var1){
+&nbsp;            try{
+<b class="nc">&nbsp;                Class var2 = this.returnClass.asSubclass(Annotation.class);</b>
+<b class="nc">&nbsp;                this.value = AnnotationProxyMaker.generateAnnotation(var1, var2);</b>
+<b class="nc">&nbsp;            }catch(ClassCastException var3){</b>
+<b class="nc">&nbsp;                this.value = null;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void visitError(Error var1){
+<b class="nc">&nbsp;            if(var1 instanceof UnresolvedClass){</b>
+<b class="nc">&nbsp;                this.value = mirrorProxy(((UnresolvedClass)var1).classType);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                this.value = null;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void typeMismatch(Method var1, final Attribute var2){
+<b class="nc">&nbsp;            this.value = proxify(() -&gt; new AnnotationTypeMismatchException(var1, var2.type.toString()));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Object mirrorProxy(Type t){
+<b class="nc">&nbsp;        return proxify(() -&gt; new MirroredTypeException(t));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Object mirrorProxy(List&lt;Type&gt; t){
+<b class="nc">&nbsp;        return proxify(() -&gt; new MirroredTypesException(t));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static &lt;T extends Throwable&gt; Object proxify(Prov&lt;T&gt; prov){
+&nbsp;        try{
+&nbsp;
+<b class="nc">&nbsp;            return new ExceptionProxy(){</b>
+&nbsp;                @Override
+&nbsp;                protected RuntimeException generateException(){
+<b class="nc">&nbsp;                    return (RuntimeException)prov.get();</b>
+&nbsp;                }
+&nbsp;            };
+<b class="nc">&nbsp;        }catch(Throwable t){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(t);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

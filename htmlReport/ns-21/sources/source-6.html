@@ -1,0 +1,188 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LAccess</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: LAccess (mindustry.logic)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LAccess</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (68/68)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.logic;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;
+&nbsp;/** Setter/getter enum for logic-controlled objects. */
+<b class="fc">&nbsp;public enum LAccess{</b>
+<b class="fc">&nbsp;    totalItems,</b>
+<b class="fc">&nbsp;    firstItem,</b>
+<b class="fc">&nbsp;    totalLiquids,</b>
+<b class="fc">&nbsp;    totalPower,</b>
+<b class="fc">&nbsp;    itemCapacity,</b>
+<b class="fc">&nbsp;    liquidCapacity,</b>
+<b class="fc">&nbsp;    powerCapacity,</b>
+<b class="fc">&nbsp;    powerNetStored,</b>
+<b class="fc">&nbsp;    powerNetCapacity,</b>
+<b class="fc">&nbsp;    powerNetIn,</b>
+<b class="fc">&nbsp;    powerNetOut,</b>
+<b class="fc">&nbsp;    ammo,</b>
+<b class="fc">&nbsp;    ammoCapacity,</b>
+<b class="fc">&nbsp;    currentAmmoType,</b>
+<b class="fc">&nbsp;    health,</b>
+<b class="fc">&nbsp;    maxHealth,</b>
+<b class="fc">&nbsp;    heat,</b>
+<b class="fc">&nbsp;    shield,</b>
+<b class="fc">&nbsp;    armor,</b>
+<b class="fc">&nbsp;    efficiency,</b>
+<b class="fc">&nbsp;    progress,</b>
+<b class="fc">&nbsp;    timescale,</b>
+<b class="fc">&nbsp;    rotation,</b>
+<b class="fc">&nbsp;    x,</b>
+<b class="fc">&nbsp;    y,</b>
+<b class="fc">&nbsp;    velocityX,</b>
+<b class="fc">&nbsp;    velocityY,</b>
+<b class="fc">&nbsp;    shootX,</b>
+<b class="fc">&nbsp;    shootY,</b>
+<b class="fc">&nbsp;    cameraX,</b>
+<b class="fc">&nbsp;    cameraY,</b>
+<b class="fc">&nbsp;    cameraWidth,</b>
+<b class="fc">&nbsp;    cameraHeight,</b>
+<b class="fc">&nbsp;    size,</b>
+<b class="fc">&nbsp;    solid,</b>
+<b class="fc">&nbsp;    dead,</b>
+<b class="fc">&nbsp;    range, </b>
+<b class="fc">&nbsp;    shooting,</b>
+<b class="fc">&nbsp;    boosting,</b>
+<b class="fc">&nbsp;    mineX,</b>
+<b class="fc">&nbsp;    mineY,</b>
+<b class="fc">&nbsp;    mining,</b>
+<b class="fc">&nbsp;    speed,</b>
+<b class="fc">&nbsp;    team,</b>
+<b class="fc">&nbsp;    type,</b>
+<b class="fc">&nbsp;    flag,</b>
+<b class="fc">&nbsp;    controlled,</b>
+<b class="fc">&nbsp;    controller,</b>
+<b class="fc">&nbsp;    name,</b>
+<b class="fc">&nbsp;    payloadCount,</b>
+<b class="fc">&nbsp;    payloadType,</b>
+<b class="fc">&nbsp;    id,</b>
+&nbsp;
+&nbsp;    //values with parameters are considered controllable
+<b class="fc">&nbsp;    enabled(&quot;to&quot;), //&quot;to&quot; is standard for single parameter access</b>
+<b class="fc">&nbsp;    shoot(&quot;x&quot;, &quot;y&quot;, &quot;shoot&quot;),</b>
+<b class="fc">&nbsp;    shootp(true, &quot;unit&quot;, &quot;shoot&quot;),</b>
+<b class="fc">&nbsp;    config(true, &quot;to&quot;),</b>
+<b class="fc">&nbsp;    color(&quot;to&quot;);</b>
+&nbsp;
+&nbsp;    public final String[] params;
+&nbsp;    public final boolean isObj;
+&nbsp;
+&nbsp;    public static final LAccess[]
+<b class="fc">&nbsp;        all = values(),</b>
+<b class="fc">&nbsp;        senseable = Seq.select(all, t -&gt; t.params.length &lt;= 1).toArray(LAccess.class),</b>
+<b class="fc">&nbsp;        controls = Seq.select(all, t -&gt; t.params.length &gt; 0).toArray(LAccess.class),</b>
+<b class="fc">&nbsp;        settable = {x, y, velocityX, velocityY, rotation, speed, armor, health, shield, team, flag, totalPower, payloadType};</b>
+&nbsp;
+<b class="fc">&nbsp;    LAccess(String... params){</b>
+<b class="fc">&nbsp;        this.params = params;</b>
+<b class="fc">&nbsp;        isObj = false;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    LAccess(boolean obj, String... params){</b>
+<b class="fc">&nbsp;        this.params = params;</b>
+<b class="fc">&nbsp;        isObj = obj;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

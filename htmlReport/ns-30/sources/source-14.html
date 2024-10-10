@@ -1,0 +1,873 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > JoinDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: JoinDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JoinDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/69)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/392)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">JoinDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">JoinDialog$Server</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/73)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/419)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.freetype.FreeTypeFontGenerator.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.TextButton.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.Timer.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.versions.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class JoinDialog extends BaseDialog{
+<b class="nc">&nbsp;    Seq&lt;Server&gt; servers = new Seq&lt;&gt;();</b>
+&nbsp;    Dialog add;
+&nbsp;    Server renaming;
+<b class="nc">&nbsp;    Table local = new Table();</b>
+<b class="nc">&nbsp;    Table remote = new Table();</b>
+<b class="nc">&nbsp;    Table global = new Table();</b>
+<b class="nc">&nbsp;    Table hosts = new Table();</b>
+&nbsp;    int totalHosts;
+&nbsp;    int refreshes;
+&nbsp;    boolean showHidden;
+&nbsp;    TextButtonStyle style;
+&nbsp;    Task fontIgnoreDirtyTask;
+&nbsp;
+&nbsp;    String lastIp;
+<b class="nc">&nbsp;    int lastPort, lastColumns = -1;</b>
+&nbsp;    Task ping;
+&nbsp;
+<b class="nc">&nbsp;    String serverSearch = &quot;&quot;;</b>
+&nbsp;
+&nbsp;    public JoinDialog(){
+<b class="nc">&nbsp;        super(&quot;@joingame&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        makeButtonOverlay();</b>
+&nbsp;
+<b class="nc">&nbsp;        style = new TextButtonStyle(){{</b>
+<b class="nc">&nbsp;            over = Styles.flatOver;</b>
+<b class="nc">&nbsp;            font = Fonts.def;</b>
+<b class="nc">&nbsp;            fontColor = Color.white;</b>
+<b class="nc">&nbsp;            disabledFontColor = Color.gray;</b>
+<b class="nc">&nbsp;            down = Styles.flatOver;</b>
+<b class="nc">&nbsp;            up = Styles.black5;</b>
+&nbsp;        }};
+&nbsp;
+<b class="nc">&nbsp;        loadServers();</b>
+&nbsp;
+&nbsp;        //mobile players don&#39;t get information &gt;:(
+<b class="nc">&nbsp;        boolean infoButton = !steam &amp;&amp; !mobile;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(infoButton) buttons.add().width(60f);</b>
+<b class="nc">&nbsp;        buttons.add().growX().width(-1);</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseButton(mobile ? 190f : 210f);</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@server.add&quot;, Icon.add, () -&gt; {</b>
+<b class="nc">&nbsp;            renaming = null;</b>
+<b class="nc">&nbsp;            add.show();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        buttons.add().growX().width(-1);</b>
+<b class="nc">&nbsp;        if(infoButton) buttons.button(&quot;?&quot;, () -&gt; ui.showInfo(&quot;@join.info&quot;)).size(60f, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;        add = new BaseDialog(&quot;@joingame.title&quot;);</b>
+<b class="nc">&nbsp;        add.cont.add(&quot;@joingame.ip&quot;).padRight(5f).left();</b>
+&nbsp;
+<b class="nc">&nbsp;        TextField field = add.cont.field(Core.settings.getString(&quot;ip&quot;), text -&gt; {</b>
+<b class="nc">&nbsp;            Core.settings.put(&quot;ip&quot;, text);</b>
+<b class="nc">&nbsp;        }).size(320f, 54f).maxTextLength(100).get();</b>
+&nbsp;
+<b class="nc">&nbsp;        add.cont.row();</b>
+<b class="nc">&nbsp;        add.buttons.defaults().size(140f, 60f).pad(4f);</b>
+<b class="nc">&nbsp;        add.buttons.button(&quot;@cancel&quot;, add::hide);</b>
+<b class="nc">&nbsp;        add.buttons.button(&quot;@ok&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            if(renaming == null){</b>
+<b class="nc">&nbsp;                Server server = new Server();</b>
+<b class="nc">&nbsp;                server.setIP(Core.settings.getString(&quot;ip&quot;));</b>
+<b class="nc">&nbsp;                servers.add(server);</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                renaming.setIP(Core.settings.getString(&quot;ip&quot;));</b>
+&nbsp;            }
+<b class="nc">&nbsp;            saveServers();</b>
+<b class="nc">&nbsp;            setupRemote();</b>
+<b class="nc">&nbsp;            refreshRemote();</b>
+<b class="nc">&nbsp;            add.hide();</b>
+<b class="nc">&nbsp;        }).disabled(b -&gt; Core.settings.getString(&quot;ip&quot;).isEmpty() || net.active());</b>
+&nbsp;
+<b class="nc">&nbsp;        add.shown(() -&gt; {</b>
+<b class="nc">&nbsp;            add.title.setText(renaming != null ? &quot;@server.edit&quot; : &quot;@server.add&quot;);</b>
+<b class="nc">&nbsp;            if(renaming != null){</b>
+<b class="nc">&nbsp;                field.setText(renaming.displayIP());</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        keyDown(KeyCode.f5, this::refreshAll);</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(() -&gt; {</b>
+<b class="nc">&nbsp;            setup();</b>
+<b class="nc">&nbsp;            refreshAll();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!steam){</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; Core.settings.getBoolOnce(&quot;joininfo&quot;, () -&gt; ui.showInfo(&quot;@join.info&quot;)));</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        onResize(() -&gt; {</b>
+&nbsp;
+&nbsp;
+&nbsp;            //only refresh on resize when the minimum dimension is smaller than the maximum preferred width
+&nbsp;            //this means that refreshes on resize will only happen for small phones that need the list to fit in portrait mode
+&nbsp;            //also resize if number of cols changes
+<b class="nc">&nbsp;            if(Math.min(Core.graphics.getWidth(), Core.graphics.getHeight()) / Scl.scl() * 0.9f &lt; 500f || lastColumns != columns()){</b>
+<b class="nc">&nbsp;                setup();</b>
+<b class="nc">&nbsp;                refreshAll();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            lastColumns = columns();</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    void refreshAll(){
+<b class="nc">&nbsp;        refreshes ++;</b>
+&nbsp;
+<b class="nc">&nbsp;        refreshLocal();</b>
+<b class="nc">&nbsp;        refreshRemote();</b>
+<b class="nc">&nbsp;        refreshCommunity();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void setupRemote(){
+<b class="nc">&nbsp;        remote.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Server server : servers){</b>
+&nbsp;            //why are java lambdas this bad
+<b class="nc">&nbsp;            Button[] buttons = {null};</b>
+&nbsp;
+<b class="nc">&nbsp;            Button button = buttons[0] = remote.button(b -&gt; {}, style, () -&gt; {</b>
+<b class="nc">&nbsp;                if(!buttons[0].childrenPressed()){</b>
+<b class="nc">&nbsp;                    if(server.lastHost != null){</b>
+<b class="nc">&nbsp;                        Events.fire(new ClientPreConnectEvent(server.lastHost));</b>
+<b class="nc">&nbsp;                        safeConnect(server.lastHost.address, server.lastHost.port, server.lastHost.version);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        connect(server.ip, server.port);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }).width(targetWidth()).growY().top().left().pad(4f).get();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(remote.getChildren().size % columns() == 0){</b>
+<b class="nc">&nbsp;                remote.row();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Table inner = new Table(Tex.whiteui);</b>
+<b class="nc">&nbsp;            inner.setColor(Pal.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;            button.clearChildren();</b>
+<b class="nc">&nbsp;            button.add(inner).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;            inner.add(&quot;[accent]&quot; + server.displayIP()).left().padLeft(10f).wrap().style(Styles.outlineLabel).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;            inner.button(Icon.upOpen, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                moveRemote(server, -1);</b>
+&nbsp;
+<b class="nc">&nbsp;            }).margin(3f).padTop(6f).top().right();</b>
+&nbsp;
+<b class="nc">&nbsp;            inner.button(Icon.downOpen, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                moveRemote(server, +1);</b>
+&nbsp;
+<b class="nc">&nbsp;            }).margin(3f).pad(2).padTop(6f).top().right();</b>
+&nbsp;
+<b class="nc">&nbsp;            inner.button(Icon.refresh, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                refreshServer(server);</b>
+<b class="nc">&nbsp;            }).margin(3f).pad(2).padTop(6f).top().right();</b>
+&nbsp;
+<b class="nc">&nbsp;            inner.button(Icon.pencil, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                renaming = server;</b>
+<b class="nc">&nbsp;                add.show();</b>
+<b class="nc">&nbsp;            }).margin(3f).pad(2).padTop(6f).top().right();</b>
+&nbsp;
+<b class="nc">&nbsp;            inner.button(Icon.trash, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                ui.showConfirm(&quot;@confirm&quot;, &quot;@server.delete&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                    servers.remove(server, true);</b>
+<b class="nc">&nbsp;                    saveServers();</b>
+<b class="nc">&nbsp;                    setupRemote();</b>
+<b class="nc">&nbsp;                    refreshRemote();</b>
+&nbsp;                });
+<b class="nc">&nbsp;            }).margin(3f).pad(2).pad(6).top().right();</b>
+&nbsp;
+<b class="nc">&nbsp;            button.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            server.content = button.table(t -&gt; {}).grow().get();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void moveRemote(Server server, int sign){
+<b class="nc">&nbsp;        int index = servers.indexOf(server);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(index + sign &lt; 0) return;</b>
+<b class="nc">&nbsp;        if(index + sign &gt; servers.size - 1) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        servers.remove(index);</b>
+<b class="nc">&nbsp;        servers.insert(index + sign, server);</b>
+&nbsp;
+<b class="nc">&nbsp;        saveServers();</b>
+<b class="nc">&nbsp;        setupRemote();</b>
+<b class="nc">&nbsp;        for(Server other : servers){</b>
+<b class="nc">&nbsp;            if(other.lastHost != null){</b>
+<b class="nc">&nbsp;                setupServer(other, other.lastHost);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                refreshServer(other);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void refreshRemote(){
+<b class="nc">&nbsp;        for(Server server : servers){</b>
+<b class="nc">&nbsp;            refreshServer(server);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void refreshServer(Server server){
+<b class="nc">&nbsp;        server.content.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        server.content.background(Tex.whitePane).setColor(Pal.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        server.content.label(() -&gt; Core.bundle.get(&quot;server.refreshing&quot;) + Strings.animated(Time.time, 4, 11, &quot;.&quot;)).grow().center().labelAlign(Align.center).padBottom(4);</b>
+&nbsp;
+<b class="nc">&nbsp;        net.pingHost(server.ip, server.port, host -&gt; setupServer(server, host), e -&gt; {</b>
+<b class="nc">&nbsp;            server.content.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;            server.content.background(Tex.whitePane).setColor(Pal.gray);</b>
+<b class="nc">&nbsp;            server.content.add(&quot;@host.invalid&quot;).grow().center().labelAlign(Align.center);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    void setupServer(Server server, Host host){
+<b class="nc">&nbsp;        server.lastHost = host;</b>
+<b class="nc">&nbsp;        server.content.clear();</b>
+<b class="nc">&nbsp;        buildServer(host, server.content, false, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void buildServer(Host host, Table content, boolean local, boolean addName){
+<b class="nc">&nbsp;        content.top().left();</b>
+<b class="nc">&nbsp;        boolean isBanned = local &amp;&amp; Vars.steam &amp;&amp; host.description != null &amp;&amp; host.description.equals(&quot;[banned]&quot;);</b>
+<b class="nc">&nbsp;        String versionString = getVersionString(host) + (isBanned ? &quot;[red]? [banned]&quot; : &quot;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        float twidth = targetWidth() - 40f;</b>
+&nbsp;
+<b class="nc">&nbsp;        content.background(null);</b>
+&nbsp;
+<b class="nc">&nbsp;        Color color = Pal.gray;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(addName){</b>
+<b class="nc">&nbsp;            content.table(Tex.whiteui, t -&gt; {</b>
+<b class="nc">&nbsp;                t.left();</b>
+<b class="nc">&nbsp;                t.setColor(color);</b>
+&nbsp;
+<b class="nc">&nbsp;                t.add(host.name + &quot;   &quot; + versionString).style(Styles.outlineLabel).padLeft(10f).width(twidth).left().ellipsis(true);</b>
+<b class="nc">&nbsp;            }).growX().height(36f).row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        content.table(Tex.whitePane, t -&gt; {</b>
+<b class="nc">&nbsp;            t.top().left();</b>
+<b class="nc">&nbsp;            t.setColor(color);</b>
+<b class="nc">&nbsp;            t.left();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!host.description.isEmpty() &amp;&amp; !isBanned){</b>
+&nbsp;                //limit newlines.
+<b class="nc">&nbsp;                int count = 0;</b>
+<b class="nc">&nbsp;                StringBuilder result = new StringBuilder(host.description.length());</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; host.description.length(); i++){</b>
+<b class="nc">&nbsp;                    char c = host.description.charAt(i);</b>
+<b class="nc">&nbsp;                    if(c == &#39;\n&#39;){</b>
+<b class="nc">&nbsp;                        count ++;</b>
+<b class="nc">&nbsp;                        if(count &lt; 3) result.append(c);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        result.append(c);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;                t.add(&quot;[gray]&quot; + result).width(twidth).left().wrap();</b>
+<b class="nc">&nbsp;                t.row();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            t.add(&quot;[lightgray]&quot; + (Core.bundle.format(&quot;players&quot; + (host.players == 1 &amp;&amp; host.playerLimit &lt;= 0 ? &quot;.single&quot; : &quot;&quot;),</b>
+<b class="nc">&nbsp;                (host.players == 0 ? &quot;[lightgray]&quot; : &quot;[accent]&quot;) + host.players + (host.playerLimit &gt; 0 ? &quot;[lightgray]/[accent]&quot; + host.playerLimit : &quot;&quot;)+ &quot;[lightgray]&quot;))).left().row();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.add(&quot;[lightgray]&quot; + Core.bundle.format(&quot;save.map&quot;, host.mapname) + &quot;[lightgray] / &quot; + (host.modeName == null ? host.mode.toString() : host.modeName)).width(twidth).left().ellipsis(true).row();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(host.ping &gt; 0){</b>
+<b class="nc">&nbsp;                t.add(Iconc.chartBar + &quot; &quot; + host.ping + &quot;ms&quot;).style(Styles.outlineLabel).color(Pal.gray).left();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).growY().growX().left().bottom();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void setup(){
+<b class="nc">&nbsp;        local.clear();</b>
+<b class="nc">&nbsp;        remote.clear();</b>
+<b class="nc">&nbsp;        global.clear();</b>
+<b class="nc">&nbsp;        float w = targetWidth();</b>
+&nbsp;
+<b class="nc">&nbsp;        hosts.clear();</b>
+&nbsp;        //since the buttons are an overlay, make room for that
+<b class="nc">&nbsp;        hosts.marginBottom(70f);</b>
+&nbsp;
+<b class="nc">&nbsp;        section(steam ? &quot;@servers.local.steam&quot; : &quot;@servers.local&quot;, local, false);</b>
+<b class="nc">&nbsp;        section(&quot;@servers.remote&quot;, remote, false);</b>
+<b class="nc">&nbsp;        section(&quot;@servers.global&quot;, global, true);</b>
+&nbsp;
+<b class="nc">&nbsp;        ScrollPane pane = new ScrollPane(hosts);</b>
+<b class="nc">&nbsp;        pane.setFadeScrollBars(false);</b>
+<b class="nc">&nbsp;        pane.setScrollingDisabled(true, false);</b>
+&nbsp;
+<b class="nc">&nbsp;        setupRemote();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.clear();</b>
+<b class="nc">&nbsp;        cont.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.add(&quot;@name&quot;).padRight(10);</b>
+<b class="nc">&nbsp;            t.field(Core.settings.getString(&quot;name&quot;), text -&gt; {</b>
+<b class="nc">&nbsp;                player.name(text);</b>
+<b class="nc">&nbsp;                Core.settings.put(&quot;name&quot;, text);</b>
+<b class="nc">&nbsp;            }).grow().pad(8).maxTextLength(maxNameLength);</b>
+&nbsp;
+<b class="nc">&nbsp;            ImageButton button = t.button(Tex.whiteui, Styles.squarei, 40, () -&gt; {</b>
+<b class="nc">&nbsp;                new PaletteDialog().show(color -&gt; {</b>
+<b class="nc">&nbsp;                    player.color().set(color);</b>
+<b class="nc">&nbsp;                    Core.settings.put(&quot;color-0&quot;, color.rgba8888());</b>
+&nbsp;                });
+<b class="nc">&nbsp;            }).size(54f).get();</b>
+<b class="nc">&nbsp;            button.update(() -&gt; button.getStyle().imageUpColor = player.color());</b>
+<b class="nc">&nbsp;        }).width(w).height(70f).pad(4);</b>
+<b class="nc">&nbsp;        cont.row();</b>
+<b class="nc">&nbsp;        cont.add(pane).width((w + 5) * columns() + 33).pad(0);</b>
+<b class="nc">&nbsp;        cont.row();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void section(String label, Table servers, boolean eye){
+<b class="nc">&nbsp;        Collapser coll = new Collapser(servers, Core.settings.getBool(&quot;collapsed-&quot; + label, false));</b>
+<b class="nc">&nbsp;        coll.setDuration(0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        hosts.table(name -&gt; {</b>
+<b class="nc">&nbsp;            name.add(label).pad(10).growX().left().color(Pal.accent);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(eye){</b>
+<b class="nc">&nbsp;                name.button(Icon.eyeSmall, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                    showHidden = !showHidden;</b>
+<b class="nc">&nbsp;                    refreshCommunity();</b>
+<b class="nc">&nbsp;                }).update(i -&gt; i.getStyle().imageUp = (showHidden ? Icon.eyeSmall : Icon.eyeOffSmall))</b>
+<b class="nc">&nbsp;                    .size(40f).right().padRight(3).tooltip(&quot;@servers.showhidden&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            name.button(Icon.downOpen, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                coll.toggle(false);</b>
+<b class="nc">&nbsp;                Core.settings.put(&quot;collapsed-&quot; + label, coll.isCollapsed());</b>
+<b class="nc">&nbsp;            }).update(i -&gt; i.getStyle().imageUp = (!coll.isCollapsed() ? Icon.upOpen : Icon.downOpen)).size(40f).right().padRight(10f);</b>
+<b class="nc">&nbsp;        }).growX();</b>
+<b class="nc">&nbsp;        hosts.row();</b>
+<b class="nc">&nbsp;        hosts.image().growX().pad(5).padLeft(10).padRight(10).height(3).color(Pal.accent);</b>
+<b class="nc">&nbsp;        hosts.row();</b>
+<b class="nc">&nbsp;        hosts.add(coll).width((targetWidth() + 5f) * columns());</b>
+<b class="nc">&nbsp;        hosts.row();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void refreshLocal(){
+<b class="nc">&nbsp;        totalHosts = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        local.clear();</b>
+<b class="nc">&nbsp;        local.background(null);</b>
+<b class="nc">&nbsp;        local.table(Tex.button, t -&gt; t.label(() -&gt; &quot;[accent]&quot; + Core.bundle.get(&quot;hosts.discovering.any&quot;) + Strings.animated(Time.time, 4, 10f, &quot;.&quot;)).pad(10f)).growX();</b>
+<b class="nc">&nbsp;        net.discoverServers(this::addLocalHost, this::finishLocalHosts);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void refreshCommunity(){
+<b class="nc">&nbsp;        int cur = refreshes;</b>
+&nbsp;
+<b class="nc">&nbsp;        global.clear();</b>
+<b class="nc">&nbsp;        global.background(null);</b>
+&nbsp;
+<b class="nc">&nbsp;        global.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.add(&quot;@search&quot;).padRight(10);</b>
+<b class="nc">&nbsp;            t.field(serverSearch, text -&gt;</b>
+<b class="nc">&nbsp;                serverSearch = text.trim().replaceAll(&quot; +&quot;, &quot; &quot;).toLowerCase()</b>
+<b class="nc">&nbsp;            ).grow().pad(8).get().keyDown(KeyCode.enter, this::refreshCommunity);</b>
+<b class="nc">&nbsp;            t.button(Icon.zoom, Styles.emptyi, this::refreshCommunity).size(54f);</b>
+<b class="nc">&nbsp;        }).width((targetWidth() + 5f) * columns()).height(70f).pad(4).row();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; defaultServers.size; i ++){</b>
+<b class="nc">&nbsp;            ServerGroup group = defaultServers.get((i + defaultServers.size/2) % defaultServers.size);</b>
+<b class="nc">&nbsp;            boolean hidden = group.hidden();</b>
+<b class="nc">&nbsp;            if(hidden &amp;&amp; !showHidden){</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Table[] groupTable = {null, null};</b>
+&nbsp;
+<b class="nc">&nbsp;            if(group.prioritized){</b>
+<b class="nc">&nbsp;                addHeader(groupTable, group, hidden, false);</b>
+&nbsp;            }
+&nbsp;            //table containing all groups
+<b class="nc">&nbsp;            for(String address : group.addresses){</b>
+<b class="nc">&nbsp;                String resaddress = address.contains(&quot;:&quot;) ? address.split(&quot;:&quot;)[0] : address;</b>
+<b class="nc">&nbsp;                int resport = address.contains(&quot;:&quot;) ? Strings.parseInt(address.split(&quot;:&quot;)[1]) : port;</b>
+<b class="nc">&nbsp;                net.pingHost(resaddress, resport, res -&gt; {</b>
+<b class="nc">&nbsp;                    if(refreshes != cur) return;</b>
+&nbsp;
+&nbsp;                    //don&#39;t recache the texture for a while
+<b class="nc">&nbsp;                    if(fontIgnoreDirtyTask == null){</b>
+<b class="nc">&nbsp;                        FreeTypeFontData.ignoreDirty = true;</b>
+<b class="nc">&nbsp;                        fontIgnoreDirtyTask = Time.runTask(0.6f * 60f, () -&gt; {</b>
+<b class="nc">&nbsp;                            FreeTypeFontData.ignoreDirty = false;</b>
+<b class="nc">&nbsp;                            fontIgnoreDirtyTask = null;</b>
+&nbsp;                        });
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(!serverSearch.isEmpty() &amp;&amp; !(group.name.toLowerCase().contains(serverSearch)</b>
+<b class="nc">&nbsp;                        || res.name.toLowerCase().contains(serverSearch)</b>
+<b class="nc">&nbsp;                        || res.description.toLowerCase().contains(serverSearch)</b>
+<b class="nc">&nbsp;                        || res.mapname.toLowerCase().contains(serverSearch)</b>
+<b class="nc">&nbsp;                        || (res.modeName != null &amp;&amp; res.modeName.toLowerCase().contains(serverSearch)))) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(groupTable[0] == null){</b>
+<b class="nc">&nbsp;                        addHeader(groupTable, group, hidden, true);</b>
+<b class="nc">&nbsp;                    }else if(!groupTable[0].visible){</b>
+<b class="nc">&nbsp;                        addHeader(groupTable, group, hidden, true);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    addCommunityHost(res, groupTable[1]);</b>
+&nbsp;
+<b class="nc">&nbsp;                    groupTable[0].margin(5f);</b>
+<b class="nc">&nbsp;                    groupTable[0].pack();</b>
+<b class="nc">&nbsp;                }, e -&gt; {});</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void addHeader(Table[] groupTable, ServerGroup group, boolean hidden, boolean doInit){ // outlined separately
+<b class="nc">&nbsp;        if(groupTable[0] == null){</b>
+<b class="nc">&nbsp;            global.table(t -&gt; groupTable[0] = t).fillX().left().row();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        groupTable[0].visible(() -&gt; doInit);</b>
+<b class="nc">&nbsp;        if(!doInit){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        groupTable[0].table(head -&gt; {</b>
+<b class="nc">&nbsp;            Color col = group.prioritized ? Pal.accent : Color.lightGray;</b>
+<b class="nc">&nbsp;            if(!group.name.isEmpty()){</b>
+<b class="nc">&nbsp;                head.add(group.name).color(col).padRight(4);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            head.image().height(3f).growX().color(col);</b>
+&nbsp;
+&nbsp;            //button for showing/hiding servers
+<b class="nc">&nbsp;            ImageButton[] image = {null};</b>
+<b class="nc">&nbsp;            image[0] = head.button(hidden ? Icon.eyeOffSmall : Icon.eyeSmall, Styles.grayi, () -&gt; {</b>
+<b class="nc">&nbsp;               group.setHidden(!group.hidden());</b>
+<b class="nc">&nbsp;               image[0].getStyle().imageUp = group.hidden() ? Icon.eyeOffSmall : Icon.eyeSmall;</b>
+<b class="nc">&nbsp;               if(group.hidden() &amp;&amp; !showHidden){</b>
+<b class="nc">&nbsp;                   groupTable[0].remove();</b>
+&nbsp;               }
+<b class="nc">&nbsp;            }).size(40f).get();</b>
+<b class="nc">&nbsp;            image[0].addListener(new Tooltip(t -&gt; t.background(Styles.black6).margin(4).label(() -&gt; !group.hidden() ? &quot;@server.shown&quot; : &quot;@server.hidden&quot;)));</b>
+<b class="nc">&nbsp;        }).width(targetWidth() * columns()).padBottom(-2).row();</b>
+&nbsp;
+<b class="nc">&nbsp;        groupTable[1] = groupTable[0].row().table().top().left().grow().get();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int columns(){
+<b class="nc">&nbsp;        return Mathf.clamp((int)((Core.graphics.getWidth() / Scl.scl() * 0.9f) / targetWidth()), 1, 4);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void addCommunityHost(Host host, Table container){
+<b class="nc">&nbsp;        global.background(null);</b>
+<b class="nc">&nbsp;        String versionString = getVersionString(host);</b>
+<b class="nc">&nbsp;        float w = targetWidth();</b>
+&nbsp;
+<b class="nc">&nbsp;        container.left().top();</b>
+&nbsp;
+<b class="nc">&nbsp;        Button[] button = {null};</b>
+&nbsp;
+<b class="nc">&nbsp;        button[0] = container.button(b -&gt; {}, style, () -&gt; {</b>
+<b class="nc">&nbsp;            if(button[0].childrenPressed()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            Events.fire(new ClientPreConnectEvent(host));</b>
+<b class="nc">&nbsp;            if(!Core.settings.getBool(&quot;server-disclaimer&quot;, false)){</b>
+<b class="nc">&nbsp;                ui.showCustomConfirm(&quot;@warning&quot;, &quot;@servers.disclaimer&quot;, &quot;@ok&quot;, &quot;@back&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                    Core.settings.put(&quot;server-disclaimer&quot;, true);</b>
+<b class="nc">&nbsp;                    safeConnect(host.address, host.port, host.version);</b>
+&nbsp;                }, () -&gt; {
+<b class="nc">&nbsp;                    Core.settings.put(&quot;server-disclaimer&quot;, false);</b>
+&nbsp;                });
+&nbsp;            }else{
+<b class="nc">&nbsp;                safeConnect(host.address, host.port, host.version);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).width(w).padBottom(7).padRight(4f).top().left().growY().uniformY().get();</b>
+&nbsp;
+<b class="nc">&nbsp;        Table inner = new Table(Tex.whiteui);</b>
+<b class="nc">&nbsp;        inner.setColor(Pal.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        button[0].clearChildren();</b>
+<b class="nc">&nbsp;        button[0].add(inner).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;        inner.add(host.name + &quot;   &quot; + versionString).left().padLeft(10f).wrap().style(Styles.outlineLabel).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;        inner.button(Icon.add, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;            Server server = new Server();</b>
+<b class="nc">&nbsp;            server.setIP(host.address + &quot;:&quot; + host.port);</b>
+<b class="nc">&nbsp;            servers.add(server);</b>
+<b class="nc">&nbsp;            saveServers();</b>
+<b class="nc">&nbsp;            setupRemote();</b>
+<b class="nc">&nbsp;            refreshRemote();</b>
+<b class="nc">&nbsp;        }).margin(3f).pad(8f).padRight(4f).top().right();</b>
+&nbsp;
+<b class="nc">&nbsp;        button[0].row();</b>
+&nbsp;
+<b class="nc">&nbsp;        buildServer(host, button[0].table(t -&gt; {}).grow().get(), false, false);</b>
+&nbsp;
+<b class="nc">&nbsp;        if((container.getChildren().size) % columns() == 0){</b>
+<b class="nc">&nbsp;            container.row();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void finishLocalHosts(){
+<b class="nc">&nbsp;        if(totalHosts == 0){</b>
+<b class="nc">&nbsp;            local.clear();</b>
+<b class="nc">&nbsp;            local.background(Tex.button);</b>
+<b class="nc">&nbsp;            local.add(&quot;@hosts.none&quot;).pad(10f);</b>
+<b class="nc">&nbsp;            local.add().growX();</b>
+<b class="nc">&nbsp;            local.button(Icon.refresh, this::refreshLocal).pad(-12f).padLeft(0).size(70f);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            local.background(null);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void addLocalHost(Host host){
+<b class="nc">&nbsp;        if(totalHosts == 0){</b>
+<b class="nc">&nbsp;            local.clear();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        local.background(null);</b>
+<b class="nc">&nbsp;        totalHosts++;</b>
+<b class="nc">&nbsp;        float w = targetWidth();</b>
+&nbsp;
+<b class="nc">&nbsp;        if((local.getChildren().size) % columns() == 0){</b>
+<b class="nc">&nbsp;            local.row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        local.button(b -&gt; buildServer(host, b, true, true), style, () -&gt; {</b>
+<b class="nc">&nbsp;            Events.fire(new ClientPreConnectEvent(host));</b>
+<b class="nc">&nbsp;            safeConnect(host.address, host.port, host.version);</b>
+<b class="nc">&nbsp;        }).width(w).top().left().growY();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void connect(String ip, int port){
+<b class="nc">&nbsp;        if(player.name.trim().isEmpty()){</b>
+<b class="nc">&nbsp;            ui.showInfo(&quot;@noname&quot;);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ui.loadfrag.show(&quot;@connecting&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.loadfrag.setButton(() -&gt; {</b>
+<b class="nc">&nbsp;            ui.loadfrag.hide();</b>
+<b class="nc">&nbsp;            netClient.disconnectQuietly();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Time.runTask(2f, () -&gt; {</b>
+<b class="nc">&nbsp;            logic.reset();</b>
+<b class="nc">&nbsp;            net.reset();</b>
+<b class="nc">&nbsp;            Vars.netClient.beginConnecting();</b>
+<b class="nc">&nbsp;            net.connect(lastIp = ip, lastPort = port, () -&gt; {</b>
+<b class="nc">&nbsp;                if(net.client()){</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                    add.hide();</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reconnect(){
+<b class="nc">&nbsp;        if(lastIp == null || lastIp.isEmpty()) return;</b>
+<b class="nc">&nbsp;        ui.loadfrag.show(&quot;@reconnecting&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        ping = Timer.schedule(() -&gt; {</b>
+<b class="nc">&nbsp;            net.pingHost(lastIp, lastPort, host -&gt; {</b>
+<b class="nc">&nbsp;                if(ping == null) return;</b>
+<b class="nc">&nbsp;                ping.cancel();</b>
+<b class="nc">&nbsp;                ping = null;</b>
+<b class="nc">&nbsp;                connect(lastIp, lastPort);</b>
+<b class="nc">&nbsp;            }, exception -&gt; {});</b>
+&nbsp;        }, 1, 1);
+&nbsp;        
+<b class="nc">&nbsp;        ui.loadfrag.setButton(() -&gt; {</b>
+<b class="nc">&nbsp;            ui.loadfrag.hide();</b>
+<b class="nc">&nbsp;            if(ping == null) return;</b>
+<b class="nc">&nbsp;            ping.cancel();</b>
+<b class="nc">&nbsp;            ping = null;</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    void safeConnect(String ip, int port, int version){
+<b class="nc">&nbsp;        if(version != Version.build &amp;&amp; Version.build != -1 &amp;&amp; version != -1){</b>
+<b class="nc">&nbsp;            ui.showInfo(&quot;[scarlet]&quot; + (version &gt; Version.build ? KickReason.clientOutdated : KickReason.serverOutdated) + &quot;\n[]&quot; +</b>
+<b class="nc">&nbsp;                Core.bundle.format(&quot;server.versions&quot;, Version.build, version));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            connect(ip, port);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    float targetWidth(){
+<b class="nc">&nbsp;        return Math.min(Core.graphics.getWidth() / Scl.scl() * 0.9f, 550f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;    private void loadServers(){
+<b class="nc">&nbsp;        servers = Core.settings.getJson(&quot;servers&quot;, Seq.class, Server.class, Seq::new);</b>
+&nbsp;
+&nbsp;        //load imported legacy data
+<b class="nc">&nbsp;        if(Core.settings.has(&quot;server-list&quot;)){</b>
+<b class="nc">&nbsp;            servers = LegacyIO.readServers();</b>
+<b class="nc">&nbsp;            Core.settings.remove(&quot;server-list&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var url = Version.type.equals(&quot;bleeding-edge&quot;)  ? serverJsonBeURL : serverJsonURL;</b>
+<b class="nc">&nbsp;        Log.info(&quot;Fetching community servers at @&quot;, url);</b>
+&nbsp;
+&nbsp;        //get servers
+<b class="nc">&nbsp;        Http.get(url)</b>
+<b class="nc">&nbsp;        .error(t -&gt; Log.err(&quot;Failed to fetch community servers&quot;, t))</b>
+<b class="nc">&nbsp;        .submit(result -&gt; {</b>
+<b class="nc">&nbsp;            Jval val = Jval.read(result.getResultAsString());</b>
+<b class="nc">&nbsp;            Seq&lt;ServerGroup&gt; servers = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;            val.asArray().each(child -&gt; {</b>
+<b class="nc">&nbsp;                String name = child.getString(&quot;name&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;                boolean prioritized = child.getBool(&quot;prioritized&quot;, false);</b>
+&nbsp;                String[] addresses;
+<b class="nc">&nbsp;                if(child.has(&quot;addresses&quot;) || (child.has(&quot;address&quot;) &amp;&amp; child.get(&quot;address&quot;).isArray())){</b>
+<b class="nc">&nbsp;                    addresses = (child.has(&quot;addresses&quot;) ? child.get(&quot;addresses&quot;) : child.get(&quot;address&quot;)).asArray().map(Jval::asString).toArray(String.class);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    addresses = new String[]{child.getString(&quot;address&quot;, &quot;&lt;invalid&gt;&quot;)};</b>
+&nbsp;                }
+<b class="nc">&nbsp;                servers.add(new ServerGroup(name, addresses, prioritized));</b>
+&nbsp;            });
+&nbsp;            //modify default servers on main thread
+<b class="nc">&nbsp;            Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                servers.sort(s -&gt; s.name == null ? Integer.MAX_VALUE : s.name.hashCode());</b>
+<b class="nc">&nbsp;                defaultServers.addAll(servers);</b>
+<b class="nc">&nbsp;                Log.info(&quot;Fetched @ community servers.&quot;, defaultServers.size);</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void saveServers(){
+<b class="nc">&nbsp;        Core.settings.putJson(&quot;servers&quot;, Server.class, servers);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getVersionString(Host host){
+<b class="nc">&nbsp;        if(host.version == -1){</b>
+<b class="nc">&nbsp;            return Core.bundle.format(&quot;server.version&quot;, Core.bundle.get(&quot;server.custombuild&quot;), &quot;&quot;);</b>
+<b class="nc">&nbsp;        }else if(host.version == 0){</b>
+<b class="nc">&nbsp;            return Core.bundle.get(&quot;server.outdated&quot;);</b>
+<b class="nc">&nbsp;        }else if(host.version &lt; Version.build &amp;&amp; Version.build != -1){</b>
+<b class="nc">&nbsp;            return Core.bundle.get(&quot;server.outdated&quot;) + &quot;\n&quot; +</b>
+<b class="nc">&nbsp;            Core.bundle.format(&quot;server.version&quot;, host.version, &quot;&quot;);</b>
+<b class="nc">&nbsp;        }else if(host.version &gt; Version.build &amp;&amp; Version.build != -1){</b>
+<b class="nc">&nbsp;            return Core.bundle.get(&quot;server.outdated.client&quot;) + &quot;\n&quot; +</b>
+<b class="nc">&nbsp;            Core.bundle.format(&quot;server.version&quot;, host.version, &quot;&quot;);</b>
+<b class="nc">&nbsp;        }else if(host.version == Version.build &amp;&amp; Version.type.equals(host.versionType)){</b>
+&nbsp;            //not important
+<b class="nc">&nbsp;            return &quot;&quot;;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return Core.bundle.format(&quot;server.version&quot;, host.version, host.versionType);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class Server{
+&nbsp;        public String ip;
+&nbsp;        public int port;
+&nbsp;
+&nbsp;        transient Table content;
+&nbsp;        transient Host lastHost;
+&nbsp;
+&nbsp;        void setIP(String ip){
+&nbsp;            try{
+<b class="nc">&nbsp;                boolean isIpv6 = Strings.count(ip, &#39;:&#39;) &gt; 1;</b>
+<b class="nc">&nbsp;                if(isIpv6 &amp;&amp; ip.lastIndexOf(&quot;]:&quot;) != -1 &amp;&amp; ip.lastIndexOf(&quot;]:&quot;) != ip.length() - 1){</b>
+<b class="nc">&nbsp;                    int idx = ip.indexOf(&quot;]:&quot;);</b>
+<b class="nc">&nbsp;                    this.ip = ip.substring(1, idx);</b>
+<b class="nc">&nbsp;                    this.port = Integer.parseInt(ip.substring(idx + 2));</b>
+<b class="nc">&nbsp;                }else if(!isIpv6 &amp;&amp; ip.lastIndexOf(&#39;:&#39;) != -1 &amp;&amp; ip.lastIndexOf(&#39;:&#39;) != ip.length() - 1){</b>
+<b class="nc">&nbsp;                    int idx = ip.lastIndexOf(&#39;:&#39;);</b>
+<b class="nc">&nbsp;                    this.ip = ip.substring(0, idx);</b>
+<b class="nc">&nbsp;                    this.port = Integer.parseInt(ip.substring(idx + 1));</b>
+<b class="nc">&nbsp;                }else{</b>
+<b class="nc">&nbsp;                    this.ip = ip;</b>
+<b class="nc">&nbsp;                    this.port = Vars.port;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                this.ip = ip;</b>
+<b class="nc">&nbsp;                this.port = Vars.port;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        String displayIP(){
+<b class="nc">&nbsp;            if(Strings.count(ip, &#39;:&#39;) &gt; 1){</b>
+<b class="nc">&nbsp;                return port != Vars.port ? &quot;[&quot; + ip + &quot;]:&quot; + port : ip;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                return ip + (port != Vars.port ? &quot;:&quot; + port : &quot;&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public Server(){</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

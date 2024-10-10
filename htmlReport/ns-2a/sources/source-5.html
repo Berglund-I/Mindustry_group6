@@ -1,0 +1,273 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ItemSeq</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: ItemSeq (mindustry.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ItemSeq</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.2%
+  </span>
+  <span class="absValue">
+    (6/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29.5%
+  </span>
+  <span class="absValue">
+    (18/61)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import arc.util.serialization.Json.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;import mindustry.world.modules.ItemModule.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;public class ItemSeq implements Iterable&lt;ItemStack&gt;, JsonSerializable{
+<b class="fc">&nbsp;    protected final int[] values = new int[Vars.content.items().size];</b>
+&nbsp;    public int total;
+&nbsp;
+<b class="fc">&nbsp;    public ItemSeq(){</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ItemSeq(Seq&lt;ItemStack&gt; stacks){</b>
+<b class="nc">&nbsp;        stacks.each(this::add);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void checkNegative(){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; values.length; i++){</b>
+<b class="nc">&nbsp;            if(values[i] &lt; 0) values[i] = 0;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ItemSeq copy(){
+<b class="nc">&nbsp;        ItemSeq out = new ItemSeq();</b>
+<b class="nc">&nbsp;        out.total = total;</b>
+<b class="nc">&nbsp;        System.arraycopy(values, 0, out.values, 0, values.length);</b>
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void each(ItemConsumer cons){
+<b class="fc">&nbsp;        for(int i = 0; i &lt; values.length; i++){</b>
+<b class="fc">&nbsp;            if(values[i] != 0){</b>
+<b class="nc">&nbsp;                cons.accept(Vars.content.item(i), values[i]);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clear(){
+<b class="nc">&nbsp;        total = 0;</b>
+<b class="nc">&nbsp;        Arrays.fill(values, 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;ItemStack&gt; toSeq(){
+<b class="nc">&nbsp;        Seq&lt;ItemStack&gt; out = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; values.length; i++){</b>
+<b class="nc">&nbsp;            if(values[i] != 0) out.add(new ItemStack(Vars.content.item(i), values[i]));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ItemStack[] toArray(){
+<b class="fc">&nbsp;        int count = 0;</b>
+<b class="fc">&nbsp;        for(int value : values){</b>
+<b class="fc">&nbsp;            if(value != 0) count++;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        ItemStack[] result = new ItemStack[count];</b>
+<b class="fc">&nbsp;        int index = 0;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; values.length; i++){</b>
+<b class="fc">&nbsp;            if(values[i] != 0){</b>
+<b class="fc">&nbsp;                result[index ++] = new ItemStack(Vars.content.item(i), values[i]);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void min(int number){
+<b class="nc">&nbsp;        for(Item item : Vars.content.items()){</b>
+<b class="nc">&nbsp;            set(item, Math.min(get(item), number));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(Item item){
+<b class="nc">&nbsp;        return values[item.id] &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(ItemSeq seq){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; values.length; i++){</b>
+<b class="nc">&nbsp;            if(seq.values[i] &gt; values[i]){</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(Item item, int amount){
+<b class="nc">&nbsp;        return values[item.id] &gt;= amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int get(Item item){
+<b class="nc">&nbsp;        return values[item.id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void set(Item item, int amount){
+<b class="nc">&nbsp;        add(item, amount - values[item.id]);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(ItemModule itemModule){
+<b class="nc">&nbsp;        itemModule.each(this::add);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(ItemStack[] stacks){
+<b class="fc">&nbsp;        for(var s : stacks){</b>
+<b class="fc">&nbsp;            add(s);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(ItemSeq seq){
+<b class="nc">&nbsp;        seq.each(this::add);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(ItemStack stack){
+<b class="fc">&nbsp;        add(stack.item, stack.amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(Item item){
+<b class="nc">&nbsp;        add(item, 1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(Item item, int amount){
+<b class="fc">&nbsp;        values[item.id] += amount;</b>
+<b class="fc">&nbsp;        total += amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(ItemStack stack){
+<b class="nc">&nbsp;        add(stack.item, -stack.amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(Item item){
+<b class="nc">&nbsp;        add(item, -1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(Item item, int amount){
+<b class="nc">&nbsp;        add(item, -amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void write(Json json){
+<b class="nc">&nbsp;        for(Item item : Vars.content.items()){</b>
+<b class="nc">&nbsp;            if(values[item.id] != 0){</b>
+<b class="nc">&nbsp;                json.writeValue(item.name, values[item.id]);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void read(Json json, JsonValue jsonData){
+<b class="nc">&nbsp;        total = 0;</b>
+<b class="nc">&nbsp;        for(Item item : Vars.content.items()){</b>
+<b class="nc">&nbsp;            values[item.id] = jsonData.getInt(item.name, 0);</b>
+<b class="nc">&nbsp;            total += values[item.id];</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return JsonIO.print(JsonIO.write(this));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Iterator&lt;ItemStack&gt; iterator(){
+<b class="nc">&nbsp;        return toSeq().iterator();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

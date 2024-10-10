@@ -1,0 +1,231 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LaserBulletType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.bullet</a>
+</div>
+
+<h1>Coverage Summary for Class: LaserBulletType (mindustry.entities.bullet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LaserBulletType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55.6%
+  </span>
+  <span class="absValue">
+    (5/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.8%
+  </span>
+  <span class="absValue">
+    (32/67)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.bullet;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;
+&nbsp;public class LaserBulletType extends BulletType{
+<b class="fc">&nbsp;    public Color[] colors = {Pal.lancerLaser.cpy().mul(1f, 1f, 1f, 0.4f), Pal.lancerLaser, Color.white};</b>
+<b class="fc">&nbsp;    public Effect laserEffect = Fx.lancerLaserShootSmoke;</b>
+<b class="fc">&nbsp;    public float length = 160f;</b>
+<b class="fc">&nbsp;    public float width = 15f;</b>
+<b class="fc">&nbsp;    public float lengthFalloff = 0.5f;</b>
+<b class="fc">&nbsp;    public float sideLength = 29f, sideWidth = 0.7f;</b>
+<b class="fc">&nbsp;    public float sideAngle = 90f;</b>
+<b class="fc">&nbsp;    public float lightningSpacing = -1, lightningDelay = 0.1f, lightningAngleRand;</b>
+<b class="fc">&nbsp;    public boolean largeHit = false;</b>
+&nbsp;
+<b class="fc">&nbsp;    public LaserBulletType(float damage){</b>
+<b class="fc">&nbsp;        this.damage = damage;</b>
+<b class="fc">&nbsp;        this.speed = 0f;</b>
+&nbsp;
+<b class="fc">&nbsp;        hitEffect = Fx.hitLaserBlast;</b>
+<b class="fc">&nbsp;        hitColor = colors[2];</b>
+<b class="fc">&nbsp;        despawnEffect = Fx.none;</b>
+<b class="fc">&nbsp;        shootEffect = Fx.hitLancer;</b>
+<b class="fc">&nbsp;        smokeEffect = Fx.none;</b>
+<b class="fc">&nbsp;        hitSize = 4;</b>
+<b class="fc">&nbsp;        lifetime = 16f;</b>
+<b class="fc">&nbsp;        impact = true;</b>
+<b class="fc">&nbsp;        keepVelocity = false;</b>
+<b class="fc">&nbsp;        collides = false;</b>
+<b class="fc">&nbsp;        pierce = true;</b>
+<b class="fc">&nbsp;        hittable = false;</b>
+<b class="fc">&nbsp;        absorbable = false;</b>
+<b class="fc">&nbsp;        removeAfterPierce = false;</b>
+<b class="fc">&nbsp;        delayFrags = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public LaserBulletType(){
+<b class="fc">&nbsp;        this(1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //assume it pierces at least 3 blocks
+&nbsp;    @Override
+&nbsp;    public float estimateDPS(){
+<b class="fc">&nbsp;        return super.estimateDPS() * 3f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        drawSize = Math.max(drawSize, length*2f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected float calculateRange(){
+<b class="fc">&nbsp;        return Math.max(length, maxRange);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(Bullet b){
+<b class="nc">&nbsp;        float resultLength = Damage.collideLaser(b, length, largeHit, laserAbsorb, pierceCap), rot = b.rotation();</b>
+&nbsp;
+<b class="nc">&nbsp;        laserEffect.at(b.x, b.y, rot, resultLength * 0.75f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(lightningSpacing &gt; 0){</b>
+<b class="nc">&nbsp;            int idx = 0;</b>
+<b class="nc">&nbsp;            for(float i = 0; i &lt;= resultLength; i += lightningSpacing){</b>
+<b class="nc">&nbsp;                float cx = b.x + Angles.trnsx(rot,  i),</b>
+<b class="nc">&nbsp;                    cy = b.y + Angles.trnsy(rot, i);</b>
+&nbsp;
+<b class="nc">&nbsp;                int f = idx++;</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int s : Mathf.signs){</b>
+<b class="nc">&nbsp;                    Time.run(f * lightningDelay, () -&gt; {</b>
+<b class="nc">&nbsp;                        if(b.isAdded() &amp;&amp; b.type == this){</b>
+<b class="nc">&nbsp;                            Lightning.create(b, lightningColor,</b>
+<b class="nc">&nbsp;                                lightningDamage &lt; 0 ? damage : lightningDamage,</b>
+<b class="nc">&nbsp;                                cx, cy, rot + 90*s + Mathf.range(lightningAngleRand),</b>
+<b class="nc">&nbsp;                                lightningLength + Mathf.random(lightningLengthRand));</b>
+&nbsp;                        }
+&nbsp;                    });
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Bullet b){
+<b class="nc">&nbsp;        float realLength = b.fdata;</b>
+&nbsp;
+<b class="nc">&nbsp;        float f = Mathf.curve(b.fin(), 0f, 0.2f);</b>
+<b class="nc">&nbsp;        float baseLen = realLength * f;</b>
+<b class="nc">&nbsp;        float cwidth = width;</b>
+<b class="nc">&nbsp;        float compound = 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.lineAngle(b.x, b.y, b.rotation(), baseLen);</b>
+<b class="nc">&nbsp;        for(Color color : colors){</b>
+<b class="nc">&nbsp;            Draw.color(color);</b>
+<b class="nc">&nbsp;            Lines.stroke((cwidth *= lengthFalloff) * b.fout());</b>
+<b class="nc">&nbsp;            Lines.lineAngle(b.x, b.y, b.rotation(), baseLen, false);</b>
+<b class="nc">&nbsp;            Tmp.v1.trns(b.rotation(), baseLen);</b>
+<b class="nc">&nbsp;            Drawf.tri(b.x + Tmp.v1.x, b.y + Tmp.v1.y, Lines.getStroke(), cwidth * 2f + width / 2f, b.rotation());</b>
+&nbsp;
+<b class="nc">&nbsp;            Fill.circle(b.x, b.y, 1f * cwidth * b.fout());</b>
+<b class="nc">&nbsp;            for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;                Drawf.tri(b.x, b.y, sideWidth * b.fout() * cwidth, sideLength * compound, b.rotation() + sideAngle * i);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            compound *= lengthFalloff;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.v1.trns(b.rotation(), baseLen * 1.1f);</b>
+<b class="nc">&nbsp;        Drawf.light(b.x, b.y, b.x + Tmp.v1.x, b.y + Tmp.v1.y, width * 1.4f * b.fout(), colors[0], 0.6f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawLight(Bullet b){
+&nbsp;        //no light drawn here
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,593 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Drawf</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: Drawf (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Drawf</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/218)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Drawf{</b>
+<b class="nc">&nbsp;    private static final Vec2[] vecs = new Vec2[]{new Vec2(), new Vec2(), new Vec2(), new Vec2()};</b>
+<b class="nc">&nbsp;    private static final FloatSeq points = new FloatSeq();</b>
+&nbsp;
+&nbsp;    /** Bleeds a mod pixmap if linear filtering is enabled. */
+&nbsp;    public static void checkBleed(Pixmap pixmap){
+<b class="nc">&nbsp;        if(Core.settings.getBool(&quot;linear&quot;, true)){</b>
+<b class="nc">&nbsp;            Pixmaps.bleed(pixmap);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO offset unused
+&nbsp;    public static void flame(float x, float y, int divisions, float rotation, float length, float width, float pan){
+<b class="nc">&nbsp;        float len1 = length * pan, len2 = length * (1f - pan);</b>
+&nbsp;
+<b class="nc">&nbsp;        points.clear();</b>
+&nbsp;
+&nbsp;        //left side; half arc beginning at 90 degrees and ending at 270
+<b class="nc">&nbsp;        for(int i = 0; i &lt; divisions; i++){</b>
+<b class="nc">&nbsp;            float rot = 90f + 180f * i / (float)divisions;</b>
+<b class="nc">&nbsp;            Tmp.v1.trnsExact(rot, width);</b>
+&nbsp;
+<b class="nc">&nbsp;            point(</b>
+&nbsp;            (Tmp.v1.x + width) / width * len1, //convert to 0..1, then multiply by desired length
+&nbsp;            Tmp.v1.y, //Y axis remains unchanged
+&nbsp;            x, y,
+&nbsp;            rotation
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+&nbsp;        //right side; half arc beginning at -90 (270) and ending at 90
+<b class="nc">&nbsp;        for(int i = 0; i &lt; divisions; i++){</b>
+<b class="nc">&nbsp;            float rot = -90f + 180f * i / (float)divisions;</b>
+<b class="nc">&nbsp;            Tmp.v1.trnsExact(rot, width);</b>
+&nbsp;
+<b class="nc">&nbsp;            point(</b>
+&nbsp;            len1 + (Tmp.v1.x) / width * len2, //convert to 0..1, then multiply by desired length and offset relative to previous segment
+&nbsp;            Tmp.v1.y, //Y axis remains unchanged
+&nbsp;            x, y,
+&nbsp;            rotation
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Fill.poly(points);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void flameFront(float x, float y, int divisions, float rotation, float length, float width){
+&nbsp;        //TODO I don&#39;t know why this is necessary yet. Does FIll.poly screw up with triangles?
+<b class="nc">&nbsp;        divisions = Mathf.round(divisions, 2) + 1;</b>
+&nbsp;
+<b class="nc">&nbsp;        points.clear();</b>
+&nbsp;
+&nbsp;        //right side; half arc beginning at -90 (270) and ending at 90
+<b class="nc">&nbsp;        for(int i = 0; i &lt;= divisions; i++){</b>
+<b class="nc">&nbsp;            float rot = -90f + 180f * i / (float)divisions;</b>
+<b class="nc">&nbsp;            Tmp.v1.trnsExact(rot, width);</b>
+&nbsp;
+<b class="nc">&nbsp;            point(</b>
+&nbsp;            (Tmp.v1.x) / width * length, //convert to 0..1, then multiply by desired length and offset relative to previous segment
+&nbsp;            Tmp.v1.y, //Y axis remains unchanged
+&nbsp;            x, y,
+&nbsp;            rotation
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Fill.poly(points);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void point(float x, float y, float baseX, float baseY, float rotation){
+&nbsp;        //TODO test exact and non-exact
+<b class="nc">&nbsp;        Tmp.v1.set(x, y).rotateRadExact(rotation * Mathf.degRad);</b>
+<b class="nc">&nbsp;        points.add(Tmp.v1.x + baseX, Tmp.v1.y + baseY);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void buildBeam(float x, float y, float tx, float ty, float radius){
+<b class="nc">&nbsp;        float ang = Angles.angle(x, y, tx, ty);</b>
+&nbsp;
+<b class="nc">&nbsp;        vecs[0].set(tx - radius, ty - radius);</b>
+<b class="nc">&nbsp;        vecs[1].set(tx + radius, ty - radius);</b>
+<b class="nc">&nbsp;        vecs[2].set(tx - radius, ty + radius);</b>
+<b class="nc">&nbsp;        vecs[3].set(tx + radius, ty + radius);</b>
+&nbsp;
+<b class="nc">&nbsp;        Arrays.sort(vecs, Structs.comparingFloat(vec -&gt; -Angles.angleDist(Angles.angle(x, y, vec.x, vec.y), ang)));</b>
+&nbsp;
+<b class="nc">&nbsp;        Vec2 close = Geometry.findClosest(x, y, vecs);</b>
+&nbsp;
+<b class="nc">&nbsp;        float x1 = vecs[0].x, y1 = vecs[0].y,</b>
+<b class="nc">&nbsp;        x2 = close.x, y2 = close.y,</b>
+<b class="nc">&nbsp;        x3 = vecs[1].x, y3 = vecs[1].y;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(renderer.animateShields){</b>
+<b class="nc">&nbsp;            if(close != vecs[0] &amp;&amp; close != vecs[1]){</b>
+<b class="nc">&nbsp;                Fill.tri(x, y, x1, y1, x2, y2);</b>
+<b class="nc">&nbsp;                Fill.tri(x, y, x3, y3, x2, y2);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Fill.tri(x, y, x1, y1, x3, y3);</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            Lines.line(x, y, x1, y1);</b>
+<b class="nc">&nbsp;            Lines.line(x, y, x3, y3);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void additive(TextureRegion region, Color color, float x, float y){
+<b class="nc">&nbsp;        additive(region, color, x, y, 0f, Layer.blockAdditive);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void additive(TextureRegion region, Color color, float x, float y, float rotation){
+<b class="nc">&nbsp;        additive(region, color, x, y, rotation, Layer.blockAdditive);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void additive(TextureRegion region, Color color, float x, float y, float rotation, float layer){
+<b class="nc">&nbsp;        additive(region, color, 1f, x, y, rotation, layer);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void additive(TextureRegion region, Color color, float alpha, float x, float y, float rotation, float layer){
+<b class="nc">&nbsp;        float pz = Draw.z();</b>
+<b class="nc">&nbsp;        Draw.z(layer);</b>
+<b class="nc">&nbsp;        Draw.color(color, alpha * color.a);</b>
+<b class="nc">&nbsp;        Draw.blend(Blending.additive);</b>
+<b class="nc">&nbsp;        Draw.rect(region, x, y, rotation);</b>
+<b class="nc">&nbsp;        Draw.blend();</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+<b class="nc">&nbsp;        Draw.z(pz);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void limitLine(Position start, Position dest, float len1, float len2){
+<b class="nc">&nbsp;        Tmp.v1.set(dest).sub(start).setLength(len1);</b>
+<b class="nc">&nbsp;        Tmp.v2.set(Tmp.v1).scl(-1f).setLength(len2);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.line(Pal.accent, start.getX() + Tmp.v1.x, start.getY() + Tmp.v1.y, dest.getX() + Tmp.v2.x, dest.getY() + Tmp.v2.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void dashLineDst(Color color, float x, float y, float x2, float y2){
+<b class="nc">&nbsp;        dashLine(color, x, y, x2, y2, (int)(Mathf.dst(x, y, x2, y2) / tilesize * 1.6f));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void dashLine(Color color, float x, float y, float x2, float y2){
+<b class="nc">&nbsp;        dashLine(color, x, y, x2, y2, (int)(Math.max(Math.abs(x - x2), Math.abs(y - y2)) / tilesize * 2));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void dashLine(Color color, float x, float y, float x2, float y2, int segments){
+<b class="nc">&nbsp;        Lines.stroke(3f);</b>
+<b class="nc">&nbsp;        Draw.color(Pal.gray, color.a);</b>
+<b class="nc">&nbsp;        Lines.dashLine(x, y, x2, y2, segments);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f, color);</b>
+<b class="nc">&nbsp;        Lines.dashLine(x, y, x2, y2, segments);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void line(Color color, float x, float y, float x2, float y2){
+<b class="nc">&nbsp;        Lines.stroke(3f);</b>
+<b class="nc">&nbsp;        Draw.color(Pal.gray, color.a);</b>
+<b class="nc">&nbsp;        Lines.line(x, y, x2, y2);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f, color);</b>
+<b class="nc">&nbsp;        Lines.line(x, y, x2, y2);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void dashLineBasic(float x, float y, float x2, float y2){
+<b class="nc">&nbsp;        Lines.dashLine(x, y, x2, y2, (int)(Math.max(Math.abs(x - x2), Math.abs(y - y2)) / tilesize * 2));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void dashSquare(Color color, float x, float y, float size){
+<b class="nc">&nbsp;        dashRect(color, x - size/2f, y - size/2f, size, size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void dashRect(Color color, Rect rect){
+<b class="nc">&nbsp;        dashRect(color, rect.x, rect.y, rect.width, rect.height);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void dashRect(Color color, float x, float y, float width, float height){
+<b class="nc">&nbsp;        dashLine(color, x, y, x + width, y);</b>
+<b class="nc">&nbsp;        dashLine(color, x + width, y, x + width, y + height);</b>
+<b class="nc">&nbsp;        dashLine(color, x + width, y + height, x, y + height);</b>
+<b class="nc">&nbsp;        dashLine(color, x, y + height, x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void dashSquareBasic(float x, float y, float size){
+<b class="nc">&nbsp;        dashRectBasic(x - size/2f, y - size/2f, size, size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void dashRectBasic(float x, float y, float width, float height){
+<b class="nc">&nbsp;        dashLineBasic(x, y, x + width, y);</b>
+<b class="nc">&nbsp;        dashLineBasic(x + width, y, x + width, y + height);</b>
+<b class="nc">&nbsp;        dashLineBasic(x + width, y + height, x, y + height);</b>
+<b class="nc">&nbsp;        dashLineBasic( x, y + height, x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void target(float x, float y, float rad, Color color){
+<b class="nc">&nbsp;        target(x, y, rad, 1, color);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void target(float x, float y, float rad, float alpha, Color color){
+<b class="nc">&nbsp;        Lines.stroke(3f);</b>
+<b class="nc">&nbsp;        Draw.color(Pal.gray, alpha);</b>
+<b class="nc">&nbsp;        Lines.poly(x, y, 4, rad, Time.time * 1.5f);</b>
+<b class="nc">&nbsp;        Lines.spikes(x, y, 3f/7f * rad, 6f/7f * rad, 4, Time.time * 1.5f);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f);</b>
+<b class="nc">&nbsp;        Draw.color(color, alpha);</b>
+<b class="nc">&nbsp;        Lines.poly(x, y, 4, rad, Time.time * 1.5f);</b>
+<b class="nc">&nbsp;        Lines.spikes(x, y, 3f/7f * rad, 6f/7f * rad, 4, Time.time * 1.5f);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Sets Draw.z to the text layer, and returns the previous layer. */
+&nbsp;    public static float text(){
+<b class="nc">&nbsp;        float z = Draw.z();</b>
+<b class="nc">&nbsp;        if(renderer.pixelate){</b>
+<b class="nc">&nbsp;            Draw.z(Layer.endPixeled);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return z;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void light(float x, float y, float radius, Color color, float opacity){
+<b class="nc">&nbsp;        if(renderer == null) return;</b>
+<b class="nc">&nbsp;        renderer.lights.add(x, y, radius, color, opacity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void light(Position pos, float radius, Color color, float opacity){
+<b class="nc">&nbsp;        if(renderer == null) return;</b>
+<b class="nc">&nbsp;       light(pos.getX(), pos.getY(), radius, color, opacity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void light(float x, float y, TextureRegion region, Color color, float opacity){
+<b class="nc">&nbsp;        light(x, y, region, 0f, color, opacity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void light(float x, float y, TextureRegion region, float rotation, Color color, float opacity){
+<b class="nc">&nbsp;        if(renderer == null) return;</b>
+<b class="nc">&nbsp;        renderer.lights.add(x, y, region, rotation, color, opacity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void light(float x, float y, float x2, float y2){
+<b class="nc">&nbsp;        if(renderer == null) return;</b>
+<b class="nc">&nbsp;        renderer.lights.line(x, y, x2, y2, 30, Color.orange, 0.3f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void light(float x, float y, float x2, float y2, float stroke, Color tint, float alpha){
+<b class="nc">&nbsp;        if(renderer == null) return;</b>
+<b class="nc">&nbsp;        renderer.lights.line(x, y, x2, y2, stroke, tint, alpha);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void selected(Building tile, Color color){
+<b class="nc">&nbsp;        selected(tile.tile(), color);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void selected(Tile tile, Color color){
+<b class="nc">&nbsp;        selected(tile.x, tile.y, tile.block(), color);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void selected(int x, int y, Block block, Color color){
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            Point2 p = Geometry.d8edge[i];</b>
+<b class="nc">&nbsp;            float offset = -Math.max(block.size - 1, 0) / 2f * tilesize;</b>
+<b class="nc">&nbsp;            Draw.rect(&quot;block-select&quot;,</b>
+&nbsp;            x*tilesize + block.offset + offset * p.x,
+&nbsp;            y*tilesize + block.offset + offset * p.y, i * 90);
+&nbsp;        }
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void shadow(float x, float y, float rad){
+<b class="nc">&nbsp;        shadow(x, y, rad, 1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void squareShadow(float x, float y, float rad, float alpha){
+<b class="nc">&nbsp;        Draw.color(0, 0, 0, 0.4f * alpha);</b>
+<b class="nc">&nbsp;        Draw.rect(&quot;square-shadow&quot;, x, y, rad * Draw.xscl, rad * Draw.yscl);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void shadow(float x, float y, float rad, float alpha){
+<b class="nc">&nbsp;        Draw.color(0, 0, 0, 0.4f * alpha);</b>
+<b class="nc">&nbsp;        Draw.rect(&quot;circle-shadow&quot;, x, y, rad * Draw.xscl, rad * Draw.yscl);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void shadow(TextureRegion region, float x, float y, float rotation){
+<b class="nc">&nbsp;        Draw.color(Pal.shadow);</b>
+<b class="nc">&nbsp;        Draw.rect(region, x, y, rotation);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void shadow(TextureRegion region, float x, float y){
+<b class="nc">&nbsp;        Draw.color(Pal.shadow);</b>
+<b class="nc">&nbsp;        Draw.rect(region, x, y);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    public static void shadow(TextureRegion region, float x, float y, float width, float height, float rotation){
+<b class="nc">&nbsp;        Draw.color(Pal.shadow);</b>
+<b class="nc">&nbsp;        Draw.rect(region, x, y, width, height, rotation);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void liquid(TextureRegion region, float x, float y, float alpha, Color color, float rotation){
+<b class="nc">&nbsp;        Draw.color(color, alpha * color.a);</b>
+<b class="nc">&nbsp;        Draw.rect(region, x, y, rotation);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void liquid(TextureRegion region, float x, float y, float alpha, Color color){
+<b class="nc">&nbsp;        Draw.color(color, alpha * color.a);</b>
+<b class="nc">&nbsp;        Draw.rect(region, x, y);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void dashCircle(float x, float y, float rad, Color color){
+<b class="nc">&nbsp;        Lines.stroke(3f, Pal.gray);</b>
+<b class="nc">&nbsp;        Lines.dashCircle(x, y, rad);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f, color);</b>
+<b class="nc">&nbsp;        Lines.dashCircle(x, y, rad);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void circles(float x, float y, float rad){
+<b class="nc">&nbsp;        circles(x, y, rad, Pal.accent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void circles(float x, float y, float rad, Color color){
+<b class="nc">&nbsp;        Lines.stroke(3f, Pal.gray);</b>
+<b class="nc">&nbsp;        Lines.circle(x, y, rad);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f, color);</b>
+<b class="nc">&nbsp;        Lines.circle(x, y, rad);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void select(float x, float y, float radius, Color color){
+<b class="nc">&nbsp;        Lines.stroke(3f, Pal.gray);</b>
+<b class="nc">&nbsp;        Lines.square(x, y, radius + 1f);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f, color);</b>
+<b class="nc">&nbsp;        Lines.square(x, y, radius);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void square(float x, float y, float radius, float rotation, Color color){
+<b class="nc">&nbsp;        Lines.stroke(3f, Pal.gray);</b>
+<b class="nc">&nbsp;        Lines.square(x, y, radius + 1f, rotation);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f, color);</b>
+<b class="nc">&nbsp;        Lines.square(x, y, radius + 1f, rotation);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void square(float x, float y, float radius, float rotation){
+<b class="nc">&nbsp;        square(x, y, radius, rotation, Pal.accent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void square(float x, float y, float radius, Color color){
+<b class="nc">&nbsp;        square(x, y, radius, 45, color);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void square(float x, float y, float radius){
+<b class="nc">&nbsp;        square(x, y, radius, 45);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void arrow(float x, float y, float x2, float y2, float length, float radius){
+<b class="nc">&nbsp;        arrow(x, y, x2, y2, length, radius, Pal.accent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void arrow(float x, float y, float x2, float y2, float length, float radius, Color color){
+<b class="nc">&nbsp;        float angle = Angles.angle(x, y, x2, y2);</b>
+<b class="nc">&nbsp;        float space = 2f;</b>
+<b class="nc">&nbsp;        Tmp.v1.set(x2, y2).sub(x, y).limit(length);</b>
+<b class="nc">&nbsp;        float vx = Tmp.v1.x + x, vy = Tmp.v1.y + y;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Pal.gray);</b>
+<b class="nc">&nbsp;        Fill.poly(vx, vy, 3, radius + space, angle);</b>
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        Fill.poly(vx, vy, 3, radius, angle);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void laser(TextureRegion line, TextureRegion edge, float x, float y, float x2, float y2){
+<b class="nc">&nbsp;        laser(line, edge, edge, x, y, x2, y2, 1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void laser(TextureRegion line, TextureRegion start, TextureRegion end, float x, float y, float x2, float y2){
+<b class="nc">&nbsp;        laser(line, start, end, x, y, x2, y2, 1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void laser(TextureRegion line, TextureRegion edge, float x, float y, float x2, float y2, float scale){
+<b class="nc">&nbsp;        laser(line, edge, edge, x, y, x2, y2, scale);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void laser(TextureRegion line, TextureRegion start, TextureRegion end, float x, float y, float x2, float y2, float scale){
+<b class="nc">&nbsp;        float scl = 8f * scale * Draw.scl, rot = Mathf.angle(x2 - x, y2 - y);</b>
+<b class="nc">&nbsp;        float vx = Mathf.cosDeg(rot) * scl, vy = Mathf.sinDeg(rot) * scl;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.rect(start, x, y, start.width * scale * start.scl(), start.height * scale * start.scl(), rot + 180);</b>
+<b class="nc">&nbsp;        Draw.rect(end, x2, y2, end.width * scale * end.scl(), end.height * scale * end.scl(), rot);</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(12f * scale);</b>
+<b class="nc">&nbsp;        Lines.line(line, x + vx, y + vy, x2 - vx, y2 - vy, false);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        light(x, y, x2, y2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void tri(float x, float y, float width, float length, float rotation){
+&nbsp;        float
+<b class="nc">&nbsp;            fx = Angles.trnsx(rotation, length),</b>
+<b class="nc">&nbsp;            fy = Angles.trnsy(rotation, length),</b>
+<b class="nc">&nbsp;            rx = Angles.trnsx(rotation - 90f, width / 2f),</b>
+<b class="nc">&nbsp;            ry = Angles.trnsy(rotation - 90f, width / 2f);</b>
+<b class="nc">&nbsp;        Fill.tri(</b>
+&nbsp;            x + rx, y + ry,
+&nbsp;            x + fx, y + fy,
+&nbsp;            x - rx, y - ry
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void construct(Building t, UnlockableContent content, float rotation, float progress, float alpha, float time){
+<b class="nc">&nbsp;        construct(t, content.fullIcon, rotation, progress, alpha, time);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void construct(float x, float y, TextureRegion region, float rotation, float progress, float alpha, float time){
+<b class="nc">&nbsp;        construct(x, y, region, Pal.accent, rotation, progress, alpha, time);</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    public static void construct(float x, float y, TextureRegion region, Color color, float rotation, float progress, float alpha, float time){
+<b class="nc">&nbsp;        Shaders.build.region = region;</b>
+<b class="nc">&nbsp;        Shaders.build.progress = progress;</b>
+<b class="nc">&nbsp;        Shaders.build.color.set(color);</b>
+<b class="nc">&nbsp;        Shaders.build.color.a = alpha;</b>
+<b class="nc">&nbsp;        Shaders.build.time = -time / 20f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.shader(Shaders.build);</b>
+<b class="nc">&nbsp;        Draw.rect(region, x, y, rotation);</b>
+<b class="nc">&nbsp;        Draw.shader();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void construct(Building t, TextureRegion region, float rotation, float progress, float alpha, float time){
+<b class="nc">&nbsp;        construct(t, region, Pal.accent, rotation, progress, alpha, time);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void construct(Building t, TextureRegion region, Color color, float rotation, float progress, float alpha, float time){
+<b class="nc">&nbsp;        construct(t, region, color, rotation, progress, alpha, time, t.block.size * tilesize - 4f);</b>
+&nbsp;    }
+&nbsp;        
+&nbsp;    public static void construct(Building t, TextureRegion region, Color color, float rotation, float progress, float alpha, float time, float size){
+<b class="nc">&nbsp;        Shaders.build.region = region;</b>
+<b class="nc">&nbsp;        Shaders.build.progress = progress;</b>
+<b class="nc">&nbsp;        Shaders.build.color.set(color);</b>
+<b class="nc">&nbsp;        Shaders.build.color.a = alpha;</b>
+<b class="nc">&nbsp;        Shaders.build.time = -time / 20f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.shader(Shaders.build);</b>
+<b class="nc">&nbsp;        Draw.rect(region, t.x, t.y, rotation);</b>
+<b class="nc">&nbsp;        Draw.shader();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Pal.accent);</b>
+<b class="nc">&nbsp;        Draw.alpha(alpha);</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.lineAngleCenter(t.x + Mathf.sin(time, 20f, size / 2f), t.y, 90, size);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    /** Draws a sprite that should be light-wise correct, when rotated. Provided sprite must be symmetrical in shape. */
+&nbsp;    public static void spinSprite(TextureRegion region, float x, float y, float r){
+<b class="nc">&nbsp;        float a = Draw.getColorAlpha();</b>
+<b class="nc">&nbsp;        r = Mathf.mod(r, 90f);</b>
+<b class="nc">&nbsp;        Draw.rect(region, x, y, r);</b>
+<b class="nc">&nbsp;        Draw.alpha(r / 90f*a);</b>
+<b class="nc">&nbsp;        Draw.rect(region, x, y, r - 90f);</b>
+<b class="nc">&nbsp;        Draw.alpha(a);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

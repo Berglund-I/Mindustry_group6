@@ -1,0 +1,380 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Conduit</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.liquid</a>
+</div>
+
+<h1>Coverage Summary for Class: Conduit (mindustry.world.blocks.liquid)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Conduit</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (4/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29%
+  </span>
+  <span class="absValue">
+    (18/62)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Conduit$ConduitBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.7%
+  </span>
+  <span class="absValue">
+    (20/53)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (8/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33%
+  </span>
+  <span class="absValue">
+    (38/115)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.liquid;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.distribution.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.type.Liquid.*;
+&nbsp;
+&nbsp;public class Conduit extends LiquidBlock implements Autotiler{
+&nbsp;    static final float rotatePad = 6, hpad = rotatePad / 2f / 4f;
+<b class="fc">&nbsp;    static final float[][] rotateOffsets = {{hpad, hpad}, {-hpad, hpad}, {-hpad, -hpad}, {hpad, -hpad}};</b>
+&nbsp;
+<b class="fc">&nbsp;    public final int timerFlow = timers++;</b>
+&nbsp;
+<b class="fc">&nbsp;    public Color botColor = Color.valueOf(&quot;565656&quot;);</b>
+&nbsp;
+&nbsp;    public @Load(value = &quot;@-top-#&quot;, length = 5) TextureRegion[] topRegions;
+&nbsp;    public @Load(value = &quot;@-bottom-#&quot;, length = 5, fallback = &quot;conduit-bottom-#&quot;) TextureRegion[] botRegions;
+&nbsp;    public @Load(&quot;@-cap&quot;) TextureRegion capRegion;
+&nbsp;
+&nbsp;    /** indices: [rotation] [fluid type] [frame] */
+&nbsp;    public TextureRegion[][][] rotateRegions;
+&nbsp;
+&nbsp;    /** If true, the liquid region is padded at corners, so it doesn&#39;t stick out. */
+<b class="fc">&nbsp;    public boolean padCorners = true;</b>
+<b class="fc">&nbsp;    public boolean leaks = true;</b>
+&nbsp;    public @Nullable Block junctionReplacement, bridgeReplacement, rotBridgeReplacement;
+&nbsp;
+&nbsp;    public Conduit(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        solid = false;</b>
+<b class="fc">&nbsp;        floating = true;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+<b class="fc">&nbsp;        conveyorPlacement = true;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+<b class="fc">&nbsp;        canOverdrive = false;</b>
+<b class="fc">&nbsp;        priority = TargetPriority.transport;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(junctionReplacement == null) junctionReplacement = Blocks.liquidJunction;</b>
+<b class="fc">&nbsp;        if(bridgeReplacement == null || !(bridgeReplacement instanceof ItemBridge)) bridgeReplacement = Blocks.bridgeConduit;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        rotateRegions = new TextureRegion[4][2][animationFrames];</b>
+&nbsp;
+<b class="nc">&nbsp;        if(renderer != null){</b>
+<b class="nc">&nbsp;            float pad = rotatePad;</b>
+<b class="nc">&nbsp;            var frames = renderer.getFluidFrames();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int rot = 0; rot &lt; 4; rot++){</b>
+<b class="nc">&nbsp;                for(int fluid = 0; fluid &lt; 2; fluid++){</b>
+<b class="nc">&nbsp;                    for(int frame = 0; frame &lt; animationFrames; frame++){</b>
+<b class="nc">&nbsp;                        TextureRegion base = frames[fluid][frame];</b>
+<b class="nc">&nbsp;                        TextureRegion result = new TextureRegion();</b>
+<b class="nc">&nbsp;                        result.set(base);</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(rot == 0){</b>
+<b class="nc">&nbsp;                            result.setX(result.getX() + pad);</b>
+<b class="nc">&nbsp;                            result.setHeight(result.height - pad);</b>
+<b class="nc">&nbsp;                        }else if(rot == 1){</b>
+<b class="nc">&nbsp;                            result.setWidth(result.width - pad);</b>
+<b class="nc">&nbsp;                            result.setHeight(result.height - pad);</b>
+<b class="nc">&nbsp;                        }else if(rot == 2){</b>
+<b class="nc">&nbsp;                            result.setWidth(result.width - pad);</b>
+<b class="nc">&nbsp;                            result.setY(result.getY() + pad);</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            result.setX(result.getX() + pad);</b>
+<b class="nc">&nbsp;                            result.setY(result.getY() + pad);</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        rotateRegions[rot][fluid][frame] = result;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        int[] bits = getTiling(plan, list);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(bits == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.scl(bits[1], bits[2]);</b>
+<b class="nc">&nbsp;        Draw.color(botColor);</b>
+<b class="nc">&nbsp;        Draw.alpha(0.5f);</b>
+<b class="nc">&nbsp;        Draw.rect(botRegions[bits[0]], plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+<b class="nc">&nbsp;        Draw.rect(topRegions[bits[0]], plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+<b class="nc">&nbsp;        Draw.scl();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Block getReplacement(BuildPlan req, Seq&lt;BuildPlan&gt; plans){
+<b class="nc">&nbsp;        if(junctionReplacement == null) return this;</b>
+&nbsp;
+<b class="nc">&nbsp;        Boolf&lt;Point2&gt; cont = p -&gt; plans.contains(o -&gt; o.x == req.x + p.x &amp;&amp; o.y == req.y + p.y &amp;&amp; (req.block instanceof Conduit || req.block instanceof LiquidJunction));</b>
+<b class="nc">&nbsp;        return cont.get(Geometry.d4(req.rotation)) &amp;&amp;</b>
+<b class="nc">&nbsp;            cont.get(Geometry.d4(req.rotation - 2)) &amp;&amp;</b>
+<b class="nc">&nbsp;            req.tile() != null &amp;&amp;</b>
+<b class="nc">&nbsp;            req.tile().block() instanceof Conduit &amp;&amp;</b>
+<b class="nc">&nbsp;            Mathf.mod(req.build().rotation - req.rotation, 2) == 1 ? junctionReplacement : this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean blends(Tile tile, int rotation, int otherx, int othery, int otherrot, Block otherblock){
+<b class="fc">&nbsp;        return otherblock.hasLiquids &amp;&amp; (otherblock.outputsLiquid || (lookingAt(tile, rotation, otherx, othery, otherblock))) &amp;&amp; lookingAtEither(tile, rotation, otherx, othery, otherrot, otherblock);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void handlePlacementLine(Seq&lt;BuildPlan&gt; plans){
+<b class="nc">&nbsp;        if(bridgeReplacement == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(rotBridgeReplacement instanceof DirectionBridge duct){</b>
+<b class="nc">&nbsp;            Placement.calculateBridges(plans, duct, true, b -&gt; b instanceof Conduit);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Placement.calculateBridges(plans, (ItemBridge)bridgeReplacement, b -&gt; b instanceof Conduit);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{Core.atlas.find(&quot;conduit-bottom&quot;), topRegions[0]};</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ConduitBuild extends LiquidBuild implements ChainedBuilding{</b>
+&nbsp;        public float smoothLiquid;
+<b class="fc">&nbsp;        public int blendbits, xscl = 1, yscl = 1, blending;</b>
+<b class="fc">&nbsp;        public boolean capped, backCapped = false;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            int r = this.rotation;</b>
+&nbsp;
+&nbsp;            //draw extra conduits facing this one for tiling purposes
+<b class="nc">&nbsp;            Draw.z(Layer.blockUnder);</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                if((blending &amp; (1 &lt;&lt; i)) != 0){</b>
+<b class="nc">&nbsp;                    int dir = r - i;</b>
+<b class="nc">&nbsp;                    drawAt(x + Geometry.d4x(dir) * tilesize*0.75f, y + Geometry.d4y(dir) * tilesize*0.75f, 0, i == 0 ? r : dir, i != 0 ? SliceMode.bottom : SliceMode.top);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.block);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.scl(xscl, yscl);</b>
+<b class="nc">&nbsp;            drawAt(x, y, blendbits, r, SliceMode.none);</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(capped &amp;&amp; capRegion.found()) Draw.rect(capRegion, x, y, rotdeg());</b>
+<b class="nc">&nbsp;            if(backCapped &amp;&amp; capRegion.found()) Draw.rect(capRegion, x, y, rotdeg() + 180);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void drawAt(float x, float y, int bits, int rotation, SliceMode slice){
+<b class="nc">&nbsp;            float angle = rotation * 90f;</b>
+<b class="nc">&nbsp;            Draw.color(botColor);</b>
+<b class="nc">&nbsp;            Draw.rect(sliced(botRegions[bits], slice), x, y, angle);</b>
+&nbsp;
+<b class="nc">&nbsp;            int offset = yscl == -1 ? 3 : 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            int frame = liquids.current().getAnimationFrame();</b>
+<b class="nc">&nbsp;            int gas = liquids.current().gas ? 1 : 0;</b>
+<b class="nc">&nbsp;            float ox = 0f, oy = 0f;</b>
+<b class="nc">&nbsp;            int wrapRot = (rotation + offset) % 4;</b>
+<b class="nc">&nbsp;            TextureRegion liquidr = bits == 1 &amp;&amp; padCorners ? rotateRegions[wrapRot][gas][frame] : renderer.fluidFrames[gas][frame];</b>
+&nbsp;
+<b class="nc">&nbsp;            if(bits == 1 &amp;&amp; padCorners){</b>
+<b class="nc">&nbsp;                ox = rotateOffsets[wrapRot][0];</b>
+<b class="nc">&nbsp;                oy = rotateOffsets[wrapRot][1];</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //the drawing state machine sure was a great design choice with no downsides or hidden behavior!!!
+<b class="nc">&nbsp;            float xscl = Draw.xscl, yscl = Draw.yscl;</b>
+<b class="nc">&nbsp;            Draw.scl(1f, 1f);</b>
+<b class="nc">&nbsp;            Drawf.liquid(sliced(liquidr, slice), x + ox, y + oy, smoothLiquid, liquids.current().color.write(Tmp.c1).a(1f));</b>
+<b class="nc">&nbsp;            Draw.scl(xscl, yscl);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(sliced(topRegions[bits], slice), x, y, angle);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityUpdate(){
+<b class="fc">&nbsp;            super.onProximityUpdate();</b>
+&nbsp;
+<b class="fc">&nbsp;            int[] bits = buildBlending(tile, rotation, null, true);</b>
+<b class="fc">&nbsp;            blendbits = bits[0];</b>
+<b class="fc">&nbsp;            xscl = bits[1];</b>
+<b class="fc">&nbsp;            yscl = bits[2];</b>
+<b class="fc">&nbsp;            blending = bits[4];</b>
+&nbsp;
+<b class="fc">&nbsp;            Building next = front(), prev = back();</b>
+<b class="fc">&nbsp;            capped = next == null || next.team != team || !next.block.hasLiquids;</b>
+<b class="fc">&nbsp;            backCapped = blendbits == 0 &amp;&amp; (prev == null || prev.team != team || !prev.block.hasLiquids);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptLiquid(Building source, Liquid liquid){
+<b class="fc">&nbsp;            noSleep();</b>
+<b class="fc">&nbsp;            return (liquids.current() == liquid || liquids.currentAmount() &lt; 0.2f)</b>
+<b class="fc">&nbsp;                &amp;&amp; (tile == null || source == this || (source.relativeTo(tile.x, tile.y) + 2) % 4 != rotation);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            smoothLiquid = Mathf.lerpDelta(smoothLiquid, liquids.currentAmount() / liquidCapacity, 0.05f);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(liquids.currentAmount() &gt; 0.0001f &amp;&amp; timer(timerFlow, 1)){</b>
+<b class="fc">&nbsp;                moveLiquidForward(leaks, liquids.current());</b>
+<b class="fc">&nbsp;                noSleep();</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                sleep();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        @Override
+&nbsp;        public Building next(){
+<b class="nc">&nbsp;            Tile next = tile.nearby(rotation);</b>
+<b class="nc">&nbsp;            if(next != null &amp;&amp; next.build instanceof ConduitBuild){</b>
+<b class="nc">&nbsp;                return next.build;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

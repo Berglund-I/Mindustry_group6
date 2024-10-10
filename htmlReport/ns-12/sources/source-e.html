@@ -1,0 +1,610 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Units</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities</a>
+</div>
+
+<h1>Coverage Summary for Class: Units (mindustry.entities)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Units</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.7%
+  </span>
+  <span class="absValue">
+    (19/60)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.4%
+  </span>
+  <span class="absValue">
+    (44/188)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Units$Sortf</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    31.7%
+  </span>
+  <span class="absValue">
+    (19/60)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.4%
+  </span>
+  <span class="absValue">
+    (44/188)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Utility class for unit and team interactions.*/
+<b class="nc">&nbsp;public class Units{</b>
+<b class="fc">&nbsp;    private static final Rect hitrect = new Rect();</b>
+&nbsp;    private static Unit result;
+&nbsp;    private static float cdist, cpriority;
+&nbsp;    private static int intResult;
+&nbsp;    private static Building buildResult;
+&nbsp;
+&nbsp;    //prevents allocations in anyEntities
+&nbsp;    private static boolean anyEntityGround;
+&nbsp;    private static float aeX, aeY, aeW, aeH;
+<b class="fc">&nbsp;    private static final Boolf&lt;Unit&gt; anyEntityLambda = unit -&gt; {</b>
+<b class="nc">&nbsp;        if((unit.isGrounded() &amp;&amp; !unit.type.allowLegStep) == anyEntityGround){</b>
+<b class="nc">&nbsp;            unit.hitboxTile(hitrect);</b>
+<b class="nc">&nbsp;            return hitrect.overlaps(aeX, aeY, aeW, aeH);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    };
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void unitCapDeath(Unit unit){
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            unit.dead = true;</b>
+<b class="nc">&nbsp;            Fx.unitCapKill.at(unit);</b>
+<b class="nc">&nbsp;            Core.app.post(() -&gt; Call.unitDestroy(unit.id));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void unitEnvDeath(Unit unit){
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            unit.dead = true;</b>
+<b class="nc">&nbsp;            Fx.unitEnvKill.at(unit);</b>
+<b class="nc">&nbsp;            Core.app.post(() -&gt; Call.unitDestroy(unit.id));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void unitDeath(int uid){
+<b class="nc">&nbsp;        Unit unit = Groups.unit.getByID(uid);</b>
+&nbsp;
+&nbsp;        //if there&#39;s no unit don&#39;t add it later and get it stuck as a ghost
+<b class="nc">&nbsp;        if(netClient != null){</b>
+<b class="nc">&nbsp;            netClient.addRemovedEntity(uid);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            unit.killed();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //destroys immediately
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void unitDestroy(int uid){
+<b class="nc">&nbsp;        Unit unit = Groups.unit.getByID(uid);</b>
+&nbsp;
+&nbsp;        //if there&#39;s no unit don&#39;t add it later and get it stuck as a ghost
+<b class="nc">&nbsp;        if(netClient != null){</b>
+<b class="nc">&nbsp;            netClient.addRemovedEntity(uid);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            unit.destroy();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void unitDespawn(Unit unit){
+<b class="nc">&nbsp;        if(unit == null) return;</b>
+<b class="nc">&nbsp;        Fx.unitDespawn.at(unit.x, unit.y, 0, unit);</b>
+<b class="nc">&nbsp;        unit.remove();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether a new instance of a unit of this team can be created. */
+&nbsp;    public static boolean canCreate(Team team, UnitType type){
+<b class="fc">&nbsp;        return !type.useUnitCap || (team.data().countType(type) &lt; getCap(team) &amp;&amp; !type.isBanned());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static int getCap(Team team){
+&nbsp;        //wave team has no cap
+<b class="fc">&nbsp;        if((team == state.rules.waveTeam &amp;&amp; !state.rules.pvp) || (state.isCampaign() &amp;&amp; team == state.rules.waveTeam) || state.rules.disableUnitCap){</b>
+<b class="fc">&nbsp;            return Integer.MAX_VALUE;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return Math.max(0, state.rules.unitCapVariable ? state.rules.unitCap + team.data().unitCap : state.rules.unitCap);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return unit cap as a string, substituting the infinity symbol instead of MAX_VALUE */
+&nbsp;    public static String getStringCap(Team team){
+<b class="nc">&nbsp;        int cap = getCap(team);</b>
+<b class="nc">&nbsp;        return cap &gt;= Integer.MAX_VALUE - 1 ? &quot;?&quot; : cap + &quot;&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this player can interact with a specific tile. if either of these are null, returns true.*/
+&nbsp;    public static boolean canInteract(Player player, Building tile){
+<b class="nc">&nbsp;        return player == null || tile == null || tile.interactable(player.team()) || state.rules.editor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isHittable(@Nullable Posc target, boolean air, boolean ground){
+<b class="nc">&nbsp;        return target != null &amp;&amp; (target instanceof Buildingc ? ground : (target instanceof Unit u &amp;&amp; u.checkTarget(air, ground)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Validates a target.
+&nbsp;     * @param target The target to validate
+&nbsp;     * @param team The team of the thing doing tha targeting
+&nbsp;     * @param x The X position of the thing doing the targeting
+&nbsp;     * @param y The Y position of the thing doing the targeting
+&nbsp;     * @param range The maximum distance from the target X/Y the targeter can be for it to be valid
+&nbsp;     * @return whether the target is invalid
+&nbsp;     */
+&nbsp;    public static boolean invalidateTarget(Posc target, Team team, float x, float y, float range){
+&nbsp;        return target == null ||
+<b class="nc">&nbsp;            (range != Float.MAX_VALUE &amp;&amp; !target.within(x, y, range + (target instanceof Sized hb ? hb.hitSize()/2f : 0f))) ||</b>
+<b class="nc">&nbsp;            (target instanceof Teamc t &amp;&amp; t.team() == team) ||</b>
+<b class="fc">&nbsp;            (target instanceof Healthc h &amp;&amp; !h.isValid()) ||</b>
+<b class="nc">&nbsp;            (target instanceof Unit u &amp;&amp; !u.targetable(team));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** See {@link #invalidateTarget(Posc, Team, float, float, float)} */
+&nbsp;    public static boolean invalidateTarget(Posc target, Team team, float x, float y){
+<b class="fc">&nbsp;        return invalidateTarget(target, team, x, y, Float.MAX_VALUE);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** See {@link #invalidateTarget(Posc, Team, float, float, float)} */
+&nbsp;    public static boolean invalidateTarget(Teamc target, Unit targeter, float range){
+<b class="fc">&nbsp;        return invalidateTarget(target, targeter.team(), targeter.x(), targeter.y(), range);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns whether there are any entities on this tile. */
+&nbsp;    public static boolean anyEntities(Tile tile, boolean ground){
+<b class="nc">&nbsp;        float size = tile.block().size * tilesize;</b>
+<b class="nc">&nbsp;        return anyEntities(tile.drawx() - size/2f, tile.drawy() - size/2f, size, size, ground);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns whether there are any entities on this tile. */
+&nbsp;    public static boolean anyEntities(Tile tile){
+<b class="nc">&nbsp;        return anyEntities(tile, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean anyEntities(float x, float y, float size){
+<b class="nc">&nbsp;        return anyEntities(x - size/2f, y - size/2f, size, size, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean anyEntities(float x, float y, float width, float height){
+<b class="fc">&nbsp;        return anyEntities(x, y, width, height, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean anyEntities(float x, float y, float width, float height, boolean ground){
+<b class="fc">&nbsp;        anyEntityGround = ground;</b>
+<b class="fc">&nbsp;        aeX = x;</b>
+<b class="fc">&nbsp;        aeY = y;</b>
+<b class="fc">&nbsp;        aeW = width;</b>
+<b class="fc">&nbsp;        aeH = height;</b>
+&nbsp;
+<b class="fc">&nbsp;        return nearbyCheck(x, y, width, height, anyEntityLambda);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Note that this checks the tile hitbox, not the standard hitbox. */
+&nbsp;    public static boolean anyEntities(float x, float y, float width, float height, Boolf&lt;Unit&gt; check){
+&nbsp;
+<b class="fc">&nbsp;        return nearbyCheck(x, y, width, height, unit -&gt; {</b>
+<b class="nc">&nbsp;            if(check.get(unit)){</b>
+<b class="nc">&nbsp;                unit.hitboxTile(hitrect);</b>
+&nbsp;
+<b class="nc">&nbsp;                return hitrect.overlaps(x, y, width, height);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the nearest damaged tile. */
+&nbsp;    public static Building findDamagedTile(Team team, float x, float y){
+<b class="nc">&nbsp;        return indexer.getDamaged(team).min(b -&gt; b.dst2(x, y));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the nearest ally tile in a range. */
+&nbsp;    public static Building findAllyTile(Team team, float x, float y, float range, Boolf&lt;Building&gt; pred){
+<b class="nc">&nbsp;        return indexer.findTile(team, x, y, range, pred);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the nearest enemy tile in a range. */
+&nbsp;    public static Building findEnemyTile(Team team, float x, float y, float range, Boolf&lt;Building&gt; pred){
+<b class="nc">&nbsp;        return findEnemyTile(team, x, y, range, false, pred);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the nearest enemy tile in a range. */
+&nbsp;    public static Building findEnemyTile(Team team, float x, float y, float range, boolean checkUnder, Boolf&lt;Building&gt; pred){
+<b class="fc">&nbsp;        if(team == Team.derelict) return null;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(checkUnder){</b>
+<b class="fc">&nbsp;            Building target = indexer.findEnemyTile(team, x, y, range, build -&gt; !build.block.underBullets &amp;&amp; pred.get(build));</b>
+<b class="fc">&nbsp;            if(target != null) return target;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return indexer.findEnemyTile(team, x, y, range, pred);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the closest building of the provided team that matches the predicate. */
+&nbsp;    public static @Nullable Building closestBuilding(Team team, float wx, float wy, float range, Boolf&lt;Building&gt; pred){
+<b class="nc">&nbsp;        buildResult = null;</b>
+<b class="nc">&nbsp;        cdist = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;        var buildings = team.data().buildingTree;</b>
+<b class="nc">&nbsp;        if(buildings == null) return null;</b>
+<b class="nc">&nbsp;        buildings.intersect(wx - range, wy - range, range*2f, range*2f, b -&gt; {</b>
+<b class="nc">&nbsp;            if(pred.get(b)){</b>
+<b class="nc">&nbsp;                float dst = b.dst(wx, wy) - b.hitSize()/2f;</b>
+<b class="nc">&nbsp;                if(dst &lt;= range &amp;&amp; (buildResult == null || dst &lt;= cdist)){</b>
+<b class="nc">&nbsp;                    cdist = dst;</b>
+<b class="nc">&nbsp;                    buildResult = b;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        var result = buildResult;</b>
+<b class="nc">&nbsp;        buildResult = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates through all buildings in a range. */
+&nbsp;    public static void nearbyBuildings(float x, float y, float range, Cons&lt;Building&gt; cons){
+<b class="nc">&nbsp;        indexer.allBuildings(x, y, range, cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the closest target enemy. First, units are checked, then tile entities. */
+&nbsp;    public static Teamc closestTarget(Team team, float x, float y, float range){
+<b class="nc">&nbsp;        return closestTarget(team, x, y, range, Unit::isValid);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the closest target enemy. First, units are checked, then tile entities. */
+&nbsp;    public static Teamc closestTarget(Team team, float x, float y, float range, Boolf&lt;Unit&gt; unitPred){
+<b class="nc">&nbsp;        return closestTarget(team, x, y, range, unitPred, t -&gt; true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the closest target enemy. First, units are checked, then tile entities. */
+&nbsp;    public static Teamc closestTarget(Team team, float x, float y, float range, Boolf&lt;Unit&gt; unitPred, Boolf&lt;Building&gt; tilePred){
+<b class="fc">&nbsp;        if(team == Team.derelict) return null;</b>
+&nbsp;
+<b class="fc">&nbsp;        Unit unit = closestEnemy(team, x, y, range, unitPred);</b>
+<b class="fc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            return unit;</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            return findEnemyTile(team, x, y, range, true, tilePred);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the closest target enemy. First, units are checked, then buildings. */
+&nbsp;    public static Teamc bestTarget(Team team, float x, float y, float range, Boolf&lt;Unit&gt; unitPred, Boolf&lt;Building&gt; tilePred, Sortf sort){
+<b class="fc">&nbsp;        if(team == Team.derelict) return null;</b>
+&nbsp;
+<b class="nc">&nbsp;        Unit unit = bestEnemy(team, x, y, range, unitPred, sort);</b>
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            return unit;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return findEnemyTile(team, x, y, range, true, tilePred);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the closest enemy of this team. Filter by predicate. */
+&nbsp;    public static Unit closestEnemy(Team team, float x, float y, float range, Boolf&lt;Unit&gt; predicate){
+<b class="fc">&nbsp;        if(team == Team.derelict) return null;</b>
+&nbsp;
+<b class="fc">&nbsp;        result = null;</b>
+<b class="fc">&nbsp;        cdist = 0f;</b>
+<b class="fc">&nbsp;        cpriority = -99999f;</b>
+&nbsp;
+<b class="fc">&nbsp;        nearbyEnemies(team, x - range, y - range, range*2f, range*2f, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.dead() || !predicate.get(e) || e.team == Team.derelict || !e.targetable(team) || e.inFogTo(team)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            float dst2 = e.dst2(x, y) - (e.hitSize * e.hitSize);</b>
+<b class="nc">&nbsp;            if(dst2 &lt; range*range &amp;&amp; (result == null || dst2 &lt; cdist || e.type.targetPriority &gt; cpriority) &amp;&amp; e.type.targetPriority &gt;= cpriority){</b>
+<b class="nc">&nbsp;                result = e;</b>
+<b class="nc">&nbsp;                cdist = dst2;</b>
+<b class="nc">&nbsp;                cpriority = e.type.targetPriority;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the closest enemy of this team using a custom comparison function. Filter by predicate. */
+&nbsp;    public static Unit bestEnemy(Team team, float x, float y, float range, Boolf&lt;Unit&gt; predicate, Sortf sort){
+<b class="nc">&nbsp;        if(team == Team.derelict) return null;</b>
+&nbsp;
+<b class="nc">&nbsp;        result = null;</b>
+<b class="nc">&nbsp;        cdist = 0f;</b>
+<b class="nc">&nbsp;        cpriority = -99999f;</b>
+&nbsp;
+<b class="nc">&nbsp;        nearbyEnemies(team, x - range, y - range, range*2f, range*2f, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.dead() || !predicate.get(e) || e.team == Team.derelict || !e.within(x, y, range + e.hitSize/2f) || !e.targetable(team) || e.inFogTo(team)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            float cost = sort.cost(e, x, y);</b>
+<b class="nc">&nbsp;            if((result == null || cost &lt; cdist || e.type.targetPriority &gt; cpriority) &amp;&amp; e.type.targetPriority &gt;= cpriority){</b>
+<b class="nc">&nbsp;                result = e;</b>
+<b class="nc">&nbsp;                cdist = cost;</b>
+<b class="nc">&nbsp;                cpriority = e.type.targetPriority;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the closest ally of this team. Filter by predicate. No range. */
+&nbsp;    public static Unit closest(Team team, float x, float y, Boolf&lt;Unit&gt; predicate){
+<b class="nc">&nbsp;        result = null;</b>
+<b class="nc">&nbsp;        cdist = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Unit e : Groups.unit){</b>
+<b class="nc">&nbsp;            if(!predicate.get(e) || e.team() != team) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            float dist = e.dst2(x, y);</b>
+<b class="nc">&nbsp;            if(result == null || dist &lt; cdist){</b>
+<b class="nc">&nbsp;                result = e;</b>
+<b class="nc">&nbsp;                cdist = dist;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the closest ally of this team in a range. Filter by predicate. */
+&nbsp;    public static Unit closest(Team team, float x, float y, float range, Boolf&lt;Unit&gt; predicate){
+<b class="fc">&nbsp;        result = null;</b>
+<b class="fc">&nbsp;        cdist = 0f;</b>
+&nbsp;
+<b class="fc">&nbsp;        nearby(team, x, y, range, e -&gt; {</b>
+<b class="nc">&nbsp;            if(!e.isValid() || !predicate.get(e)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            float dist = e.dst2(x, y);</b>
+<b class="nc">&nbsp;            if(result == null || dist &lt; cdist){</b>
+<b class="nc">&nbsp;                result = e;</b>
+<b class="nc">&nbsp;                cdist = dist;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the closest ally of this team in a range. Filter by predicate. */
+&nbsp;    public static Unit closest(Team team, float x, float y, float range, Boolf&lt;Unit&gt; predicate, Sortf sort){
+<b class="nc">&nbsp;        result = null;</b>
+<b class="nc">&nbsp;        cdist = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;        nearby(team, x, y, range, e -&gt; {</b>
+<b class="nc">&nbsp;            if(!e.isValid() || !predicate.get(e)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            float dist = sort.cost(e, x, y);</b>
+<b class="nc">&nbsp;            if(result == null || dist &lt; cdist){</b>
+<b class="nc">&nbsp;                result = e;</b>
+<b class="nc">&nbsp;                cdist = dist;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the closest ally of this team. Filter by predicate.
+&nbsp;     * Unlike the closest() function, this only guarantees that unit hitboxes overlap the range. */
+&nbsp;    public static Unit closestOverlap(Team team, float x, float y, float range, Boolf&lt;Unit&gt; predicate){
+<b class="nc">&nbsp;        result = null;</b>
+<b class="nc">&nbsp;        cdist = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;        nearby(team, x - range, y - range, range*2f, range*2f, e -&gt; {</b>
+<b class="nc">&nbsp;            if(!e.isValid() || !predicate.get(e)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            float dist = e.dst2(x, y);</b>
+<b class="nc">&nbsp;            if(result == null || dist &lt; cdist){</b>
+<b class="nc">&nbsp;                result = e;</b>
+<b class="nc">&nbsp;                cdist = dist;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether any units exist in this square (centered) */
+&nbsp;    public static int count(float x, float y, float size, Boolf&lt;Unit&gt; filter){
+<b class="nc">&nbsp;        return count(x - size/2f, y - size/2f, size, size, filter);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether any units exist in this rectangle */
+&nbsp;    public static int count(float x, float y, float width, float height, Boolf&lt;Unit&gt; filter){
+<b class="nc">&nbsp;        intResult = 0;</b>
+<b class="nc">&nbsp;        Groups.unit.intersect(x, y, width, height, v -&gt; {</b>
+<b class="nc">&nbsp;            if(filter.get(v)){</b>
+<b class="nc">&nbsp;                intResult ++;</b>
+&nbsp;            }
+&nbsp;        });
+<b class="nc">&nbsp;        return intResult;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether any units exist in this rectangle */
+&nbsp;    public static boolean any(float x, float y, float width, float height, Boolf&lt;Unit&gt; filter){
+<b class="nc">&nbsp;        return count(x, y, width, height, filter) &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates over all units in a rectangle. */
+&nbsp;    public static void nearby(@Nullable Team team, float x, float y, float width, float height, Cons&lt;Unit&gt; cons){
+<b class="fc">&nbsp;        if(team != null){</b>
+<b class="fc">&nbsp;            team.data().tree().intersect(x, y, width, height, cons);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            for(var other : state.teams.present){</b>
+<b class="nc">&nbsp;                other.tree().intersect(x, y, width, height, cons);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates over all units in a circle around this position. */
+&nbsp;    public static void nearby(@Nullable Team team, float x, float y, float radius, Cons&lt;Unit&gt; cons){
+<b class="fc">&nbsp;        nearby(team, x - radius, y - radius, radius*2f, radius*2f, unit -&gt; {</b>
+<b class="nc">&nbsp;            if(unit.within(x, y, radius + unit.hitSize/2f)){</b>
+<b class="nc">&nbsp;                cons.get(unit);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates over all units in a rectangle. */
+&nbsp;    public static void nearby(float x, float y, float width, float height, Cons&lt;Unit&gt; cons){
+<b class="nc">&nbsp;        Groups.unit.intersect(x, y, width, height, cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Iterates over all units in a rectangle.
+&nbsp;     * @return whether a unit was found.
+&nbsp;     * */
+&nbsp;    public static boolean nearbyCheck(float x, float y, float width, float height, Boolf&lt;Unit&gt; cons){
+<b class="fc">&nbsp;        return Groups.unit.intersect(x, y, width, height, cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates over all units in a rectangle. */
+&nbsp;    public static void nearby(Rect rect, Cons&lt;Unit&gt; cons){
+<b class="nc">&nbsp;        nearby(rect.x, rect.y, rect.width, rect.height, cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates over all units that are enemies of this team. */
+&nbsp;    public static void nearbyEnemies(Team team, float x, float y, float width, float height, Cons&lt;Unit&gt; cons){
+<b class="fc">&nbsp;        Seq&lt;TeamData&gt; data = state.teams.present;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; data.size; i++){</b>
+<b class="nc">&nbsp;            if(data.items[i].team != team){</b>
+<b class="nc">&nbsp;                nearby(data.items[i].team, x, y, width, height, cons);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates over all units that are enemies of this team. */
+&nbsp;    public static void nearbyEnemies(Team team, float x, float y, float radius, Cons&lt;Unit&gt; cons){
+<b class="nc">&nbsp;        nearbyEnemies(team, x - radius, y - radius, radius * 2f, radius * 2f, u -&gt; {</b>
+<b class="nc">&nbsp;            if(u.within(x, y, radius + u.hitSize/2f)){</b>
+<b class="nc">&nbsp;                cons.get(u);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates over all units that are enemies of this team. */
+&nbsp;    public static void nearbyEnemies(Team team, Rect rect, Cons&lt;Unit&gt; cons){
+<b class="fc">&nbsp;        nearbyEnemies(team, rect.x, rect.y, rect.width, rect.height, cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether there is an enemy in this rectangle. */
+&nbsp;    public static boolean nearEnemy(Team team, float x, float y, float width, float height){
+<b class="nc">&nbsp;        Seq&lt;TeamData&gt; data = state.teams.present;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; data.size; i++){</b>
+<b class="nc">&nbsp;            var other = data.items[i];</b>
+<b class="nc">&nbsp;            if(other.team != team &amp;&amp; other.team != Team.derelict){</b>
+<b class="nc">&nbsp;                if(other.tree().any(x, y, width, height)){</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                if(other.turretTree != null &amp;&amp; other.turretTree.any(x, y, width, height)){</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface Sortf{
+&nbsp;        float cost(Unit unit, float x, float y);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

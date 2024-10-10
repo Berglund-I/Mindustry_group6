@@ -1,0 +1,392 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PayloadLoader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.payloads</a>
+</div>
+
+<h1>Coverage Summary for Class: PayloadLoader (mindustry.world.blocks.payloads)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PayloadLoader</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78.8%
+  </span>
+  <span class="absValue">
+    (26/33)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PayloadLoader$PayloadLoaderBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (7/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16%
+  </span>
+  <span class="absValue">
+    (13/81)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (11/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.2%
+  </span>
+  <span class="absValue">
+    (39/114)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.payloads;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.blocks.payloads.PayloadUnloader.*;
+&nbsp;import mindustry.world.blocks.sandbox.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class PayloadLoader extends PayloadBlock{
+<b class="fc">&nbsp;    public final int timerLoad = timers++;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float loadTime = 2f;</b>
+<b class="fc">&nbsp;    public int itemsLoaded = 8;</b>
+<b class="fc">&nbsp;    public float liquidsLoaded = 40f;</b>
+<b class="fc">&nbsp;    public int maxBlockSize = 3;</b>
+<b class="fc">&nbsp;    public float maxPowerConsumption = 40f;</b>
+<b class="fc">&nbsp;    public boolean loadPowerDynamic = true;</b>
+&nbsp;
+&nbsp;    public @Load(&quot;@-over&quot;) TextureRegion overRegion;
+&nbsp;
+&nbsp;    //initialized in init(), do not touch
+<b class="fc">&nbsp;    protected float basePowerUse = 0f;</b>
+&nbsp;
+&nbsp;    public PayloadLoader(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp; 
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        hasLiquids = true;</b>
+<b class="fc">&nbsp;        hasPower = true;</b>
+<b class="fc">&nbsp;        itemCapacity = 100;</b>
+<b class="fc">&nbsp;        liquidCapacity = 100f;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        outputsPayload = true;</b>
+<b class="fc">&nbsp;        size = 3;</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        canOverdrive = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{region, inRegion, outRegion, topRegion};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;progress&quot;, (PayloadLoaderBuild build) -&gt; new Bar(() -&gt;</b>
+<b class="nc">&nbsp;            Core.bundle.format(build.payload != null &amp;&amp; build.payload.block().hasItems ? &quot;bar.items&quot; : &quot;bar.loadprogress&quot;,</b>
+<b class="nc">&nbsp;                build.payload == null || !build.payload.block().hasItems ? 0 : build.payload.build.items.total()), () -&gt; Pal.items, build::fraction));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy());</b>
+<b class="nc">&nbsp;        Draw.rect(inRegion, plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+<b class="nc">&nbsp;        Draw.rect(outRegion, plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+<b class="nc">&nbsp;        Draw.rect(topRegion, plan.drawx(), plan.drawy());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        if(loadPowerDynamic){</b>
+<b class="fc">&nbsp;            basePowerUse = consPower != null ? consPower.usage : 0f;</b>
+<b class="fc">&nbsp;            consumePowerDynamic(basePowerUse, (PayloadLoaderBuild loader) -&gt; loader.shouldConsume() ? (loader.hasBattery() &amp;&amp; !loader.exporting ? maxPowerConsumption + basePowerUse : basePowerUse) : 0f);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class PayloadLoaderBuild extends PayloadBlockBuild&lt;BuildPayload&gt;{</b>
+<b class="fc">&nbsp;        public boolean exporting = false;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptPayload(Building source, Payload payload){
+<b class="nc">&nbsp;            return super.acceptPayload(source, payload) &amp;&amp;</b>
+<b class="nc">&nbsp;                payload.fits(maxBlockSize) &amp;&amp;</b>
+<b class="nc">&nbsp;                payload instanceof BuildPayload build &amp;&amp; (</b>
+&nbsp;                //item container
+<b class="nc">&nbsp;                (build.build.block.hasItems &amp;&amp; build.block().unloadable &amp;&amp; build.block().itemCapacity &gt;= 10 &amp;&amp; build.block().size &lt;= maxBlockSize) ||</b>
+&nbsp;                //liquid container
+<b class="nc">&nbsp;                (build.build.block().hasLiquids &amp;&amp; build.block().liquidCapacity &gt;= 10f) ||</b>
+&nbsp;                //battery
+&nbsp;                (build.build.block.consPower != null &amp;&amp; build.build.block.consPower.buffered)
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handlePayload(Building source, Payload payload){
+<b class="nc">&nbsp;            super.handlePayload(source, payload);</b>
+<b class="nc">&nbsp;            exporting = false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            return items.total() &lt; itemCapacity &amp;&amp; !(source instanceof PayloadUnloaderBuild);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptLiquid(Building source, Liquid liquid){
+<b class="nc">&nbsp;            return (liquids.current() == liquid || liquids.currentAmount() &lt; 0.2f) &amp;&amp; !(source instanceof PayloadUnloaderBuild);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y);</b>
+&nbsp;
+&nbsp;            //draw input
+<b class="nc">&nbsp;            boolean fallback = true;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                if(blends(i) &amp;&amp; i != rotation){</b>
+<b class="nc">&nbsp;                    Draw.rect(inRegion, x, y, (i * 90) - 180);</b>
+<b class="nc">&nbsp;                    fallback = false;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            if(fallback) Draw.rect(inRegion, x, y, rotation * 90);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(outRegion, x, y, rotdeg());</b>
+&nbsp;
+&nbsp;            //drawn below payload so 3x3 blocks don&#39;t look even even weirder
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.blockOver);</b>
+<b class="nc">&nbsp;            drawPayload();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(overRegion.found()){</b>
+<b class="nc">&nbsp;                Draw.z(Layer.blockOver + 0.1f);</b>
+<b class="nc">&nbsp;                Draw.rect(overRegion, x, y);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            super.updateTile();</b>
+<b class="fc">&nbsp;            if(shouldExport()){</b>
+<b class="nc">&nbsp;                moveOutPayload();</b>
+<b class="fc">&nbsp;            }else if(moveInPayload()){</b>
+&nbsp;
+&nbsp;                //load up items
+<b class="nc">&nbsp;                if(payload.block().hasItems &amp;&amp; items.any()){</b>
+<b class="nc">&nbsp;                    boolean acceptedAny = true;</b>
+<b class="nc">&nbsp;                    if(efficiency &gt; 0.01f &amp;&amp; timer(timerLoad, loadTime / efficiency)){</b>
+<b class="nc">&nbsp;                        acceptedAny = false;</b>
+&nbsp;                        //load up items a set amount of times
+<b class="nc">&nbsp;                        for(int j = 0; j &lt; itemsLoaded &amp;&amp; items.any(); j++){</b>
+&nbsp;
+<b class="nc">&nbsp;                            for(int i = 0; i &lt; items.length(); i++){</b>
+<b class="nc">&nbsp;                                if(items.get(i) &gt; 0){</b>
+<b class="nc">&nbsp;                                    Item item = content.item(i);</b>
+<b class="nc">&nbsp;                                    if(payload.build.acceptItem(payload.build, item)){</b>
+<b class="nc">&nbsp;                                        payload.build.handleItem(payload.build, item);</b>
+<b class="nc">&nbsp;                                        items.remove(item, 1);</b>
+<b class="nc">&nbsp;                                        acceptedAny = true;</b>
+<b class="nc">&nbsp;                                        break;</b>
+<b class="nc">&nbsp;                                    }else if(payload.block().separateItemCapacity || payload.block().consumesItem(item)){</b>
+<b class="nc">&nbsp;                                        exporting = true;</b>
+<b class="nc">&nbsp;                                        break;</b>
+&nbsp;                                    }
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    if(!acceptedAny){</b>
+<b class="nc">&nbsp;                        exporting = true;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //load up liquids
+<b class="nc">&nbsp;                if(payload.block().hasLiquids &amp;&amp; liquids.currentAmount() &gt;= 0.001f){</b>
+<b class="nc">&nbsp;                    Liquid liq = liquids.current();</b>
+<b class="nc">&nbsp;                    float total = liquids.currentAmount();</b>
+<b class="nc">&nbsp;                    float flow = Math.min(Math.min(liquidsLoaded * edelta(), payload.block().liquidCapacity - payload.build.liquids.get(liq)), total);</b>
+&nbsp;                    //TODO potential crash here
+<b class="nc">&nbsp;                    if(payload.build.acceptLiquid(payload.build, liq)){</b>
+<b class="nc">&nbsp;                        if(!(payload.block() instanceof LiquidVoid)){</b>
+<b class="nc">&nbsp;                            payload.build.liquids.add(liq, flow);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        liquids.remove(liq, flow);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        exporting = true;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //load up power
+<b class="nc">&nbsp;                if(hasBattery()){</b>
+&nbsp;                    //base power input that in raw units
+<b class="nc">&nbsp;                    float powerInput = power.status * (basePowerUse + maxPowerConsumption);</b>
+&nbsp;                    //how much is actually usable
+<b class="nc">&nbsp;                    float availableInput = Math.max(powerInput - basePowerUse, 0f);</b>
+&nbsp;
+&nbsp;                    //charge the battery
+<b class="nc">&nbsp;                    float cap = payload.block().consPower.capacity;</b>
+<b class="nc">&nbsp;                    payload.build.power.status += availableInput / cap * edelta();</b>
+&nbsp;
+&nbsp;                    //export if full
+<b class="nc">&nbsp;                    if(payload.build.power.status &gt;= 1f){</b>
+<b class="nc">&nbsp;                        exporting = true;</b>
+<b class="nc">&nbsp;                        payload.build.power.status = Mathf.clamp(payload.build.power.status);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public float fraction(){
+<b class="nc">&nbsp;            return payload == null ? 0f :</b>
+<b class="nc">&nbsp;                payload.build.items != null ? payload.build.items.total() / (float)payload.build.block.itemCapacity :</b>
+<b class="nc">&nbsp;                payload.build.liquids != null ? payload.build.liquids.currentAmount() / payload.block().liquidCapacity :</b>
+<b class="nc">&nbsp;                hasBattery() ? payload.build.power.status :</b>
+<b class="nc">&nbsp;                0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean shouldExport(){
+<b class="fc">&nbsp;            return payload != null &amp;&amp; (</b>
+&nbsp;                exporting ||
+<b class="nc">&nbsp;                (payload.block().hasLiquids &amp;&amp; liquids.currentAmount() &gt;= 0.1f &amp;&amp; payload.build.liquids.currentAmount() &gt;= payload.block().liquidCapacity - 0.001f) ||</b>
+<b class="nc">&nbsp;                (payload.block().hasItems &amp;&amp; items.any() &amp;&amp; payload.block().separateItemCapacity &amp;&amp; content.items().contains(i -&gt; payload.build.items.get(i) &gt;= payload.block().itemCapacity)) ||</b>
+<b class="nc">&nbsp;                (hasBattery() &amp;&amp; payload.build.power.status &gt;= 0.999999999f));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean hasBattery(){
+<b class="nc">&nbsp;            return payload != null &amp;&amp; payload.block().consPower != null &amp;&amp; payload.block().consPower.buffered;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return payload != null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.bool(exporting);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                exporting = read.bool();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

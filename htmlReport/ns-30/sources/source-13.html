@@ -1,0 +1,177 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > IconSelectDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: IconSelectDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">IconSelectDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/35)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class IconSelectDialog extends Dialog{
+<b class="nc">&nbsp;    private Intc consumer = i -&gt; Log.info(&quot;you have mere seconds&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;    public IconSelectDialog(){</b>
+<b class="nc">&nbsp;        closeOnBack();</b>
+<b class="nc">&nbsp;        setFillParent(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;            resized(true, () -&gt; {</b>
+<b class="nc">&nbsp;                t.clearChildren();</b>
+<b class="nc">&nbsp;                t.marginRight(19f);</b>
+<b class="nc">&nbsp;                t.defaults().size(48f);</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(Icon.none, Styles.flati, () -&gt; {</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                    consumer.get(0);</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                int cols = (int)Math.min(20, Core.graphics.getWidth() / Scl.scl(52f));</b>
+&nbsp;
+<b class="nc">&nbsp;                int i = 1;</b>
+<b class="nc">&nbsp;                for(var key : accessibleIcons){</b>
+<b class="nc">&nbsp;                    var value = Icon.icons.get(key);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.button(value, Styles.flati, () -&gt; {</b>
+<b class="nc">&nbsp;                        hide();</b>
+<b class="nc">&nbsp;                        consumer.get(Iconc.codes.get(key));</b>
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    if(++i % cols == 0) t.row();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                for(ContentType ctype : defaultContentIcons){</b>
+<b class="nc">&nbsp;                    t.row();</b>
+<b class="nc">&nbsp;                    t.image().colspan(cols).growX().width(Float.NEGATIVE_INFINITY).height(3f).color(Pal.accent);</b>
+<b class="nc">&nbsp;                    t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                    i = 0;</b>
+<b class="nc">&nbsp;                    for(UnlockableContent u : content.getBy(ctype).&lt;UnlockableContent&gt;as()){</b>
+<b class="nc">&nbsp;                        if(!u.isHidden() &amp;&amp; u.unlocked()){</b>
+<b class="nc">&nbsp;                            t.button(new TextureRegionDrawable(u.uiIcon), Styles.flati, iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                                hide();</b>
+<b class="nc">&nbsp;                                consumer.get(u.emojiChar());</b>
+&nbsp;                            });
+&nbsp;
+<b class="nc">&nbsp;                            if(++i % cols == 0) t.row();</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        });
+<b class="nc">&nbsp;        buttons.button(&quot;@back&quot;, Icon.left, this::hide).size(210f, 64f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void show(Intc listener){
+<b class="nc">&nbsp;        consumer = listener;</b>
+<b class="nc">&nbsp;        super.show();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

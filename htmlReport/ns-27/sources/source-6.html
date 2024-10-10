@@ -1,0 +1,548 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Net</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.net</a>
+</div>
+
+<h1>Coverage Summary for Class: Net (mindustry.net)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Net</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.3%
+  </span>
+  <span class="absValue">
+    (7/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.5%
+  </span>
+  <span class="absValue">
+    (23/148)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Net$NetProvider</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    21.2%
+  </span>
+  <span class="absValue">
+    (7/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.1%
+  </span>
+  <span class="absValue">
+    (23/152)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.net;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.net.*;
+&nbsp;import arc.net.Server.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.net.Streamable.*;
+&nbsp;import net.jpountz.lz4.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.nio.*;
+&nbsp;import java.nio.channels.*;
+&nbsp;import java.util.concurrent.*;
+&nbsp;
+&nbsp;import static arc.util.Log.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;public class Net{
+<b class="fc">&nbsp;    private static Seq&lt;Prov&lt;? extends Packet&gt;&gt; packetProvs = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private static Seq&lt;Class&lt;? extends Packet&gt;&gt; packetClasses = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private static ObjectIntMap&lt;Class&lt;?&gt;&gt; packetToId = new ObjectIntMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    private boolean server;
+&nbsp;    private boolean active;
+&nbsp;    private boolean clientLoaded;
+&nbsp;    private @Nullable StreamBuilder currentStream;
+&nbsp;
+<b class="fc">&nbsp;    private final Seq&lt;Packet&gt; packetQueue = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private final ObjectMap&lt;Class&lt;?&gt;, Cons&gt; clientListeners = new ObjectMap&lt;&gt;();</b>
+<b class="fc">&nbsp;    private final ObjectMap&lt;Class&lt;?&gt;, Cons2&lt;NetConnection, Object&gt;&gt; serverListeners = new ObjectMap&lt;&gt;();</b>
+<b class="fc">&nbsp;    private final IntMap&lt;StreamBuilder&gt; streams = new IntMap&lt;&gt;();</b>
+<b class="fc">&nbsp;    private final ExecutorService pingExecutor = OS.isWindows &amp;&amp; !OS.is64Bit ? Threads.boundedExecutor(&quot;Ping Servers&quot;, 5) : Threads.unboundedExecutor();</b>
+&nbsp;
+&nbsp;    private final NetProvider provider;
+&nbsp;
+&nbsp;    static{
+<b class="fc">&nbsp;        registerPacket(StreamBegin::new);</b>
+<b class="fc">&nbsp;        registerPacket(StreamChunk::new);</b>
+<b class="fc">&nbsp;        registerPacket(WorldStream::new);</b>
+<b class="fc">&nbsp;        registerPacket(ConnectPacket::new);</b>
+&nbsp;
+&nbsp;        //register generated packet classes
+<b class="fc">&nbsp;        Call.registerPackets();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Registers a new packet type for serialization. */
+&nbsp;    public static &lt;T extends Packet&gt; void registerPacket(Prov&lt;T&gt; cons){
+<b class="fc">&nbsp;        packetProvs.add(cons);</b>
+<b class="fc">&nbsp;        var t = cons.get();</b>
+<b class="fc">&nbsp;        packetClasses.add(t.getClass());</b>
+<b class="fc">&nbsp;        packetToId.put(t.getClass(), packetProvs.size - 1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static byte getPacketId(Packet packet){
+<b class="nc">&nbsp;        int id = packetToId.get(packet.getClass(), -1);</b>
+<b class="nc">&nbsp;        if(id == -1) throw new ArcRuntimeException(&quot;Unknown packet type: &quot; + packet.getClass());</b>
+<b class="nc">&nbsp;        return (byte)id;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T extends Packet&gt; T newPacket(byte id){
+<b class="nc">&nbsp;        return ((Prov&lt;T&gt;)packetProvs.get(id &amp; 0xff)).get();</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Net(NetProvider provider){</b>
+<b class="fc">&nbsp;        this.provider = provider;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handleException(Throwable e){
+<b class="nc">&nbsp;        if(e instanceof ArcNetException){</b>
+<b class="nc">&nbsp;            Core.app.post(() -&gt; showError(new IOException(&quot;mismatch&quot;, e)));</b>
+<b class="nc">&nbsp;        }else if(e instanceof ClosedChannelException){</b>
+<b class="nc">&nbsp;            Core.app.post(() -&gt; showError(new IOException(&quot;alreadyconnected&quot;, e)));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Core.app.post(() -&gt; showError(e));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Display a network error. Call on the graphics thread. */
+&nbsp;    public void showError(Throwable e){
+&nbsp;
+<b class="nc">&nbsp;        if(!headless){</b>
+&nbsp;
+<b class="nc">&nbsp;            Throwable t = e;</b>
+<b class="nc">&nbsp;            while(t.getCause() != null){</b>
+<b class="nc">&nbsp;                t = t.getCause();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            String baseError = Strings.getFinalMessage(e);</b>
+&nbsp;
+<b class="nc">&nbsp;            String error = baseError == null ? &quot;&quot; : baseError.toLowerCase();</b>
+<b class="nc">&nbsp;            String type = t.getClass().toString().toLowerCase();</b>
+<b class="nc">&nbsp;            boolean isError = false;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(e instanceof BufferUnderflowException || e instanceof BufferOverflowException || e.getCause() instanceof EOFException){</b>
+<b class="nc">&nbsp;                error = Core.bundle.get(&quot;error.io&quot;);</b>
+<b class="nc">&nbsp;            }else if(error.equals(&quot;mismatch&quot;) || e instanceof LZ4Exception || (e instanceof IndexOutOfBoundsException &amp;&amp; e.getStackTrace().length &gt; 0 &amp;&amp; e.getStackTrace()[0].getClassName().contains(&quot;java.nio&quot;))){</b>
+<b class="nc">&nbsp;                error = Core.bundle.get(&quot;error.mismatch&quot;);</b>
+<b class="nc">&nbsp;            }else if(error.contains(&quot;port out of range&quot;) || error.contains(&quot;invalid argument&quot;) || (error.contains(&quot;invalid&quot;) &amp;&amp; error.contains(&quot;address&quot;)) || Strings.neatError(e).contains(&quot;address associated&quot;)){</b>
+<b class="nc">&nbsp;                error = Core.bundle.get(&quot;error.invalidaddress&quot;);</b>
+<b class="nc">&nbsp;            }else if(error.contains(&quot;connection refused&quot;) || error.contains(&quot;route to host&quot;) || type.contains(&quot;unknownhost&quot;)){</b>
+<b class="nc">&nbsp;                error = Core.bundle.get(&quot;error.unreachable&quot;);</b>
+<b class="nc">&nbsp;            }else if(type.contains(&quot;timeout&quot;)){</b>
+<b class="nc">&nbsp;                error = Core.bundle.get(&quot;error.timedout&quot;);</b>
+<b class="nc">&nbsp;            }else if(error.equals(&quot;alreadyconnected&quot;) || error.contains(&quot;connection is closed&quot;)){</b>
+<b class="nc">&nbsp;                error = Core.bundle.get(&quot;error.alreadyconnected&quot;);</b>
+<b class="nc">&nbsp;            }else if(!error.isEmpty()){</b>
+<b class="nc">&nbsp;                error = Core.bundle.get(&quot;error.any&quot;);</b>
+<b class="nc">&nbsp;                isError = true;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(isError){</b>
+<b class="nc">&nbsp;                ui.showException(&quot;@error.any&quot;, e);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                ui.showText(&quot;&quot;, Core.bundle.format(&quot;connectfail&quot;, error));</b>
+&nbsp;            }
+<b class="nc">&nbsp;            ui.loadfrag.hide();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(client()){</b>
+<b class="nc">&nbsp;                netClient.disconnectQuietly();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Log.err(e);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Sets the client loaded status, or whether it will receive normal packets from the server.
+&nbsp;     */
+&nbsp;    public void setClientLoaded(boolean loaded){
+<b class="nc">&nbsp;        clientLoaded = loaded;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(loaded){</b>
+&nbsp;            //handle all packets that were skipped while loading
+<b class="nc">&nbsp;            for(int i = 0; i &lt; packetQueue.size; i++){</b>
+<b class="nc">&nbsp;                handleClientReceived(packetQueue.get(i));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;        //clear inbound packet queue
+<b class="nc">&nbsp;        packetQueue.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setClientConnected(){
+<b class="nc">&nbsp;        active = true;</b>
+<b class="nc">&nbsp;        server = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Connect to an address.
+&nbsp;     */
+&nbsp;    public void connect(String ip, int port, Runnable success){
+&nbsp;        try{
+<b class="nc">&nbsp;            if(!active){</b>
+<b class="nc">&nbsp;                Events.fire(new ClientServerConnectEvent(ip, port));</b>
+<b class="nc">&nbsp;                provider.connectClient(ip, port, success);</b>
+<b class="nc">&nbsp;                active = true;</b>
+<b class="nc">&nbsp;                server = false;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                throw new IOException(&quot;alreadyconnected&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }catch(IOException e){</b>
+<b class="nc">&nbsp;            showError(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Host a server at an address.
+&nbsp;     */
+&nbsp;    public void host(int port) throws IOException{
+<b class="nc">&nbsp;        provider.hostServer(port);</b>
+<b class="nc">&nbsp;        active = true;</b>
+<b class="nc">&nbsp;        server = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        Time.runTask(60f, platform::updateRPC);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Closes the server.
+&nbsp;     */
+&nbsp;    public void closeServer(){
+<b class="nc">&nbsp;        for(NetConnection con : getConnections()){</b>
+<b class="nc">&nbsp;            Call.kick(con, KickReason.serverClose);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        provider.closeServer();</b>
+<b class="nc">&nbsp;        server = false;</b>
+<b class="nc">&nbsp;        active = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reset(){
+<b class="nc">&nbsp;        closeServer();</b>
+<b class="nc">&nbsp;        netClient.disconnectNoReset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void disconnect(){
+<b class="nc">&nbsp;        if(active &amp;&amp; !server){</b>
+<b class="nc">&nbsp;            Log.info(&quot;Disconnecting.&quot;);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        provider.disconnectClient();</b>
+<b class="nc">&nbsp;        server = false;</b>
+<b class="nc">&nbsp;        active = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Starts discovering servers on a different thread.
+&nbsp;     * Callback is run on the main Arc thread.
+&nbsp;     */
+&nbsp;    public void discoverServers(Cons&lt;Host&gt; cons, Runnable done){
+<b class="nc">&nbsp;        provider.discoverServers(cons, done);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Returns a list of all connections IDs.
+&nbsp;     */
+&nbsp;    public Iterable&lt;NetConnection&gt; getConnections(){
+<b class="nc">&nbsp;        return (Iterable&lt;NetConnection&gt;)provider.getConnections();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Send an object to all connected clients, or to the server if this is a client.*/
+&nbsp;    public void send(Object object, boolean reliable){
+<b class="nc">&nbsp;        if(server){</b>
+<b class="nc">&nbsp;            for(NetConnection con : provider.getConnections()){</b>
+<b class="nc">&nbsp;                con.send(object, reliable);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            provider.sendClient(object, reliable);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Send an object to everyone EXCEPT a certain client. Server-side only.*/
+&nbsp;    public void sendExcept(NetConnection except, Object object, boolean reliable){
+<b class="nc">&nbsp;        for(NetConnection con : getConnections()){</b>
+<b class="nc">&nbsp;            if(con != except){</b>
+<b class="nc">&nbsp;                con.send(object, reliable);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable StreamBuilder getCurrentStream(){
+<b class="nc">&nbsp;        return currentStream;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Registers a client listener for when an object is received.
+&nbsp;     */
+&nbsp;    public &lt;T&gt; void handleClient(Class&lt;T&gt; type, Cons&lt;T&gt; listener){
+<b class="nc">&nbsp;        clientListeners.put(type, listener);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Registers a server listener for when an object is received.
+&nbsp;     */
+&nbsp;    public &lt;T&gt; void handleServer(Class&lt;T&gt; type, Cons2&lt;NetConnection, T&gt; listener){
+<b class="fc">&nbsp;        serverListeners.put(type, (Cons2&lt;NetConnection, Object&gt;)listener);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Call to handle a packet being received for the client.
+&nbsp;     */
+&nbsp;    public void handleClientReceived(Packet object){
+<b class="nc">&nbsp;        object.handled();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(object instanceof StreamBegin b){</b>
+<b class="nc">&nbsp;            streams.put(b.id, currentStream = new StreamBuilder(b));</b>
+&nbsp;
+<b class="nc">&nbsp;        }else if(object instanceof StreamChunk c){</b>
+<b class="nc">&nbsp;            StreamBuilder builder = streams.get(c.id);</b>
+<b class="nc">&nbsp;            if(builder == null){</b>
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;Received stream chunk without a StreamBegin beforehand!&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            builder.add(c.data);</b>
+&nbsp;
+<b class="nc">&nbsp;            ui.loadfrag.setProgress(builder.progress());</b>
+<b class="nc">&nbsp;            ui.loadfrag.snapProgress();</b>
+<b class="nc">&nbsp;            netClient.resetTimeout();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(builder.isDone()){</b>
+<b class="nc">&nbsp;                streams.remove(builder.id);</b>
+<b class="nc">&nbsp;                handleClientReceived(builder.build());</b>
+<b class="nc">&nbsp;                currentStream = null;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            int p = object.getPriority();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(clientLoaded || p == Packet.priorityHigh){</b>
+<b class="nc">&nbsp;                if(clientListeners.get(object.getClass()) != null){</b>
+<b class="nc">&nbsp;                    clientListeners.get(object.getClass()).get(object);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    object.handleClient();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(p != Packet.priorityLow){</b>
+<b class="nc">&nbsp;                packetQueue.add(object);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Call to handle a packet being received for the server.
+&nbsp;     */
+&nbsp;    public void handleServerReceived(NetConnection connection, Packet object){
+<b class="nc">&nbsp;        object.handled();</b>
+&nbsp;
+&nbsp;        try{
+&nbsp;            //handle object normally
+<b class="nc">&nbsp;            if(serverListeners.get(object.getClass()) != null){</b>
+<b class="nc">&nbsp;                serverListeners.get(object.getClass()).get(connection, object);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                object.handleServer(connection);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }catch(ValidateException e){</b>
+&nbsp;            //ignore invalid actions
+<b class="nc">&nbsp;            debug(&quot;Validation failed for &#39;@&#39;: @&quot;, e.player, e.getMessage());</b>
+<b class="nc">&nbsp;        }catch(RuntimeException e){</b>
+&nbsp;            //ignore indirect ValidateException-s
+<b class="nc">&nbsp;            if(e.getCause() instanceof ValidateException v){</b>
+<b class="nc">&nbsp;                debug(&quot;Validation failed for &#39;@&#39;: @&quot;, v.player, v.getMessage());</b>
+&nbsp;            }else{
+&nbsp;                //rethrow if not ValidateException
+<b class="nc">&nbsp;                throw e;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Sets a connection filter by IP address. If the filter returns {@code false}, the connection will be closed. Server only. */
+&nbsp;    public void setConnectFilter(@Nullable ServerConnectFilter filter){
+<b class="nc">&nbsp;        provider.setConnectFilter(filter);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable ServerConnectFilter getConnectFilter(){
+<b class="nc">&nbsp;        return provider.getConnectFilter();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Pings a host in a pooled thread. If an error occurred, failed() should be called with the exception.
+&nbsp;     * If the port is the default mindustry port, SRV records are checked too.
+&nbsp;     */
+&nbsp;    public void pingHost(String address, int port, Cons&lt;Host&gt; valid, Cons&lt;Exception&gt; failed){
+<b class="nc">&nbsp;        pingExecutor.submit(() -&gt; provider.pingHost(address, port, valid, failed));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Whether the net is active, e.g. whether this is a multiplayer game.
+&nbsp;     */
+&nbsp;    public boolean active(){
+<b class="fc">&nbsp;        return active;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Whether this is a server or not.
+&nbsp;     */
+&nbsp;    public boolean server(){
+<b class="fc">&nbsp;        return server &amp;&amp; active;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Whether this is a client or not.
+&nbsp;     */
+&nbsp;    public boolean client(){
+<b class="fc">&nbsp;        return !server &amp;&amp; active;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void dispose(){
+<b class="nc">&nbsp;        provider.dispose();</b>
+<b class="nc">&nbsp;        server = false;</b>
+<b class="nc">&nbsp;        active = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Networking implementation. */
+&nbsp;    public interface NetProvider{
+&nbsp;        /** Connect to a server. */
+&nbsp;        void connectClient(String ip, int port, Runnable success) throws IOException;
+&nbsp;
+&nbsp;        /** Send an object to the server. */
+&nbsp;        void sendClient(Object object, boolean reliable);
+&nbsp;
+&nbsp;        /** Disconnect from the server. */
+&nbsp;        void disconnectClient();
+&nbsp;
+&nbsp;        /**
+&nbsp;         * Discover servers. This should run the callback regardless of whether any servers are found. Should not block.
+&nbsp;         * Callback should be run on the main thread.
+&nbsp;         * @param done is the callback that should run after discovery.
+&nbsp;         */
+&nbsp;        void discoverServers(Cons&lt;Host&gt; callback, Runnable done);
+&nbsp;
+&nbsp;        /**
+&nbsp;         * Ping a host. If an error occurred, failed() should be called with the exception. This method should block.
+&nbsp;         * If the port is the default mindustry port (6567), SRV records are checked too.
+&nbsp;         */
+&nbsp;        void pingHost(String address, int port, Cons&lt;Host&gt; valid, Cons&lt;Exception&gt; failed);
+&nbsp;
+&nbsp;        /** Host a server at specified port. */
+&nbsp;        void hostServer(int port) throws IOException;
+&nbsp;
+&nbsp;        /** Return all connected users. */
+&nbsp;        Iterable&lt;? extends NetConnection&gt; getConnections();
+&nbsp;
+&nbsp;        /** Close the server connection. */
+&nbsp;        void closeServer();
+&nbsp;
+&nbsp;        /** Close all connections. */
+&nbsp;        default void dispose(){
+<b class="nc">&nbsp;            disconnectClient();</b>
+<b class="nc">&nbsp;            closeServer();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Sets a connection filter by IP address. If the filter returns {@code false}, the connection will be closed. */
+<b class="nc">&nbsp;        default void setConnectFilter(Server.ServerConnectFilter connectFilter){}</b>
+&nbsp;
+&nbsp;        default @Nullable ServerConnectFilter getConnectFilter(){
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

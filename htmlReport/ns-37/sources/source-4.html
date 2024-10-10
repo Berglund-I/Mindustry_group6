@@ -1,0 +1,427 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ItemTurret</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense.turrets</a>
+</div>
+
+<h1>Coverage Summary for Class: ItemTurret (mindustry.world.blocks.defense.turrets)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ItemTurret</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (6/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.4%
+  </span>
+  <span class="absValue">
+    (13/19)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ItemTurret$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (2/8)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ItemTurret$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ItemTurret$ItemEntry</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ItemTurret$ItemTurretBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (6/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40.4%
+  </span>
+  <span class="absValue">
+    (19/47)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    51.6%
+  </span>
+  <span class="absValue">
+    (16/31)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.5%
+  </span>
+  <span class="absValue">
+    (38/80)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense.turrets;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class ItemTurret extends Turret{
+<b class="fc">&nbsp;    public ObjectMap&lt;Item, BulletType&gt; ammoTypes = new OrderedMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public ItemTurret(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Initializes accepted ammo map. Format: [item1, bullet1, item2, bullet2...] */
+&nbsp;    public void ammo(Object... objects){
+<b class="fc">&nbsp;        ammoTypes = OrderedMap.of(objects);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Limits bullet range to this turret&#39;s range value. */
+&nbsp;    public void limitRange(){
+<b class="fc">&nbsp;        limitRange(9f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Limits bullet range to this turret&#39;s range value. */
+&nbsp;    public void limitRange(float margin){
+<b class="fc">&nbsp;        for(var entry : ammoTypes.entries()){</b>
+<b class="fc">&nbsp;            limitRange(entry.value, margin);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.remove(Stat.itemCapacity);</b>
+<b class="nc">&nbsp;        stats.add(Stat.ammo, StatValues.ammo(ammoTypes));</b>
+<b class="nc">&nbsp;        stats.add(Stat.ammoCapacity, maxAmmo / ammoPerShot, StatUnit.shots);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;ammo&quot;, (ItemTurretBuild entity) -&gt;</b>
+<b class="nc">&nbsp;            new Bar(</b>
+&nbsp;                &quot;stat.ammo&quot;,
+&nbsp;                Pal.ammo,
+<b class="nc">&nbsp;                () -&gt; (float)entity.totalAmmo / maxAmmo</b>
+&nbsp;            )
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        consume(new ConsumeItemFilter(i -&gt; ammoTypes.containsKey(i)){</b>
+&nbsp;            @Override
+&nbsp;            public void build(Building build, Table table){
+<b class="nc">&nbsp;                MultiReqImage image = new MultiReqImage();</b>
+<b class="nc">&nbsp;                content.items().each(i -&gt; filter.get(i) &amp;&amp; i.unlockedNow(),</b>
+<b class="nc">&nbsp;                item -&gt; image.add(new ReqImage(new Image(item.uiIcon),</b>
+<b class="nc">&nbsp;                () -&gt; build instanceof ItemTurretBuild it &amp;&amp; !it.ammo.isEmpty() &amp;&amp; ((ItemEntry)it.ammo.peek()).item == item)));</b>
+&nbsp;
+<b class="nc">&nbsp;                table.add(image).size(8 * 4);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public float efficiency(Building build){
+&nbsp;                //valid when it can shoot
+<b class="fc">&nbsp;                return build instanceof ItemTurretBuild it &amp;&amp; it.ammo.size &gt; 0 &amp;&amp; (it.ammo.peek().amount &gt;= ammoPerShot || it.cheating()) ? 1f : 0f;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void display(Stats stats){
+&nbsp;                //don&#39;t display
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        ammoTypes.each((item, type) -&gt; placeOverlapRange = Math.max(placeOverlapRange, range + type.rangeChange + placeOverlapMargin));</b>
+&nbsp;
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ItemTurretBuild extends TurretBuild{</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityAdded(){
+<b class="fc">&nbsp;            super.onProximityAdded();</b>
+&nbsp;
+&nbsp;            //add first ammo item to cheaty blocks so they can shoot properly
+<b class="fc">&nbsp;            if(!hasAmmo() &amp;&amp; cheating() &amp;&amp; ammoTypes.size &gt; 0){</b>
+<b class="nc">&nbsp;                handleItem(this, ammoTypes.keys().next());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Object senseObject(LAccess sensor){
+<b class="nc">&nbsp;            return switch(sensor){</b>
+<b class="nc">&nbsp;                case currentAmmoType -&gt; ammo.size &gt; 0 ? ((ItemEntry)ammo.peek()).item : null;</b>
+<b class="nc">&nbsp;                default -&gt; super.senseObject(sensor);</b>
+&nbsp;            };
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            unit.ammo((float)unit.type().ammoCapacity * totalAmmo / maxAmmo);</b>
+&nbsp;
+<b class="fc">&nbsp;            super.updateTile();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int acceptStack(Item item, int amount, Teamc source){
+<b class="nc">&nbsp;            BulletType type = ammoTypes.get(item);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(type == null) return 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            return Math.min((int)((maxAmmo - totalAmmo) / ammoTypes.get(item).ammoMultiplier), amount);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleStack(Item item, int amount, Teamc source){
+<b class="nc">&nbsp;            for(int i = 0; i &lt; amount; i++){</b>
+<b class="nc">&nbsp;                handleItem(null, item);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //currently can&#39;t remove items from turrets.
+&nbsp;        @Override
+&nbsp;        public int removeStack(Item item, int amount){
+<b class="nc">&nbsp;            return 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleItem(Building source, Item item){
+&nbsp;            //TODO instead of all this &quot;entry&quot; crap, turrets could just accept only one type of ammo at a time - simpler for both users and the code
+&nbsp;
+<b class="nc">&nbsp;            if(item == Items.pyratite){</b>
+<b class="nc">&nbsp;                Events.fire(Trigger.flameAmmo);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(totalAmmo == 0){</b>
+<b class="nc">&nbsp;                Events.fire(Trigger.resupplyTurret);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            BulletType type = ammoTypes.get(item);</b>
+<b class="nc">&nbsp;            if(type == null) return;</b>
+<b class="nc">&nbsp;            totalAmmo += type.ammoMultiplier;</b>
+&nbsp;
+&nbsp;            //find ammo entry by type
+<b class="nc">&nbsp;            for(int i = 0; i &lt; ammo.size; i++){</b>
+<b class="nc">&nbsp;                ItemEntry entry = (ItemEntry)ammo.get(i);</b>
+&nbsp;
+&nbsp;                //if found, put it to the right
+<b class="nc">&nbsp;                if(entry.item == item){</b>
+<b class="nc">&nbsp;                    entry.amount += type.ammoMultiplier;</b>
+<b class="nc">&nbsp;                    ammo.swap(i, ammo.size - 1);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //must not be found
+<b class="nc">&nbsp;            ammo.add(new ItemEntry(item, (int)type.ammoMultiplier));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            return ammoTypes.get(item) != null &amp;&amp; totalAmmo + ammoTypes.get(item).ammoMultiplier &lt;= maxAmmo;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 2;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.b(ammo.size);</b>
+<b class="fc">&nbsp;            for(AmmoEntry entry : ammo){</b>
+<b class="nc">&nbsp;                ItemEntry i = (ItemEntry)entry;</b>
+<b class="nc">&nbsp;                write.s(i.item.id);</b>
+<b class="nc">&nbsp;                write.s(i.amount);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            ammo.clear();</b>
+<b class="fc">&nbsp;            totalAmmo = 0;</b>
+<b class="fc">&nbsp;            int amount = read.ub();</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; amount; i++){</b>
+<b class="fc">&nbsp;                Item item = Vars.content.item(revision &lt; 2 ? read.ub() : read.s());</b>
+<b class="fc">&nbsp;                short a = read.s();</b>
+&nbsp;
+&nbsp;                //only add ammo if this is a valid ammo type
+<b class="fc">&nbsp;                if(item != null &amp;&amp; ammoTypes.containsKey(item)){</b>
+<b class="fc">&nbsp;                    totalAmmo += a;</b>
+<b class="fc">&nbsp;                    ammo.add(new ItemEntry(item, a));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public class ItemEntry extends AmmoEntry{
+&nbsp;        public Item item;
+&nbsp;
+<b class="fc">&nbsp;        ItemEntry(Item item, int amount){</b>
+<b class="fc">&nbsp;            this.item = item;</b>
+<b class="fc">&nbsp;            this.amount = amount;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public BulletType type(){
+<b class="fc">&nbsp;            return ammoTypes.get(item);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String toString(){
+<b class="nc">&nbsp;            return &quot;ItemEntry{&quot; +</b>
+&nbsp;            &quot;item=&quot; + item +
+&nbsp;            &quot;, amount=&quot; + amount +
+&nbsp;            &#39;}&#39;;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

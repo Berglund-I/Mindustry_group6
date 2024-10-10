@@ -1,0 +1,164 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > WorldReloader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.net</a>
+</div>
+
+<h1>Coverage Summary for Class: WorldReloader (mindustry.net)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WorldReloader</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.net;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.Seq.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Handles player state for sending to every connected player*/
+<b class="nc">&nbsp;public class WorldReloader{</b>
+<b class="nc">&nbsp;    Seq&lt;Player&gt; players = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    boolean wasServer = false;</b>
+<b class="nc">&nbsp;    boolean began = false;</b>
+&nbsp;
+&nbsp;    /** Begins reloading the world. Sends world begin packets to each user and stores player state.
+&nbsp;     *  If the current client is not a server, this resets state and disconnects. */
+&nbsp;    public void begin(){
+&nbsp;        //don&#39;t begin twice
+<b class="nc">&nbsp;        if(began) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(wasServer = net.server()){</b>
+<b class="nc">&nbsp;            players.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Player p : Groups.player){</b>
+<b class="nc">&nbsp;                if(p.isLocal()) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                players.add(p);</b>
+<b class="nc">&nbsp;                p.clearUnit();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            logic.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;            Call.worldDataBegin();</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            if(net.client()){</b>
+<b class="nc">&nbsp;                net.reset();</b>
+&nbsp;            }    
+<b class="nc">&nbsp;            logic.reset();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        began = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Ends reloading the world. Sends world data to each player.
+&nbsp;     * If the current client was not a server, does nothing.*/
+&nbsp;    public void end(){
+<b class="nc">&nbsp;        if(wasServer){</b>
+<b class="nc">&nbsp;            for(Player p : players){</b>
+<b class="nc">&nbsp;                if(p.con == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                boolean wasAdmin = p.admin;</b>
+<b class="nc">&nbsp;                p.reset();</b>
+<b class="nc">&nbsp;                p.admin = wasAdmin;</b>
+<b class="nc">&nbsp;                if(state.rules.pvp){</b>
+<b class="nc">&nbsp;                    p.team(netServer.assignTeam(p, new SeqIterable&lt;&gt;(players)));</b>
+&nbsp;                }
+<b class="nc">&nbsp;                netServer.sendWorldData(p);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

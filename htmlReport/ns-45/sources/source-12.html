@@ -1,0 +1,143 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawLiquidRegion</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawLiquidRegion (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawLiquidRegion</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (5/11)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;public class DrawLiquidRegion extends DrawBlock{
+&nbsp;    public Liquid drawLiquid;
+&nbsp;    public TextureRegion liquid;
+<b class="fc">&nbsp;    public String suffix = &quot;-liquid&quot;;</b>
+<b class="fc">&nbsp;    public float alpha = 1f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public DrawLiquidRegion(Liquid drawLiquid){</b>
+<b class="fc">&nbsp;        this.drawLiquid = drawLiquid;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public DrawLiquidRegion(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+<b class="nc">&nbsp;        Liquid drawn = drawLiquid != null ? drawLiquid : build.liquids.current();</b>
+<b class="nc">&nbsp;        Drawf.liquid(liquid, build.x, build.y,</b>
+<b class="nc">&nbsp;            build.liquids.get(drawn) / build.block.liquidCapacity * alpha,</b>
+&nbsp;            drawn.color
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(Block block){
+<b class="nc">&nbsp;        if(!block.hasLiquids){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Block &#39;&quot; + block + &quot;&#39; has a DrawLiquidRegion, but hasLiquids is false! Make sure it is true.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        liquid = Core.atlas.find(block.name + suffix);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

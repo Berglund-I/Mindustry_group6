@@ -1,0 +1,243 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Puddles</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities</a>
+</div>
+
+<h1>Coverage Summary for Class: Puddles (mindustry.entities)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Puddles</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/58)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Puddles{</b>
+&nbsp;    public static final float maxLiquid = 70f;
+&nbsp;
+&nbsp;    /** Deposits a Puddle between tile and source. */
+&nbsp;    public static void deposit(Tile tile, Tile source, Liquid liquid, float amount){
+<b class="nc">&nbsp;        deposit(tile, source, liquid, amount, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Deposits a Puddle at a tile. */
+&nbsp;    public static void deposit(Tile tile, Liquid liquid, float amount){
+<b class="nc">&nbsp;        deposit(tile, tile, liquid, amount, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the Puddle on the specified tile. May return null. */
+&nbsp;    public static @Nullable Puddle get(Tile tile){
+<b class="nc">&nbsp;        return tile == null ? null : world.tiles.getPuddle(tile.array());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void deposit(Tile tile, Tile source, Liquid liquid, float amount, boolean initial){
+<b class="nc">&nbsp;        deposit(tile, source, liquid, amount, initial, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void deposit(Tile tile, Tile source, Liquid liquid, float amount, boolean initial, boolean cap){
+<b class="nc">&nbsp;        if(tile == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float ax = (tile.worldx() + source.worldx()) / 2f, ay = (tile.worldy() + source.worldy()) / 2f;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(liquid.willBoil()){</b>
+<b class="nc">&nbsp;            if(Mathf.chanceDelta(0.16f)){</b>
+<b class="nc">&nbsp;                liquid.vaporEffect.at(ax, ay, liquid.gasColor);</b>
+&nbsp;            }
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Vars.state.rules.hasEnv(Env.space)){</b>
+<b class="nc">&nbsp;            if(Mathf.chanceDelta(0.11f) &amp;&amp; tile != source){</b>
+<b class="nc">&nbsp;                Bullets.spaceLiquid.create(null, source.team(), ax, ay, source.angleTo(tile) + Mathf.range(50f), -1f, Mathf.random(0f, 0.2f), Mathf.random(0.6f, 1f), liquid);</b>
+&nbsp;            }
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(tile.floor().isLiquid &amp;&amp; !canStayOn(liquid, tile.floor().liquidDrop)){</b>
+<b class="nc">&nbsp;            reactPuddle(tile.floor().liquidDrop, liquid, amount, tile, ax, ay);</b>
+&nbsp;
+<b class="nc">&nbsp;            Puddle p = get(tile);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(initial &amp;&amp; p != null &amp;&amp; p.lastRipple &lt;= Time.time - 40f){</b>
+<b class="nc">&nbsp;                Fx.ripple.at(ax, ay, 1f, tile.floor().liquidDrop.color);</b>
+<b class="nc">&nbsp;                p.lastRipple = Time.time;</b>
+&nbsp;            }
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(tile.floor().solid) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Puddle p = get(tile);</b>
+<b class="nc">&nbsp;        if(p == null || p.liquid == null){</b>
+<b class="nc">&nbsp;            if(!Vars.net.client()){</b>
+&nbsp;                //do not create puddles clientside as that destroys syncing
+<b class="nc">&nbsp;                Puddle puddle = Puddle.create();</b>
+<b class="nc">&nbsp;                puddle.tile = tile;</b>
+<b class="nc">&nbsp;                puddle.liquid = liquid;</b>
+<b class="nc">&nbsp;                puddle.amount = Math.min(amount, maxLiquid);</b>
+<b class="nc">&nbsp;                puddle.set(ax, ay);</b>
+<b class="nc">&nbsp;                register(puddle);</b>
+<b class="nc">&nbsp;                puddle.add();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }else if(p.liquid == liquid){</b>
+<b class="nc">&nbsp;            p.accepting = Math.max(amount, p.accepting);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(initial &amp;&amp; p.lastRipple &lt;= Time.time - 40f &amp;&amp; p.amount &gt;= maxLiquid / 2f){</b>
+<b class="nc">&nbsp;                Fx.ripple.at(ax, ay, 1f, p.liquid.color);</b>
+<b class="nc">&nbsp;                p.lastRipple = Time.time;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            float added = reactPuddle(p.liquid, liquid, amount, p.tile, (p.x + source.worldx())/2f, (p.y + source.worldy())/2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(cap){</b>
+<b class="nc">&nbsp;                added = Mathf.clamp(maxLiquid - p.amount, 0f, added);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            p.amount += added;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void remove(Tile tile){
+<b class="nc">&nbsp;        if(tile == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        world.tiles.setPuddle(tile.array(), null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void register(Puddle puddle){
+<b class="nc">&nbsp;        world.tiles.setPuddle(puddle.tile().array(), puddle);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Reacts two liquids together at a location. */
+&nbsp;    private static float reactPuddle(Liquid dest, Liquid liquid, float amount, Tile tile, float x, float y){
+<b class="nc">&nbsp;        if(dest == null) return 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;        if((dest.flammability &gt; 0.3f &amp;&amp; liquid.temperature &gt; 0.7f) ||</b>
+&nbsp;        (liquid.flammability &gt; 0.3f &amp;&amp; dest.temperature &gt; 0.7f)){ //flammable liquid + hot liquid
+<b class="nc">&nbsp;            Fires.create(tile);</b>
+<b class="nc">&nbsp;            if(Mathf.chance(0.006 * amount)){</b>
+<b class="nc">&nbsp;                Bullets.fireball.createNet(Team.derelict, x, y, Mathf.random(360f), -1f, 1f, 1f);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(dest.temperature &gt; 0.7f &amp;&amp; liquid.temperature &lt; 0.55f){ //cold liquid poured onto hot Puddle</b>
+<b class="nc">&nbsp;            if(Mathf.chance(0.5f * amount)){</b>
+<b class="nc">&nbsp;                Fx.steam.at(x, y);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return -0.1f * amount;</b>
+<b class="nc">&nbsp;        }else if(liquid.temperature &gt; 0.7f &amp;&amp; dest.temperature &lt; 0.55f){ //hot liquid poured onto cold Puddle</b>
+<b class="nc">&nbsp;            if(Mathf.chance(0.8f * amount)){</b>
+<b class="nc">&nbsp;                Fx.steam.at(x, y);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return -0.4f * amount;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return dest.react(liquid, amount, tile, x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Returns whether the first liquid can &#39;stay&#39; on the second one.
+&nbsp;     */
+&nbsp;    private static boolean canStayOn(Liquid liquid, Liquid other){
+<b class="nc">&nbsp;        return liquid.canStayOn.contains(other);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

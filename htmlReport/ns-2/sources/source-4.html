@@ -1,0 +1,638 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BlockIndexer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai</a>
+</div>
+
+<h1>Coverage Summary for Class: BlockIndexer (mindustry.ai)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BlockIndexer</td>
+<td class="coverageStat">
+  <span class="percent">
+    55.2%
+  </span>
+  <span class="absValue">
+    (16/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55%
+  </span>
+  <span class="absValue">
+    (127/231)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BlockIndexer$TurretQuadtree</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    59.4%
+  </span>
+  <span class="absValue">
+    (19/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55.6%
+  </span>
+  <span class="absValue">
+    (130/234)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Class used for indexing special target blocks for AI. */
+&nbsp;public class BlockIndexer{
+&nbsp;    /** Size of one quadrant. */
+&nbsp;    private static final int quadrantSize = 20;
+<b class="fc">&nbsp;    private static final Rect rect = new Rect();</b>
+<b class="fc">&nbsp;    private static boolean returnBool = false;</b>
+&nbsp;
+&nbsp;    private int quadWidth, quadHeight;
+&nbsp;
+&nbsp;    /** Stores all ore quadrants on the map. Maps ID to qX to qY to a list of tiles with that ore. */
+&nbsp;    private IntSeq[][][] ores;
+&nbsp;    /** Stores all damaged tile entities by team. */
+<b class="fc">&nbsp;    private Seq&lt;Building&gt;[] damagedTiles = new Seq[Team.all.length];</b>
+&nbsp;    /** All ores available on this map. */
+<b class="fc">&nbsp;    private ObjectIntMap&lt;Item&gt; allOres = new ObjectIntMap&lt;&gt;();</b>
+&nbsp;    /** Stores teams that are present here as tiles. */
+<b class="fc">&nbsp;    private Seq&lt;Team&gt; activeTeams = new Seq&lt;&gt;(Team.class);</b>
+&nbsp;    /** Maps teams to a map of flagged tiles by flag. */
+<b class="fc">&nbsp;    private Seq&lt;Building&gt;[][] flagMap = new Seq[Team.all.length][BlockFlag.all.length];</b>
+&nbsp;    /** Counts whether a certain floor is present in the world upon load. */
+&nbsp;    private boolean[] blocksPresent;
+&nbsp;    /** Array used for returning and reusing. */
+<b class="fc">&nbsp;    private Seq&lt;Building&gt; breturnArray = new Seq&lt;&gt;(Building.class);</b>
+&nbsp;
+<b class="fc">&nbsp;    public BlockIndexer(){</b>
+<b class="fc">&nbsp;        clearFlags();</b>
+&nbsp;
+<b class="fc">&nbsp;        Events.on(TilePreChangeEvent.class, event -&gt; {</b>
+<b class="fc">&nbsp;            removeIndex(event.tile);</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(TileChangeEvent.class, event -&gt; {</b>
+<b class="fc">&nbsp;            addIndex(event.tile);</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(WorldLoadEvent.class, event -&gt; {</b>
+<b class="fc">&nbsp;            damagedTiles = new Seq[Team.all.length];</b>
+<b class="fc">&nbsp;            flagMap = new Seq[Team.all.length][BlockFlag.all.length];</b>
+<b class="fc">&nbsp;            activeTeams = new Seq&lt;&gt;(Team.class);</b>
+&nbsp;
+<b class="fc">&nbsp;            clearFlags();</b>
+&nbsp;
+<b class="fc">&nbsp;            allOres.clear();</b>
+<b class="fc">&nbsp;            ores = new IntSeq[content.items().size][][];</b>
+<b class="fc">&nbsp;            quadWidth = Mathf.ceil(world.width() / (float)quadrantSize);</b>
+<b class="fc">&nbsp;            quadHeight = Mathf.ceil(world.height() / (float)quadrantSize);</b>
+<b class="fc">&nbsp;            blocksPresent = new boolean[content.blocks().size];</b>
+&nbsp;
+&nbsp;            //so WorldLoadEvent gets called twice sometimes... ugh
+<b class="fc">&nbsp;            for(Team team : Team.all){</b>
+<b class="fc">&nbsp;                var data = state.teams.get(team);</b>
+<b class="fc">&nbsp;                if(data != null){</b>
+<b class="fc">&nbsp;                    if(data.buildingTree != null) data.buildingTree.clear();</b>
+<b class="fc">&nbsp;                    if(data.turretTree != null) data.turretTree.clear();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            for(Tile tile : world.tiles){</b>
+<b class="fc">&nbsp;                process(tile);</b>
+&nbsp;
+<b class="fc">&nbsp;                var drop = tile.drop();</b>
+&nbsp;
+<b class="fc">&nbsp;                if(drop != null){</b>
+<b class="fc">&nbsp;                    int qx = (tile.x / quadrantSize);</b>
+<b class="fc">&nbsp;                    int qy = (tile.y / quadrantSize);</b>
+&nbsp;
+&nbsp;                    //add position of quadrant to list
+<b class="fc">&nbsp;                    if(tile.block() == Blocks.air){</b>
+<b class="fc">&nbsp;                        if(ores[drop.id] == null){</b>
+<b class="fc">&nbsp;                            ores[drop.id] = new IntSeq[quadWidth][quadHeight];</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                        if(ores[drop.id][qx][qy] == null){</b>
+<b class="fc">&nbsp;                            ores[drop.id][qx][qy] = new IntSeq(false, 16);</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                        ores[drop.id][qx][qy].add(tile.pos());</b>
+<b class="fc">&nbsp;                        allOres.increment(drop);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeIndex(Tile tile){
+<b class="fc">&nbsp;        var team = tile.team();</b>
+<b class="fc">&nbsp;        if(tile.build != null &amp;&amp; tile.isCenter()){</b>
+<b class="fc">&nbsp;            var build = tile.build;</b>
+<b class="fc">&nbsp;            var flags = tile.block().flags;</b>
+<b class="fc">&nbsp;            var data = team.data();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(flags.size &gt; 0){</b>
+<b class="fc">&nbsp;                for(BlockFlag flag : flags.array){</b>
+<b class="fc">&nbsp;                    getFlagged(team)[flag.ordinal()].remove(build);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //no longer part of the building list
+<b class="fc">&nbsp;            data.buildings.remove(build);</b>
+<b class="fc">&nbsp;            data.buildingTypes.get(build.block, () -&gt; new Seq&lt;&gt;(false)).remove(build);</b>
+&nbsp;
+&nbsp;            //update the unit cap when building is removed
+<b class="fc">&nbsp;            data.unitCap -= tile.block().unitCapModifier;</b>
+&nbsp;
+&nbsp;            //unregister building from building quadtree
+<b class="fc">&nbsp;            if(data.buildingTree != null){</b>
+<b class="fc">&nbsp;                data.buildingTree.remove(build);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //remove indexed turret
+<b class="fc">&nbsp;            if(data.turretTree != null &amp;&amp; build.block.attacks){</b>
+<b class="nc">&nbsp;                data.turretTree.remove(build);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //unregister damaged buildings
+<b class="fc">&nbsp;            if(build.wasDamaged &amp;&amp; damagedTiles[team.id] != null){</b>
+<b class="nc">&nbsp;                damagedTiles[team.id].remove(build);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //is no longer registered
+<b class="fc">&nbsp;            build.wasDamaged = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addIndex(Tile tile){
+<b class="fc">&nbsp;        process(tile);</b>
+&nbsp;
+<b class="fc">&nbsp;        var drop = tile.drop();</b>
+<b class="fc">&nbsp;        if(drop != null &amp;&amp; ores != null){</b>
+<b class="nc">&nbsp;            int qx = tile.x / quadrantSize;</b>
+<b class="nc">&nbsp;            int qy = tile.y / quadrantSize;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(ores[drop.id] == null){</b>
+<b class="nc">&nbsp;                ores[drop.id] = new IntSeq[quadWidth][quadHeight];</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(ores[drop.id][qx][qy] == null){</b>
+<b class="nc">&nbsp;                ores[drop.id][qx][qy] = new IntSeq(false, 16);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            int pos = tile.pos();</b>
+<b class="nc">&nbsp;            var seq = ores[drop.id][qx][qy];</b>
+&nbsp;
+<b class="nc">&nbsp;            if(tile.block() == Blocks.air){</b>
+&nbsp;                //add the index if it is a valid new spot to mine at
+<b class="nc">&nbsp;                if(!seq.contains(pos)){</b>
+<b class="nc">&nbsp;                    seq.add(pos);</b>
+<b class="nc">&nbsp;                    allOres.increment(drop);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(seq.contains(pos)){ //otherwise, it likely became blocked, remove it</b>
+<b class="nc">&nbsp;                seq.removeValue(pos);</b>
+<b class="nc">&nbsp;                allOres.increment(drop, -1);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether a certain block is anywhere on this map. */
+&nbsp;    public boolean isBlockPresent(Block block){
+<b class="nc">&nbsp;        return blocksPresent != null &amp;&amp; blocksPresent[block.id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void clearFlags(){
+<b class="fc">&nbsp;        for(int i = 0; i &lt; flagMap.length; i++){</b>
+<b class="fc">&nbsp;            for(int j = 0; j &lt; BlockFlag.all.length; j++){</b>
+<b class="fc">&nbsp;                flagMap[i][j] = new Seq();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Seq&lt;Building&gt;[] getFlagged(Team team){
+<b class="fc">&nbsp;        return flagMap[team.id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this item is present on this map. */
+&nbsp;    public boolean hasOre(Item item){
+<b class="nc">&nbsp;        return allOres.get(item) &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns all damaged tiles by team. */
+&nbsp;    public Seq&lt;Building&gt; getDamaged(Team team){
+<b class="nc">&nbsp;        if(damagedTiles[team.id] == null){</b>
+<b class="nc">&nbsp;            return damagedTiles[team.id] = new Seq&lt;&gt;(false);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var tiles = damagedTiles[team.id];</b>
+<b class="nc">&nbsp;        tiles.removeAll(b -&gt; !b.damaged());</b>
+&nbsp;
+<b class="nc">&nbsp;        return tiles;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Get all allied blocks with a flag. */
+&nbsp;    public Seq&lt;Building&gt; getFlagged(Team team, BlockFlag type){
+<b class="fc">&nbsp;        return flagMap[team.id][type.ordinal()];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Building findClosestFlag(float x, float y, Team team, BlockFlag flag){
+<b class="nc">&nbsp;        return Geometry.findClosest(x, y, getFlagged(team, flag));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean eachBlock(Teamc team, float range, Boolf&lt;Building&gt; pred, Cons&lt;Building&gt; cons){
+<b class="nc">&nbsp;        return eachBlock(team.team(), team.getX(), team.getY(), range, pred, cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean eachBlock(@Nullable Team team, float wx, float wy, float range, Boolf&lt;Building&gt; pred, Cons&lt;Building&gt; cons){
+&nbsp;
+<b class="nc">&nbsp;        if(team == null){</b>
+<b class="nc">&nbsp;            returnBool = false;</b>
+&nbsp;
+<b class="nc">&nbsp;            allBuildings(wx, wy, range, b -&gt; {</b>
+<b class="nc">&nbsp;                if(pred.get(b)){</b>
+<b class="nc">&nbsp;                    returnBool = true;</b>
+<b class="nc">&nbsp;                    cons.get(b);</b>
+&nbsp;                }
+&nbsp;            });
+<b class="nc">&nbsp;            return returnBool;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            breturnArray.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;            var buildings = team.data().buildingTree;</b>
+<b class="nc">&nbsp;            if(buildings == null) return false;</b>
+<b class="nc">&nbsp;            buildings.intersect(wx - range, wy - range, range*2f, range*2f, b -&gt; {</b>
+<b class="nc">&nbsp;                if(b.within(wx, wy, range + b.hitSize() / 2f) &amp;&amp; pred.get(b)){</b>
+<b class="nc">&nbsp;                    breturnArray.add(b);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int size = breturnArray.size;</b>
+<b class="nc">&nbsp;        var items = breturnArray.items;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; size; i++){</b>
+<b class="nc">&nbsp;            cons.get(items[i]);</b>
+<b class="nc">&nbsp;            items[i] = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        breturnArray.size = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        return size &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Does not work with null teams. */
+&nbsp;    public boolean eachBlock(Team team, Rect rect, Boolf&lt;Building&gt; pred, Cons&lt;Building&gt; cons){
+<b class="fc">&nbsp;        if(team == null) return false;</b>
+&nbsp;
+<b class="fc">&nbsp;        breturnArray.clear();</b>
+&nbsp;
+<b class="fc">&nbsp;        var buildings = team.data().buildingTree;</b>
+<b class="fc">&nbsp;        if(buildings == null) return false;</b>
+<b class="fc">&nbsp;        buildings.intersect(rect, b -&gt; {</b>
+<b class="fc">&nbsp;            if(pred.get(b)){</b>
+<b class="fc">&nbsp;                breturnArray.add(b);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        int size = breturnArray.size;</b>
+<b class="fc">&nbsp;        var items = breturnArray.items;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; size; i++){</b>
+<b class="fc">&nbsp;            cons.get(items[i]);</b>
+<b class="fc">&nbsp;            items[i] = null;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        breturnArray.size = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        return size &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Get all enemy blocks with a flag. */
+&nbsp;    public Seq&lt;Building&gt; getEnemy(Team team, BlockFlag type){
+<b class="fc">&nbsp;        breturnArray.clear();</b>
+<b class="fc">&nbsp;        Seq&lt;TeamData&gt; data = state.teams.present;</b>
+&nbsp;        //when team data is not initialized, scan through every team. this is terrible
+<b class="fc">&nbsp;        if(data.isEmpty()){</b>
+<b class="fc">&nbsp;            for(Team enemy : Team.all){</b>
+<b class="fc">&nbsp;                if(enemy == team || (enemy == Team.derelict &amp;&amp; !state.rules.coreCapture)) continue;</b>
+<b class="fc">&nbsp;                var set = getFlagged(enemy)[type.ordinal()];</b>
+<b class="fc">&nbsp;                if(set != null){</b>
+<b class="fc">&nbsp;                    breturnArray.addAll(set);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            for(int i = 0; i &lt; data.size; i++){</b>
+<b class="nc">&nbsp;                Team enemy = data.items[i].team;</b>
+<b class="nc">&nbsp;                if(enemy == team || (enemy == Team.derelict &amp;&amp; !state.rules.coreCapture)) continue;</b>
+<b class="nc">&nbsp;                var set = getFlagged(enemy)[type.ordinal()];</b>
+<b class="nc">&nbsp;                if(set != null){</b>
+<b class="nc">&nbsp;                    breturnArray.addAll(set);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return breturnArray;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void notifyHealthChanged(Building build){
+<b class="fc">&nbsp;        boolean damaged = build.damaged();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(build.wasDamaged != damaged){</b>
+<b class="fc">&nbsp;            if(damagedTiles[build.team.id] == null){</b>
+<b class="fc">&nbsp;                damagedTiles[build.team.id] = new Seq&lt;&gt;(false);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(damaged){</b>
+&nbsp;                //is now damaged, add to array
+<b class="fc">&nbsp;                damagedTiles[build.team.id].add(build);</b>
+&nbsp;            }else{
+&nbsp;                //no longer damaged, remove
+<b class="nc">&nbsp;                damagedTiles[build.team.id].remove(build);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            build.wasDamaged = damaged;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void allBuildings(float x, float y, float range, Cons&lt;Building&gt; cons){
+<b class="nc">&nbsp;        breturnArray.clear();</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; activeTeams.size; i++){</b>
+<b class="nc">&nbsp;            Team team = activeTeams.items[i];</b>
+<b class="nc">&nbsp;            var buildings = team.data().buildingTree;</b>
+<b class="nc">&nbsp;            if(buildings == null) continue;</b>
+<b class="nc">&nbsp;            buildings.intersect(x - range, y - range, range*2f, range*2f, breturnArray);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var items = breturnArray.items;</b>
+<b class="nc">&nbsp;        int size = breturnArray.size;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; size; i++){</b>
+<b class="nc">&nbsp;            var b = items[i];</b>
+<b class="nc">&nbsp;            if(b != null &amp;&amp; b.within(x, y, range + b.hitSize()/2f)){</b>
+<b class="nc">&nbsp;                cons.get(b);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            items[i] = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        breturnArray.size = 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Building findEnemyTile(Team team, float x, float y, float range, Boolf&lt;Building&gt; pred){
+<b class="fc">&nbsp;        Building target = null;</b>
+<b class="fc">&nbsp;        float targetDist = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; activeTeams.size; i++){</b>
+<b class="fc">&nbsp;            Team enemy = activeTeams.items[i];</b>
+<b class="fc">&nbsp;            if(enemy == team || (enemy == Team.derelict &amp;&amp; !state.rules.coreCapture)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            Building candidate = indexer.findTile(enemy, x, y, range, b -&gt; pred.get(b) &amp;&amp; b.isDiscovered(team), true);</b>
+<b class="nc">&nbsp;            if(candidate == null) continue;</b>
+&nbsp;
+&nbsp;            //if a block has the same priority, the closer one should be targeted
+<b class="nc">&nbsp;            float dist = candidate.dst(x, y) - candidate.hitSize() / 2f;</b>
+<b class="nc">&nbsp;            if(target == null ||</b>
+&nbsp;            //if its closer and is at least equal priority
+&nbsp;            (dist &lt; targetDist &amp;&amp; candidate.block.priority &gt;= target.block.priority) ||
+&nbsp;            // block has higher priority (so range doesnt matter)
+&nbsp;            (candidate.block.priority &gt; target.block.priority)){
+<b class="nc">&nbsp;                target = candidate;</b>
+<b class="nc">&nbsp;                targetDist = dist;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return target;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Building findTile(Team team, float x, float y, float range, Boolf&lt;Building&gt; pred){
+<b class="nc">&nbsp;        return findTile(team, x, y, range, pred, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Building findTile(Team team, float x, float y, float range, Boolf&lt;Building&gt; pred, boolean usePriority){
+<b class="nc">&nbsp;        Building closest = null;</b>
+<b class="nc">&nbsp;        float dst = 0;</b>
+<b class="nc">&nbsp;        var buildings = team.data().buildingTree;</b>
+<b class="nc">&nbsp;        if(buildings == null) return null;</b>
+&nbsp;
+<b class="nc">&nbsp;        breturnArray.clear();</b>
+<b class="nc">&nbsp;        buildings.intersect(rect.setCentered(x, y, range * 2f), breturnArray);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; breturnArray.size; i++){</b>
+<b class="nc">&nbsp;            var next = breturnArray.items[i];</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!pred.get(next) || !next.block.targetable) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            float bdst = next.dst(x, y) - next.hitSize() / 2f;</b>
+<b class="nc">&nbsp;            if(bdst &lt; range &amp;&amp; (closest == null ||</b>
+&nbsp;            //this one is closer, and it is at least of equal priority
+&nbsp;            (bdst &lt; dst &amp;&amp; (!usePriority || closest.block.priority &lt;= next.block.priority)) ||
+&nbsp;            //priority is used, and new block has higher priority regardless of range
+&nbsp;            (usePriority &amp;&amp; closest.block.priority &lt; next.block.priority))){
+<b class="nc">&nbsp;                dst = bdst;</b>
+<b class="nc">&nbsp;                closest = next;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return closest;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Find the closest ore block relative to a position. */
+&nbsp;    public Tile findClosestOre(float xp, float yp, Item item){
+<b class="nc">&nbsp;        if(ores[item.id] != null){</b>
+<b class="nc">&nbsp;            float minDst = 0f;</b>
+<b class="nc">&nbsp;            Tile closest = null;</b>
+<b class="nc">&nbsp;            for(int qx = 0; qx &lt; quadWidth; qx++){</b>
+<b class="nc">&nbsp;                for(int qy = 0; qy &lt; quadHeight; qy++){</b>
+<b class="nc">&nbsp;                    var arr = ores[item.id][qx][qy];</b>
+<b class="nc">&nbsp;                    if(arr != null &amp;&amp; arr.size &gt; 0){</b>
+<b class="nc">&nbsp;                        Tile tile = world.tile(arr.first());</b>
+<b class="nc">&nbsp;                        if(tile.block() == Blocks.air){</b>
+<b class="nc">&nbsp;                            float dst = Mathf.dst2(xp, yp, tile.worldx(), tile.worldy());</b>
+<b class="nc">&nbsp;                            if(closest == null || dst &lt; minDst){</b>
+<b class="nc">&nbsp;                                closest = tile;</b>
+<b class="nc">&nbsp;                                minDst = dst;</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            return closest;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Find the closest ore block relative to a position. */
+&nbsp;    public Tile findClosestOre(Unit unit, Item item){
+<b class="nc">&nbsp;        return findClosestOre(unit.x, unit.y, item);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void process(Tile tile){
+<b class="fc">&nbsp;        var team = tile.team();</b>
+&nbsp;        //only process entity changes with centered tiles
+<b class="fc">&nbsp;        if(tile.isCenter() &amp;&amp; tile.build != null){</b>
+<b class="fc">&nbsp;            var data = team.data();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(tile.block().flags.size &gt; 0 &amp;&amp; tile.isCenter()){</b>
+<b class="fc">&nbsp;                var map = getFlagged(team);</b>
+&nbsp;
+<b class="fc">&nbsp;                for(BlockFlag flag : tile.block().flags.array){</b>
+<b class="fc">&nbsp;                    map[flag.ordinal()].add(tile.build);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //record in list of buildings
+<b class="fc">&nbsp;            data.buildings.add(tile.build);</b>
+<b class="fc">&nbsp;            data.buildingTypes.get(tile.block(), () -&gt; new Seq&lt;&gt;(false)).add(tile.build);</b>
+&nbsp;
+&nbsp;            //update the unit cap when new tile is registered
+<b class="fc">&nbsp;            data.unitCap += tile.block().unitCapModifier;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(!activeTeams.contains(team)){</b>
+<b class="fc">&nbsp;                activeTeams.add(team);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //insert the new tile into the quadtree for targeting
+<b class="fc">&nbsp;            if(data.buildingTree == null){</b>
+<b class="fc">&nbsp;                data.buildingTree = new QuadTree&lt;&gt;(new Rect(0, 0, world.unitWidth(), world.unitHeight()));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            data.buildingTree.insert(tile.build);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(tile.block().attacks &amp;&amp; tile.build instanceof Ranged){</b>
+<b class="fc">&nbsp;                if(data.turretTree == null){</b>
+<b class="fc">&nbsp;                    data.turretTree = new TurretQuadtree(new Rect(0, 0, world.unitWidth(), world.unitHeight()));</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                data.turretTree.insert(tile.build);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            notifyHealthChanged(tile.build);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(blocksPresent != null){</b>
+<b class="fc">&nbsp;            if(!tile.block().isStatic()){</b>
+<b class="fc">&nbsp;                blocksPresent[tile.floorID()] = true;</b>
+<b class="fc">&nbsp;                blocksPresent[tile.overlayID()] = true;</b>
+&nbsp;            }
+&nbsp;            //bounds checks only needed in very specific scenarios
+<b class="fc">&nbsp;            if(tile.blockID() &lt; blocksPresent.length) blocksPresent[tile.blockID()] = true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    static class TurretQuadtree extends QuadTree&lt;Building&gt;{
+&nbsp;
+&nbsp;        public TurretQuadtree(Rect bounds){
+<b class="fc">&nbsp;            super(bounds);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void hitbox(Building build){
+<b class="fc">&nbsp;            tmp.setCentered(build.x, build.y, ((Ranged)build).range() * 2f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected QuadTree&lt;Building&gt; newChild(Rect rect){
+<b class="fc">&nbsp;            return new TurretQuadtree(rect);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

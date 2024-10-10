@@ -1,0 +1,171 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > OreMedianFilter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps.filters</a>
+</div>
+
+<h1>Coverage Summary for Class: OreMedianFilter (mindustry.maps.filters)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OreMedianFilter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (2/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14.3%
+  </span>
+  <span class="absValue">
+    (4/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps.filters;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.maps.filters.FilterOption.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+<b class="fc">&nbsp;public class OreMedianFilter extends GenerateFilter{</b>
+<b class="fc">&nbsp;    private static IntSeq blocks = new IntSeq();</b>
+&nbsp;
+<b class="fc">&nbsp;    public float radius = 2;</b>
+<b class="fc">&nbsp;    public float percentile = 0.5f;</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public FilterOption[] options(){
+<b class="nc">&nbsp;        return new SliderOption[]{</b>
+<b class="nc">&nbsp;            new SliderOption(&quot;radius&quot;, () -&gt; radius, f -&gt; radius = f, 1f, 12f),</b>
+<b class="nc">&nbsp;            new SliderOption(&quot;percentile&quot;, () -&gt; percentile, f -&gt; percentile = f, 0f, 1f)</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isBuffered(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public char icon(){
+<b class="nc">&nbsp;        return Iconc.blockOreLead;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void apply(GenerateInput in){
+<b class="nc">&nbsp;        if(in.overlay == Blocks.spawn) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        int cx = (in.x / 2) * 2;</b>
+<b class="nc">&nbsp;        int cy = (in.y / 2) * 2;</b>
+<b class="nc">&nbsp;        if(in.overlay != Blocks.air){</b>
+<b class="nc">&nbsp;            if(!(in.tile(cx + 1, cy).overlay() == in.overlay &amp;&amp; in.tile(cx, cy).overlay() == in.overlay &amp;&amp; in.tile(cx + 1, cy + 1).overlay() == in.overlay &amp;&amp; in.tile(cx, cy + 1).overlay() == in.overlay &amp;&amp;</b>
+<b class="nc">&nbsp;            !in.tile(cx + 1, cy).block().isStatic() &amp;&amp; !in.tile(cx, cy).block().isStatic() &amp;&amp; !in.tile(cx + 1, cy + 1).block().isStatic() &amp;&amp; !in.tile(cx, cy + 1).block().isStatic())){</b>
+<b class="nc">&nbsp;                in.overlay = Blocks.air;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int rad = (int)radius;</b>
+&nbsp;
+<b class="nc">&nbsp;        blocks.clear();</b>
+<b class="nc">&nbsp;        for(int x = -rad; x &lt;= rad; x++){</b>
+<b class="nc">&nbsp;            for(int y = -rad; y &lt;= rad; y++){</b>
+<b class="nc">&nbsp;                if(Mathf.dst2(x, y) &gt; rad*rad) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                Tile tile = in.tile(in.x + x, in.y + y);</b>
+<b class="nc">&nbsp;                if(tile.overlay() != Blocks.spawn)</b>
+<b class="nc">&nbsp;                blocks.add(tile.overlay().id);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        blocks.sort();</b>
+&nbsp;
+<b class="nc">&nbsp;        int index = Math.min((int)(blocks.size * percentile), blocks.size - 1);</b>
+<b class="nc">&nbsp;        int overlay = blocks.get(index);</b>
+&nbsp;
+<b class="nc">&nbsp;        in.overlay = Vars.content.block(overlay);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

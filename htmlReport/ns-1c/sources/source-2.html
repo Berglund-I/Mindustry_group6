@@ -1,0 +1,244 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > CacheLayer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: CacheLayer (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CacheLayer</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (10/22)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">CacheLayer$ShaderLayer</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (2/12)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (5/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.3%
+  </span>
+  <span class="absValue">
+    (12/34)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.gl.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class CacheLayer{</b>
+&nbsp;    public static CacheLayer
+&nbsp;
+&nbsp;    water, mud, cryofluid, tar, slag, arkycite,
+&nbsp;    space, normal, walls;
+&nbsp;
+<b class="fc">&nbsp;    public static CacheLayer[] all = {};</b>
+&nbsp;
+&nbsp;    public int id;
+&nbsp;
+&nbsp;    /** Registers cache layers that will render before the &#39;normal&#39; layer. */
+&nbsp;    public static void add(CacheLayer... layers){
+<b class="nc">&nbsp;        for(var layer : layers){</b>
+&nbsp;            //7 = &#39;normal&#39; index
+<b class="nc">&nbsp;            add(7, layer);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Register CacheLayers at the end of the array. This will render over &quot;normal&quot; tiles. This is likely not the method you want to use. */
+&nbsp;    public static void addLast(CacheLayer... layers){
+<b class="fc">&nbsp;        int newSize = all.length + layers.length;</b>
+<b class="fc">&nbsp;        var prev = all;</b>
+&nbsp;        //reallocate the array and copy everything over; performance matters very little here anyway
+<b class="fc">&nbsp;        all = new CacheLayer[newSize];</b>
+<b class="fc">&nbsp;        System.arraycopy(prev, 0, all, 0, prev.length);</b>
+<b class="fc">&nbsp;        System.arraycopy(layers, 0, all, prev.length, layers.length);</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; all.length; i++){</b>
+<b class="fc">&nbsp;            all[i].id = i;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a cache layer at a certain position. All layers &gt;= this index are shifted upwards.*/
+&nbsp;    public static void add(int index, CacheLayer layer){
+<b class="nc">&nbsp;        index = Mathf.clamp(index, 0, all.length - 1);</b>
+&nbsp;
+<b class="nc">&nbsp;        var prev = all;</b>
+<b class="nc">&nbsp;        all = new CacheLayer[all.length + 1];</b>
+&nbsp;
+<b class="nc">&nbsp;        System.arraycopy(prev, 0, all, 0, index);</b>
+<b class="nc">&nbsp;        System.arraycopy(prev, index, all, index + 1, prev.length - index);</b>
+&nbsp;
+<b class="nc">&nbsp;        all[index] = layer;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; all.length; i++){</b>
+<b class="nc">&nbsp;            all[i].id = i;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Loads default cache layers. */
+&nbsp;    public static void init(){
+<b class="fc">&nbsp;        addLast(</b>
+&nbsp;            water = new ShaderLayer(Shaders.water),
+&nbsp;            mud = new ShaderLayer(Shaders.mud),
+&nbsp;            tar = new ShaderLayer(Shaders.tar),
+&nbsp;            slag = new ShaderLayer(Shaders.slag),
+&nbsp;            arkycite = new ShaderLayer(Shaders.arkycite),
+&nbsp;            cryofluid = new ShaderLayer(Shaders.cryofluid),
+&nbsp;            space = new ShaderLayer(Shaders.space),
+&nbsp;            normal = new CacheLayer(),
+&nbsp;            walls = new CacheLayer()
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called before the cache layer begins rendering. Begin FBOs here. */
+&nbsp;    public void begin(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called after the cache layer ends rendering. Blit FBOs here. */
+&nbsp;    public void end(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static class ShaderLayer extends CacheLayer{
+&nbsp;        public @Nullable Shader shader;
+&nbsp;
+<b class="fc">&nbsp;        public ShaderLayer(Shader shader){</b>
+&nbsp;            //shader will be null on headless backend, but that&#39;s ok
+<b class="fc">&nbsp;            this.shader = shader;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void begin(){
+<b class="nc">&nbsp;            if(!Core.settings.getBool(&quot;animatedwater&quot;)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            renderer.blocks.floor.endc();</b>
+<b class="nc">&nbsp;            renderer.effectBuffer.begin();</b>
+<b class="nc">&nbsp;            Core.graphics.clear(Color.clear);</b>
+<b class="nc">&nbsp;            renderer.blocks.floor.beginc();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void end(){
+<b class="nc">&nbsp;            if(!Core.settings.getBool(&quot;animatedwater&quot;)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            renderer.blocks.floor.endc();</b>
+<b class="nc">&nbsp;            renderer.effectBuffer.end();</b>
+&nbsp;
+<b class="nc">&nbsp;            renderer.effectBuffer.blit(shader);</b>
+&nbsp;
+<b class="nc">&nbsp;            renderer.blocks.floor.beginc();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

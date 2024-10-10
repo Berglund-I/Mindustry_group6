@@ -1,0 +1,208 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SuicideAI</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai.types</a>
+</div>
+
+<h1>Coverage Summary for Class: SuicideAI (mindustry.ai.types)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SuicideAI</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/40)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai.types;
+&nbsp;
+&nbsp;import arc.math.geom.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.distribution.*;
+&nbsp;import mindustry.world.blocks.liquid.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class SuicideAI extends GroundAI{</b>
+&nbsp;    static boolean blockedByBlock;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateUnit(){
+<b class="nc">&nbsp;        if(Units.invalidateTarget(target, unit.team, unit.x, unit.y, Float.MAX_VALUE)){</b>
+<b class="nc">&nbsp;            target = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(retarget()){</b>
+<b class="nc">&nbsp;            target = target(unit.x, unit.y, unit.range(), unit.type.targetAir, unit.type.targetGround);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Building core = unit.closestEnemyCore();</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean rotate = false, shoot = false, moveToTarget = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(target == null){</b>
+<b class="nc">&nbsp;            target = core;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!Units.invalidateTarget(target, unit, unit.range()) &amp;&amp; unit.hasWeapons()){</b>
+<b class="nc">&nbsp;            rotate = true;</b>
+<b class="nc">&nbsp;            shoot = unit.within(target, unit.type.weapons.first().bullet.range +</b>
+<b class="nc">&nbsp;                (target instanceof Building b ? b.block.size * Vars.tilesize / 2f : ((Hitboxc)target).hitSize() / 2f));</b>
+&nbsp;
+&nbsp;            //do not move toward walls or transport blocks
+<b class="nc">&nbsp;            if(!(target instanceof Building build &amp;&amp; !(build.block instanceof CoreBlock) &amp;&amp; (</b>
+&nbsp;                build.block.group == BlockGroup.walls ||
+&nbsp;                build.block.group == BlockGroup.liquids ||
+&nbsp;                build.block.group == BlockGroup.transportation
+&nbsp;            ))){
+<b class="nc">&nbsp;                blockedByBlock = false;</b>
+&nbsp;
+&nbsp;                //raycast for target
+<b class="nc">&nbsp;                boolean blocked = World.raycast(unit.tileX(), unit.tileY(), target.tileX(), target.tileY(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;                    for(Point2 p : Geometry.d4c){</b>
+<b class="nc">&nbsp;                        Tile tile = Vars.world.tile(x + p.x, y + p.y);</b>
+<b class="nc">&nbsp;                        if(tile != null &amp;&amp; tile.build == target) return false;</b>
+<b class="nc">&nbsp;                        if(tile != null &amp;&amp; tile.build != null &amp;&amp; tile.build.team != unit.team()){</b>
+<b class="nc">&nbsp;                            blockedByBlock = true;</b>
+<b class="nc">&nbsp;                            return true;</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            return tile == null || tile.solid();</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                });
+&nbsp;
+&nbsp;                //shoot when there&#39;s an enemy block in the way
+<b class="nc">&nbsp;                if(blockedByBlock){</b>
+<b class="nc">&nbsp;                    shoot = true;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(!blocked){</b>
+<b class="nc">&nbsp;                    moveToTarget = true;</b>
+&nbsp;                    //move towards target directly
+<b class="nc">&nbsp;                    unit.movePref(vec.set(target).sub(unit).limit(unit.speed()));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!moveToTarget){</b>
+<b class="nc">&nbsp;            boolean move = true;</b>
+&nbsp;
+&nbsp;            //stop moving toward the drop zone if applicable
+<b class="nc">&nbsp;            if(core == null &amp;&amp; state.rules.waves &amp;&amp; unit.team == state.rules.defaultTeam){</b>
+<b class="nc">&nbsp;                Tile spawner = getClosestSpawner();</b>
+<b class="nc">&nbsp;                if(spawner != null &amp;&amp; unit.within(spawner, state.rules.dropZoneRadius + 120f)){</b>
+<b class="nc">&nbsp;                    move = false;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(move){</b>
+<b class="nc">&nbsp;                pathfind(Pathfinder.fieldCore);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        unit.controlWeapons(rotate, shoot);</b>
+&nbsp;
+<b class="nc">&nbsp;        faceTarget();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Teamc target(float x, float y, float range, boolean air, boolean ground){
+<b class="nc">&nbsp;        return Units.closestTarget(unit.team, x, y, range, u -&gt; u.checkTarget(air, ground), t -&gt; ground &amp;&amp;</b>
+&nbsp;            !(t.block instanceof Conveyor || t.block instanceof Conduit)); //do not target conveyors/conduits
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

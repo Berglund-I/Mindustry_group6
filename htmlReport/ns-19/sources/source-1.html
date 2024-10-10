@@ -1,0 +1,477 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AIController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.units</a>
+</div>
+
+<h1>Coverage Summary for Class: AIController (mindustry.entities.units)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AIController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.5%
+  </span>
+  <span class="absValue">
+    (21/40)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46.5%
+  </span>
+  <span class="absValue">
+    (67/144)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.units;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class AIController implements UnitController{</b>
+<b class="fc">&nbsp;    protected static final Vec2 vec = new Vec2();</b>
+&nbsp;    protected static final float rotateBackTimer = 60f * 5f;
+&nbsp;    protected static final int timerTarget = 0, timerTarget2 = 1, timerTarget3 = 2, timerTarget4 = 3;
+&nbsp;
+&nbsp;    protected Unit unit;
+<b class="fc">&nbsp;    protected Interval timer = new Interval(4);</b>
+&nbsp;    protected AIController fallback;
+&nbsp;    protected float noTargetTime;
+&nbsp;
+&nbsp;    /** main target that is being faced */
+&nbsp;    protected Teamc target;
+&nbsp;
+&nbsp;    {
+<b class="fc">&nbsp;        timer.reset(0, Mathf.random(40f));</b>
+<b class="fc">&nbsp;        timer.reset(1, Mathf.random(60f));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateUnit(){
+&nbsp;        //use fallback AI when possible
+<b class="fc">&nbsp;        if(useFallback() &amp;&amp; (fallback != null || (fallback = fallback()) != null)){</b>
+<b class="nc">&nbsp;            if(fallback.unit != unit) fallback.unit(unit);</b>
+<b class="nc">&nbsp;            fallback.updateUnit();</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        updateVisuals();</b>
+<b class="fc">&nbsp;        updateTargeting();</b>
+<b class="fc">&nbsp;        updateMovement();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * @return whether controller state should not be reset after reading.
+&nbsp;     * Do not override unless you know exactly what you are doing.
+&nbsp;     * */
+&nbsp;    public boolean keepState(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void afterRead(Unit unit){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isLogicControllable(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void stopShooting(){
+<b class="nc">&nbsp;        for(var mount : unit.mounts){</b>
+&nbsp;            //ignore mount controllable stats too, they should not shoot either
+<b class="nc">&nbsp;            mount.shoot = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public AIController fallback(){
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean useFallback(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateVisuals(){
+<b class="fc">&nbsp;        if(unit.isFlying()){</b>
+<b class="fc">&nbsp;            if(unit.type.wobble) unit.wobble();</b>
+&nbsp;
+<b class="fc">&nbsp;            unit.lookAt(unit.prefRotation());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateMovement(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void updateTargeting(){
+<b class="fc">&nbsp;        if(unit.hasWeapons()){</b>
+<b class="fc">&nbsp;            updateWeapons();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** For ground units: Looks at the target, or the movement position. Does not apply to non-omni units. */
+&nbsp;    public void faceTarget(){
+<b class="fc">&nbsp;        if(unit.type.omniMovement || unit instanceof Mechc){</b>
+<b class="fc">&nbsp;            if(!Units.invalidateTarget(target, unit, unit.range()) &amp;&amp; unit.type.faceTarget &amp;&amp; unit.type.hasWeapons()){</b>
+<b class="nc">&nbsp;                unit.lookAt(Predict.intercept(unit, target, unit.type.weapons.first().bullet.speed));</b>
+<b class="fc">&nbsp;            }else if(unit.moving()){</b>
+<b class="fc">&nbsp;                unit.lookAt(unit.vel().angle());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void faceMovement(){
+<b class="nc">&nbsp;        if((unit.type.omniMovement || unit instanceof Mechc) &amp;&amp; unit.moving()){</b>
+<b class="nc">&nbsp;            unit.lookAt(unit.vel().angle());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean invalid(Teamc target){
+<b class="fc">&nbsp;        return Units.invalidateTarget(target, unit.team, unit.x, unit.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void pathfind(int pathTarget){
+<b class="fc">&nbsp;        int costType = unit.pathType();</b>
+&nbsp;
+<b class="fc">&nbsp;        Tile tile = unit.tileOn();</b>
+<b class="fc">&nbsp;        if(tile == null) return;</b>
+<b class="fc">&nbsp;        Tile targetTile = pathfinder.getTargetTile(tile, pathfinder.getField(unit.team, costType, pathTarget));</b>
+&nbsp;
+<b class="fc">&nbsp;        if(tile == targetTile || (costType == Pathfinder.costNaval &amp;&amp; !targetTile.floor().isLiquid)) return;</b>
+&nbsp;
+<b class="fc">&nbsp;        unit.movePref(vec.trns(unit.angleTo(targetTile.worldx(), targetTile.worldy()), prefSpeed()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateWeapons(){
+<b class="fc">&nbsp;        float rotation = unit.rotation - 90;</b>
+<b class="fc">&nbsp;        boolean ret = retarget();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(ret){</b>
+<b class="fc">&nbsp;            target = findMainTarget(unit.x, unit.y, unit.range(), unit.type.targetAir, unit.type.targetGround);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        noTargetTime += Time.delta;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(invalid(target)){</b>
+<b class="fc">&nbsp;            target = null;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            noTargetTime = 0f;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        unit.isShooting = false;</b>
+&nbsp;
+<b class="fc">&nbsp;        for(var mount : unit.mounts){</b>
+<b class="fc">&nbsp;            Weapon weapon = mount.weapon;</b>
+<b class="fc">&nbsp;            float wrange = weapon.range();</b>
+&nbsp;
+&nbsp;            //let uncontrollable weapons do their own thing
+<b class="fc">&nbsp;            if(!weapon.controllable || weapon.noAttack) continue;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(!weapon.aiControllable){</b>
+<b class="nc">&nbsp;                mount.rotate = false;</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            float mountX = unit.x + Angles.trnsx(rotation, weapon.x, weapon.y),</b>
+<b class="fc">&nbsp;                mountY = unit.y + Angles.trnsy(rotation, weapon.x, weapon.y);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(unit.type.singleTarget){</b>
+<b class="fc">&nbsp;                mount.target = target;</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                if(ret){</b>
+<b class="fc">&nbsp;                    mount.target = findTarget(mountX, mountY, wrange, weapon.bullet.collidesAir, weapon.bullet.collidesGround);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(checkTarget(mount.target, mountX, mountY, wrange)){</b>
+<b class="fc">&nbsp;                    mount.target = null;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            boolean shoot = false;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(mount.target != null){</b>
+<b class="nc">&nbsp;                shoot = mount.target.within(mountX, mountY, wrange + (mount.target instanceof Sized s ? s.hitSize()/2f : 0f)) &amp;&amp; shouldShoot();</b>
+&nbsp;
+<b class="nc">&nbsp;                Vec2 to = Predict.intercept(unit, mount.target, weapon.bullet.speed);</b>
+<b class="nc">&nbsp;                mount.aimX = to.x;</b>
+<b class="nc">&nbsp;                mount.aimY = to.y;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            mount.shoot = mount.rotate = shoot;</b>
+<b class="fc">&nbsp;            if(!shouldFire()){</b>
+<b class="nc">&nbsp;                mount.shoot = false;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            unit.isShooting |= mount.shoot;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(mount.target == null &amp;&amp; !shoot &amp;&amp; !Angles.within(mount.rotation, mount.weapon.baseRotation, 0.01f) &amp;&amp; noTargetTime &gt;= rotateBackTimer){</b>
+<b class="nc">&nbsp;                mount.rotate = true;</b>
+<b class="nc">&nbsp;                Tmp.v1.trns(unit.rotation + mount.weapon.baseRotation, 5f);</b>
+<b class="nc">&nbsp;                mount.aimX = mountX + Tmp.v1.x;</b>
+<b class="nc">&nbsp;                mount.aimY = mountY + Tmp.v1.y;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(shoot){</b>
+<b class="nc">&nbsp;                unit.aimX = mount.aimX;</b>
+<b class="nc">&nbsp;                unit.aimY = mount.aimY;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean checkTarget(Teamc target, float x, float y, float range){
+<b class="fc">&nbsp;        return Units.invalidateTarget(target, unit.team, x, y, range);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether the unit should actually fire bullets (as opposed to just targeting something) */
+&nbsp;    public boolean shouldFire(){
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean shouldShoot(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Teamc targetFlag(float x, float y, BlockFlag flag, boolean enemy){
+<b class="nc">&nbsp;        if(unit.team == Team.derelict) return null;</b>
+<b class="nc">&nbsp;        return Geometry.findClosest(x, y, enemy ? indexer.getEnemy(unit.team, flag) : indexer.getFlagged(unit.team, flag));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Teamc target(float x, float y, float range, boolean air, boolean ground){
+<b class="fc">&nbsp;        return Units.closestTarget(unit.team, x, y, range, u -&gt; u.checkTarget(air, ground), t -&gt; ground &amp;&amp; (unit.type.targetUnderBlocks || !t.block.underBullets));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean retarget(){
+<b class="fc">&nbsp;        return timer.get(timerTarget, target == null ? 40 : 90);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Teamc findMainTarget(float x, float y, float range, boolean air, boolean ground){
+<b class="fc">&nbsp;        return findTarget(x, y, range, air, ground);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Teamc findTarget(float x, float y, float range, boolean air, boolean ground){
+<b class="fc">&nbsp;        return target(x, y, range, air, ground);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void commandTarget(Teamc moveTo){}</b>
+&nbsp;
+<b class="nc">&nbsp;    public void commandPosition(Vec2 pos){}</b>
+&nbsp;
+&nbsp;    /** Called after this controller is assigned a unit. */
+&nbsp;    public void init(){
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public @Nullable Tile getClosestSpawner(){
+<b class="nc">&nbsp;        return Geometry.findClosest(unit.x, unit.y, Vars.spawner.getSpawns());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void unloadPayloads(){
+<b class="nc">&nbsp;        if(unit instanceof Payloadc pay &amp;&amp; pay.hasPayload() &amp;&amp; target instanceof Building &amp;&amp; pay.payloads().peek() instanceof UnitPayload){</b>
+<b class="nc">&nbsp;            if(target.within(unit, Math.max(unit.type().range + 1f, 75f))){</b>
+<b class="nc">&nbsp;                pay.dropLastPayload();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void circleAttack(float circleLength){
+<b class="nc">&nbsp;        vec.set(target).sub(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        float ang = unit.angleTo(target);</b>
+<b class="nc">&nbsp;        float diff = Angles.angleDist(ang, unit.rotation());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(diff &gt; 70f &amp;&amp; vec.len() &lt; circleLength){</b>
+<b class="nc">&nbsp;            vec.setAngle(unit.vel().angle());</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            vec.setAngle(Angles.moveToward(unit.vel().angle(), vec.angle(), 6f));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        vec.setLength(prefSpeed());</b>
+&nbsp;
+<b class="nc">&nbsp;        unit.movePref(vec);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void circle(Position target, float circleLength){
+<b class="nc">&nbsp;        circle(target, circleLength, prefSpeed());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void circle(Position target, float circleLength, float speed){
+<b class="nc">&nbsp;        if(target == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        vec.set(target).sub(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(vec.len() &lt; circleLength){</b>
+<b class="nc">&nbsp;            vec.rotate((circleLength - vec.len()) / circleLength * 180f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        vec.setLength(speed);</b>
+&nbsp;
+<b class="nc">&nbsp;        unit.movePref(vec);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void moveTo(Position target, float circleLength){
+<b class="nc">&nbsp;        moveTo(target, circleLength, 100f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void moveTo(Position target, float circleLength, float smooth){
+<b class="nc">&nbsp;        moveTo(target, circleLength, smooth, unit.isFlying(), null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void moveTo(Position target, float circleLength, float smooth, boolean keepDistance, @Nullable Vec2 offset){
+<b class="nc">&nbsp;        moveTo(target, circleLength, smooth, keepDistance, offset, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void moveTo(Position target, float circleLength, float smooth, boolean keepDistance, @Nullable Vec2 offset, boolean arrive){
+<b class="nc">&nbsp;        if(target == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float speed = prefSpeed();</b>
+&nbsp;
+<b class="nc">&nbsp;        vec.set(target).sub(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        float length = circleLength &lt;= 0.001f ? 1f : Mathf.clamp((unit.dst(target) - circleLength) / smooth, -1f, 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        vec.setLength(speed * length);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(arrive){</b>
+<b class="nc">&nbsp;            Tmp.v3.set(-unit.vel.x / unit.type.accel * 2f, -unit.vel.y / unit.type.accel * 2f).add((target.getX() - unit.x), (target.getY() - unit.y));</b>
+<b class="nc">&nbsp;            vec.add(Tmp.v3).limit(speed * length);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(length &lt; -0.5f){</b>
+<b class="nc">&nbsp;            if(keepDistance){</b>
+<b class="nc">&nbsp;                vec.rotate(180f);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                vec.setZero();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(length &lt; 0){</b>
+<b class="nc">&nbsp;            vec.setZero();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(offset != null){</b>
+<b class="nc">&nbsp;            vec.add(offset);</b>
+<b class="nc">&nbsp;            vec.setLength(speed * length);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //ignore invalid movement values
+<b class="nc">&nbsp;        if(vec.isNaN() || vec.isInfinite() || vec.isZero()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!unit.type.omniMovement &amp;&amp; unit.type.rotateMoveFirst){</b>
+<b class="nc">&nbsp;            float angle = vec.angle();</b>
+<b class="nc">&nbsp;            unit.lookAt(angle);</b>
+<b class="nc">&nbsp;            if(Angles.within(unit.rotation, angle, 3f)){</b>
+<b class="nc">&nbsp;                unit.movePref(vec);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            unit.movePref(vec);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public float prefSpeed(){
+<b class="fc">&nbsp;        return unit.speed();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void unit(Unit unit){
+<b class="fc">&nbsp;        if(this.unit == unit) return;</b>
+&nbsp;
+<b class="fc">&nbsp;        this.unit = unit;</b>
+<b class="fc">&nbsp;        init();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Unit unit(){
+<b class="fc">&nbsp;        return unit;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

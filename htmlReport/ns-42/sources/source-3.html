@@ -1,0 +1,412 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Unloader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.storage</a>
+</div>
+
+<h1>Coverage Summary for Class: Unloader (mindustry.world.blocks.storage)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Unloader</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.7%
+  </span>
+  <span class="absValue">
+    (18/21)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Unloader$ContainerStat</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Unloader$UnloaderBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.5%
+  </span>
+  <span class="absValue">
+    (6/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.3%
+  </span>
+  <span class="absValue">
+    (26/92)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    61.1%
+  </span>
+  <span class="absValue">
+    (11/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (46/115)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.storage;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import arc.util.pooling.Pool.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Unloader extends Block{
+&nbsp;    public @Load(value = &quot;@-center&quot;, fallback = &quot;unloader-center&quot;) TextureRegion centerRegion;
+&nbsp;
+<b class="fc">&nbsp;    public float speed = 1f;</b>
+&nbsp;
+&nbsp;    /** Cached result of content.items() */
+&nbsp;    static Item[] allItems;
+&nbsp;
+&nbsp;    public Unloader(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        health = 70;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        saveConfig = true;</b>
+<b class="fc">&nbsp;        itemCapacity = 0;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+<b class="fc">&nbsp;        clearOnDoubleTap = true;</b>
+<b class="fc">&nbsp;        unloadable = false;</b>
+&nbsp;
+<b class="fc">&nbsp;        config(Item.class, (UnloaderBuild tile, Item item) -&gt; tile.sortItem = item);</b>
+<b class="fc">&nbsp;        configClear((UnloaderBuild tile) -&gt; tile.sortItem = null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        allItems = content.items().toArray(Item.class);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+<b class="nc">&nbsp;        stats.add(Stat.speed, 60f / speed, StatUnit.itemsSecond);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanConfig(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        drawPlanConfigCenter(plan, plan.config, &quot;unloader-center&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+<b class="fc">&nbsp;        removeBar(&quot;items&quot;);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static class ContainerStat implements Poolable{</b>
+&nbsp;        Building building;
+&nbsp;        float loadFactor;
+&nbsp;        boolean canLoad;
+&nbsp;        boolean canUnload;
+&nbsp;        /** Cached !(building instanceof StorageBuild) */
+&nbsp;        boolean notStorage;
+&nbsp;        int lastUsed;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void reset(){
+<b class="fc">&nbsp;            building = null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class UnloaderBuild extends Building{</b>
+<b class="fc">&nbsp;        public float unloadTimer = 0f;</b>
+<b class="fc">&nbsp;        public int rotations = 0;</b>
+<b class="fc">&nbsp;        public Item sortItem = null;</b>
+&nbsp;        public ContainerStat dumpingFrom, dumpingTo;
+<b class="fc">&nbsp;        public final Seq&lt;ContainerStat&gt; possibleBlocks = new Seq&lt;&gt;(ContainerStat.class);</b>
+&nbsp;
+<b class="fc">&nbsp;        protected final Comparator&lt;ContainerStat&gt; comparator = (x, y) -&gt; {</b>
+&nbsp;            //sort so it gives priority for blocks that can only either receive or give (not both), and then by load, and then by last use
+&nbsp;            //highest = unload from, lowest = unload to
+<b class="nc">&nbsp;            int unloadPriority = Boolean.compare(x.canUnload &amp;&amp; !x.canLoad, y.canUnload &amp;&amp; !y.canLoad); //priority to receive if it cannot give</b>
+<b class="nc">&nbsp;            if(unloadPriority != 0) return unloadPriority;</b>
+<b class="nc">&nbsp;            int loadPriority = Boolean.compare(x.canUnload || !x.canLoad, y.canUnload || !y.canLoad); //priority to give if it cannot receive</b>
+<b class="nc">&nbsp;            if(loadPriority != 0) return loadPriority;</b>
+<b class="nc">&nbsp;            int loadFactor = Float.compare(x.loadFactor, y.loadFactor);</b>
+<b class="nc">&nbsp;            if(loadFactor != 0) return loadFactor;</b>
+<b class="nc">&nbsp;            return Integer.compare(y.lastUsed, x.lastUsed); //inverted</b>
+&nbsp;        };
+&nbsp;
+&nbsp;        private boolean isPossibleItem(Item item){
+<b class="nc">&nbsp;            boolean hasProvider = false,</b>
+<b class="nc">&nbsp;            hasReceiver = false,</b>
+<b class="nc">&nbsp;            isDistinct = false;</b>
+&nbsp;
+<b class="nc">&nbsp;            var pbi = possibleBlocks.items;</b>
+<b class="nc">&nbsp;            for(int i = 0, l = possibleBlocks.size; i &lt; l; i++){</b>
+<b class="nc">&nbsp;                var pb = pbi[i];</b>
+<b class="nc">&nbsp;                var other = pb.building;</b>
+&nbsp;
+&nbsp;                //set the stats of buildings in possibleBlocks while we are at it
+<b class="nc">&nbsp;                pb.canLoad = pb.notStorage &amp;&amp; other.acceptItem(this, item);</b>
+<b class="nc">&nbsp;                pb.canUnload = other.canUnload() &amp;&amp; other.items != null &amp;&amp; other.items.has(item);</b>
+&nbsp;
+&nbsp;                //thats also handling framerate issues and slow conveyor belts, to avoid skipping items if nulloader
+<b class="nc">&nbsp;                isDistinct |= (hasProvider &amp;&amp; pb.canLoad) || (hasReceiver &amp;&amp; pb.canUnload);</b>
+<b class="nc">&nbsp;                hasProvider |= pb.canUnload;</b>
+<b class="nc">&nbsp;                hasReceiver |= pb.canLoad;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return isDistinct;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityUpdate(){
+&nbsp;            //filter all blocks in the proximity that will never be able to trade items
+&nbsp;
+<b class="fc">&nbsp;            super.onProximityUpdate();</b>
+<b class="fc">&nbsp;            Pools.freeAll(possibleBlocks, true);</b>
+<b class="fc">&nbsp;            possibleBlocks.clear();</b>
+&nbsp;
+<b class="fc">&nbsp;            for(int i = 0; i &lt; proximity.size; i++){</b>
+<b class="fc">&nbsp;                var other = proximity.get(i);</b>
+<b class="fc">&nbsp;                if(!other.interactable(team)) continue; //avoid blocks of the wrong team</b>
+&nbsp;
+&nbsp;                //partial check
+<b class="fc">&nbsp;                boolean canLoad = !(other.block instanceof StorageBlock);</b>
+<b class="fc">&nbsp;                boolean canUnload = other.canUnload() &amp;&amp; other.items != null;</b>
+&nbsp;
+<b class="fc">&nbsp;                if(canLoad || canUnload){ //avoid blocks that can neither give nor receive items</b>
+<b class="fc">&nbsp;                    var pb = Pools.obtain(ContainerStat.class, ContainerStat::new);</b>
+<b class="fc">&nbsp;                    pb.building = other;</b>
+<b class="fc">&nbsp;                    pb.notStorage = canLoad;</b>
+&nbsp;                    //TODO store the partial canLoad/canUnload?
+<b class="fc">&nbsp;                    possibleBlocks.add(pb);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(((unloadTimer += delta()) &lt; speed) || (possibleBlocks.size &lt; 2)) return;</b>
+<b class="nc">&nbsp;            Item item = null;</b>
+<b class="nc">&nbsp;            boolean any = false;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(sortItem != null){</b>
+<b class="nc">&nbsp;                if(isPossibleItem(sortItem)) item = sortItem;</b>
+&nbsp;            }else{
+&nbsp;                //selects the next item for nulloaders
+&nbsp;                //inspired of nextIndex() but for all &quot;proximity&quot; (possibleBlocks) at once, and also way more powerful
+<b class="nc">&nbsp;                for(int i = 0, l = allItems.length; i &lt; l; i++){</b>
+<b class="nc">&nbsp;                    int id = (rotations + i + 1) % l;</b>
+<b class="nc">&nbsp;                    var possibleItem = allItems[id];</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(isPossibleItem(possibleItem)){</b>
+<b class="nc">&nbsp;                        item = possibleItem;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(item != null){</b>
+<b class="nc">&nbsp;                rotations = item.id; //next rotation for nulloaders //TODO maybe if(sortItem == null)</b>
+<b class="nc">&nbsp;                var pbi = possibleBlocks.items;</b>
+<b class="nc">&nbsp;                int pbs = possibleBlocks.size;</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; pbs; i++){</b>
+<b class="nc">&nbsp;                    var pb = pbi[i];</b>
+<b class="nc">&nbsp;                    var other = pb.building;</b>
+<b class="nc">&nbsp;                    int maxAccepted = other.getMaximumAccepted(item);</b>
+<b class="nc">&nbsp;                    pb.loadFactor = maxAccepted == 0 || other.items == null ? 0 : other.items.get(item) / (float)maxAccepted;</b>
+<b class="nc">&nbsp;                    pb.lastUsed = (pb.lastUsed + 1) % Integer.MAX_VALUE; //increment the priority if not used</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                possibleBlocks.sort(comparator);</b>
+&nbsp;
+<b class="nc">&nbsp;                dumpingTo = null;</b>
+<b class="nc">&nbsp;                dumpingFrom = null;</b>
+&nbsp;
+&nbsp;                //choose the building to accept the item
+<b class="nc">&nbsp;                for(int i = 0; i &lt; pbs; i++){</b>
+<b class="nc">&nbsp;                    if(pbi[i].canLoad){</b>
+<b class="nc">&nbsp;                        dumpingTo = pbi[i];</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //choose the building to take the item from
+<b class="nc">&nbsp;                for(int i = pbs - 1; i &gt;= 0; i--){</b>
+<b class="nc">&nbsp;                    if(pbi[i].canUnload){</b>
+<b class="nc">&nbsp;                        dumpingFrom = pbi[i];</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //trade the items
+<b class="nc">&nbsp;                if(dumpingFrom != null &amp;&amp; dumpingTo != null &amp;&amp; (dumpingFrom.loadFactor != dumpingTo.loadFactor || !dumpingFrom.canLoad)){</b>
+<b class="nc">&nbsp;                    dumpingTo.building.handleItem(this, item);</b>
+<b class="nc">&nbsp;                    dumpingFrom.building.removeStack(item, 1);</b>
+<b class="nc">&nbsp;                    dumpingTo.lastUsed = 0;</b>
+<b class="nc">&nbsp;                    dumpingFrom.lastUsed = 0;</b>
+<b class="nc">&nbsp;                    any = true;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(any){</b>
+<b class="nc">&nbsp;                unloadTimer %= speed;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                unloadTimer = Math.min(unloadTimer, speed);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(sortItem == null ? Color.clear : sortItem.color);</b>
+<b class="nc">&nbsp;            Draw.rect(centerRegion, x, y);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            ItemSelection.buildTable(Unloader.this, table, content.items(), () -&gt; sortItem, this::configure, selectionRows, selectionColumns);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Item config(){
+<b class="nc">&nbsp;            return sortItem;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.s(sortItem == null ? -1 : sortItem.id);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            int id = revision == 1 ? read.s() : read.b();</b>
+<b class="fc">&nbsp;            sortItem = id == -1 ? null : content.item(id);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

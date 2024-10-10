@@ -1,0 +1,309 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BlockProducer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.payloads</a>
+</div>
+
+<h1>Coverage Summary for Class: BlockProducer (mindustry.world.blocks.payloads)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BlockProducer</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    69.2%
+  </span>
+  <span class="absValue">
+    (18/26)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BlockProducer$BlockProducerBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (5/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.5%
+  </span>
+  <span class="absValue">
+    (13/49)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (8/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.3%
+  </span>
+  <span class="absValue">
+    (31/75)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.payloads;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Generic building that produces other buildings. */
+&nbsp;public abstract class BlockProducer extends PayloadBlock{
+<b class="fc">&nbsp;    public float buildSpeed = 0.4f;</b>
+&nbsp;
+&nbsp;    public BlockProducer(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        size = 3;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        outputsPayload = true;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        hasPower = true;</b>
+<b class="fc">&nbsp;        acceptsUnitPayloads = false;</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        regionRotated1 = 1;</b>
+&nbsp;
+<b class="fc">&nbsp;        ObjectMap&lt;Block, ItemStack[]&gt; stacks = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;        consume(new ConsumeItemDynamic((BlockProducerBuild e) -&gt; {</b>
+<b class="fc">&nbsp;            Block block = e.recipe();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(block != null){</b>
+<b class="nc">&nbsp;                ItemStack[] clone = stacks.get(block, () -&gt; ItemStack.copy(block.requirements));</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; clone.length; i++){</b>
+<b class="nc">&nbsp;                    clone[i].amount = Mathf.ceil(block.requirements[i].amount * state.rules.buildCostMultiplier);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                return clone;</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                return ItemStack.empty;</b>
+&nbsp;            }
+&nbsp;        }));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{region, outRegion, topRegion};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy());</b>
+<b class="nc">&nbsp;        Draw.rect(outRegion, plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+<b class="nc">&nbsp;        Draw.rect(topRegion, plan.drawx(), plan.drawy());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;progress&quot;, (BlockProducerBuild entity) -&gt; new Bar(&quot;bar.progress&quot;, Pal.ammo, () -&gt; entity.recipe() == null ? 0f : (entity.progress / entity.recipe().buildCost)));</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public abstract class BlockProducerBuild extends PayloadBlockBuild&lt;BuildPayload&gt;{</b>
+&nbsp;        public float progress, time, heat;
+&nbsp;
+&nbsp;        public abstract @Nullable Block recipe();
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            return items.get(item) &lt; getMaximumAccepted(item);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int getMaximumAccepted(Item item){
+<b class="nc">&nbsp;            if(recipe() == null) return 0;</b>
+<b class="nc">&nbsp;            for(ItemStack stack : recipe().requirements){</b>
+<b class="nc">&nbsp;                if(stack.item == item) return stack.amount * 2;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptPayload(Building source, Payload payload){
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return super.shouldConsume() &amp;&amp; recipe() != null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            super.updateTile();</b>
+<b class="fc">&nbsp;            var recipe = recipe();</b>
+<b class="fc">&nbsp;            boolean produce = recipe != null &amp;&amp; efficiency &gt; 0 &amp;&amp; payload == null;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(produce){</b>
+<b class="nc">&nbsp;                progress += buildSpeed * edelta();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(progress &gt;= recipe.buildCost){</b>
+<b class="nc">&nbsp;                    consume();</b>
+<b class="nc">&nbsp;                    payload = new BuildPayload(recipe, team);</b>
+<b class="nc">&nbsp;                    payload.block().placeEffect.at(x, y, payload.size() / tilesize);</b>
+<b class="nc">&nbsp;                    payVector.setZero();</b>
+<b class="nc">&nbsp;                    progress %= 1f;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            heat = Mathf.lerpDelta(heat, Mathf.num(produce), 0.15f);</b>
+<b class="fc">&nbsp;            time += heat * delta();</b>
+&nbsp;
+<b class="fc">&nbsp;            moveOutPayload();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y);</b>
+<b class="nc">&nbsp;            Draw.rect(outRegion, x, y, rotdeg());</b>
+&nbsp;
+<b class="nc">&nbsp;            var recipe = recipe();</b>
+<b class="nc">&nbsp;            if(recipe != null){</b>
+<b class="nc">&nbsp;                Drawf.shadow(x, y, recipe.size * tilesize * 2f, progress / recipe.buildCost);</b>
+<b class="nc">&nbsp;                Draw.draw(Layer.blockBuilding, () -&gt; {</b>
+<b class="nc">&nbsp;                    Draw.color(Pal.accent);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(TextureRegion region : recipe.getGeneratedIcons()){</b>
+<b class="nc">&nbsp;                        Shaders.blockbuild.region = region;</b>
+<b class="nc">&nbsp;                        Shaders.blockbuild.time = time;</b>
+<b class="nc">&nbsp;                        Shaders.blockbuild.progress = progress / recipe.buildCost;</b>
+&nbsp;
+<b class="nc">&nbsp;                        Draw.rect(region, x, y, recipe.rotate ? rotdeg() : 0);</b>
+<b class="nc">&nbsp;                        Draw.flush();</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Draw.color();</b>
+&nbsp;                });
+<b class="nc">&nbsp;                Draw.z(Layer.blockBuilding + 1);</b>
+<b class="nc">&nbsp;                Draw.color(Pal.accent, heat);</b>
+&nbsp;
+<b class="nc">&nbsp;                Lines.lineAngleCenter(x + Mathf.sin(time, 10f, Vars.tilesize / 2f * recipe.size + 1f), y, 90, recipe.size * Vars.tilesize + 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.reset();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            drawPayload();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.blockBuilding + 1.1f);</b>
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public double sense(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.progress) return progress;</b>
+<b class="nc">&nbsp;            return super.sense(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.f(progress);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            progress = read.f();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

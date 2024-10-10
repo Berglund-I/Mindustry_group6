@@ -1,0 +1,349 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PayloadRouter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.payloads</a>
+</div>
+
+<h1>Coverage Summary for Class: PayloadRouter (mindustry.world.blocks.payloads)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PayloadRouter</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    69.2%
+  </span>
+  <span class="absValue">
+    (9/13)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PayloadRouter$PayloadRouterBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.2%
+  </span>
+  <span class="absValue">
+    (7/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.5%
+  </span>
+  <span class="absValue">
+    (23/73)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    38.1%
+  </span>
+  <span class="absValue">
+    (8/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.2%
+  </span>
+  <span class="absValue">
+    (32/86)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.payloads;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class PayloadRouter extends PayloadConveyor{
+<b class="fc">&nbsp;    public boolean invert = false;</b>
+&nbsp;    
+&nbsp;    public @Load(&quot;@-over&quot;) TextureRegion overRegion;
+&nbsp;
+&nbsp;    public PayloadRouter(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        outputsPayload = true;</b>
+<b class="fc">&nbsp;        outputFacing = false;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        clearOnDoubleTap = true;</b>
+&nbsp;
+<b class="fc">&nbsp;        config(Block.class, (PayloadRouterBuild tile, Block item) -&gt; tile.sorted = item);</b>
+<b class="fc">&nbsp;        config(UnitType.class, (PayloadRouterBuild tile, UnitType item) -&gt; tile.sorted = item);</b>
+<b class="fc">&nbsp;        configClear((PayloadRouterBuild tile) -&gt; tile.sorted = null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        super.drawPlanRegion(plan, list);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.rect(overRegion, plan.drawx(), plan.drawy());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canSort(Block b){
+<b class="nc">&nbsp;        return b.isVisible() &amp;&amp; b.size &lt;= size &amp;&amp; !(b instanceof CoreBlock) &amp;&amp; !state.rules.isBanned(b) &amp;&amp; b.environmentBuildable();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canSort(UnitType t){
+<b class="nc">&nbsp;        return !t.isHidden() &amp;&amp; !t.isBanned() &amp;&amp; t.supportsEnv(state.rules.env);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class PayloadRouterBuild extends PayloadConveyorBuild{</b>
+&nbsp;        public @Nullable UnlockableContent sorted;
+&nbsp;        public int recDir;
+&nbsp;        public boolean matches;
+&nbsp;
+&nbsp;        public float smoothRot;
+<b class="fc">&nbsp;        public float controlTime = -1f;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void add(){
+<b class="fc">&nbsp;            super.add();</b>
+<b class="fc">&nbsp;            smoothRot = rotdeg();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void pickNext(){
+<b class="nc">&nbsp;            if(item != null &amp;&amp; controlTime &lt;= 0f){</b>
+<b class="nc">&nbsp;                if(matches){</b>
+&nbsp;                    //when the item matches, always move forward.
+<b class="nc">&nbsp;                    rotation = recDir;</b>
+<b class="nc">&nbsp;                    onProximityUpdate();</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    int rotations = 0;</b>
+&nbsp;                    do{
+<b class="nc">&nbsp;                        rotation = (rotation + 1) % 4;</b>
+&nbsp;                        //if it doesn&#39;t match the sort item and this router is facing forward, skip this rotation
+<b class="nc">&nbsp;                        if(!matches &amp;&amp; sorted != null &amp;&amp; rotation == recDir){</b>
+<b class="nc">&nbsp;                            rotation ++;</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        onProximityUpdate();</b>
+&nbsp;
+&nbsp;                        //force update to transfer if necessary
+<b class="nc">&nbsp;                        if(next instanceof PayloadConveyorBuild &amp;&amp; !(next instanceof PayloadRouterBuild)){</b>
+<b class="nc">&nbsp;                            next.updateTile();</b>
+&nbsp;                        }
+&nbsp;                        //this condition intentionally uses &quot;accept from itself&quot; conditions, because payload conveyors only accept during the start
+&nbsp;                        //&quot;accept from self&quot; conditions are for dropped payloads and are less restrictive
+<b class="nc">&nbsp;                    }while((blocked || next == null || !next.acceptPayload(next, item)) &amp;&amp; ++rotations &lt; 4);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                onProximityUpdate();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void control(LAccess type, double p1, double p2, double p3, double p4){
+<b class="nc">&nbsp;            super.control(type, p1, p2, p3, p4);</b>
+<b class="nc">&nbsp;            if(type == LAccess.config){</b>
+<b class="nc">&nbsp;                int prev = rotation;</b>
+<b class="nc">&nbsp;                rotation = Mathf.mod((int)p1, 4);</b>
+&nbsp;                //when manually controlled, routers do not turn automatically for a while, same as turrets
+<b class="nc">&nbsp;                controlTime = 60f * 6f;</b>
+<b class="nc">&nbsp;                if(prev != rotation){</b>
+<b class="nc">&nbsp;                    onProximityUpdate();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onControlSelect(Unit player){
+<b class="nc">&nbsp;            super.onControlSelect(player);</b>
+&nbsp;            //this will immediately snap back if logic controlled
+<b class="nc">&nbsp;            recDir = rotation;</b>
+<b class="nc">&nbsp;            checkMatch();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handlePayload(Building source, Payload payload){
+<b class="nc">&nbsp;            super.handlePayload(source, payload);</b>
+<b class="nc">&nbsp;            if(controlTime &lt; 0f){ //don&#39;t overwrite logic recDir</b>
+<b class="nc">&nbsp;                recDir = source == null ? rotation : source.relativeTo(this);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            checkMatch();</b>
+<b class="nc">&nbsp;            pickNext();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void checkMatch(){
+<b class="fc">&nbsp;            matches = sorted != null &amp;&amp;</b>
+<b class="fc">&nbsp;                (item instanceof BuildPayload build &amp;&amp; build.block() == sorted) ||</b>
+<b class="fc">&nbsp;                (item instanceof UnitPayload unit &amp;&amp; unit.unit.type == sorted);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(invert) matches = !matches;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void moveFailed(){
+<b class="nc">&nbsp;            pickNext();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            super.updateTile();</b>
+&nbsp;
+<b class="fc">&nbsp;            controlTime -= Time.delta;</b>
+<b class="fc">&nbsp;            smoothRot = Mathf.slerpDelta(smoothRot, rotdeg(), 0.2f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawSelect(){
+<b class="nc">&nbsp;            if(sorted != null){</b>
+<b class="nc">&nbsp;                float dx = x - size * tilesize/2f, dy = y + size * tilesize/2f, s = iconSmall / 4f;</b>
+<b class="nc">&nbsp;                Draw.mixcol(Color.darkGray, 1f);</b>
+<b class="nc">&nbsp;                Draw.rect(sorted.fullIcon, dx, dy - 1, s, s);</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+<b class="nc">&nbsp;                Draw.rect(sorted.fullIcon, dx, dy, s, s);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            float dst = 0.8f;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.mixcol(team.color, Math.max((dst - (Math.abs(fract() - 0.5f) * 2)) / dst, 0));</b>
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y, smoothRot);</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(overRegion, x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.blockOver);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(item != null){</b>
+<b class="nc">&nbsp;                item.draw();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            ItemSelection.buildTable(PayloadRouter.this, table,</b>
+<b class="nc">&nbsp;                content.blocks().select(PayloadRouter.this::canSort).&lt;UnlockableContent&gt;as()</b>
+<b class="nc">&nbsp;                .add(content.units().select(PayloadRouter.this::canSort).as()),</b>
+<b class="nc">&nbsp;                () -&gt; (UnlockableContent)config(), this::configure);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Object config(){
+<b class="nc">&nbsp;            return sorted;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.b(sorted == null ? -1 : sorted.getContentType().ordinal());</b>
+<b class="fc">&nbsp;            write.s(sorted == null ? -1 : sorted.id);</b>
+<b class="fc">&nbsp;            write.b(recDir);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                byte ctype = read.b();</b>
+<b class="fc">&nbsp;                short sort = read.s();</b>
+<b class="fc">&nbsp;                sorted = ctype == -1 ? null : Vars.content.getByID(ContentType.all[ctype], sort);</b>
+<b class="fc">&nbsp;                recDir = read.b();</b>
+<b class="fc">&nbsp;                checkMatch();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

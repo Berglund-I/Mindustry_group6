@@ -1,0 +1,303 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Menus</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui</a>
+</div>
+
+<h1>Coverage Summary for Class: Menus (mindustry.ui)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Menus</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/55)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Menus$MenuListener</td>
+  </tr>
+  <tr>
+    <td class="name">Menus$TextInputListener</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/55)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Class for handling menus and notifications across the network. Unstable API! */
+<b class="nc">&nbsp;public class Menus{</b>
+<b class="nc">&nbsp;    private static final Seq&lt;MenuListener&gt; menuListeners = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    private static final Seq&lt;TextInputListener&gt; textInputListeners = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    /** Register a *global* menu listener. If no option is chosen, the option is returned as -1. */
+&nbsp;    public static int registerMenu(MenuListener listener){
+<b class="nc">&nbsp;        menuListeners.add(listener);</b>
+<b class="nc">&nbsp;        return menuListeners.size - 1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Register a *global* text input listener. If no text is provided, the text is returned as null. */
+&nbsp;    public static int registerTextInput(TextInputListener listener){
+<b class="nc">&nbsp;        textInputListeners.add(listener);</b>
+<b class="nc">&nbsp;        return textInputListeners.size - 1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //do not invoke any of the methods below directly, use Call
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void menu(int menuId, String title, String message, String[][] options){
+<b class="nc">&nbsp;        if(title == null) title = &quot;&quot;;</b>
+<b class="nc">&nbsp;        if(message == null) message = &quot;&quot;;</b>
+<b class="nc">&nbsp;        if(options == null) options = new String[0][0];</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.showMenu(title, message, options, (option) -&gt; Call.menuChoose(player, menuId, option));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void followUpMenu(int menuId, String title, String message, String[][] options){
+<b class="nc">&nbsp;        if(title == null) title = &quot;&quot;;</b>
+<b class="nc">&nbsp;        if(message == null) message = &quot;&quot;;</b>
+<b class="nc">&nbsp;        if(options == null) options = new String[0][0];</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.showFollowUpMenu(menuId, title, message, options, (option) -&gt; Call.menuChoose(player, menuId, option));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void hideFollowUpMenu(int menuId) {
+<b class="nc">&nbsp;        ui.hideFollowUpMenu(menuId);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, called = Loc.both)
+&nbsp;    public static void menuChoose(@Nullable Player player, int menuId, int option){
+<b class="nc">&nbsp;        if(player != null){</b>
+<b class="nc">&nbsp;            Events.fire(new MenuOptionChooseEvent(player, menuId, option));</b>
+<b class="nc">&nbsp;            if(menuId &gt;= 0 &amp;&amp; menuId &lt; menuListeners.size){</b>
+<b class="nc">&nbsp;                menuListeners.get(menuId).get(player, option);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void textInput(int textInputId, String title, String message, int textLength, String def, boolean numeric){
+<b class="nc">&nbsp;        textInput(textInputId, title, message, textLength, def, numeric, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void textInput(int textInputId, String title, String message, int textLength, String def, boolean numeric, boolean allowEmpty){
+<b class="nc">&nbsp;        if(title == null) title = &quot;&quot;;</b>
+<b class="nc">&nbsp;        if(message == null) message = &quot;&quot;;</b>
+<b class="nc">&nbsp;        if(def == null) def = &quot;&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.showTextInput(title, message, textLength, def, numeric, allowEmpty, (text) -&gt; {</b>
+<b class="nc">&nbsp;            Call.textInputResult(player, textInputId, text);</b>
+&nbsp;        }, () -&gt; {
+<b class="nc">&nbsp;            Call.textInputResult(player, textInputId, null);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(targets = Loc.both, called = Loc.both)
+&nbsp;    public static void textInputResult(@Nullable Player player, int textInputId, @Nullable String text){
+<b class="nc">&nbsp;        if(player != null){</b>
+<b class="nc">&nbsp;            Events.fire(new TextInputEvent(player, textInputId, text));</b>
+<b class="nc">&nbsp;            if(textInputId &gt;= 0 &amp;&amp; textInputId &lt; textInputListeners.size){</b>
+<b class="nc">&nbsp;                textInputListeners.get(textInputId).get(player, text);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both, unreliable = true)
+&nbsp;    public static void setHudText(String message){
+<b class="nc">&nbsp;        if(message == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.hudfrag.setHudText(message);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void hideHudText(){
+<b class="nc">&nbsp;        ui.hudfrag.toggleHudText(false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** TCP version */
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void setHudTextReliable(String message){
+<b class="nc">&nbsp;        setHudText(message);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void announce(String message){
+<b class="nc">&nbsp;        if(message == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.announce(message);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void infoMessage(String message){
+<b class="nc">&nbsp;        if(message == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.showText(&quot;&quot;, message);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both, unreliable = true)
+&nbsp;    public static void infoPopup(String message, float duration, int align, int top, int left, int bottom, int right){
+<b class="nc">&nbsp;        if(message == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.showInfoPopup(message, duration, align, top, left, bottom, right);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both, unreliable = true)
+&nbsp;    public static void label(String message, float duration, float worldx, float worldy){
+<b class="nc">&nbsp;        if(message == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.showLabel(message, duration, worldx, worldy);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void infoPopupReliable(String message, float duration, int align, int top, int left, int bottom, int right){
+<b class="nc">&nbsp;        if(message == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.showInfoPopup(message, duration, align, top, left, bottom, right);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void labelReliable(String message, float duration, float worldx, float worldy){
+<b class="nc">&nbsp;        label(message, duration, worldx, worldy);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void infoToast(String message, float duration){
+<b class="nc">&nbsp;        if(message == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.showInfoToast(message, duration);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void warningToast(int unicode, String text){
+<b class="nc">&nbsp;        if(text == null || Fonts.icon.getData().getGlyph((char)unicode) == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.hudfrag.showToast(Fonts.getGlyph(Fonts.icon, (char)unicode), text);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(variants = Variant.both)
+&nbsp;    public static void openURI(String uri){
+<b class="nc">&nbsp;        if(uri == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.showConfirm(Core.bundle.format(&quot;linkopen&quot;, uri), () -&gt; Core.app.openURI(uri));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //internal use only
+&nbsp;    @Remote
+&nbsp;    public static void removeWorldLabel(int id){
+<b class="nc">&nbsp;        var label = Groups.label.getByID(id);</b>
+<b class="nc">&nbsp;        if(label != null){</b>
+<b class="nc">&nbsp;            label.remove();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface MenuListener{
+&nbsp;        void get(Player player, int option);
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface TextInputListener{
+&nbsp;        void get(Player player, @Nullable String text);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

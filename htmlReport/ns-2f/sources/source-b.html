@@ -1,0 +1,308 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Minimap</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui</a>
+</div>
+
+<h1>Coverage Summary for Class: Minimap (mindustry.ui)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Minimap</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Minimap$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Minimap$1$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Minimap$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Minimap$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/54)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Minimap extends Table{</b>
+&nbsp;
+<b class="nc">&nbsp;    public Minimap(){</b>
+<b class="nc">&nbsp;        background(Tex.pane);</b>
+<b class="nc">&nbsp;        float margin = 5f;</b>
+<b class="nc">&nbsp;        this.touchable = Touchable.enabled;</b>
+&nbsp;
+<b class="nc">&nbsp;        add(new Element(){</b>
+&nbsp;            {
+<b class="nc">&nbsp;                setSize(Scl.scl(140f));</b>
+&nbsp;
+<b class="nc">&nbsp;                addListener(new ClickListener(KeyCode.mouseRight){</b>
+&nbsp;                    @Override
+&nbsp;                    public void clicked(InputEvent event, float cx, float cy){
+<b class="nc">&nbsp;                        var region = renderer.minimap.getRegion();</b>
+<b class="nc">&nbsp;                        if(region == null) return;</b>
+&nbsp;
+&nbsp;                        float
+<b class="nc">&nbsp;                        sx = (cx - x) / width,</b>
+<b class="nc">&nbsp;                        sy = (cy - y) / height,</b>
+<b class="nc">&nbsp;                        scaledX = Mathf.lerp(region.u, region.u2, sx) * world.width() * tilesize,</b>
+<b class="nc">&nbsp;                        scaledY = Mathf.lerp(1f - region.v2, 1f - region.v, sy) * world.height() * tilesize;</b>
+&nbsp;
+<b class="nc">&nbsp;                        control.input.panCamera(Tmp.v1.set(scaledX, scaledY));</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void act(float delta){
+<b class="nc">&nbsp;                setPosition(Scl.scl(margin), Scl.scl(margin));</b>
+&nbsp;
+<b class="nc">&nbsp;                super.act(delta);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void draw(){
+<b class="nc">&nbsp;                if(renderer.minimap.getRegion() == null) return;</b>
+<b class="nc">&nbsp;                if(!clipBegin()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.rect(renderer.minimap.getRegion(), x + width / 2f, y + height / 2f, width, height);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(renderer.minimap.getTexture() != null){</b>
+<b class="nc">&nbsp;                    Draw.alpha(parentAlpha);</b>
+<b class="nc">&nbsp;                    renderer.minimap.drawEntities(x, y, width, height, 0.75f, false);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                clipEnd();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).size(140f);</b>
+&nbsp;
+<b class="nc">&nbsp;        margin(margin);</b>
+&nbsp;
+<b class="nc">&nbsp;        addListener(new InputListener(){</b>
+&nbsp;            @Override
+&nbsp;            public boolean scrolled(InputEvent event, float x, float y, float amountx, float amounty){
+<b class="nc">&nbsp;                renderer.minimap.zoomBy(amounty);</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        addListener(new ClickListener(){</b>
+&nbsp;            {
+<b class="nc">&nbsp;                tapSquareSize = Scl.scl(11f);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button){
+<b class="nc">&nbsp;                if(inTapSquare()){</b>
+<b class="nc">&nbsp;                    super.touchUp(event, x, y, pointer, button);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    pressed = false;</b>
+<b class="nc">&nbsp;                    pressedPointer = -1;</b>
+<b class="nc">&nbsp;                    pressedButton = null;</b>
+<b class="nc">&nbsp;                    cancelled = false;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void touchDragged(InputEvent event, float x, float y, int pointer){
+<b class="nc">&nbsp;                if(!inTapSquare(x, y)){</b>
+<b class="nc">&nbsp;                    invalidateTapSquare();</b>
+&nbsp;                }
+<b class="nc">&nbsp;                super.touchDragged(event, x, y, pointer);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(mobile){</b>
+<b class="nc">&nbsp;                    float max = Math.min(world.width(), world.height()) / 16f / 2f;</b>
+<b class="nc">&nbsp;                    renderer.minimap.setZoom(1f + y / height * (max - 1f));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void clicked(InputEvent event, float x, float y){
+<b class="nc">&nbsp;                ui.minimapfrag.toggle();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        update(() -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;            Element e = Core.scene.getHoverElement();</b>
+<b class="nc">&nbsp;            if(e != null &amp;&amp; e.isDescendantOf(this)){</b>
+<b class="nc">&nbsp;                requestScroll();</b>
+<b class="nc">&nbsp;            }else if(hasScroll()){</b>
+<b class="nc">&nbsp;                Core.scene.setScrollFocus(null);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

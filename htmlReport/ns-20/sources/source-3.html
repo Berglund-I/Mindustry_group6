@@ -1,0 +1,221 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LegacySaveVersion</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.io.versions</a>
+</div>
+
+<h1>Coverage Summary for Class: LegacySaveVersion (mindustry.io.versions)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LegacySaveVersion</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    94.4%
+  </span>
+  <span class="absValue">
+    (51/54)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.io.versions;
+&nbsp;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public abstract class LegacySaveVersion extends LegacyRegionSaveVersion{
+&nbsp;
+&nbsp;    public LegacySaveVersion(int version){
+<b class="fc">&nbsp;        super(version);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void readMap(DataInput stream, WorldContext context) throws IOException{
+<b class="fc">&nbsp;        int width = stream.readUnsignedShort();</b>
+<b class="fc">&nbsp;        int height = stream.readUnsignedShort();</b>
+&nbsp;
+<b class="fc">&nbsp;        boolean generating = context.isGenerating();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(!generating) context.begin();</b>
+&nbsp;        try{
+<b class="fc">&nbsp;            context.resize(width, height);</b>
+&nbsp;
+&nbsp;            //read floor and create tiles first
+<b class="fc">&nbsp;            for(int i = 0; i &lt; width * height; i++){</b>
+<b class="fc">&nbsp;                int x = i % width, y = i / width;</b>
+<b class="fc">&nbsp;                short floorid = stream.readShort();</b>
+<b class="fc">&nbsp;                short oreid = stream.readShort();</b>
+<b class="fc">&nbsp;                int consecutives = stream.readUnsignedByte();</b>
+<b class="fc">&nbsp;                if(content.block(floorid) == Blocks.air) floorid = Blocks.stone.id;</b>
+&nbsp;
+<b class="fc">&nbsp;                context.create(x, y, floorid, oreid, (short)0);</b>
+&nbsp;
+<b class="fc">&nbsp;                for(int j = i + 1; j &lt; i + 1 + consecutives; j++){</b>
+<b class="fc">&nbsp;                    int newx = j % width, newy = j / width;</b>
+<b class="fc">&nbsp;                    context.create(newx, newy, floorid, oreid, (short)0);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                i += consecutives;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //read blocks
+<b class="fc">&nbsp;            for(int i = 0; i &lt; width * height; i++){</b>
+<b class="fc">&nbsp;                Block block = content.block(stream.readShort());</b>
+<b class="fc">&nbsp;                Tile tile = context.tile(i);</b>
+<b class="fc">&nbsp;                if(block == null) block = Blocks.air;</b>
+&nbsp;
+&nbsp;                //occupied by multiblock part
+<b class="fc">&nbsp;                boolean occupied = tile.build != null &amp;&amp; !tile.isCenter() &amp;&amp; (tile.build.block == block || block == Blocks.air);</b>
+&nbsp;
+&nbsp;                //do not override occupied cells
+<b class="fc">&nbsp;                if(!occupied){</b>
+<b class="fc">&nbsp;                    tile.setBlock(block);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(block.hasBuilding()){</b>
+&nbsp;                    try{
+<b class="fc">&nbsp;                        readChunk(stream, true, in -&gt; {</b>
+<b class="fc">&nbsp;                            byte version = in.readByte();</b>
+&nbsp;                            //legacy impl of Building#read()
+<b class="fc">&nbsp;                            tile.build.health = stream.readUnsignedShort();</b>
+<b class="fc">&nbsp;                            byte packedrot = stream.readByte();</b>
+<b class="fc">&nbsp;                            byte team = Pack.leftByte(packedrot) == 8 ? stream.readByte() : Pack.leftByte(packedrot);</b>
+<b class="fc">&nbsp;                            byte rotation = Pack.rightByte(packedrot);</b>
+&nbsp;
+<b class="fc">&nbsp;                            tile.setTeam(Team.get(team));</b>
+<b class="fc">&nbsp;                            tile.build.rotation = rotation;</b>
+&nbsp;
+<b class="fc">&nbsp;                            if(tile.build.items != null) tile.build.items.read(Reads.get(stream), true);</b>
+<b class="fc">&nbsp;                            if(tile.build.power != null) tile.build.power.read(Reads.get(stream), true);</b>
+<b class="fc">&nbsp;                            if(tile.build.liquids != null) tile.build.liquids.read(Reads.get(stream), true);</b>
+&nbsp;                            //skip cons.valid boolean, it&#39;s not very important here
+<b class="fc">&nbsp;                            stream.readByte();</b>
+&nbsp;
+&nbsp;                            //read only from subclasses!
+<b class="fc">&nbsp;                            tile.build.read(Reads.get(in), version);</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                    }catch(Throwable e){</b>
+<b class="nc">&nbsp;                        throw new IOException(&quot;Failed to read tile entity of block: &quot; + block, e);</b>
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+<b class="fc">&nbsp;                    context.onReadBuilding();</b>
+&nbsp;                }else{
+<b class="fc">&nbsp;                    int consecutives = stream.readUnsignedByte();</b>
+&nbsp;
+&nbsp;                    //air is a waste of time and may mess up multiblocks
+<b class="fc">&nbsp;                    if(block != Blocks.air){</b>
+<b class="fc">&nbsp;                        for(int j = i + 1; j &lt; i + 1 + consecutives; j++){</b>
+<b class="fc">&nbsp;                            context.tile(j).setBlock(block);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    i += consecutives;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }finally{
+<b class="fc">&nbsp;            if(!generating) context.end();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readLegacyEntities(DataInput stream) throws IOException{
+<b class="fc">&nbsp;        byte groups = stream.readByte();</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; groups; i++){</b>
+<b class="fc">&nbsp;            int amount = stream.readInt();</b>
+<b class="fc">&nbsp;            for(int j = 0; j &lt; amount; j++){</b>
+&nbsp;                //simply skip all the entities
+<b class="fc">&nbsp;                skipChunk(stream, true);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,328 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > GenerateFilter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps.filters</a>
+</div>
+
+<h1>Coverage Summary for Class: GenerateFilter (mindustry.maps.filters)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GenerateFilter</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (6/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    32.6%
+  </span>
+  <span class="absValue">
+    (15/46)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GenerateFilter$GenerateInput</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90%
+  </span>
+  <span class="absValue">
+    (9/10)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GenerateFilter$GenerateInput$TileProvider</td>
+  </tr>
+  <tr>
+    <td class="name">GenerateFilter$PackTileStruct</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    39.1%
+  </span>
+  <span class="absValue">
+    (9/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.1%
+  </span>
+  <span class="absValue">
+    (24/57)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps.filters;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+<b class="fc">&nbsp;public abstract class GenerateFilter implements Cloneable{</b>
+<b class="fc">&nbsp;    public int seed = 0;</b>
+&nbsp;
+&nbsp;    public void apply(Tiles tiles, GenerateInput in){
+&nbsp;
+<b class="fc">&nbsp;        if(isBuffered()){</b>
+&nbsp;            //buffer of tiles used, each tile packed into a long struct
+<b class="nc">&nbsp;            long[] buffer = new long[tiles.width * tiles.height];</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; tiles.width * tiles.height; i++){</b>
+<b class="nc">&nbsp;                Tile tile = tiles.geti(i);</b>
+&nbsp;
+<b class="nc">&nbsp;                in.set(tile.x, tile.y, tile.block(), tile.floor(), tile.overlay());</b>
+<b class="nc">&nbsp;                apply(in);</b>
+&nbsp;
+<b class="nc">&nbsp;                buffer[i] = PackTile.get(in.block.id, in.floor.id, in.overlay.id);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //write to buffer
+<b class="nc">&nbsp;            for(int i = 0; i &lt; tiles.width * tiles.height; i++){</b>
+<b class="nc">&nbsp;                Tile tile = tiles.geti(i);</b>
+<b class="nc">&nbsp;                long b = buffer[i];</b>
+&nbsp;
+<b class="nc">&nbsp;                Block block = Vars.content.block(PackTile.block(b)), floor = Vars.content.block(PackTile.floor(b)), overlay = Vars.content.block(PackTile.overlay(b));</b>
+&nbsp;
+<b class="nc">&nbsp;                tile.setFloor(floor.asFloor());</b>
+<b class="nc">&nbsp;                tile.setOverlay(!floor.asFloor().hasSurface() &amp;&amp; overlay.asFloor().needsSurface &amp;&amp; overlay instanceof OreBlock ? Blocks.air : overlay);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!tile.block().synthetic() &amp;&amp; !block.synthetic()){</b>
+<b class="nc">&nbsp;                    tile.setBlock(block);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+<b class="fc">&nbsp;            for(Tile tile : tiles){</b>
+<b class="fc">&nbsp;                in.set(tile.x, tile.y, tile.block(), tile.floor(), tile.overlay());</b>
+<b class="fc">&nbsp;                apply(in);</b>
+&nbsp;
+<b class="fc">&nbsp;                tile.setFloor(in.floor.asFloor());</b>
+<b class="fc">&nbsp;                tile.setOverlay(!in.floor.asFloor().hasSurface() &amp;&amp; in.overlay.asFloor().needsSurface &amp;&amp; in.overlay instanceof OreBlock ? Blocks.air : in.overlay);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(!tile.block().synthetic() &amp;&amp; !in.block.synthetic()){</b>
+<b class="fc">&nbsp;                    tile.setBlock(in.block);</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return a new array of options for configuring this filter */
+&nbsp;    public abstract FilterOption[] options();
+&nbsp;
+&nbsp;    /** apply the actual filter on the input */
+<b class="nc">&nbsp;    public void apply(GenerateInput in){}</b>
+&nbsp;
+&nbsp;    /** draw any additional guides */
+<b class="nc">&nbsp;    public void draw(Image image){}</b>
+&nbsp;
+&nbsp;    public String simpleName(){
+<b class="nc">&nbsp;        Class c = getClass();</b>
+<b class="nc">&nbsp;        if(c.isAnonymousClass()) c = c.getSuperclass();</b>
+<b class="nc">&nbsp;        return c.getSimpleName().toLowerCase().replace(&quot;filter&quot;, &quot;&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** localized display name */
+&nbsp;    public String name(){
+<b class="nc">&nbsp;        return Core.bundle.get(&quot;filter.&quot; + simpleName());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public char icon(){
+<b class="nc">&nbsp;        return &#39;\0&#39;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** set the seed to a random number */
+&nbsp;    public void randomize(){
+<b class="fc">&nbsp;        seed = Mathf.random(999999999);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this filter needs a read/write buffer (e.g. not a 1:1 tile mapping). */
+&nbsp;    public boolean isBuffered(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this filter can *only* be used while generating the map, e.g. is not undoable. */
+&nbsp;    public boolean isPost(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //utility generation functions; + 10 is added as noise has similar values at 0,0
+&nbsp;
+&nbsp;    protected float noise(int seedOffset, GenerateInput in, float scl, float mag){
+<b class="nc">&nbsp;        return Simplex.noise2d(seedOffset + seed, 1f, 0f, 1f / scl, in.x + 10, in.y + 10) * mag;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected float noise(GenerateInput in, float scl, float mag){
+<b class="nc">&nbsp;        return Simplex.noise2d(seed, 1f, 0f, 1f / scl, in.x + 10, in.y + 10) * mag;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected float noise(GenerateInput in, float scl, float mag, float octaves, float persistence){
+<b class="nc">&nbsp;        return Simplex.noise2d(seed, octaves, persistence, 1f / scl, in.x + 10, in.y + 10) * mag;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected float noise(float x, float y, float scl, float mag, float octaves, float persistence){
+<b class="fc">&nbsp;        return Simplex.noise2d(seed, octaves, persistence, 1f / scl, x + 10, y + 10) * mag;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected float rnoise(float x, float y, float scl, float mag){
+<b class="nc">&nbsp;        return Ridged.noise2d(seed + 1, (int)(x), (int)(y), 1f / scl) * mag;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected float rnoise(float x, float y, int octaves, float scl, float falloff, float mag){
+<b class="nc">&nbsp;        return Ridged.noise2d(seed + 1, (int)(x), (int)(y), octaves, falloff, 1f / scl) * mag;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected float chance(int x, int y){
+<b class="fc">&nbsp;        return Mathf.randomSeed(Pack.longInt(x, y + seed));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public GenerateFilter copy(){
+&nbsp;        try{
+<b class="nc">&nbsp;            return (GenerateFilter) clone();</b>
+<b class="nc">&nbsp;        }catch(CloneNotSupportedException disgrace){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;java is the best language&quot;, disgrace);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** an input for generating at a certain coordinate. should only be instantiated once. */
+<b class="fc">&nbsp;    public static class GenerateInput{</b>
+&nbsp;
+&nbsp;        /** input size parameters */
+&nbsp;        public int x, y, width, height;
+&nbsp;
+&nbsp;        /** output parameters */
+&nbsp;        public Block floor, block, overlay;
+&nbsp;
+&nbsp;        TileProvider buffer;
+&nbsp;
+&nbsp;        public void set(int x, int y, Block block, Block floor, Block overlay){
+<b class="fc">&nbsp;            this.floor = floor;</b>
+<b class="fc">&nbsp;            this.block = block;</b>
+<b class="fc">&nbsp;            this.overlay = overlay;</b>
+<b class="fc">&nbsp;            this.x = x;</b>
+<b class="fc">&nbsp;            this.y = y;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void begin(int width, int height, TileProvider buffer){
+<b class="fc">&nbsp;            this.buffer = buffer;</b>
+<b class="fc">&nbsp;            this.width = width;</b>
+<b class="fc">&nbsp;            this.height = height;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        Tile tile(float x, float y){
+<b class="nc">&nbsp;            return buffer.get(Mathf.clamp((int)x, 0, width - 1), Mathf.clamp((int)y, 0, height - 1));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public interface TileProvider{
+&nbsp;            Tile get(int x, int y);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Struct
+<b class="nc">&nbsp;    class PackTileStruct{</b>
+&nbsp;        short block, floor, overlay;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

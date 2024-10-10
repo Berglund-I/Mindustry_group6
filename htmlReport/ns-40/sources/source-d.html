@@ -1,0 +1,288 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SolidPump</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.production</a>
+</div>
+
+<h1>Coverage Summary for Class: SolidPump (mindustry.world.blocks.production)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SolidPump</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (5/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (13/26)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SolidPump$SolidPumpBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48.5%
+  </span>
+  <span class="absValue">
+    (16/33)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    47.4%
+  </span>
+  <span class="absValue">
+    (9/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    49.2%
+  </span>
+  <span class="absValue">
+    (29/59)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.production;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Pump that makes liquid from solids and takes in power. Only works on solid floor blocks.
+&nbsp; */
+<b class="fc">&nbsp;public class SolidPump extends Pump{</b>
+<b class="fc">&nbsp;    public Liquid result = Liquids.water;</b>
+<b class="fc">&nbsp;    public Effect updateEffect = Fx.none;</b>
+<b class="fc">&nbsp;    public float updateEffectChance = 0.02f;</b>
+<b class="fc">&nbsp;    public float rotateSpeed = 1f;</b>
+<b class="fc">&nbsp;    public float baseEfficiency = 1f;</b>
+&nbsp;    /** Attribute that is checked when calculating output. */
+&nbsp;    public @Nullable Attribute attribute;
+&nbsp;
+&nbsp;    public @Load(&quot;@-rotator&quot;) TextureRegion rotatorRegion;
+&nbsp;
+&nbsp;    public SolidPump(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        hasPower = true;</b>
+&nbsp;        //only supports ground by default
+<b class="fc">&nbsp;        envEnabled = Env.terrestrial;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        drawPotentialLinks(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(attribute != null){</b>
+<b class="nc">&nbsp;            drawPlaceText(Core.bundle.format(&quot;bar.efficiency&quot;, Math.round(Math.max((sumAttribute(attribute, x, y)) / size / size + percentSolid(x, y) * baseEfficiency, 0f) * 100)), x, y, valid);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+<b class="fc">&nbsp;        addBar(&quot;efficiency&quot;, (SolidPumpBuild entity) -&gt; new Bar(() -&gt; Core.bundle.formatFloat(&quot;bar.pumpspeed&quot;,</b>
+&nbsp;        entity.lastPump * 60, 1),
+<b class="nc">&nbsp;        () -&gt; Pal.ammo,</b>
+<b class="nc">&nbsp;        () -&gt; entity.warmup * entity.efficiency));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.remove(Stat.output);</b>
+<b class="nc">&nbsp;        stats.add(Stat.output, result, 60f * pumpAmount, true);</b>
+<b class="nc">&nbsp;        if(attribute != null){</b>
+<b class="nc">&nbsp;            stats.add(baseEfficiency &gt; 0.0001f ? Stat.affinities : Stat.tiles, attribute, floating, 1f, baseEfficiency &lt;= 0.001f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean canPlaceOn(Tile tile, Team team, int rotation){
+<b class="nc">&nbsp;        float sum = tile.getLinkedTilesAs(this, tempTiles).sumf(t -&gt; canPump(t) ? baseEfficiency + (attribute != null ? t.floor().attributes.get(attribute) : 0f) : 0f);</b>
+<b class="nc">&nbsp;        return sum &gt; 0.00001f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected boolean canPump(Tile tile){
+<b class="fc">&nbsp;        return tile != null &amp;&amp; !tile.floor().isLiquid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{region, rotatorRegion, topRegion};</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class SolidPumpBuild extends PumpBuild{</b>
+&nbsp;        public float warmup;
+&nbsp;        public float pumpTime;
+&nbsp;        public float boost;
+&nbsp;        public float validTiles;
+&nbsp;        public float lastPump;
+&nbsp;
+&nbsp;        @Override
+<b class="nc">&nbsp;        public void drawCracks(){}</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void pickedUp(){
+<b class="nc">&nbsp;            boost = validTiles = 0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y);</b>
+<b class="nc">&nbsp;            Draw.z(Layer.blockCracks);</b>
+<b class="nc">&nbsp;            super.drawCracks();</b>
+<b class="nc">&nbsp;            Draw.z(Layer.blockAfterCracks);</b>
+&nbsp;
+<b class="nc">&nbsp;            Drawf.liquid(liquidRegion, x, y, liquids.get(result) / liquidCapacity, result.color);</b>
+<b class="nc">&nbsp;            Drawf.spinSprite(rotatorRegion, x, y, pumpTime * rotateSpeed);</b>
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return liquids.get(result) &lt; liquidCapacity - 0.01f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            liquidDrop = result;</b>
+<b class="fc">&nbsp;            float fraction = Math.max(validTiles + boost + (attribute == null ? 0 : attribute.env()), 0);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(efficiency &gt; 0 &amp;&amp; typeLiquid() &lt; liquidCapacity - 0.001f){</b>
+<b class="nc">&nbsp;                float maxPump = Math.min(liquidCapacity - typeLiquid(), pumpAmount * delta() * fraction * efficiency);</b>
+<b class="nc">&nbsp;                liquids.add(result, maxPump);</b>
+<b class="nc">&nbsp;                lastPump = maxPump / Time.delta;</b>
+<b class="nc">&nbsp;                warmup = Mathf.lerpDelta(warmup, 1f, 0.02f);</b>
+<b class="nc">&nbsp;                if(Mathf.chance(delta() * updateEffectChance))</b>
+<b class="nc">&nbsp;                    updateEffect.at(x + Mathf.range(size * 2f), y + Mathf.range(size * 2f));</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="fc">&nbsp;                warmup = Mathf.lerpDelta(warmup, 0f, 0.02f);</b>
+<b class="fc">&nbsp;                lastPump = 0f;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            pumpTime += warmup * edelta();</b>
+&nbsp;
+<b class="fc">&nbsp;            dumpLiquid(result);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityUpdate(){
+<b class="fc">&nbsp;            super.onProximityAdded();</b>
+&nbsp;
+<b class="fc">&nbsp;            boost = sumAttribute(attribute, tile.x, tile.y) / size / size;</b>
+<b class="fc">&nbsp;            validTiles = 0f;</b>
+<b class="fc">&nbsp;            for(Tile other : tile.getLinkedTiles(tempTiles)){</b>
+<b class="fc">&nbsp;                if(canPump(other)){</b>
+<b class="fc">&nbsp;                    validTiles += baseEfficiency / (size * size);</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public float typeLiquid(){
+<b class="nc">&nbsp;            return liquids.get(result);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

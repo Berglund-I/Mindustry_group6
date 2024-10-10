@@ -1,0 +1,626 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > EffectState</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: EffectState (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EffectState</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/66)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/121)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import java.nio.*;
+&nbsp;import java.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.async.PhysicsProcess.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.heat.*;
+&nbsp;import mindustry.world.blocks.heat.HeatConductor.*;
+&nbsp;import mindustry.world.blocks.logic.LogicBlock.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.entities.Puddles.*;
+&nbsp;import static mindustry.logic.GlobalVars.*;
+&nbsp;
+&nbsp;import arc.graphics.Color;
+&nbsp;import arc.math.geom.Position;
+&nbsp;import arc.util.Nullable;
+&nbsp;import arc.util.io.Reads;
+&nbsp;import arc.util.io.Writes;
+&nbsp;import arc.util.pooling.Pool;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.entities.Effect;
+&nbsp;import mindustry.world.Block;
+&nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.world.blocks.environment.Floor;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+&nbsp;public class EffectState implements Pool.Poolable, Childc, Drawc, EffectStatec, Entityc, IndexableEntity__all, IndexableEntity__draw, Posc, Rotc, Timedc {
+&nbsp;  protected transient boolean added;
+&nbsp;
+<b class="nc">&nbsp;  public Color color = new Color(Color.white);</b>
+&nbsp;
+&nbsp;  public Object data;
+&nbsp;
+&nbsp;  public Effect effect;
+&nbsp;
+<b class="nc">&nbsp;  public transient int id = EntityGroup.nextId();</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__all = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__draw = -1;</b>
+&nbsp;
+&nbsp;  public float lifetime;
+&nbsp;
+&nbsp;  public float offsetPos;
+&nbsp;
+&nbsp;  public float offsetRot;
+&nbsp;
+&nbsp;  public float offsetX;
+&nbsp;
+&nbsp;  public float offsetY;
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  public Posc parent;
+&nbsp;
+&nbsp;  public boolean rotWithParent;
+&nbsp;
+&nbsp;  @Annotations.SyncField(false)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float rotation;
+&nbsp;
+&nbsp;  public float time;
+&nbsp;
+&nbsp;  @Annotations.SyncField(true)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float x;
+&nbsp;
+&nbsp;  @Annotations.SyncField(true)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float y;
+&nbsp;
+<b class="nc">&nbsp;  protected EffectState() {</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Color color() {
+<b class="nc">&nbsp;    return color;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean rotWithParent() {
+<b class="nc">&nbsp;    return rotWithParent;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float lifetime() {
+<b class="nc">&nbsp;    return lifetime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float offsetPos() {
+<b class="nc">&nbsp;    return offsetPos;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float offsetRot() {
+<b class="nc">&nbsp;    return offsetRot;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float offsetX() {
+<b class="nc">&nbsp;    return offsetX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float offsetY() {
+<b class="nc">&nbsp;    return offsetY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float rotation() {
+<b class="nc">&nbsp;    return rotation;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float time() {
+<b class="nc">&nbsp;    return time;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float x() {
+<b class="nc">&nbsp;    return x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float y() {
+<b class="nc">&nbsp;    return y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int classId() {
+<b class="nc">&nbsp;    return 9;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int id() {
+<b class="nc">&nbsp;    return id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object data() {
+<b class="nc">&nbsp;    return data;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public String toString() {
+<b class="nc">&nbsp;    return &quot;EffectState#&quot; + id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Effect effect() {
+<b class="nc">&nbsp;    return effect;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Posc parent() {
+<b class="nc">&nbsp;    return parent;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void color(Color color) {
+<b class="nc">&nbsp;    this.color = color;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void data(Object data) {
+<b class="nc">&nbsp;    this.data = data;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void effect(Effect effect) {
+<b class="nc">&nbsp;    this.effect = effect;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void id(int id) {
+<b class="nc">&nbsp;    this.id = id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lifetime(float lifetime) {
+<b class="nc">&nbsp;    this.lifetime = lifetime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void offsetPos(float offsetPos) {
+<b class="nc">&nbsp;    this.offsetPos = offsetPos;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void offsetRot(float offsetRot) {
+<b class="nc">&nbsp;    this.offsetRot = offsetRot;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void offsetX(float offsetX) {
+<b class="nc">&nbsp;    this.offsetX = offsetX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void offsetY(float offsetY) {
+<b class="nc">&nbsp;    this.offsetY = offsetY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void parent(Posc parent) {
+<b class="nc">&nbsp;    this.parent = parent;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void rotWithParent(boolean rotWithParent) {
+<b class="nc">&nbsp;    this.rotWithParent = rotWithParent;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void rotation(float rotation) {
+<b class="nc">&nbsp;    this.rotation = rotation;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__all(int index) {
+<b class="nc">&nbsp;    index__all = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__draw(int index) {
+<b class="nc">&nbsp;    index__draw = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void time(float time) {
+<b class="nc">&nbsp;    this.time = time;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void x(float x) {
+<b class="nc">&nbsp;    this.x = x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void y(float y) {
+<b class="nc">&nbsp;    this.y = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public &lt;T extends Entityc&gt; T self() {
+&nbsp;
+<b class="nc">&nbsp;        return (T)this;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public &lt;T&gt; T as() {
+&nbsp;
+<b class="nc">&nbsp;        return (T)this;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Building buildOn() {
+&nbsp;
+<b class="nc">&nbsp;        return world.buildWorld(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isAdded() {
+&nbsp;
+<b class="nc">&nbsp;        return added;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isLocal() {
+&nbsp;
+<b class="nc">&nbsp;        return ((Object)this) == player || ((Object)this) instanceof Unitc u &amp;&amp; u.controller() == player;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isRemote() {
+&nbsp;
+<b class="nc">&nbsp;        return ((Object)this) instanceof Unitc u &amp;&amp; u.isPlayer() &amp;&amp; !isLocal();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean onSolid() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null || tile.solid();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean serialize() {
+<b class="nc">&nbsp;    return false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float clipSize() {
+&nbsp;
+<b class="nc">&nbsp;        return effect.clip;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float fin() {
+&nbsp;
+<b class="nc">&nbsp;        return time / lifetime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getX() {
+&nbsp;
+<b class="nc">&nbsp;        return x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getY() {
+&nbsp;
+<b class="nc">&nbsp;        return y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int tileX() {
+&nbsp;
+<b class="nc">&nbsp;        return World.toTile(x);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int tileY() {
+&nbsp;
+<b class="nc">&nbsp;        return World.toTile(y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Block blockOn() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null ? Blocks.air : tile.block();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Tile tileOn() {
+&nbsp;
+<b class="nc">&nbsp;        return world.tileWorld(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Floor floorOn() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null || tile.block() != Blocks.air ? (Floor)Blocks.air : tile.floor();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static EffectState create() {
+<b class="nc">&nbsp;    return Pools.obtain(EffectState.class, EffectState::new);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void add() {
+<b class="nc">&nbsp;    if(added == true) return;</b>
+<b class="nc">&nbsp;    index__all = Groups.all.addIndex(this);</b>
+<b class="nc">&nbsp;    index__draw = Groups.draw.addIndex(this);</b>
+&nbsp;    child: {
+&nbsp;
+<b class="nc">&nbsp;        if (parent != null) {</b>
+<b class="nc">&nbsp;            offsetX = x - parent.getX();</b>
+<b class="nc">&nbsp;            offsetY = y - parent.getY();</b>
+<b class="nc">&nbsp;            if (rotWithParent) {</b>
+<b class="nc">&nbsp;                if (parent instanceof Rotc r) {</b>
+<b class="nc">&nbsp;                    offsetPos = -r.rotation();</b>
+<b class="nc">&nbsp;                    offsetRot = rotation - r.rotation();</b>
+<b class="nc">&nbsp;                } else if (parent instanceof RotBlock rot) {</b>
+<b class="nc">&nbsp;                    offsetPos = -rot.buildRotation();</b>
+<b class="nc">&nbsp;                    offsetRot = rotation - rot.buildRotation();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;    entity: {
+&nbsp;
+<b class="nc">&nbsp;        added = true;</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void afterAllRead() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void afterRead() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void draw() {
+&nbsp;    draw: {
+&nbsp;
+&nbsp;    }
+&nbsp;    effectstate: {
+&nbsp;
+<b class="nc">&nbsp;        lifetime = effect.render(id, color, time, lifetime, rotation, x, y, data);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void read(Reads read) {
+&nbsp;
+<b class="nc">&nbsp;        afterRead();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void remove() {
+<b class="nc">&nbsp;    if(added == false) return;</b>
+<b class="nc">&nbsp;    Groups.all.removeIndex(this, index__all);;</b>
+<b class="nc">&nbsp;    index__all = -1;</b>
+<b class="nc">&nbsp;    Groups.draw.removeIndex(this, index__draw);;</b>
+<b class="nc">&nbsp;    index__draw = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;        added = false;</b>
+<b class="nc">&nbsp;    mindustry.gen.Groups.queueFree((Pool.Poolable)this);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void reset() {
+<b class="nc">&nbsp;    added = false;</b>
+<b class="nc">&nbsp;    data = null;</b>
+<b class="nc">&nbsp;    effect = null;</b>
+<b class="nc">&nbsp;    id = EntityGroup.nextId();</b>
+<b class="nc">&nbsp;    lifetime = 0;</b>
+<b class="nc">&nbsp;    offsetPos = 0;</b>
+<b class="nc">&nbsp;    offsetRot = 0;</b>
+<b class="nc">&nbsp;    offsetX = 0;</b>
+<b class="nc">&nbsp;    offsetY = 0;</b>
+<b class="nc">&nbsp;    parent = null;</b>
+<b class="nc">&nbsp;    rotWithParent = false;</b>
+<b class="nc">&nbsp;    rotation = 0;</b>
+<b class="nc">&nbsp;    time = 0;</b>
+<b class="nc">&nbsp;    x = 0;</b>
+<b class="nc">&nbsp;    y = 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        set(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        this.x = x;</b>
+<b class="nc">&nbsp;        this.y = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void trns(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        trns(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void trns(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        set(this.x + x, this.y + y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void update() {
+&nbsp;    child: {
+&nbsp;
+<b class="nc">&nbsp;        if (parent != null) {</b>
+<b class="nc">&nbsp;            if (rotWithParent) {</b>
+<b class="nc">&nbsp;                if (parent instanceof Rotc r) {</b>
+<b class="nc">&nbsp;                    x = parent.getX() + Angles.trnsx(r.rotation() + offsetPos, offsetX, offsetY);</b>
+<b class="nc">&nbsp;                    y = parent.getY() + Angles.trnsy(r.rotation() + offsetPos, offsetX, offsetY);</b>
+<b class="nc">&nbsp;                    rotation = r.rotation() + offsetRot;</b>
+<b class="nc">&nbsp;                } else if (parent instanceof RotBlock rot) {</b>
+<b class="nc">&nbsp;                    x = parent.getX() + Angles.trnsx(rot.buildRotation() + offsetPos, offsetX, offsetY);</b>
+<b class="nc">&nbsp;                    y = parent.getY() + Angles.trnsy(rot.buildRotation() + offsetPos, offsetX, offsetY);</b>
+<b class="nc">&nbsp;                    rotation = rot.buildRotation() + offsetRot;</b>
+&nbsp;                }
+&nbsp;            } else {
+<b class="nc">&nbsp;                x = parent.getX() + offsetX;</b>
+<b class="nc">&nbsp;                y = parent.getY() + offsetY;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;    entity: {
+&nbsp;
+&nbsp;    }
+&nbsp;    timed: {
+&nbsp;
+<b class="nc">&nbsp;        time = Math.min(time + Time.delta, lifetime);</b>
+<b class="nc">&nbsp;        if (time &gt;= lifetime) {</b>
+<b class="nc">&nbsp;            remove();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void write(Writes write) {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

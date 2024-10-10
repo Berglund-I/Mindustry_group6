@@ -1,0 +1,615 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Teams</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.game</a>
+</div>
+
+<h1>Coverage Summary for Class: Teams (mindustry.game)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Teams</td>
+<td class="coverageStat">
+  <span class="percent">
+    61.1%
+  </span>
+  <span class="absValue">
+    (11/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    44%
+  </span>
+  <span class="absValue">
+    (48/109)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Teams$BlockPlan</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.7%
+  </span>
+  <span class="absValue">
+    (6/7)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Teams$TeamData</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (8/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.9%
+  </span>
+  <span class="absValue">
+    (21/62)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (20/40)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.1%
+  </span>
+  <span class="absValue">
+    (75/178)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.game;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Class for various team-based utilities. */
+&nbsp;public class Teams{
+&nbsp;    /** Maps team IDs to team data. */
+<b class="fc">&nbsp;    private TeamData[] map = new TeamData[256];</b>
+&nbsp;    /** Active teams. */
+<b class="fc">&nbsp;    public Seq&lt;TeamData&gt; active = new Seq&lt;&gt;();</b>
+&nbsp;    /** Teams with block or unit presence. */
+<b class="fc">&nbsp;    public Seq&lt;TeamData&gt; present = new Seq&lt;&gt;(TeamData.class);</b>
+&nbsp;    /** Current boss units. */
+<b class="fc">&nbsp;    public Seq&lt;Unit&gt; bosses = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    public Teams(){</b>
+<b class="fc">&nbsp;        active.add(get(Team.crux));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public CoreBuild closestEnemyCore(float x, float y, Team team){
+<b class="fc">&nbsp;        CoreBuild closest = null;</b>
+<b class="fc">&nbsp;        float closestDst = Float.MAX_VALUE;</b>
+&nbsp;
+<b class="fc">&nbsp;        for(Team enemy : team.data().coreEnemies){</b>
+<b class="fc">&nbsp;            for(CoreBuild core : enemy.cores()){</b>
+<b class="fc">&nbsp;                float dst = Mathf.dst2(x, y, core.getX(), core.getY());</b>
+<b class="fc">&nbsp;                if(closestDst &gt; dst){</b>
+<b class="fc">&nbsp;                    closest = core;</b>
+<b class="fc">&nbsp;                    closestDst = dst;</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return closest;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public CoreBuild closestCore(float x, float y, Team team){
+<b class="nc">&nbsp;        return Geometry.findClosest(x, y, get(team).cores);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean anyEnemyCoresWithin(Team team, float x, float y, float radius){
+<b class="fc">&nbsp;        for(TeamData data : active){</b>
+<b class="fc">&nbsp;            if(team != data.team){</b>
+<b class="fc">&nbsp;                for(CoreBuild tile : data.cores){</b>
+<b class="nc">&nbsp;                    if(tile.within(x, y, radius)){</b>
+<b class="nc">&nbsp;                        return true;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void eachEnemyCore(Team team, Cons&lt;Building&gt; ret){
+<b class="nc">&nbsp;        for(TeamData data : active){</b>
+<b class="nc">&nbsp;            if(team != data.team){</b>
+<b class="nc">&nbsp;                for(Building tile : data.cores){</b>
+<b class="nc">&nbsp;                    ret.get(tile);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns team data by type. */
+&nbsp;    public TeamData get(Team team){
+<b class="fc">&nbsp;        return map[team.id] == null ? (map[team.id] = new TeamData(team)) : map[team.id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable TeamData getOrNull(Team team){
+<b class="nc">&nbsp;        return map[team.id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;CoreBuild&gt; playerCores(){
+<b class="fc">&nbsp;        return get(state.rules.defaultTeam).cores;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Do not modify! */
+&nbsp;    public Seq&lt;CoreBuild&gt; cores(Team team){
+<b class="fc">&nbsp;        return get(team).cores;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns whether a team is active, e.g. whether it has any cores remaining. */
+&nbsp;    public boolean isActive(Team team){
+&nbsp;        //the enemy wave team is always active
+<b class="nc">&nbsp;        return get(team).active();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canInteract(Team team, Team other){
+<b class="fc">&nbsp;        return team == other || other == Team.derelict;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Do not modify. */
+&nbsp;    public Seq&lt;TeamData&gt; getActive(){
+<b class="fc">&nbsp;        active.removeAll(t -&gt; !t.active());</b>
+<b class="fc">&nbsp;        return active;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void registerCore(CoreBuild core){
+<b class="fc">&nbsp;        TeamData data = get(core.team);</b>
+&nbsp;        //add core if not present
+<b class="fc">&nbsp;        if(!data.cores.contains(core)){</b>
+<b class="fc">&nbsp;            data.cores.add(core);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //register in active list if needed
+<b class="fc">&nbsp;        if(data.active() &amp;&amp; !active.contains(data)){</b>
+<b class="fc">&nbsp;            active.add(data);</b>
+<b class="fc">&nbsp;            updateEnemies();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void unregisterCore(CoreBuild entity){
+<b class="fc">&nbsp;        TeamData data = get(entity.team);</b>
+<b class="fc">&nbsp;        data.cores.remove(entity);</b>
+&nbsp;        //unregister in active list
+<b class="fc">&nbsp;        if(!data.active()){</b>
+<b class="fc">&nbsp;            active.remove(data);</b>
+<b class="fc">&nbsp;            updateEnemies();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void count(Unit unit){
+<b class="nc">&nbsp;        unit.team.data().updateCount(unit.type, 1);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit instanceof Payloadc payloadc){</b>
+<b class="nc">&nbsp;            var payloads = payloadc.payloads();</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; payloads.size; i++){</b>
+<b class="nc">&nbsp;                if(payloads.get(i) instanceof UnitPayload payload){</b>
+<b class="nc">&nbsp;                    count(payload.unit);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateTeamStats(){
+<b class="nc">&nbsp;        present.clear();</b>
+<b class="nc">&nbsp;        bosses.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Team team : Team.all){</b>
+<b class="nc">&nbsp;            TeamData data = team.data();</b>
+&nbsp;
+<b class="nc">&nbsp;            data.presentFlag = data.buildings.size &gt; 0;</b>
+<b class="nc">&nbsp;            data.unitCount = 0;</b>
+<b class="nc">&nbsp;            data.units.clear();</b>
+<b class="nc">&nbsp;            data.players.clear();</b>
+<b class="nc">&nbsp;            if(data.cores.size &gt; 0){</b>
+<b class="nc">&nbsp;                data.lastCore = data.cores.first();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(data.unitTree != null){</b>
+<b class="nc">&nbsp;                data.unitTree.clear();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(data.typeCounts != null){</b>
+<b class="nc">&nbsp;                Arrays.fill(data.typeCounts, 0);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //clear old unit records
+<b class="nc">&nbsp;            if(data.unitsByType != null){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; data.unitsByType.length; i++){</b>
+<b class="nc">&nbsp;                    if(data.unitsByType[i] != null){</b>
+<b class="nc">&nbsp;                        data.unitsByType[i].clear();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //TODO this is slow and dumb
+<b class="nc">&nbsp;        for(Unit unit : Groups.unit){</b>
+<b class="nc">&nbsp;            if(unit.type == null) continue;</b>
+<b class="nc">&nbsp;            TeamData data = unit.team.data();</b>
+<b class="nc">&nbsp;            data.tree().insert(unit);</b>
+<b class="nc">&nbsp;            data.units.add(unit);</b>
+<b class="nc">&nbsp;            data.presentFlag = true;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(unit.team == state.rules.waveTeam &amp;&amp; unit.isBoss()){</b>
+<b class="nc">&nbsp;                bosses.add(unit);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(data.unitsByType == null || data.unitsByType.length &lt;= unit.type.id){</b>
+<b class="nc">&nbsp;                data.unitsByType = new Seq[content.units().size];</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(data.unitsByType[unit.type.id] == null){</b>
+<b class="nc">&nbsp;                data.unitsByType[unit.type.id] = new Seq&lt;&gt;();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            data.unitsByType[unit.type.id].add(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;            count(unit);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var player : Groups.player){</b>
+<b class="nc">&nbsp;            player.team().data().players.add(player);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //update presence of each team.
+<b class="nc">&nbsp;        for(Team team : Team.all){</b>
+<b class="nc">&nbsp;            TeamData data = team.data();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(data.presentFlag || data.active()){</b>
+<b class="nc">&nbsp;                present.add(data);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateEnemies(){
+<b class="fc">&nbsp;        if(state.rules.waves &amp;&amp; !active.contains(get(state.rules.waveTeam))){</b>
+<b class="fc">&nbsp;            active.add(get(state.rules.waveTeam));</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        for(TeamData data : active){</b>
+<b class="fc">&nbsp;            Seq&lt;Team&gt; enemies = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;            for(TeamData other : active){</b>
+<b class="fc">&nbsp;                if(data.team != other.team){</b>
+<b class="fc">&nbsp;                    enemies.add(other.team);</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            data.coreEnemies = enemies.toArray(Team.class);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static class TeamData{</b>
+&nbsp;        public final Team team;
+&nbsp;
+&nbsp;        /** Handles building &quot;&quot;bases&quot;&quot;. */
+&nbsp;        public @Nullable BaseBuilderAI buildAi;
+&nbsp;        /** Handles RTS unit control. */
+&nbsp;        public @Nullable RtsAI rtsAi;
+&nbsp;
+&nbsp;        private boolean presentFlag;
+&nbsp;
+&nbsp;        /** Enemies with cores or spawn points. */
+<b class="fc">&nbsp;        public Team[] coreEnemies = {};</b>
+&nbsp;        /** Planned blocks for drones. This is usually only blocks that have been broken. */
+<b class="fc">&nbsp;        public Queue&lt;BlockPlan&gt; plans = new Queue&lt;&gt;();</b>
+&nbsp;
+&nbsp;        /** List of live cores of this team. */
+<b class="fc">&nbsp;        public final Seq&lt;CoreBuild&gt; cores = new Seq&lt;&gt;();</b>
+&nbsp;        /** Last known live core of this team. */
+&nbsp;        public @Nullable CoreBuild lastCore;
+&nbsp;        /** Quadtree for all buildings of this team. Null if not active. */
+&nbsp;        public @Nullable QuadTree&lt;Building&gt; buildingTree;
+&nbsp;        /** Turrets by range. Null if not active. */
+&nbsp;        public @Nullable QuadTree&lt;Building&gt; turretTree;
+&nbsp;        /** Quadtree for units of this team. Do not access directly. */
+&nbsp;        public @Nullable QuadTree&lt;Unit&gt; unitTree;
+&nbsp;        /** Current unit cap. Do not modify externally. */
+&nbsp;        public int unitCap;
+&nbsp;        /** Total unit count. */
+&nbsp;        public int unitCount;
+&nbsp;        /** Counts for each type of unit. Do not access directly. */
+&nbsp;        public @Nullable int[] typeCounts;
+&nbsp;        /** Cached buildings by type. */
+<b class="fc">&nbsp;        public ObjectMap&lt;Block, Seq&lt;Building&gt;&gt; buildingTypes = new ObjectMap&lt;&gt;();</b>
+&nbsp;        /** Units of this team. Updated each frame. */
+<b class="fc">&nbsp;        public Seq&lt;Unit&gt; units = new Seq&lt;&gt;(false);</b>
+&nbsp;        /** Same as units, but players. */
+<b class="fc">&nbsp;        public Seq&lt;Player&gt; players = new Seq&lt;&gt;(false);</b>
+&nbsp;        /** All buildings. Updated on team change / building addition or removal. Includes even buildings that do not update(). */
+<b class="fc">&nbsp;        public Seq&lt;Building&gt; buildings = new Seq&lt;&gt;(false);</b>
+&nbsp;        /** Units of this team by type. Updated each frame. */
+&nbsp;        public @Nullable Seq&lt;Unit&gt;[] unitsByType;
+&nbsp;
+<b class="fc">&nbsp;        public TeamData(Team team){</b>
+<b class="fc">&nbsp;            this.team = team;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Seq&lt;Building&gt; getBuildings(Block block){
+<b class="fc">&nbsp;            return buildingTypes.get(block, () -&gt; new Seq&lt;&gt;(false));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public int getCount(Block block){
+<b class="nc">&nbsp;            var res = buildingTypes.get(block);</b>
+<b class="nc">&nbsp;            return res == null ? 0 : res.size;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Destroys this team&#39;s presence on the map, killing part of its buildings and converting everything to &#39;derelict&#39;. */
+&nbsp;        public void destroyToDerelict(){
+&nbsp;
+&nbsp;            //grab all buildings from quadtree.
+<b class="nc">&nbsp;            var builds = new Seq&lt;Building&gt;();</b>
+<b class="nc">&nbsp;            if(buildingTree != null){</b>
+<b class="nc">&nbsp;                buildingTree.getObjects(builds);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //no remaining blocks, cease building if applicable
+<b class="nc">&nbsp;            plans.clear();</b>
+&nbsp;
+&nbsp;            //convert all team tiles to neutral, randomly killing them
+<b class="nc">&nbsp;            for(var b : builds){</b>
+<b class="nc">&nbsp;                if(b.block.privileged) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(b instanceof CoreBuild){</b>
+<b class="nc">&nbsp;                    b.kill();</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    scheduleDerelict(b);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            //kill all units randomly
+<b class="nc">&nbsp;            units.each(u -&gt; Time.run(Mathf.random(0f, 60f * 5f), () -&gt; {</b>
+&nbsp;                //ensure unit hasn&#39;t switched teams for whatever reason
+<b class="nc">&nbsp;                if(u.team == team){</b>
+<b class="nc">&nbsp;                    u.kill();</b>
+&nbsp;                }
+&nbsp;            }));
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Make all buildings within this range derelict / explode. */
+&nbsp;        public void makeDerelict(float x, float y, float range){
+<b class="nc">&nbsp;            var builds = new Seq&lt;Building&gt;();</b>
+<b class="nc">&nbsp;            if(buildingTree != null){</b>
+<b class="nc">&nbsp;                buildingTree.intersect(x - range, y - range, range * 2f, range * 2f, builds);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(var build : builds){</b>
+<b class="nc">&nbsp;                if(build.within(x, y, range) &amp;&amp; !build.block.privileged){</b>
+<b class="nc">&nbsp;                    scheduleDerelict(build);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Make all buildings within this range explode. */
+&nbsp;        public void timeDestroy(float x, float y, float range){
+<b class="nc">&nbsp;            var builds = new Seq&lt;Building&gt;();</b>
+<b class="nc">&nbsp;            if(buildingTree != null){</b>
+<b class="nc">&nbsp;                buildingTree.intersect(x - range, y - range, range * 2f, range * 2f, builds);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(var build : builds){</b>
+<b class="nc">&nbsp;                if(build.within(x, y, range) &amp;&amp; !cores.contains(c -&gt; c.within(build, range))){</b>
+&nbsp;                    //TODO GPU driver bugs?
+<b class="nc">&nbsp;                    build.kill();</b>
+&nbsp;                    //Time.run(Mathf.random(0f, 60f * 6f), build::kill);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private void scheduleDerelict(Building build){
+&nbsp;            //TODO this may cause a lot of packet spam, optimize?
+<b class="nc">&nbsp;            Call.setTeam(build, Team.derelict);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(build.getPayload() instanceof UnitPayload){</b>
+<b class="nc">&nbsp;                Call.destroyPayload(build);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Mathf.chance(0.25)){</b>
+<b class="nc">&nbsp;                Time.run(Mathf.random(0f, 60f * 6f), build::kill);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //this is just an alias for consistency
+&nbsp;        @Nullable
+&nbsp;        public Seq&lt;Unit&gt; getUnits(UnitType type){
+<b class="nc">&nbsp;            return unitCache(type);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public Seq&lt;Unit&gt; unitCache(UnitType type){
+<b class="nc">&nbsp;            if(unitsByType == null || unitsByType.length &lt;= type.id || unitsByType[type.id] == null) return null;</b>
+<b class="nc">&nbsp;            return unitsByType[type.id];</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void updateCount(UnitType type, int amount){
+<b class="fc">&nbsp;            if(type == null) return;</b>
+<b class="fc">&nbsp;            unitCount = Math.max(amount + unitCount, 0);</b>
+<b class="fc">&nbsp;            if(typeCounts == null || typeCounts.length &lt;= type.id){</b>
+<b class="fc">&nbsp;                typeCounts = new int[Vars.content.units().size];</b>
+&nbsp;            }
+<b class="fc">&nbsp;            typeCounts[type.id] = Math.max(amount + typeCounts[type.id], 0);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public QuadTree&lt;Unit&gt; tree(){
+<b class="fc">&nbsp;            if(unitTree == null) unitTree = new QuadTree&lt;&gt;(Vars.world.getQuadBounds(new Rect()));</b>
+<b class="fc">&nbsp;            return unitTree;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public int countType(UnitType type){
+<b class="fc">&nbsp;            return typeCounts == null || typeCounts.length &lt;= type.id ? 0 : typeCounts[type.id];</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean active(){
+<b class="fc">&nbsp;            return (team == state.rules.waveTeam &amp;&amp; state.rules.waves) || cores.size &gt; 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean hasCore(){
+<b class="fc">&nbsp;            return cores.size &gt; 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean noCores(){
+<b class="nc">&nbsp;            return cores.isEmpty();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public CoreBuild core(){
+<b class="fc">&nbsp;            return cores.isEmpty() ? null : cores.first();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** @return whether this team is controlled by the AI and builds bases. */
+&nbsp;        public boolean hasAI(){
+<b class="nc">&nbsp;            return team.rules().rtsAi || team.rules().buildAi;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String toString(){
+<b class="nc">&nbsp;            return &quot;TeamData{&quot; +</b>
+&nbsp;            &quot;cores=&quot; + cores +
+&nbsp;            &quot;, team=&quot; + team +
+&nbsp;            &#39;}&#39;;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, unreliable = true)
+&nbsp;    public static void destroyPayload(Building build){
+<b class="nc">&nbsp;        if(build != null &amp;&amp; build.getPayload() instanceof UnitPayload &amp;&amp; build.takePayload() instanceof UnitPayload unit){</b>
+<b class="nc">&nbsp;            unit.dump();</b>
+<b class="nc">&nbsp;            unit.unit.killed();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Represents a block made by this team that was destroyed somewhere on the map.
+&nbsp;     * This does not include deconstructed blocks.*/
+&nbsp;    public static class BlockPlan{
+&nbsp;        public final short x, y, rotation, block;
+&nbsp;        public final Object config;
+&nbsp;        public boolean removed;
+&nbsp;
+<b class="fc">&nbsp;        public BlockPlan(int x, int y, short rotation, short block, Object config){</b>
+<b class="fc">&nbsp;            this.x = (short)x;</b>
+<b class="fc">&nbsp;            this.y = (short)y;</b>
+<b class="fc">&nbsp;            this.rotation = rotation;</b>
+<b class="fc">&nbsp;            this.block = block;</b>
+<b class="fc">&nbsp;            this.config = config;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String toString(){
+<b class="nc">&nbsp;            return &quot;BlockPlan{&quot; +</b>
+&nbsp;            &quot;x=&quot; + x +
+&nbsp;            &quot;, y=&quot; + y +
+&nbsp;            &quot;, rotation=&quot; + rotation +
+&nbsp;            &quot;, block=&quot; + block +
+&nbsp;            &quot;, config=&quot; + config +
+&nbsp;            &#39;}&#39;;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

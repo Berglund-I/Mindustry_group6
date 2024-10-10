@@ -1,0 +1,296 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BurstDrill</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.production</a>
+</div>
+
+<h1>Coverage Summary for Class: BurstDrill (mindustry.world.blocks.production)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BurstDrill</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    84.2%
+  </span>
+  <span class="absValue">
+    (16/19)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BurstDrill$BurstDrillBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.3%
+  </span>
+  <span class="absValue">
+    (5/60)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (4/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.6%
+  </span>
+  <span class="absValue">
+    (21/79)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.production;
+&nbsp;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+<b class="nc">&nbsp;public class BurstDrill extends Drill{</b>
+<b class="fc">&nbsp;    public float shake = 2f;</b>
+<b class="fc">&nbsp;    public Interp speedCurve = Interp.pow2In;</b>
+&nbsp;
+&nbsp;    public @Load(&quot;@-top-invert&quot;) TextureRegion topInvertRegion;
+&nbsp;    public @Load(&quot;@-glow&quot;) TextureRegion glowRegion;
+&nbsp;    public @Load(&quot;@-arrow&quot;) TextureRegion arrowRegion;
+&nbsp;    public @Load(&quot;@-arrow-blur&quot;) TextureRegion arrowBlurRegion;
+&nbsp;
+<b class="fc">&nbsp;    public float invertedTime = 200f;</b>
+<b class="fc">&nbsp;    public float arrowSpacing = 4f, arrowOffset = 0f;</b>
+<b class="fc">&nbsp;    public int arrows = 3;</b>
+<b class="fc">&nbsp;    public Color arrowColor = Color.valueOf(&quot;feb380&quot;), baseArrowColor = Color.valueOf(&quot;6e7080&quot;);</b>
+<b class="fc">&nbsp;    public Color glowColor = arrowColor.cpy();</b>
+&nbsp;
+<b class="fc">&nbsp;    public Sound drillSound = Sounds.drillImpact;</b>
+<b class="fc">&nbsp;    public float drillSoundVolume = 0.6f, drillSoundPitchRand = 0.1f;</b>
+&nbsp;
+&nbsp;    public BurstDrill(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+&nbsp;        //does not drill in the traditional sense, so this is not even used
+<b class="fc">&nbsp;        hardnessDrillMultiplier = 0f;</b>
+<b class="fc">&nbsp;        liquidBoostIntensity = 1f;</b>
+&nbsp;        //generally at center
+<b class="fc">&nbsp;        drillEffectRnd = 0f;</b>
+<b class="fc">&nbsp;        drillEffect = Fx.shockwave;</b>
+<b class="fc">&nbsp;        ambientSoundVolume = 0.18f;</b>
+<b class="fc">&nbsp;        ambientSound = Sounds.drillCharge;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{region, topRegion};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float getDrillTime(Item item){
+<b class="nc">&nbsp;        return drillTime / drillMultipliers.get(item, 1f);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class BurstDrillBuild extends DrillBuild{</b>
+&nbsp;        //used so the lights don&#39;t fade out immediately
+<b class="fc">&nbsp;        public float smoothProgress = 0f;</b>
+<b class="fc">&nbsp;        public float invertTime = 0f;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(dominantItem == null){</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(invertTime &gt; 0f) invertTime -= delta() / invertedTime;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(timer(timerDump, dumpTime)){</b>
+<b class="nc">&nbsp;                dump(items.has(dominantItem) ? dominantItem : null);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float drillTime = getDrillTime(dominantItem);</b>
+&nbsp;
+<b class="nc">&nbsp;            smoothProgress = Mathf.lerpDelta(smoothProgress, progress / (drillTime - 20f), 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(items.total() &lt;= itemCapacity - dominantItems &amp;&amp; dominantItems &gt; 0 &amp;&amp; efficiency &gt; 0){</b>
+<b class="nc">&nbsp;                warmup = Mathf.approachDelta(warmup, progress / drillTime, 0.01f);</b>
+&nbsp;
+<b class="nc">&nbsp;                float speed = efficiency;</b>
+&nbsp;
+<b class="nc">&nbsp;                timeDrilled += speedCurve.apply(progress / drillTime) * speed;</b>
+&nbsp;
+<b class="nc">&nbsp;                lastDrillSpeed = 1f / drillTime * speed * dominantItems;</b>
+<b class="nc">&nbsp;                progress += delta() * speed;</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                warmup = Mathf.approachDelta(warmup, 0f, 0.01f);</b>
+<b class="nc">&nbsp;                lastDrillSpeed = 0f;</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(dominantItems &gt; 0 &amp;&amp; progress &gt;= drillTime &amp;&amp; items.total() &lt; itemCapacity){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; dominantItems; i++){</b>
+<b class="nc">&nbsp;                    offload(dominantItem);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                invertTime = 1f;</b>
+<b class="nc">&nbsp;                progress %= drillTime;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(wasVisible){</b>
+<b class="nc">&nbsp;                    Effect.shake(shake, shake, this);</b>
+<b class="nc">&nbsp;                    drillSound.at(x, y, 1f + Mathf.range(drillSoundPitchRand), drillSoundVolume);</b>
+<b class="nc">&nbsp;                    drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float ambientVolume(){
+<b class="nc">&nbsp;            return super.ambientVolume() * Mathf.pow(progress(), 4f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return items.total() &lt;= itemCapacity - dominantItems &amp;&amp; enabled;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y);</b>
+<b class="nc">&nbsp;            drawDefaultCracks();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y);</b>
+<b class="nc">&nbsp;            if(invertTime &gt; 0 &amp;&amp; topInvertRegion.found()){</b>
+<b class="nc">&nbsp;                Draw.alpha(Interp.pow3Out.apply(invertTime));</b>
+<b class="nc">&nbsp;                Draw.rect(topInvertRegion, x, y);</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(dominantItem != null &amp;&amp; drawMineItem){</b>
+<b class="nc">&nbsp;                Draw.color(dominantItem.color);</b>
+<b class="nc">&nbsp;                Draw.rect(itemRegion, x, y);</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float fract = smoothProgress;</b>
+<b class="nc">&nbsp;            Draw.color(arrowColor);</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                for(int j = 0; j &lt; arrows; j++){</b>
+<b class="nc">&nbsp;                    float arrowFract = (arrows - 1 - j);</b>
+<b class="nc">&nbsp;                    float a = Mathf.clamp(fract * arrows - arrowFract);</b>
+<b class="nc">&nbsp;                    Tmp.v1.trns(i * 90 + 45, j * arrowSpacing + arrowOffset);</b>
+&nbsp;
+&nbsp;                    //TODO maybe just use arrow alpha and draw gray on the base?
+<b class="nc">&nbsp;                    Draw.z(Layer.block);</b>
+<b class="nc">&nbsp;                    Draw.color(baseArrowColor, arrowColor, a);</b>
+<b class="nc">&nbsp;                    Draw.rect(arrowRegion, x + Tmp.v1.x, y + Tmp.v1.y, i * 90);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Draw.color(arrowColor);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(arrowBlurRegion.found()){</b>
+<b class="nc">&nbsp;                        Draw.z(Layer.blockAdditive);</b>
+<b class="nc">&nbsp;                        Draw.blend(Blending.additive);</b>
+<b class="nc">&nbsp;                        Draw.alpha(Mathf.pow(a, 10f));</b>
+<b class="nc">&nbsp;                        Draw.rect(arrowBlurRegion, x + Tmp.v1.x, y + Tmp.v1.y, i * 90);</b>
+<b class="nc">&nbsp;                        Draw.blend();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(glowRegion.found()){</b>
+<b class="nc">&nbsp;                Drawf.additive(glowRegion, Tmp.c2.set(glowColor).a(Mathf.pow(fract, 3f) * glowColor.a), x, y);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

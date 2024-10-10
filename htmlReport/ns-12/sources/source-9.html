@@ -1,0 +1,195 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Lightning</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities</a>
+</div>
+
+<h1>Coverage Summary for Class: Lightning (mindustry.entities)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Lightning</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/44)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Lightning{</b>
+<b class="nc">&nbsp;    private static final Rand random = new Rand();</b>
+<b class="nc">&nbsp;    private static final Rect rect = new Rect();</b>
+<b class="nc">&nbsp;    private static final Seq&lt;Unitc&gt; entities = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    private static final IntSet hit = new IntSet();</b>
+&nbsp;    private static final int maxChain = 8;
+&nbsp;    private static final float hitRange = 30f;
+<b class="nc">&nbsp;    private static boolean bhit = false;</b>
+<b class="nc">&nbsp;    private static int lastSeed = 0;</b>
+&nbsp;
+&nbsp;    /** Create a lighting branch at a location. Use Team.derelict to damage everyone. */
+&nbsp;    public static void create(Team team, Color color, float damage, float x, float y, float targetAngle, int length){
+<b class="nc">&nbsp;        createLightningInternal(null, lastSeed++, team, color, damage, x, y, targetAngle, length);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Create a lighting branch at a location. Uses bullet parameters. */
+&nbsp;    public static void create(Bullet bullet, Color color, float damage, float x, float y, float targetAngle, int length){
+<b class="nc">&nbsp;        createLightningInternal(bullet, lastSeed++, bullet.team, color, damage, x, y, targetAngle, length);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void createLightningInternal(@Nullable Bullet hitter, int seed, Team team, Color color, float damage, float x, float y, float rotation, int length){
+<b class="nc">&nbsp;        random.setSeed(seed);</b>
+<b class="nc">&nbsp;        hit.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        BulletType hitCreate = hitter == null || hitter.type.lightningType == null ? Bullets.damageLightning : hitter.type.lightningType;</b>
+<b class="nc">&nbsp;        Seq&lt;Vec2&gt; lines = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        bhit = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; length / 2; i++){</b>
+<b class="nc">&nbsp;            hitCreate.create(null, team, x, y, rotation, damage * (hitter == null ? 1f : hitter.damageMultiplier()), 1f, 1f, hitter);</b>
+<b class="nc">&nbsp;            lines.add(new Vec2(x + Mathf.range(3f), y + Mathf.range(3f)));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(lines.size &gt; 1){</b>
+<b class="nc">&nbsp;                bhit = false;</b>
+<b class="nc">&nbsp;                Vec2 from = lines.get(lines.size - 2);</b>
+<b class="nc">&nbsp;                Vec2 to = lines.get(lines.size - 1);</b>
+<b class="nc">&nbsp;                World.raycastEach(World.toTile(from.getX()), World.toTile(from.getY()), World.toTile(to.getX()), World.toTile(to.getY()), (wx, wy) -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;                    Tile tile = world.tile(wx, wy);</b>
+<b class="nc">&nbsp;                    if(tile != null &amp;&amp; (tile.build != null &amp;&amp; tile.build.isInsulated()) &amp;&amp; tile.team() != team){</b>
+<b class="nc">&nbsp;                        bhit = true;</b>
+&nbsp;                        //snap it instead of removing
+<b class="nc">&nbsp;                        lines.get(lines.size - 1).set(wx * tilesize, wy * tilesize);</b>
+<b class="nc">&nbsp;                        return true;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                });
+<b class="nc">&nbsp;                if(bhit) break;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            rect.setSize(hitRange).setCenter(x, y);</b>
+<b class="nc">&nbsp;            entities.clear();</b>
+<b class="nc">&nbsp;            if(hit.size &lt; maxChain){</b>
+<b class="nc">&nbsp;                Units.nearbyEnemies(team, rect, u -&gt; {</b>
+<b class="nc">&nbsp;                    if(!hit.contains(u.id()) &amp;&amp; (hitter == null || u.checkTarget(hitter.type.collidesAir, hitter.type.collidesGround))){</b>
+<b class="nc">&nbsp;                        entities.add(u);</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Unitc furthest = Geometry.findFurthest(x, y, entities);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(furthest != null){</b>
+<b class="nc">&nbsp;                hit.add(furthest.id());</b>
+<b class="nc">&nbsp;                x = furthest.x();</b>
+<b class="nc">&nbsp;                y = furthest.y();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                rotation += random.range(20f);</b>
+<b class="nc">&nbsp;                x += Angles.trnsx(rotation, hitRange / 2f);</b>
+<b class="nc">&nbsp;                y += Angles.trnsy(rotation, hitRange / 2f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Fx.lightning.at(x, y, rotation, color, lines);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

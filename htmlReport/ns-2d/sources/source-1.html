@@ -1,0 +1,170 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BuildWeapon</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type.weapons</a>
+</div>
+
+<h1>Coverage Summary for Class: BuildWeapon (mindustry.type.weapons)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BuildWeapon</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (8/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type.weapons;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;/** Purely visual turret. Does not shoot anything. */
+&nbsp;public class BuildWeapon extends Weapon{
+&nbsp;
+<b class="fc">&nbsp;    public BuildWeapon(){</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public BuildWeapon(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    {
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        noAttack = true;</b>
+<b class="fc">&nbsp;        predictTarget = false;</b>
+<b class="fc">&nbsp;        display = false;</b>
+<b class="fc">&nbsp;        bullet = new BulletType();</b>
+<b class="fc">&nbsp;        useAttackRange = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(Unit unit, WeaponMount mount){
+<b class="nc">&nbsp;        mount.shoot = false;</b>
+<b class="nc">&nbsp;        mount.rotate = true;</b>
+&nbsp;
+&nbsp;        //always aim at build plan
+<b class="nc">&nbsp;        if(unit.activelyBuilding()){</b>
+<b class="nc">&nbsp;            mount.aimX = unit.buildPlan().drawx();</b>
+<b class="nc">&nbsp;            mount.aimY = unit.buildPlan().drawy();</b>
+&nbsp;        }else{
+&nbsp;            //aim for front
+<b class="nc">&nbsp;            float weaponRotation = unit.rotation - 90;</b>
+<b class="nc">&nbsp;            mount.aimX = unit.x + Angles.trnsx(unit.rotation - 90, x, y) + Angles.trnsx(weaponRotation, this.shootX, this.shootY);</b>
+<b class="nc">&nbsp;            mount.aimY = unit.y + Angles.trnsy(unit.rotation - 90, x, y) + Angles.trnsy(weaponRotation, this.shootX, this.shootY);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        super.update(unit, mount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Unit unit, WeaponMount mount){
+<b class="nc">&nbsp;        super.draw(unit, mount);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit.activelyBuilding()){</b>
+&nbsp;            float
+<b class="nc">&nbsp;            z = Draw.z(),</b>
+<b class="nc">&nbsp;            rotation = unit.rotation - 90,</b>
+<b class="nc">&nbsp;            weaponRotation  = rotation + (rotate ? mount.rotation : 0),</b>
+<b class="nc">&nbsp;            wx = unit.x + Angles.trnsx(rotation, x, y) + Angles.trnsx(weaponRotation, 0, -mount.recoil),</b>
+<b class="nc">&nbsp;            wy = unit.y + Angles.trnsy(rotation, x, y) + Angles.trnsy(weaponRotation, 0, -mount.recoil),</b>
+<b class="nc">&nbsp;            px = wx + Angles.trnsx(weaponRotation, this.shootX, this.shootY),</b>
+<b class="nc">&nbsp;            py = wy + Angles.trnsy(weaponRotation, this.shootX, this.shootY);</b>
+&nbsp;
+<b class="nc">&nbsp;            unit.drawBuildingBeam(px, py);</b>
+<b class="nc">&nbsp;            Draw.z(z);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

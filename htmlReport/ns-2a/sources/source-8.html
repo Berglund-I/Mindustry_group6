@@ -1,0 +1,183 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LiquidStack</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: LiquidStack (mindustry.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LiquidStack</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.7%
+  </span>
+  <span class="absValue">
+    (5/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (12/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.content.*;
+&nbsp;
+&nbsp;public class LiquidStack implements Comparable&lt;LiquidStack&gt;{
+<b class="fc">&nbsp;    public static final LiquidStack[] empty = {};</b>
+&nbsp;
+&nbsp;    public Liquid liquid;
+&nbsp;    public float amount;
+&nbsp;
+<b class="fc">&nbsp;    public LiquidStack(Liquid liquid, float amount){</b>
+<b class="fc">&nbsp;        this.liquid = liquid;</b>
+<b class="fc">&nbsp;        this.amount = amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** serialization only*/
+<b class="fc">&nbsp;    protected LiquidStack(){</b>
+&nbsp;        //prevent nulls.
+<b class="fc">&nbsp;        liquid = Liquids.water;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public LiquidStack set(Liquid liquid, float amount){
+<b class="nc">&nbsp;        this.liquid = liquid;</b>
+<b class="nc">&nbsp;        this.amount = amount;</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public LiquidStack copy(){
+<b class="nc">&nbsp;        return new LiquidStack(liquid, amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean equals(LiquidStack other){
+<b class="nc">&nbsp;        return other != null &amp;&amp; other.liquid == liquid &amp;&amp; other.amount == amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static LiquidStack[] mult(LiquidStack[] stacks, float amount){
+<b class="nc">&nbsp;        LiquidStack[] copy = new LiquidStack[stacks.length];</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; copy.length; i++){</b>
+<b class="nc">&nbsp;            copy[i] = new LiquidStack(stacks[i].liquid, stacks[i].amount * amount);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return copy;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static LiquidStack[] with(Object... items){
+<b class="fc">&nbsp;        LiquidStack[] stacks = new LiquidStack[items.length / 2];</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; items.length; i += 2){</b>
+<b class="fc">&nbsp;            stacks[i / 2] = new LiquidStack((Liquid)items[i], ((Number)items[i + 1]).floatValue());</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return stacks;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Seq&lt;LiquidStack&gt; list(Object... items){
+<b class="nc">&nbsp;        Seq&lt;LiquidStack&gt; stacks = new Seq&lt;&gt;(items.length / 2);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; items.length; i += 2){</b>
+<b class="nc">&nbsp;            stacks.add(new LiquidStack((Liquid)items[i], ((Number)items[i + 1]).floatValue()));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return stacks;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int compareTo(LiquidStack liquidStack){
+<b class="nc">&nbsp;        return liquid.compareTo(liquidStack.liquid);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean equals(Object o){
+<b class="fc">&nbsp;        if(this == o) return true;</b>
+<b class="fc">&nbsp;        if(!(o instanceof LiquidStack stack)) return false;</b>
+<b class="nc">&nbsp;        return amount == stack.amount &amp;&amp; liquid == stack.liquid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return &quot;LiquidStack{&quot; +</b>
+&nbsp;        &quot;liquid=&quot; + liquid +
+&nbsp;        &quot;, amount=&quot; + amount +
+&nbsp;        &#39;}&#39;;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

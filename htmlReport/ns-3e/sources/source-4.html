@@ -1,0 +1,213 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Payload</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.payloads</a>
+</div>
+
+<h1>Coverage Summary for Class: Payload (mindustry.world.blocks.payloads)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Payload</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.2%
+  </span>
+  <span class="absValue">
+    (2/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (20/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.payloads;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public interface Payload extends Position{
+&nbsp;    int payloadUnit = 0, payloadBlock = 1;
+&nbsp;
+&nbsp;    /** sets this payload&#39;s position on the map. */
+&nbsp;    void set(float x, float y, float rotation);
+&nbsp;
+&nbsp;    /** draws this payload at a position. */
+&nbsp;    void draw();
+&nbsp;
+&nbsp;    void drawShadow(float alpha);
+&nbsp;
+&nbsp;    /** @return hitbox size of the payload. */
+&nbsp;    float size();
+&nbsp;
+&nbsp;    float x();
+&nbsp;
+&nbsp;    float y();
+&nbsp;
+&nbsp;    /** @return the items needed to make this payload; may be empty. */
+&nbsp;    ItemStack[] requirements();
+&nbsp;
+&nbsp;    /** @return the time taken to build this payload. */
+&nbsp;    float buildTime();
+&nbsp;
+&nbsp;    /** update this payload inside a container unit or building. either can be null. */
+<b class="nc">&nbsp;    default void update(@Nullable Unit unitHolder, @Nullable Building buildingHolder){}</b>
+&nbsp;
+&nbsp;    /** @return whether this payload was dumped. */
+&nbsp;    default boolean dump(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this payload fits in a given size. 3 is the max for a standard 3x3 conveyor. */
+&nbsp;    default boolean fits(float s){
+<b class="nc">&nbsp;        return size() / tilesize &lt;= s;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return rotation of this payload. */
+&nbsp;    default float rotation(){
+<b class="nc">&nbsp;        return 0f;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    default void destroyed(){};</b>
+&nbsp;
+&nbsp;    /** writes the payload for saving. */
+&nbsp;    void write(Writes write);
+&nbsp;
+&nbsp;    /** @return icon describing the contents. */
+&nbsp;    TextureRegion icon();
+&nbsp;
+&nbsp;    /** @return content describing this payload (block or unit) */
+&nbsp;    UnlockableContent content();
+&nbsp;
+&nbsp;    @Override
+&nbsp;    default float getX(){
+<b class="nc">&nbsp;        return x();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    default float getY(){
+<b class="nc">&nbsp;        return y();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static void write(@Nullable Payload payload, Writes write){
+<b class="fc">&nbsp;        if(payload == null){</b>
+<b class="fc">&nbsp;            write.bool(false);</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            write.bool(true);</b>
+<b class="fc">&nbsp;            payload.write(write);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;    @Nullable
+&nbsp;    static &lt;T extends Payload&gt; T read(Reads read){
+<b class="fc">&nbsp;        boolean exists = read.bool();</b>
+<b class="fc">&nbsp;        if(!exists) return null;</b>
+&nbsp;
+<b class="fc">&nbsp;        byte type = read.b();</b>
+<b class="fc">&nbsp;        if(type == payloadBlock){</b>
+<b class="fc">&nbsp;            Block block = content.block(read.s());</b>
+<b class="fc">&nbsp;            BuildPayload payload = new BuildPayload(block, Team.derelict);</b>
+<b class="fc">&nbsp;            byte version = read.b();</b>
+<b class="fc">&nbsp;            payload.build.readAll(read, version);</b>
+<b class="fc">&nbsp;            payload.build.tile = emptyTile;</b>
+<b class="fc">&nbsp;            return (T)payload;</b>
+<b class="fc">&nbsp;        }else if(type == payloadUnit){</b>
+<b class="fc">&nbsp;            byte id = read.b();</b>
+<b class="fc">&nbsp;            if(EntityMapping.map(id) == null) throw new RuntimeException(&quot;No type with ID &quot; + id + &quot; found.&quot;);</b>
+<b class="fc">&nbsp;            Unit unit = (Unit)EntityMapping.map(id).get();</b>
+<b class="fc">&nbsp;            unit.read(read);</b>
+<b class="fc">&nbsp;            return (T)new UnitPayload(unit);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        throw new IllegalArgumentException(&quot;Unknown payload type: &quot; + type);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,147 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PaletteDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: PaletteDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PaletteDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class PaletteDialog extends Dialog{
+&nbsp;    private Cons&lt;Color&gt; cons;
+&nbsp;
+&nbsp;    public PaletteDialog(){
+<b class="nc">&nbsp;        super(&quot;&quot;);</b>
+<b class="nc">&nbsp;        build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void build(){
+<b class="nc">&nbsp;        cont.table(table -&gt; {</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; playerColors.length; i++){</b>
+<b class="nc">&nbsp;                Color color = playerColors[i];</b>
+&nbsp;
+<b class="nc">&nbsp;                ImageButton button = table.button(Tex.whiteui, Styles.squareTogglei, 34, () -&gt; {</b>
+<b class="nc">&nbsp;                    cons.get(color);</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                }).size(48).get();</b>
+<b class="nc">&nbsp;                button.setChecked(player.color().equals(color));</b>
+<b class="nc">&nbsp;                button.getStyle().imageUpColor = color;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(i % 4 == 3){</b>
+<b class="nc">&nbsp;                    table.row();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        closeOnBack();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void show(Cons&lt;Color&gt; cons){
+<b class="nc">&nbsp;        this.cons = cons;</b>
+<b class="nc">&nbsp;        show();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

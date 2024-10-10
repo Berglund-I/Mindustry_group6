@@ -1,0 +1,140 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PowerModule</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.modules</a>
+</div>
+
+<h1>Coverage Summary for Class: PowerModule (mindustry.world.modules)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PowerModule</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.9%
+  </span>
+  <span class="absValue">
+    (13/14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.modules;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;
+<b class="fc">&nbsp;public class PowerModule extends BlockModule{</b>
+&nbsp;    /**
+&nbsp;     * In case of unbuffered consumers, this is the percentage (1.0f = 100%) of the demanded power which can be supplied.
+&nbsp;     * Blocks will work at a reduced efficiency if this is not equal to 1.0f.
+&nbsp;     * In case of buffered consumers, this is the percentage of power stored in relation to the maximum capacity.
+&nbsp;     */
+<b class="fc">&nbsp;    public float status = 0.0f;</b>
+&nbsp;    public boolean init;
+<b class="fc">&nbsp;    public PowerGraph graph = new PowerGraph();</b>
+<b class="fc">&nbsp;    public IntSeq links = new IntSeq();</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void write(Writes write){
+<b class="fc">&nbsp;        write.s(links.size);</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; links.size; i++){</b>
+<b class="nc">&nbsp;            write.i(links.get(i));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        write.f(status);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void read(Reads read){
+<b class="fc">&nbsp;        links.clear();</b>
+<b class="fc">&nbsp;        short amount = read.s();</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; amount; i++){</b>
+<b class="fc">&nbsp;            links.add(read.i());</b>
+&nbsp;        }
+<b class="fc">&nbsp;        status = read.f();</b>
+<b class="fc">&nbsp;        if(Float.isNaN(status) || Float.isInfinite(status)) status = 0f;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

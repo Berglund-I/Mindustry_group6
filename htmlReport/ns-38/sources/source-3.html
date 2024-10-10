@@ -1,0 +1,594 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Conveyor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: Conveyor (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Conveyor</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (3/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    53.8%
+  </span>
+  <span class="absValue">
+    (21/39)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Conveyor$ConveyorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.8%
+  </span>
+  <span class="absValue">
+    (11/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55%
+  </span>
+  <span class="absValue">
+    (94/171)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    42.4%
+  </span>
+  <span class="absValue">
+    (14/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.8%
+  </span>
+  <span class="absValue">
+    (115/210)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Conveyor extends Block implements Autotiler{
+&nbsp;    private static final float itemSpace = 0.4f;
+&nbsp;    private static final int capacity = 3;
+&nbsp;
+&nbsp;    public @Load(value = &quot;@-#1-#2&quot;, lengths = {7, 4}) TextureRegion[][] regions;
+&nbsp;
+<b class="fc">&nbsp;    public float speed = 0f;</b>
+<b class="fc">&nbsp;    public float displayedSpeed = 0f;</b>
+<b class="fc">&nbsp;    public boolean pushUnits = true;</b>
+&nbsp;
+&nbsp;    public @Nullable Block junctionReplacement, bridgeReplacement;
+&nbsp;
+&nbsp;    public Conveyor(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.transportation;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        itemCapacity = capacity;</b>
+<b class="fc">&nbsp;        priority = TargetPriority.transport;</b>
+<b class="fc">&nbsp;        conveyorPlacement = true;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+&nbsp;
+<b class="fc">&nbsp;        ambientSound = Sounds.conveyor;</b>
+<b class="fc">&nbsp;        ambientSoundVolume = 0.0022f;</b>
+<b class="fc">&nbsp;        unloadable = false;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;        
+&nbsp;        //have to add a custom calculated speed, since the actual movement speed is apparently not linear
+<b class="nc">&nbsp;        stats.add(Stat.itemsMoved, displayedSpeed, StatUnit.itemsSecond);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(junctionReplacement == null) junctionReplacement = Blocks.junction;</b>
+<b class="fc">&nbsp;        if(bridgeReplacement == null || !(bridgeReplacement instanceof ItemBridge)) bridgeReplacement = Blocks.itemBridge;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        int[] bits = getTiling(plan, list);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(bits == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        TextureRegion region = regions[bits[0]][0];</b>
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy(), region.width * bits[1] * region.scl(), region.height * bits[2] * region.scl(), plan.rotation * 90);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean blends(Tile tile, int rotation, int otherx, int othery, int otherrot, Block otherblock){
+<b class="fc">&nbsp;        return (otherblock.outputsItems() || (lookingAt(tile, rotation, otherx, othery, otherblock) &amp;&amp; otherblock.hasItems))</b>
+<b class="fc">&nbsp;            &amp;&amp; lookingAtEither(tile, rotation, otherx, othery, otherrot, otherblock);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //stack conveyors should be bridged over, not replaced
+&nbsp;    @Override
+&nbsp;    public boolean canReplace(Block other){
+<b class="nc">&nbsp;        return super.canReplace(other) &amp;&amp; !(other instanceof StackConveyor);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void handlePlacementLine(Seq&lt;BuildPlan&gt; plans){
+<b class="nc">&nbsp;        if(bridgeReplacement == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Placement.calculateBridges(plans, (ItemBridge)bridgeReplacement, b -&gt; b instanceof Conveyor);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{regions[0][0]};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isAccessible(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Block getReplacement(BuildPlan req, Seq&lt;BuildPlan&gt; plans){
+<b class="nc">&nbsp;        if(junctionReplacement == null) return this;</b>
+&nbsp;
+<b class="nc">&nbsp;        Boolf&lt;Point2&gt; cont = p -&gt; plans.contains(o -&gt; o.x == req.x + p.x &amp;&amp; o.y == req.y + p.y &amp;&amp; (req.block instanceof Conveyor || req.block instanceof Junction));</b>
+<b class="nc">&nbsp;        return cont.get(Geometry.d4(req.rotation)) &amp;&amp;</b>
+<b class="nc">&nbsp;            cont.get(Geometry.d4(req.rotation - 2)) &amp;&amp;</b>
+<b class="nc">&nbsp;            req.tile() != null &amp;&amp;</b>
+<b class="nc">&nbsp;            req.tile().block() instanceof Conveyor &amp;&amp;</b>
+<b class="nc">&nbsp;            Mathf.mod(req.tile().build.rotation - req.rotation, 2) == 1 ? junctionReplacement : this;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ConveyorBuild extends Building implements ChainedBuilding{</b>
+&nbsp;        //parallel array data
+<b class="fc">&nbsp;        public Item[] ids = new Item[capacity];</b>
+<b class="fc">&nbsp;        public float[] xs = new float[capacity], ys = new float[capacity];</b>
+&nbsp;        //amount of items, always &lt; capacity
+<b class="fc">&nbsp;        public int len = 0;</b>
+&nbsp;        //next entity
+&nbsp;        public @Nullable Building next;
+&nbsp;        public @Nullable ConveyorBuild nextc;
+&nbsp;        //whether the next conveyor&#39;s rotation == tile rotation
+&nbsp;        public boolean aligned;
+&nbsp;
+&nbsp;        public int lastInserted, mid;
+<b class="fc">&nbsp;        public float minitem = 1;</b>
+&nbsp;
+&nbsp;        public int blendbits, blending;
+<b class="fc">&nbsp;        public int blendsclx = 1, blendscly = 1;</b>
+&nbsp;
+<b class="fc">&nbsp;        public float clogHeat = 0f;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            int frame = enabled &amp;&amp; clogHeat &lt;= 0.5f ? (int)(((Time.time * speed * 8f * timeScale * efficiency)) % 4) : 0;</b>
+&nbsp;
+&nbsp;            //draw extra conveyors facing this one for non-square tiling purposes
+<b class="nc">&nbsp;            Draw.z(Layer.blockUnder);</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                if((blending &amp; (1 &lt;&lt; i)) != 0){</b>
+<b class="nc">&nbsp;                    int dir = rotation - i;</b>
+<b class="nc">&nbsp;                    float rot = i == 0 ? rotation * 90 : (dir)*90;</b>
+&nbsp;
+<b class="nc">&nbsp;                    Draw.rect(sliced(regions[0][frame], i != 0 ? SliceMode.bottom : SliceMode.top), x + Geometry.d4x(dir) * tilesize*0.75f, y + Geometry.d4y(dir) * tilesize*0.75f, rot);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.block - 0.2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(regions[blendbits][frame], x, y, tilesize * blendsclx, tilesize * blendscly, rotation * 90);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.block - 0.1f);</b>
+<b class="nc">&nbsp;            float layer = Layer.block - 0.1f, wwidth = world.unitWidth(), wheight = world.unitHeight(), scaling = 0.01f;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; len; i++){</b>
+<b class="nc">&nbsp;                Item item = ids[i];</b>
+<b class="nc">&nbsp;                Tmp.v1.trns(rotation * 90, tilesize, 0);</b>
+<b class="nc">&nbsp;                Tmp.v2.trns(rotation * 90, -tilesize / 2f, xs[i] * tilesize / 2f);</b>
+&nbsp;
+&nbsp;                float
+<b class="nc">&nbsp;                ix = (x + Tmp.v1.x * ys[i] + Tmp.v2.x),</b>
+<b class="nc">&nbsp;                iy = (y + Tmp.v1.y * ys[i] + Tmp.v2.y);</b>
+&nbsp;
+&nbsp;                //keep draw position deterministic.
+<b class="nc">&nbsp;                Draw.z(layer + (ix / wwidth + iy / wheight) * scaling);</b>
+<b class="nc">&nbsp;                Draw.rect(item.fullIcon, ix, iy, itemSize, itemSize);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void payloadDraw(){
+<b class="nc">&nbsp;            Draw.rect(block.fullIcon, x, y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawCracks(){
+<b class="nc">&nbsp;            Draw.z(Layer.block - 0.15f);</b>
+<b class="nc">&nbsp;            super.drawCracks();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void overwrote(Seq&lt;Building&gt; builds){
+<b class="nc">&nbsp;            if(builds.first() instanceof ConveyorBuild build){</b>
+<b class="nc">&nbsp;                ids = build.ids.clone();</b>
+<b class="nc">&nbsp;                xs = build.xs.clone();</b>
+<b class="nc">&nbsp;                ys = build.ys.clone();</b>
+<b class="nc">&nbsp;                len = build.len;</b>
+<b class="nc">&nbsp;                clogHeat = build.clogHeat;</b>
+<b class="nc">&nbsp;                lastInserted = build.lastInserted;</b>
+<b class="nc">&nbsp;                mid = build.mid;</b>
+<b class="nc">&nbsp;                minitem = build.minitem;</b>
+<b class="nc">&nbsp;                items.add(build.items);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldAmbientSound(){
+<b class="nc">&nbsp;            return clogHeat &lt;= 0.5f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityUpdate(){
+<b class="fc">&nbsp;            super.onProximityUpdate();</b>
+&nbsp;
+<b class="fc">&nbsp;            int[] bits = buildBlending(tile, rotation, null, true);</b>
+<b class="fc">&nbsp;            blendbits = bits[0];</b>
+<b class="fc">&nbsp;            blendsclx = bits[1];</b>
+<b class="fc">&nbsp;            blendscly = bits[2];</b>
+<b class="fc">&nbsp;            blending = bits[4];</b>
+&nbsp;
+<b class="fc">&nbsp;            next = front();</b>
+<b class="fc">&nbsp;            nextc = next instanceof ConveyorBuild &amp;&amp; next.team == team ? (ConveyorBuild)next : null;</b>
+<b class="fc">&nbsp;            aligned = nextc != null &amp;&amp; rotation == next.rotation;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void unitOn(Unit unit){
+&nbsp;
+<b class="nc">&nbsp;            if(!pushUnits || clogHeat &gt; 0.5f || !enabled) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            noSleep();</b>
+&nbsp;
+<b class="nc">&nbsp;            float mspeed = speed * tilesize * 55f;</b>
+<b class="nc">&nbsp;            float centerSpeed = 0.1f;</b>
+<b class="nc">&nbsp;            float centerDstScl = 3f;</b>
+<b class="nc">&nbsp;            float tx = Geometry.d4x(rotation), ty = Geometry.d4y(rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;            float centerx = 0f, centery = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Math.abs(tx) &gt; Math.abs(ty)){</b>
+<b class="nc">&nbsp;                centery = Mathf.clamp((y - unit.y()) / centerDstScl, -centerSpeed, centerSpeed);</b>
+<b class="nc">&nbsp;                if(Math.abs(y - unit.y()) &lt; 1f) centery = 0f;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                centerx = Mathf.clamp((x - unit.x()) / centerDstScl, -centerSpeed, centerSpeed);</b>
+<b class="nc">&nbsp;                if(Math.abs(x - unit.x()) &lt; 1f) centerx = 0f;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(len * itemSpace &lt; 0.9f){</b>
+<b class="nc">&nbsp;                unit.impulse((tx * mspeed + centerx) * delta(), (ty * mspeed + centery) * delta());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            minitem = 1f;</b>
+<b class="fc">&nbsp;            mid = 0;</b>
+&nbsp;
+&nbsp;            //skip updates if possible
+<b class="fc">&nbsp;            if(len == 0 &amp;&amp; Mathf.equal(timeScale, 1f)){</b>
+<b class="fc">&nbsp;                clogHeat = 0f;</b>
+<b class="fc">&nbsp;                sleep();</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            float nextMax = aligned ? 1f - Math.max(itemSpace - nextc.minitem, 0) : 1f;</b>
+<b class="fc">&nbsp;            float moved = speed * edelta();</b>
+&nbsp;
+<b class="fc">&nbsp;            for(int i = len - 1; i &gt;= 0; i--){</b>
+<b class="fc">&nbsp;                float nextpos = (i == len - 1 ? 100f : ys[i + 1]) - itemSpace;</b>
+<b class="fc">&nbsp;                float maxmove = Mathf.clamp(nextpos - ys[i], 0, moved);</b>
+&nbsp;
+<b class="fc">&nbsp;                ys[i] += maxmove;</b>
+&nbsp;
+<b class="fc">&nbsp;                if(ys[i] &gt; nextMax) ys[i] = nextMax;</b>
+<b class="fc">&nbsp;                if(ys[i] &gt; 0.5 &amp;&amp; i &gt; 0) mid = i - 1;</b>
+<b class="fc">&nbsp;                xs[i] = Mathf.approach(xs[i], 0, moved*2);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(ys[i] &gt;= 1f &amp;&amp; pass(ids[i])){</b>
+&nbsp;                    //align X position if passing forwards
+<b class="fc">&nbsp;                    if(aligned){</b>
+<b class="fc">&nbsp;                        nextc.xs[nextc.lastInserted] = xs[i];</b>
+&nbsp;                    }
+&nbsp;                    //remove last item
+<b class="fc">&nbsp;                    items.remove(ids[i], len - i);</b>
+<b class="fc">&nbsp;                    len = Math.min(i, len);</b>
+<b class="fc">&nbsp;                }else if(ys[i] &lt; minitem){</b>
+<b class="fc">&nbsp;                    minitem = ys[i];</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(minitem &lt; itemSpace + (blendbits == 1 ? 0.3f : 0f)){</b>
+<b class="fc">&nbsp;                clogHeat = Mathf.approachDelta(clogHeat, 1f, 1f / 60f);</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                clogHeat = 0f;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            noSleep();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean pass(Item item){
+<b class="fc">&nbsp;            if(item != null &amp;&amp; next != null &amp;&amp; next.team == team &amp;&amp; next.acceptItem(this, item)){</b>
+<b class="fc">&nbsp;                next.handleItem(this, item);</b>
+<b class="fc">&nbsp;                return true;</b>
+&nbsp;            }
+<b class="fc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int removeStack(Item item, int amount){
+<b class="nc">&nbsp;            noSleep();</b>
+<b class="nc">&nbsp;            int removed = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int j = 0; j &lt; amount; j++){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; len; i++){</b>
+<b class="nc">&nbsp;                    if(ids[i] == item){</b>
+<b class="nc">&nbsp;                        remove(i);</b>
+<b class="nc">&nbsp;                        removed ++;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            items.remove(item, removed);</b>
+<b class="nc">&nbsp;            return removed;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void getStackOffset(Item item, Vec2 trns){
+<b class="nc">&nbsp;            trns.trns(rotdeg() + 180f, tilesize / 2f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int acceptStack(Item item, int amount, Teamc source){
+<b class="fc">&nbsp;            return Math.min((int)(minitem / itemSpace), amount);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleStack(Item item, int amount, Teamc source){
+<b class="nc">&nbsp;            amount = Math.min(amount, capacity - len);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = amount - 1; i &gt;= 0; i--){</b>
+<b class="nc">&nbsp;                add(0);</b>
+<b class="nc">&nbsp;                xs[0] = 0;</b>
+<b class="nc">&nbsp;                ys[0] = i * itemSpace;</b>
+<b class="nc">&nbsp;                ids[0] = item;</b>
+<b class="nc">&nbsp;                items.add(item, 1);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            noSleep();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="fc">&nbsp;            if(len &gt;= capacity) return false;</b>
+<b class="fc">&nbsp;            Tile facing = Edges.getFacingEdge(source.tile, tile);</b>
+<b class="fc">&nbsp;            if(facing == null) return false;</b>
+<b class="fc">&nbsp;            int direction = Math.abs(facing.relativeTo(tile.x, tile.y) - rotation);</b>
+<b class="fc">&nbsp;            return (((direction == 0) &amp;&amp; minitem &gt;= itemSpace) || ((direction % 2 == 1) &amp;&amp; minitem &gt; 0.7f)) &amp;&amp; !(source.block.rotate &amp;&amp; next == source);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleItem(Building source, Item item){
+<b class="fc">&nbsp;            if(len &gt;= capacity) return;</b>
+&nbsp;
+<b class="fc">&nbsp;            int r = rotation;</b>
+<b class="fc">&nbsp;            Tile facing = Edges.getFacingEdge(source.tile, tile);</b>
+<b class="fc">&nbsp;            int ang = ((facing.relativeTo(tile.x, tile.y) - r));</b>
+<b class="fc">&nbsp;            float x = (ang == -1 || ang == 3) ? 1 : (ang == 1 || ang == -3) ? -1 : 0;</b>
+&nbsp;
+<b class="fc">&nbsp;            noSleep();</b>
+<b class="fc">&nbsp;            items.add(item, 1);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(Math.abs(facing.relativeTo(tile.x, tile.y) - r) == 0){ //idx = 0</b>
+<b class="fc">&nbsp;                add(0);</b>
+<b class="fc">&nbsp;                xs[0] = x;</b>
+<b class="fc">&nbsp;                ys[0] = 0;</b>
+<b class="fc">&nbsp;                ids[0] = item;</b>
+&nbsp;            }else{ //idx = mid
+<b class="fc">&nbsp;                add(mid);</b>
+<b class="fc">&nbsp;                xs[mid] = x;</b>
+<b class="fc">&nbsp;                ys[mid] = 0.5f;</b>
+<b class="fc">&nbsp;                ids[mid] = item;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.i(len);</b>
+&nbsp;
+<b class="fc">&nbsp;            for(int i = 0; i &lt; len; i++){</b>
+<b class="nc">&nbsp;                write.s(ids[i].id);</b>
+<b class="nc">&nbsp;                write.b((byte)(xs[i] * 127));</b>
+<b class="nc">&nbsp;                write.b((byte)(ys[i] * 255 - 128));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            int amount = read.i();</b>
+<b class="fc">&nbsp;            len = Math.min(amount, capacity);</b>
+&nbsp;
+<b class="fc">&nbsp;            for(int i = 0; i &lt; amount; i++){</b>
+&nbsp;                short id;
+&nbsp;                float x, y;
+&nbsp;
+<b class="fc">&nbsp;                if(revision == 0){</b>
+<b class="fc">&nbsp;                    int val = read.i();</b>
+<b class="fc">&nbsp;                    id = (short)(((byte)(val &gt;&gt; 24)) &amp; 0xff);</b>
+<b class="fc">&nbsp;                    x = (float)((byte)(val &gt;&gt; 16)) / 127f;</b>
+<b class="fc">&nbsp;                    y = ((float)((byte)(val &gt;&gt; 8)) + 128f) / 255f;</b>
+<b class="fc">&nbsp;                }else{</b>
+<b class="fc">&nbsp;                    id = read.s();</b>
+<b class="fc">&nbsp;                    x = (float)read.b() / 127f;</b>
+<b class="fc">&nbsp;                    y = ((float)read.b() + 128f) / 255f;</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(i &lt; capacity){</b>
+<b class="fc">&nbsp;                    ids[i] = content.item(id);</b>
+<b class="fc">&nbsp;                    xs[i] = x;</b>
+<b class="fc">&nbsp;                    ys[i] = y;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //this updates some state
+<b class="fc">&nbsp;            updateTile();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Object senseObject(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.firstItem &amp;&amp; len &gt; 0) return ids[len - 1];</b>
+<b class="nc">&nbsp;            return super.senseObject(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public final void add(int o){
+<b class="fc">&nbsp;            for(int i = Math.max(o + 1, len); i &gt; o; i--){</b>
+<b class="fc">&nbsp;                ids[i] = ids[i - 1];</b>
+<b class="fc">&nbsp;                xs[i] = xs[i - 1];</b>
+<b class="fc">&nbsp;                ys[i] = ys[i - 1];</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            len++;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public final void remove(int o){
+<b class="nc">&nbsp;            for(int i = o; i &lt; len - 1; i++){</b>
+<b class="nc">&nbsp;                ids[i] = ids[i + 1];</b>
+<b class="nc">&nbsp;                xs[i] = xs[i + 1];</b>
+<b class="nc">&nbsp;                ys[i] = ys[i + 1];</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            len--;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        @Override
+&nbsp;        public Building next(){
+<b class="nc">&nbsp;            return nextc;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

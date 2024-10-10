@@ -1,0 +1,354 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Objectives</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.game</a>
+</div>
+
+<h1>Coverage Summary for Class: Objectives (mindustry.game)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Objectives</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Objectives$Objective</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Objectives$OnPlanet</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Objectives$OnSector</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Objectives$Produce</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Objectives$Research</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (2/7)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Objectives$SectorComplete</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (6/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.7%
+  </span>
+  <span class="absValue">
+    (11/30)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.game;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;/** Holds objective classes. */
+<b class="nc">&nbsp;public class Objectives{</b>
+&nbsp;
+&nbsp;    public static class Research implements Objective{
+&nbsp;        public UnlockableContent content;
+&nbsp;
+<b class="fc">&nbsp;        public Research(UnlockableContent content){</b>
+<b class="fc">&nbsp;            this.content = content;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        protected Research(){}</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean complete(){
+<b class="nc">&nbsp;            return content.unlocked();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String display(){
+<b class="nc">&nbsp;            return Core.bundle.format(&quot;requirement.research&quot;,</b>
+&nbsp;                //TODO broken for multi tech nodes.
+<b class="nc">&nbsp;                (content.techNode == null || content.techNode.parent == null || content.techNode.parent.content.unlocked()) ?</b>
+<b class="nc">&nbsp;                    (content.emoji() + &quot; &quot; + content.localizedName) : &quot;???&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class Produce implements Objective{
+&nbsp;        public UnlockableContent content;
+&nbsp;
+<b class="fc">&nbsp;        public Produce(UnlockableContent content){</b>
+<b class="fc">&nbsp;            this.content = content;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        protected Produce(){}</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean complete(){
+<b class="nc">&nbsp;            return content.unlocked();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String display(){
+<b class="nc">&nbsp;            return Core.bundle.format(&quot;requirement.produce&quot;,</b>
+<b class="nc">&nbsp;                content.unlocked() ? (content.emoji() + &quot; &quot; + content.localizedName) : &quot;???&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class SectorComplete implements Objective{
+&nbsp;        public SectorPreset preset;
+&nbsp;
+<b class="fc">&nbsp;        public SectorComplete(SectorPreset zone){</b>
+<b class="fc">&nbsp;            this.preset = zone;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        protected SectorComplete(){}</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean complete(){
+<b class="nc">&nbsp;            return preset.sector.save != null &amp;&amp; preset.sector.isCaptured() &amp;&amp; preset.sector.hasBase();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String display(){
+<b class="nc">&nbsp;            return Core.bundle.format(&quot;requirement.capture&quot;, preset.localizedName);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class OnSector implements Objective{
+&nbsp;        public SectorPreset preset;
+&nbsp;
+<b class="fc">&nbsp;        public OnSector(SectorPreset zone){</b>
+<b class="fc">&nbsp;            this.preset = zone;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        protected OnSector(){}</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean complete(){
+<b class="nc">&nbsp;            return preset.sector.hasBase();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String display(){
+<b class="nc">&nbsp;            return Core.bundle.format(&quot;requirement.onsector&quot;, preset.localizedName);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class OnPlanet implements Objective{
+&nbsp;        public Planet planet;
+&nbsp;
+<b class="fc">&nbsp;        public OnPlanet(Planet planet){</b>
+<b class="fc">&nbsp;            this.planet = planet;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        protected OnPlanet(){}</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean complete(){
+<b class="nc">&nbsp;            return planet.sectors.contains(Sector::hasBase);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String display(){
+<b class="nc">&nbsp;            return Core.bundle.format(&quot;requirement.onplanet&quot;, planet.localizedName);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Defines a specific objective for a game. */
+&nbsp;    public interface Objective{
+&nbsp;
+&nbsp;        /** @return whether this objective is met. */
+&nbsp;        boolean complete();
+&nbsp;
+&nbsp;        /** @return the string displayed when this objective is completed, in imperative form.
+&nbsp;         * e.g. when the objective is &#39;complete 10 waves&#39;, this would display &quot;complete 10 waves&quot;. */
+&nbsp;        String display();
+&nbsp;
+&nbsp;        /** Build a display for this zone requirement.*/
+&nbsp;        default void build(Table table){
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

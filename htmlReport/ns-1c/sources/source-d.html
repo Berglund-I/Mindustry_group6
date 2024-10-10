@@ -1,0 +1,397 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MenuRenderer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: MenuRenderer (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MenuRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/155)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.gl.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class MenuRenderer implements Disposable{
+&nbsp;    private static final float darkness = 0.3f;
+<b class="nc">&nbsp;    private final int width = !mobile ? 100 : 60, height = !mobile ? 50 : 40;</b>
+&nbsp;
+&nbsp;    private int cacheFloor, cacheWall;
+<b class="nc">&nbsp;    private Camera camera = new Camera();</b>
+<b class="nc">&nbsp;    private Mat mat = new Mat();</b>
+&nbsp;    private FrameBuffer shadows;
+&nbsp;    private CacheBatch batch;
+<b class="nc">&nbsp;    private float time = 0f;</b>
+<b class="nc">&nbsp;    private float flyerRot = 45f;</b>
+<b class="nc">&nbsp;    private int flyers = Mathf.chance(0.2) ? Mathf.random(35) : Mathf.random(15);</b>
+&nbsp;    //no longer random or &quot;dynamic&quot;, mod units in the menu look jarring, and it&#39;s not worth the configuration effort
+<b class="nc">&nbsp;    private UnitType flyerType = Seq.with(UnitTypes.flare, UnitTypes.horizon, UnitTypes.zenith, UnitTypes.mono, UnitTypes.poly, UnitTypes.mega, UnitTypes.alpha, UnitTypes.beta, UnitTypes.gamma).random();</b>
+&nbsp;
+<b class="nc">&nbsp;    public MenuRenderer(){</b>
+<b class="nc">&nbsp;        Time.mark();</b>
+<b class="nc">&nbsp;        generate();</b>
+<b class="nc">&nbsp;        cache();</b>
+<b class="nc">&nbsp;        Log.debug(&quot;Time to generate menu: @&quot;, Time.elapsed());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void generate(){
+&nbsp;        //suppress tile change events.
+<b class="nc">&nbsp;        world.setGenerating(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tiles tiles = world.resize(width, height);</b>
+&nbsp;        //only uses base game ores now, mod ones usually contrast too much with the floor
+<b class="nc">&nbsp;        Seq&lt;Block&gt; ores = Seq.with(Blocks.oreCopper, Blocks.oreLead, Blocks.oreScrap, Blocks.oreCoal, Blocks.oreTitanium, Blocks.oreThorium);</b>
+<b class="nc">&nbsp;        shadows = new FrameBuffer(width, height);</b>
+<b class="nc">&nbsp;        int offset = Mathf.random(100000);</b>
+<b class="nc">&nbsp;        int s1 = offset, s2 = offset + 1, s3 = offset + 2;</b>
+<b class="nc">&nbsp;        Block[] selected = Structs.random(</b>
+&nbsp;        new Block[]{Blocks.sand, Blocks.sandWall},
+&nbsp;        new Block[]{Blocks.shale, Blocks.shaleWall},
+&nbsp;        new Block[]{Blocks.ice, Blocks.iceWall},
+&nbsp;        new Block[]{Blocks.sand, Blocks.sandWall},
+&nbsp;        new Block[]{Blocks.shale, Blocks.shaleWall},
+&nbsp;        new Block[]{Blocks.ice, Blocks.iceWall},
+&nbsp;        new Block[]{Blocks.moss, Blocks.sporePine},
+&nbsp;        new Block[]{Blocks.dirt, Blocks.dirtWall},
+&nbsp;        new Block[]{Blocks.dacite, Blocks.daciteWall}
+&nbsp;        );
+<b class="nc">&nbsp;        Block[] selected2 = Structs.random(</b>
+&nbsp;        new Block[]{Blocks.basalt, Blocks.duneWall},
+&nbsp;        new Block[]{Blocks.basalt, Blocks.duneWall},
+&nbsp;        new Block[]{Blocks.stone, Blocks.stoneWall},
+&nbsp;        new Block[]{Blocks.stone, Blocks.stoneWall},
+&nbsp;        new Block[]{Blocks.moss, Blocks.sporeWall},
+&nbsp;        new Block[]{Blocks.salt, Blocks.saltWall}
+&nbsp;        );
+&nbsp;
+<b class="nc">&nbsp;        Block ore1 = ores.random();</b>
+<b class="nc">&nbsp;        ores.remove(ore1);</b>
+<b class="nc">&nbsp;        Block ore2 = ores.random();</b>
+&nbsp;
+<b class="nc">&nbsp;        double tr1 = Mathf.random(0.65f, 0.85f);</b>
+<b class="nc">&nbsp;        double tr2 = Mathf.random(0.65f, 0.85f);</b>
+<b class="nc">&nbsp;        boolean doheat = Mathf.chance(0.25);</b>
+<b class="nc">&nbsp;        boolean tendrils = Mathf.chance(0.25);</b>
+<b class="nc">&nbsp;        boolean tech = Mathf.chance(0.25);</b>
+<b class="nc">&nbsp;        int secSize = 10;</b>
+&nbsp;
+<b class="nc">&nbsp;        Block floord = selected[0], walld = selected[1];</b>
+<b class="nc">&nbsp;        Block floord2 = selected2[0], walld2 = selected2[1];</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = 0; x &lt; width; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; height; y++){</b>
+<b class="nc">&nbsp;                Block floor = floord;</b>
+<b class="nc">&nbsp;                Block ore = Blocks.air;</b>
+<b class="nc">&nbsp;                Block wall = Blocks.air;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(Simplex.noise2d(s1, 3, 0.5, 1/20.0, x, y) &gt; 0.5){</b>
+<b class="nc">&nbsp;                    wall = walld;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(Simplex.noise2d(s3, 3, 0.5, 1/20.0, x, y) &gt; 0.5){</b>
+<b class="nc">&nbsp;                    floor = floord2;</b>
+<b class="nc">&nbsp;                    if(wall != Blocks.air){</b>
+<b class="nc">&nbsp;                        wall = walld2;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(Simplex.noise2d(s2, 3, 0.3, 1/30.0, x, y) &gt; tr1){</b>
+<b class="nc">&nbsp;                    ore = ore1;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(Simplex.noise2d(s2, 2, 0.2, 1/15.0, x, y+99999) &gt; tr2){</b>
+<b class="nc">&nbsp;                    ore = ore2;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(doheat){</b>
+<b class="nc">&nbsp;                    double heat = Simplex.noise2d(s3, 4, 0.6, 1 / 50.0, x, y + 9999);</b>
+<b class="nc">&nbsp;                    double base = 0.65;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(heat &gt; base){</b>
+<b class="nc">&nbsp;                        ore = Blocks.air;</b>
+<b class="nc">&nbsp;                        wall = Blocks.air;</b>
+<b class="nc">&nbsp;                        floor = Blocks.basalt;</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(heat &gt; base + 0.1){</b>
+<b class="nc">&nbsp;                            floor = Blocks.hotrock;</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(heat &gt; base + 0.15){</b>
+<b class="nc">&nbsp;                                floor = Blocks.magmarock;</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(tech){</b>
+<b class="nc">&nbsp;                    int mx = x % secSize, my = y % secSize;</b>
+<b class="nc">&nbsp;                    int sclx = x / secSize, scly = y / secSize;</b>
+<b class="nc">&nbsp;                    if(Simplex.noise2d(s1, 2, 1f / 10f, 0.5f, sclx, scly) &gt; 0.4f &amp;&amp; (mx == 0 || my == 0 || mx == secSize - 1 || my == secSize - 1)){</b>
+<b class="nc">&nbsp;                        floor = Blocks.darkPanel3;</b>
+<b class="nc">&nbsp;                        if(Mathf.dst(mx, my, secSize/2, secSize/2) &gt; secSize/2f + 1){</b>
+<b class="nc">&nbsp;                            floor = Blocks.darkPanel4;</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;                        if(wall != Blocks.air &amp;&amp; Mathf.chance(0.7)){</b>
+<b class="nc">&nbsp;                            wall = Blocks.darkMetal;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(tendrils){</b>
+<b class="nc">&nbsp;                    if(Ridged.noise2d(1 + offset, x, y, 1f / 17f) &gt; 0f){</b>
+<b class="nc">&nbsp;                        floor = Mathf.chance(0.2) ? Blocks.sporeMoss : Blocks.moss;</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(wall != Blocks.air){</b>
+<b class="nc">&nbsp;                            wall = Blocks.sporeWall;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                Tile tile;
+<b class="nc">&nbsp;                tiles.set(x, y, (tile = new CachedTile()));</b>
+<b class="nc">&nbsp;                tile.x = (short)x;</b>
+<b class="nc">&nbsp;                tile.y = (short)y;</b>
+<b class="nc">&nbsp;                tile.setFloor(floor.asFloor());</b>
+<b class="nc">&nbsp;                tile.setBlock(wall);</b>
+<b class="nc">&nbsp;                tile.setOverlay(ore);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //don&#39;t fire a world load event, it just causes lag and confusion
+<b class="nc">&nbsp;        world.setGenerating(false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void cache(){
+&nbsp;
+&nbsp;        //draw shadows
+<b class="nc">&nbsp;        Draw.proj().setOrtho(0, 0, shadows.getWidth(), shadows.getHeight());</b>
+<b class="nc">&nbsp;        shadows.begin(Color.clear);</b>
+<b class="nc">&nbsp;        Draw.color(Color.black);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Tile tile : world.tiles){</b>
+<b class="nc">&nbsp;            if(tile.block() != Blocks.air){</b>
+<b class="nc">&nbsp;                Fill.rect(tile.x + 0.5f, tile.y + 0.5f, 1, 1);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color();</b>
+<b class="nc">&nbsp;        shadows.end();</b>
+&nbsp;
+<b class="nc">&nbsp;        Batch prev = Core.batch;</b>
+&nbsp;
+<b class="nc">&nbsp;        Core.batch = batch = new CacheBatch(new SpriteCache(width * height * 6, false));</b>
+<b class="nc">&nbsp;        batch.beginCache();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Tile tile : world.tiles){</b>
+<b class="nc">&nbsp;            tile.floor().drawBase(tile);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Tile tile : world.tiles){</b>
+<b class="nc">&nbsp;            tile.overlay().drawBase(tile);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        cacheFloor = batch.endCache();</b>
+<b class="nc">&nbsp;        batch.beginCache();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Tile tile : world.tiles){</b>
+<b class="nc">&nbsp;            tile.block().drawBase(tile);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        cacheWall = batch.endCache();</b>
+&nbsp;
+<b class="nc">&nbsp;        Core.batch = prev;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void render(){
+<b class="nc">&nbsp;        time += Time.delta;</b>
+<b class="nc">&nbsp;        float scaling = Math.max(Scl.scl(4f), Math.max(Core.graphics.getWidth() / ((width - 1f) * tilesize), Core.graphics.getHeight() / ((height - 1f) * tilesize)));</b>
+<b class="nc">&nbsp;        camera.position.set(width * tilesize / 2f, height * tilesize / 2f);</b>
+<b class="nc">&nbsp;        camera.resize(Core.graphics.getWidth() / scaling,</b>
+<b class="nc">&nbsp;        Core.graphics.getHeight() / scaling);</b>
+&nbsp;
+<b class="nc">&nbsp;        mat.set(Draw.proj());</b>
+<b class="nc">&nbsp;        Draw.flush();</b>
+<b class="nc">&nbsp;        Draw.proj(camera);</b>
+<b class="nc">&nbsp;        batch.setProjection(camera.mat);</b>
+<b class="nc">&nbsp;        batch.beginDraw();</b>
+<b class="nc">&nbsp;        batch.drawCache(cacheFloor);</b>
+<b class="nc">&nbsp;        batch.endDraw();</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+<b class="nc">&nbsp;        Draw.rect(Draw.wrap(shadows.getTexture()),</b>
+&nbsp;        width * tilesize / 2f - 4f, height * tilesize / 2f - 4f,
+&nbsp;        width * tilesize, -height * tilesize);
+<b class="nc">&nbsp;        Draw.flush();</b>
+<b class="nc">&nbsp;        batch.beginDraw();</b>
+<b class="nc">&nbsp;        batch.drawCache(cacheWall);</b>
+<b class="nc">&nbsp;        batch.endDraw();</b>
+&nbsp;
+<b class="nc">&nbsp;        drawFlyers();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.proj(mat);</b>
+<b class="nc">&nbsp;        Draw.color(0f, 0f, 0f, darkness);</b>
+<b class="nc">&nbsp;        Fill.crect(0, 0, Core.graphics.getWidth(), Core.graphics.getHeight());</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void drawFlyers(){
+<b class="nc">&nbsp;        Draw.color(0f, 0f, 0f, 0.4f);</b>
+&nbsp;
+<b class="nc">&nbsp;        TextureRegion icon = flyerType.fullIcon;</b>
+&nbsp;
+<b class="nc">&nbsp;        flyers((x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Draw.rect(icon, x - 12f, y - 13f, flyerRot - 90);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        float size = Math.max(icon.width, icon.height) * icon.scl() * 1.6f;</b>
+&nbsp;
+<b class="nc">&nbsp;        flyers((x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Draw.rect(&quot;circle-shadow&quot;, x, y, size, size);</b>
+&nbsp;        });
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;
+<b class="nc">&nbsp;        flyers((x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float engineOffset = flyerType.engineOffset, engineSize = flyerType.engineSize, rotation = flyerRot;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(Pal.engine);</b>
+<b class="nc">&nbsp;            Fill.circle(x + Angles.trnsx(rotation + 180, engineOffset), y + Angles.trnsy(rotation + 180, engineOffset),</b>
+<b class="nc">&nbsp;            engineSize + Mathf.absin(Time.time, 2f, engineSize / 4f));</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(Color.white);</b>
+<b class="nc">&nbsp;            Fill.circle(x + Angles.trnsx(rotation + 180, engineOffset - 1f), y + Angles.trnsy(rotation + 180, engineOffset - 1f),</b>
+<b class="nc">&nbsp;            (engineSize + Mathf.absin(Time.time, 2f, engineSize / 4f)) / 2f);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(icon, x, y, flyerRot - 90);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void flyers(Floatc2 cons){
+<b class="nc">&nbsp;        float tw = width * tilesize * 1f + tilesize;</b>
+<b class="nc">&nbsp;        float th = height * tilesize * 1f + tilesize;</b>
+<b class="nc">&nbsp;        float range = 500f;</b>
+<b class="nc">&nbsp;        float offset = -100f;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; flyers; i++){</b>
+<b class="nc">&nbsp;            Tmp.v1.trns(flyerRot, time * (flyerType.speed));</b>
+&nbsp;
+<b class="nc">&nbsp;            cons.get(</b>
+<b class="nc">&nbsp;            (Mathf.randomSeedRange(i, range) + Tmp.v1.x + Mathf.absin(time + Mathf.randomSeedRange(i + 2, 500), 10f, 3.4f) + offset) % (tw + Mathf.randomSeed(i + 5, 0, 500)),</b>
+<b class="nc">&nbsp;            (Mathf.randomSeedRange(i + 1, range) + Tmp.v1.y + Mathf.absin(time + Mathf.randomSeedRange(i + 3, 500), 10f, 3.4f) + offset) % th</b>
+&nbsp;            );
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+<b class="nc">&nbsp;        batch.dispose();</b>
+<b class="nc">&nbsp;        shadows.dispose();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

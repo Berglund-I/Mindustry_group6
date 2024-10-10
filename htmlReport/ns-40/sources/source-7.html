@@ -1,0 +1,204 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > HeatCrafter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.production</a>
+</div>
+
+<h1>Coverage Summary for Class: HeatCrafter (mindustry.world.blocks.production)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HeatCrafter</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (2/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46.2%
+  </span>
+  <span class="absValue">
+    (6/13)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">HeatCrafter$HeatCrafterBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70%
+  </span>
+  <span class="absValue">
+    (7/10)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    38.5%
+  </span>
+  <span class="absValue">
+    (5/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    56.5%
+  </span>
+  <span class="absValue">
+    (13/23)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.production;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.math.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.blocks.heat.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;/** A crafter that requires contact from heater blocks to craft. */
+&nbsp;public class HeatCrafter extends GenericCrafter{
+&nbsp;    /** Base heat requirement for 100% efficiency. */
+<b class="fc">&nbsp;    public float heatRequirement = 10f;</b>
+&nbsp;    /** After heat meets this requirement, excess heat will be scaled by this number. */
+<b class="fc">&nbsp;    public float overheatScale = 1f;</b>
+&nbsp;    /** Maximum possible efficiency after overheat. */
+<b class="fc">&nbsp;    public float maxEfficiency = 4f;</b>
+&nbsp;
+&nbsp;    public HeatCrafter(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;heat&quot;, (HeatCrafterBuild entity) -&gt;</b>
+<b class="nc">&nbsp;            new Bar(() -&gt;</b>
+<b class="nc">&nbsp;            Core.bundle.format(&quot;bar.heatpercent&quot;, (int)(entity.heat + 0.01f), (int)(entity.efficiencyScale() * 100 + 0.01f)),</b>
+<b class="nc">&nbsp;            () -&gt; Pal.lightOrange,</b>
+<b class="nc">&nbsp;            () -&gt; entity.heat / heatRequirement));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.input, heatRequirement, StatUnit.heatUnits);</b>
+<b class="nc">&nbsp;        stats.add(Stat.maxEfficiency, (int)(maxEfficiency * 100f), StatUnit.percent);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class HeatCrafterBuild extends GenericCrafterBuild implements HeatConsumer{</b>
+&nbsp;        //TODO sideHeat could be smooth
+<b class="fc">&nbsp;        public float[] sideHeat = new float[4];</b>
+<b class="fc">&nbsp;        public float heat = 0f;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            heat = calculateHeat(sideHeat);</b>
+&nbsp;
+<b class="fc">&nbsp;            super.updateTile();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float heatRequirement(){
+<b class="nc">&nbsp;            return heatRequirement;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float[] sideHeat(){
+<b class="nc">&nbsp;            return sideHeat;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float warmupTarget(){
+<b class="nc">&nbsp;            return Mathf.clamp(heat / heatRequirement);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float efficiencyScale(){
+<b class="fc">&nbsp;            float over = Math.max(heat - heatRequirement, 0f);</b>
+<b class="fc">&nbsp;            return Math.min(Mathf.clamp(heat / heatRequirement) + over / heatRequirement * overheatScale, maxEfficiency);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

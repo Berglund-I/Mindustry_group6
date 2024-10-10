@@ -1,0 +1,191 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > FileTree</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.core</a>
+</div>
+
+<h1>Coverage Summary for Class: FileTree (mindustry.core)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FileTree</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (5/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.7%
+  </span>
+  <span class="absValue">
+    (12/31)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.core;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.assets.loaders.*;
+&nbsp;import arc.assets.loaders.MusicLoader.*;
+&nbsp;import arc.assets.loaders.SoundLoader.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;/** Handles files in a modded context. */
+<b class="fc">&nbsp;public class FileTree implements FileHandleResolver{</b>
+<b class="fc">&nbsp;    private ObjectMap&lt;String, Fi&gt; files = new ObjectMap&lt;&gt;();</b>
+<b class="fc">&nbsp;    private ObjectMap&lt;String, Sound&gt; loadedSounds = new ObjectMap&lt;&gt;();</b>
+<b class="fc">&nbsp;    private ObjectMap&lt;String, Music&gt; loadedMusic = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public void addFile(String path, Fi f){
+<b class="fc">&nbsp;        files.put(path.replace(&#39;\\&#39;, &#39;/&#39;), f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Gets an asset file.*/
+&nbsp;    public Fi get(String path){
+<b class="fc">&nbsp;        return get(path, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Gets an asset file.*/
+&nbsp;    public Fi get(String path, boolean safe){
+<b class="fc">&nbsp;        if(files.containsKey(path)){</b>
+<b class="fc">&nbsp;            return files.get(path);</b>
+<b class="fc">&nbsp;        }else if(files.containsKey(&quot;/&quot; + path)){</b>
+<b class="nc">&nbsp;            return files.get(&quot;/&quot; + path);</b>
+<b class="fc">&nbsp;        }else if(Core.files == null &amp;&amp; !safe){ //headless</b>
+<b class="nc">&nbsp;            return Fi.get(path);</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            return Core.files.internal(path);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Clears all mod files.*/
+&nbsp;    public void clear(){
+<b class="nc">&nbsp;        files.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Fi resolve(String fileName){
+<b class="nc">&nbsp;        return get(fileName);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Loads a sound by name from the sounds/ folder. OGG and MP3 are supported; the extension is automatically added to the end of the file name.
+&nbsp;     * Results are cached; consecutive calls to this method with the same name will return the same sound instance.
+&nbsp;     * */
+&nbsp;    public Sound loadSound(String soundName){
+<b class="fc">&nbsp;        if(Vars.headless) return Sounds.none;</b>
+&nbsp;
+<b class="nc">&nbsp;        return loadedSounds.get(soundName, () -&gt; {</b>
+<b class="nc">&nbsp;            String name = &quot;sounds/&quot; + soundName;</b>
+<b class="nc">&nbsp;            String path = Vars.tree.get(name + &quot;.ogg&quot;).exists() ? name + &quot;.ogg&quot; : name + &quot;.mp3&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;            var sound = new Sound();</b>
+<b class="nc">&nbsp;            var desc = Core.assets.load(path, Sound.class, new SoundParameter(sound));</b>
+<b class="nc">&nbsp;            desc.errored = Throwable::printStackTrace;</b>
+&nbsp;
+<b class="nc">&nbsp;            return sound;</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Loads a music file by name from the music/ folder. OGG and MP3 are supported; the extension is automatically added to the end of the file name.
+&nbsp;     * Results are cached; consecutive calls to this method with the same name will return the same music instance.
+&nbsp;     * */
+&nbsp;    public Music loadMusic(String musicName){
+<b class="nc">&nbsp;        if(Vars.headless) return new Music();</b>
+&nbsp;
+<b class="nc">&nbsp;        return loadedMusic.get(musicName, () -&gt; {</b>
+<b class="nc">&nbsp;            String name = &quot;music/&quot; + musicName;</b>
+<b class="nc">&nbsp;            String path = Vars.tree.get(name + &quot;.ogg&quot;).exists() ? name + &quot;.ogg&quot; : name + &quot;.mp3&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;            var music = new Music();</b>
+<b class="nc">&nbsp;            var desc = Core.assets.load(path, Music.class, new MusicParameter(music));</b>
+<b class="nc">&nbsp;            desc.errored = Throwable::printStackTrace;</b>
+&nbsp;
+<b class="nc">&nbsp;            return music;</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

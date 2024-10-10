@@ -1,0 +1,144 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PlanetParams</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics.g3d</a>
+</div>
+
+<h1>Coverage Summary for Class: PlanetParams (mindustry.graphics.g3d)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PlanetParams</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics.g3d;
+&nbsp;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.graphics.g3d.PlanetRenderer.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;/** Parameters for rendering a solar system. */
+<b class="nc">&nbsp;public class PlanetParams{</b>
+&nbsp;    /** Camera direction relative to the planet. Length is determined by zoom. */
+<b class="nc">&nbsp;    public Vec3 camPos = new Vec3(0f, 0f, 4f);</b>
+&nbsp;    /** If not null, this is the position of the &quot;previous&quot; planet for smooth camera movement. */
+&nbsp;    public @Nullable Vec3 otherCamPos;
+&nbsp;    /** Interpolation value for otherCamPos. */
+<b class="nc">&nbsp;    public float otherCamAlpha = 0f;</b>
+&nbsp;    /** Camera up vector. */
+<b class="nc">&nbsp;    public Vec3 camUp = new Vec3(0f, 1f, 0f);</b>
+&nbsp;    /** the unit length direction vector of the camera **/
+<b class="nc">&nbsp;    public Vec3 camDir = new Vec3(0, 0, -1);</b>
+&nbsp;    /** The sun/main planet of the solar system from which everything is rendered. Deprecated use planet.solarSystem instead */
+<b class="nc">&nbsp;    public @Deprecated Planet solarSystem = Planets.sun;</b>
+&nbsp;    /** Planet being looked at. */
+<b class="nc">&nbsp;    public Planet planet = Planets.serpulo;</b>
+&nbsp;
+&nbsp;    /** Zoom relative to planet. */
+<b class="nc">&nbsp;    public float zoom = 1f;</b>
+&nbsp;    /** Alpha of orbit rings and other UI elements. */
+<b class="nc">&nbsp;    public float uiAlpha = 1f;</b>
+&nbsp;    /** If false, orbit and sector grid are not drawn. */
+<b class="nc">&nbsp;    public boolean drawUi = false;</b>
+&nbsp;    /** If true, a space skybox is drawn. */
+<b class="nc">&nbsp;    public boolean drawSkybox = true;</b>
+&nbsp;
+&nbsp;    /** Handles drawing details. */
+&nbsp;    public @Nullable transient PlanetInterfaceRenderer renderer;
+&nbsp;    /** Viewport size. &lt;=0 to use screen size. Do not change in rules. */
+<b class="nc">&nbsp;    public transient int viewW = -1, viewH = -1;</b>
+&nbsp;    /** If true, atmosphere will be drawn regardless of player options. */
+<b class="nc">&nbsp;    public transient boolean alwaysDrawAtmosphere = false;</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

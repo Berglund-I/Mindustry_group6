@@ -1,0 +1,146 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > IntraEdge</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: IntraEdge (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">IntraEdge</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;/**
+&nbsp; * Bits used: 48 / 64
+&nbsp; * &lt;br&gt;  dir [0..8]
+&nbsp; * &lt;br&gt;  portal [8..16]
+&nbsp; * &lt;br&gt;  cost [16..48]
+&nbsp; */
+<b class="nc">&nbsp;public final class IntraEdge {</b>
+&nbsp;  public static final long bitMaskDir = (long)(0b0000000000000000000000000000000000000000000000000000000011111111L);
+&nbsp;
+&nbsp;  public static final long bitMaskPortal = (long)(0b0000000000000000000000000000000000000000000000001111111100000000L);
+&nbsp;
+&nbsp;  public static final long bitMaskCost = (long)(0b0000000000000000111111111111111111111111111111110000000000000000L);
+&nbsp;
+&nbsp;  public static int dir(long intraedge) {
+<b class="nc">&nbsp;    return (int)((intraedge &gt;&gt;&gt; 0) &amp; 0b0000000000000000000000000000000000000000000000000000000011111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long dir(long intraedge, int value) {
+<b class="nc">&nbsp;    return (long)((intraedge &amp; (~0b0000000000000000000000000000000000000000000000000000000011111111L)) | ((long)value &lt;&lt; 0L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int portal(long intraedge) {
+<b class="nc">&nbsp;    return (int)((intraedge &gt;&gt;&gt; 8) &amp; 0b0000000000000000000000000000000000000000000000000000000011111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long portal(long intraedge, int value) {
+<b class="nc">&nbsp;    return (long)((intraedge &amp; (~0b0000000000000000000000000000000000000000000000001111111100000000L)) | ((long)value &lt;&lt; 8L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static float cost(long intraedge) {
+<b class="nc">&nbsp;    return Float.intBitsToFloat((int)((intraedge &gt;&gt;&gt; 16) &amp; 0b0000000000000000000000000000000011111111111111111111111111111111L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long cost(long intraedge, float value) {
+<b class="nc">&nbsp;    return (long)((intraedge &amp; (~0b0000000000000000111111111111111111111111111111110000000000000000L)) | ((long)Float.floatToIntBits(value) &lt;&lt; 16L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long get(int dir, int portal, float cost) {
+<b class="nc">&nbsp;    return (long)((((long)dir &lt;&lt; 0L) &amp; 0b0000000000000000000000000000000000000000000000000000000011111111L) | (((long)portal &lt;&lt; 8L) &amp; 0b0000000000000000000000000000000000000000000000001111111100000000L) | ((long)Float.floatToIntBits(cost) &lt;&lt; 16L));</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,496 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PowerGraph</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.power</a>
+</div>
+
+<h1>Coverage Summary for Class: PowerGraph (mindustry.world.blocks.power)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PowerGraph</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (16/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75.1%
+  </span>
+  <span class="absValue">
+    (148/197)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.power;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;public class PowerGraph{
+<b class="fc">&nbsp;    private static final Queue&lt;Building&gt; queue = new Queue&lt;&gt;();</b>
+<b class="fc">&nbsp;    private static final Seq&lt;Building&gt; outArray1 = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private static final Seq&lt;Building&gt; outArray2 = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private static final IntSet closedSet = new IntSet();</b>
+&nbsp;
+&nbsp;    //do not modify any of these unless you know what you&#39;re doing!
+<b class="fc">&nbsp;    public final Seq&lt;Building&gt; producers = new Seq&lt;&gt;(false, 16, Building.class);</b>
+<b class="fc">&nbsp;    public final Seq&lt;Building&gt; consumers = new Seq&lt;&gt;(false, 16, Building.class);</b>
+<b class="fc">&nbsp;    public final Seq&lt;Building&gt; batteries = new Seq&lt;&gt;(false, 16, Building.class);</b>
+<b class="fc">&nbsp;    public final Seq&lt;Building&gt; all = new Seq&lt;&gt;(false, 16, Building.class);</b>
+&nbsp;
+&nbsp;    private final @Nullable PowerGraphUpdater entity;
+<b class="fc">&nbsp;    private final WindowedMean powerBalance = new WindowedMean(60);</b>
+&nbsp;    private float lastPowerProduced, lastPowerNeeded, lastPowerStored;
+&nbsp;    private float lastScaledPowerIn, lastScaledPowerOut, lastCapacity;
+&nbsp;    //diodes workaround for correct energy production info
+<b class="fc">&nbsp;    private float energyDelta = 0f;</b>
+&nbsp;
+&nbsp;    private final int graphID;
+&nbsp;    private static int lastGraphID;
+&nbsp;
+<b class="fc">&nbsp;    public PowerGraph(){</b>
+<b class="fc">&nbsp;        entity = PowerGraphUpdater.create();</b>
+<b class="fc">&nbsp;        entity.graph = this;</b>
+<b class="fc">&nbsp;        graphID = lastGraphID++;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public PowerGraph(boolean noEntity){</b>
+<b class="nc">&nbsp;        entity = null;</b>
+<b class="nc">&nbsp;        graphID = lastGraphID++;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getID(){
+<b class="nc">&nbsp;        return graphID;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getLastScaledPowerIn(){
+<b class="nc">&nbsp;        return lastScaledPowerIn;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getLastScaledPowerOut(){
+<b class="nc">&nbsp;        return lastScaledPowerOut;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getLastCapacity(){
+<b class="nc">&nbsp;        return lastCapacity;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getPowerBalance(){
+<b class="nc">&nbsp;        return powerBalance.rawMean();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasPowerBalanceSamples(){
+<b class="nc">&nbsp;        return powerBalance.hasEnoughData();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getLastPowerNeeded(){
+<b class="nc">&nbsp;        return lastPowerNeeded;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getLastPowerProduced(){
+<b class="nc">&nbsp;        return lastPowerProduced;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getLastPowerStored(){
+<b class="nc">&nbsp;        return lastPowerStored;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void transferPower(float amount){
+<b class="nc">&nbsp;        if(amount &gt; 0){</b>
+<b class="nc">&nbsp;            chargeBatteries(amount);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            useBatteries(-amount);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        energyDelta += amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getSatisfaction(){
+<b class="nc">&nbsp;        if(Mathf.zero(lastPowerProduced)){</b>
+<b class="nc">&nbsp;            return 0f;</b>
+<b class="nc">&nbsp;        }else if(Mathf.zero(lastPowerNeeded)){</b>
+<b class="nc">&nbsp;            return 1f;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return Mathf.clamp(lastPowerProduced / lastPowerNeeded);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getPowerProduced(){
+<b class="fc">&nbsp;        float powerProduced = 0f;</b>
+<b class="fc">&nbsp;        var items = producers.items;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; producers.size; i++){</b>
+<b class="fc">&nbsp;            var producer = items[i];</b>
+<b class="fc">&nbsp;            powerProduced += producer.getPowerProduction() * producer.delta();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return powerProduced;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getPowerNeeded(){
+<b class="fc">&nbsp;        float powerNeeded = 0f;</b>
+<b class="fc">&nbsp;        var items = consumers.items;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; consumers.size; i++){</b>
+<b class="fc">&nbsp;            var consumer = items[i];</b>
+<b class="fc">&nbsp;            var consumePower = consumer.block.consPower;</b>
+<b class="fc">&nbsp;            if(consumer.shouldConsumePower){</b>
+<b class="fc">&nbsp;                powerNeeded += consumePower.requestedPower(consumer) * consumer.delta();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return powerNeeded;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getBatteryStored(){
+<b class="fc">&nbsp;        float totalAccumulator = 0f;</b>
+<b class="fc">&nbsp;        var items = batteries.items;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; batteries.size; i++){</b>
+<b class="fc">&nbsp;            var battery = items[i];</b>
+<b class="fc">&nbsp;            if(battery.enabled){</b>
+<b class="fc">&nbsp;                totalAccumulator += battery.power.status * battery.block.consPower.capacity;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return totalAccumulator;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getBatteryCapacity(){
+<b class="fc">&nbsp;        float totalCapacity = 0f;</b>
+<b class="fc">&nbsp;        var items = batteries.items;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; batteries.size; i++){</b>
+<b class="fc">&nbsp;            var battery = items[i];</b>
+<b class="fc">&nbsp;            if(battery.enabled){</b>
+<b class="fc">&nbsp;                totalCapacity += (1f - battery.power.status) * battery.block.consPower.capacity;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return totalCapacity;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getTotalBatteryCapacity(){
+<b class="fc">&nbsp;        float totalCapacity = 0f;</b>
+<b class="fc">&nbsp;        var items = batteries.items;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; batteries.size; i++){</b>
+<b class="fc">&nbsp;            var battery = items[i];</b>
+<b class="fc">&nbsp;            if(battery.enabled){</b>
+<b class="fc">&nbsp;                totalCapacity += battery.block.consPower.capacity;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return totalCapacity;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float useBatteries(float needed){
+<b class="fc">&nbsp;        float stored = getBatteryStored();</b>
+<b class="fc">&nbsp;        if(Mathf.equal(stored, 0f)) return 0f;</b>
+&nbsp;
+<b class="fc">&nbsp;        float used = Math.min(stored, needed);</b>
+<b class="fc">&nbsp;        float consumedPowerPercentage = Math.min(1.0f, needed / stored);</b>
+<b class="fc">&nbsp;        var items = batteries.items;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; batteries.size; i++){</b>
+<b class="fc">&nbsp;            var battery = items[i];</b>
+<b class="fc">&nbsp;            if(battery.enabled){</b>
+<b class="fc">&nbsp;                battery.power.status *= (1f-consumedPowerPercentage);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return used;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float chargeBatteries(float excess){
+<b class="fc">&nbsp;        float capacity = getBatteryCapacity();</b>
+&nbsp;        //how much of the missing in each battery % is charged
+<b class="fc">&nbsp;        float chargedPercent = Math.min(excess/capacity, 1f);</b>
+<b class="fc">&nbsp;        if(Mathf.equal(capacity, 0f)) return 0f;</b>
+&nbsp;
+<b class="fc">&nbsp;        var items = batteries.items;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; batteries.size; i++){</b>
+<b class="fc">&nbsp;            var battery = items[i];</b>
+&nbsp;            //TODO why would it be 0
+<b class="fc">&nbsp;            if(battery.enabled &amp;&amp; battery.block.consPower.capacity &gt; 0f){</b>
+<b class="fc">&nbsp;                battery.power.status += (1f - battery.power.status) * chargedPercent;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return Math.min(excess, capacity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void distributePower(float needed, float produced, boolean charged){
+&nbsp;        //distribute even if not needed. this is because some might be requiring power but not using it; it updates consumers
+<b class="fc">&nbsp;        float coverage = Mathf.zero(needed) &amp;&amp; Mathf.zero(produced) &amp;&amp; !charged &amp;&amp; Mathf.zero(lastPowerStored) ? 0f : Mathf.zero(needed) ? 1f : Math.min(1, produced / needed);</b>
+<b class="fc">&nbsp;        var items = consumers.items;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; consumers.size; i++){</b>
+<b class="fc">&nbsp;            var consumer = items[i];</b>
+&nbsp;            //TODO how would it even be null
+<b class="fc">&nbsp;            var cons = consumer.block.consPower;</b>
+<b class="fc">&nbsp;            if(cons.buffered){</b>
+<b class="nc">&nbsp;                if(!Mathf.zero(cons.capacity)){</b>
+&nbsp;                    // Add an equal percentage of power to all buffers, based on the global power coverage in this graph
+<b class="nc">&nbsp;                    float maximumRate = cons.requestedPower(consumer) * coverage * consumer.delta();</b>
+<b class="nc">&nbsp;                    consumer.power.status = Mathf.clamp(consumer.power.status + maximumRate / cons.capacity);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }else{
+&nbsp;                //valid consumers get power as usual
+<b class="fc">&nbsp;                if(consumer.shouldConsumePower){</b>
+<b class="fc">&nbsp;                    consumer.power.status = coverage;</b>
+&nbsp;                }else{ //invalid consumers get an estimate, if they were to activate
+<b class="fc">&nbsp;                    consumer.power.status = Math.min(1, produced / (needed + cons.usage * consumer.delta()));</b>
+&nbsp;                    //just in case
+<b class="fc">&nbsp;                    if(Float.isNaN(consumer.power.status)){</b>
+<b class="nc">&nbsp;                        consumer.power.status = 0f;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(){
+<b class="fc">&nbsp;        if(!consumers.isEmpty() &amp;&amp; consumers.first().cheating()){</b>
+&nbsp;            //when cheating, just set status to 1
+<b class="nc">&nbsp;            for(Building tile : consumers){</b>
+<b class="nc">&nbsp;                tile.power.status = 1f;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            lastPowerNeeded = lastPowerProduced = 1f;</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        float powerNeeded = getPowerNeeded();</b>
+<b class="fc">&nbsp;        float powerProduced = getPowerProduced();</b>
+&nbsp;
+<b class="fc">&nbsp;        lastPowerNeeded = powerNeeded;</b>
+<b class="fc">&nbsp;        lastPowerProduced = powerProduced;</b>
+&nbsp;
+<b class="fc">&nbsp;        lastScaledPowerIn = (powerProduced + energyDelta) / Time.delta;</b>
+<b class="fc">&nbsp;        lastScaledPowerOut = powerNeeded / Time.delta;</b>
+<b class="fc">&nbsp;        lastCapacity = getTotalBatteryCapacity();</b>
+<b class="fc">&nbsp;        lastPowerStored = getBatteryStored();</b>
+&nbsp;
+<b class="fc">&nbsp;        powerBalance.add((lastPowerProduced - lastPowerNeeded + energyDelta) / Time.delta);</b>
+<b class="fc">&nbsp;        energyDelta = 0f;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(!(consumers.size == 0 &amp;&amp; producers.size == 0 &amp;&amp; batteries.size == 0)){</b>
+<b class="fc">&nbsp;            boolean charged = false;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(!Mathf.equal(powerNeeded, powerProduced)){</b>
+<b class="fc">&nbsp;                if(powerNeeded &gt; powerProduced){</b>
+<b class="fc">&nbsp;                    float powerBatteryUsed = useBatteries(powerNeeded - powerProduced);</b>
+<b class="fc">&nbsp;                    powerProduced += powerBatteryUsed;</b>
+<b class="fc">&nbsp;                    lastPowerProduced += powerBatteryUsed;</b>
+<b class="fc">&nbsp;                }else if(powerProduced &gt; powerNeeded){</b>
+<b class="fc">&nbsp;                    charged = true;</b>
+<b class="fc">&nbsp;                    powerProduced -= chargeBatteries(powerProduced - powerNeeded);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            distributePower(powerNeeded, powerProduced, charged);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addGraph(PowerGraph graph){
+<b class="fc">&nbsp;        if(graph == this) return;</b>
+&nbsp;
+&nbsp;        //merge into other graph instead.
+<b class="fc">&nbsp;        if(graph.all.size &gt; all.size){</b>
+<b class="fc">&nbsp;            graph.addGraph(this);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;        //other entity should be removed as the graph was merged
+<b class="fc">&nbsp;        if(graph.entity != null) graph.entity.remove();</b>
+&nbsp;
+<b class="fc">&nbsp;        for(Building tile : graph.all){</b>
+<b class="fc">&nbsp;            add(tile);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;        checkAdd();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(Building build){
+<b class="fc">&nbsp;        if(build == null || build.power == null) return;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(build.power.graph != this || !build.power.init){</b>
+&nbsp;            //any old graph that is added here MUST be invalid, remove it
+<b class="fc">&nbsp;            if(build.power.graph != null &amp;&amp; build.power.graph != this){</b>
+<b class="fc">&nbsp;                if(build.power.graph.entity != null) build.power.graph.entity.remove();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            build.power.graph = this;</b>
+<b class="fc">&nbsp;            build.power.init = true;</b>
+<b class="fc">&nbsp;            all.add(build);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(build.block.outputsPower &amp;&amp; build.block.consumesPower &amp;&amp; !build.block.consPower.buffered){</b>
+<b class="fc">&nbsp;                producers.add(build);</b>
+<b class="fc">&nbsp;                consumers.add(build);</b>
+<b class="fc">&nbsp;            }else if(build.block.outputsPower &amp;&amp; build.block.consumesPower){</b>
+<b class="fc">&nbsp;                batteries.add(build);</b>
+<b class="fc">&nbsp;            }else if(build.block.outputsPower){</b>
+<b class="fc">&nbsp;                producers.add(build);</b>
+<b class="fc">&nbsp;            }else if(build.block.consumesPower &amp;&amp; build.block.consPower != null){</b>
+<b class="fc">&nbsp;                consumers.add(build);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void checkAdd(){
+<b class="fc">&nbsp;        if(entity != null) entity.add();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clear(){
+<b class="nc">&nbsp;        all.clear();</b>
+<b class="nc">&nbsp;        producers.clear();</b>
+<b class="nc">&nbsp;        consumers.clear();</b>
+<b class="nc">&nbsp;        batteries.clear();</b>
+&nbsp;        //nothing left
+<b class="nc">&nbsp;        if(entity != null) entity.remove();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reflow(Building tile){
+<b class="nc">&nbsp;        queue.clear();</b>
+<b class="nc">&nbsp;        queue.addLast(tile);</b>
+<b class="nc">&nbsp;        closedSet.clear();</b>
+<b class="nc">&nbsp;        while(queue.size &gt; 0){</b>
+<b class="nc">&nbsp;            Building child = queue.removeFirst();</b>
+<b class="nc">&nbsp;            add(child);</b>
+<b class="nc">&nbsp;            checkAdd();</b>
+<b class="nc">&nbsp;            for(Building next : child.getPowerConnections(outArray2)){</b>
+<b class="nc">&nbsp;                if(closedSet.add(next.pos())){</b>
+<b class="nc">&nbsp;                    queue.addLast(next);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Used for unit tests only. */
+&nbsp;    public void removeList(Building build){
+<b class="fc">&nbsp;        all.remove(build);</b>
+<b class="fc">&nbsp;        producers.remove(build);</b>
+<b class="fc">&nbsp;        consumers.remove(build);</b>
+<b class="fc">&nbsp;        batteries.remove(build);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Note that this does not actually remove the building from the graph;
+&nbsp;     * it creates *new* graphs that contain the correct buildings. Doing this invalidates the graph. */
+&nbsp;    public void remove(Building tile){
+&nbsp;
+&nbsp;        //go through all the connections of this tile
+<b class="fc">&nbsp;        for(Building other : tile.getPowerConnections(outArray1)){</b>
+&nbsp;            //a graph has already been assigned to this tile from a previous call, skip it
+<b class="fc">&nbsp;            if(other.power.graph != this) continue;</b>
+&nbsp;
+&nbsp;            //create graph for this branch
+<b class="fc">&nbsp;            PowerGraph graph = new PowerGraph();</b>
+<b class="fc">&nbsp;            graph.checkAdd();</b>
+<b class="fc">&nbsp;            graph.add(other);</b>
+&nbsp;            //add to queue for BFS
+<b class="fc">&nbsp;            queue.clear();</b>
+<b class="fc">&nbsp;            queue.addLast(other);</b>
+<b class="fc">&nbsp;            while(queue.size &gt; 0){</b>
+&nbsp;                //get child from queue
+<b class="fc">&nbsp;                Building child = queue.removeFirst();</b>
+&nbsp;                //add it to the new branch graph
+<b class="fc">&nbsp;                graph.add(child);</b>
+&nbsp;                //go through connections
+<b class="fc">&nbsp;                for(Building next : child.getPowerConnections(outArray2)){</b>
+&nbsp;                    //make sure it hasn&#39;t looped back, and that the new graph being assigned hasn&#39;t already been assigned
+&nbsp;                    //also skip closed tiles
+<b class="fc">&nbsp;                    if(next != tile &amp;&amp; next.power.graph != graph){</b>
+<b class="fc">&nbsp;                        graph.add(next);</b>
+<b class="fc">&nbsp;                        queue.addLast(next);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;            //update the graph once so direct consumers without any connected producer lose their power
+<b class="fc">&nbsp;            graph.update();</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //implied empty graph here
+<b class="fc">&nbsp;        if(entity != null) entity.remove();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getId(){
+<b class="nc">&nbsp;        return graphID;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return &quot;PowerGraph{&quot; +</b>
+&nbsp;        &quot;producers=&quot; + producers +
+&nbsp;        &quot;, consumers=&quot; + consumers +
+&nbsp;        &quot;, batteries=&quot; + batteries +
+&nbsp;        &quot;, all=&quot; + all +
+&nbsp;        &quot;, graphID=&quot; + graphID +
+&nbsp;        &#39;}&#39;;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

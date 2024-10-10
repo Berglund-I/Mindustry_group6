@@ -1,0 +1,262 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Wall</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense</a>
+</div>
+
+<h1>Coverage Summary for Class: Wall (mindustry.world.blocks.defense)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Wall</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (18/24)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Wall$WallBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.1%
+  </span>
+  <span class="absValue">
+    (1/32)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.9%
+  </span>
+  <span class="absValue">
+    (19/56)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Wall extends Block{
+&nbsp;    /** Lighting chance. -1 to disable */
+<b class="fc">&nbsp;    public float lightningChance = -1f;</b>
+<b class="fc">&nbsp;    public float lightningDamage = 20f;</b>
+<b class="fc">&nbsp;    public int lightningLength = 17;</b>
+<b class="fc">&nbsp;    public Color lightningColor = Pal.surge;</b>
+<b class="fc">&nbsp;    public Sound lightningSound = Sounds.spark;</b>
+&nbsp;
+&nbsp;    /** Bullet deflection chance. -1 to disable */
+<b class="fc">&nbsp;    public float chanceDeflect = -1f;</b>
+&nbsp;    public boolean flashHit;
+<b class="fc">&nbsp;    public Color flashColor = Color.white;</b>
+<b class="fc">&nbsp;    public Sound deflectSound = Sounds.none;</b>
+&nbsp;
+&nbsp;    public Wall(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        destructible = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.walls;</b>
+<b class="fc">&nbsp;        buildCostMultiplier = 6f;</b>
+<b class="fc">&nbsp;        canOverdrive = false;</b>
+<b class="fc">&nbsp;        drawDisabled = false;</b>
+<b class="fc">&nbsp;        crushDamageMultiplier = 5f;</b>
+<b class="fc">&nbsp;        priority = TargetPriority.wall;</b>
+&nbsp;
+&nbsp;        //it&#39;s a wall of course it&#39;s supported everywhere
+<b class="fc">&nbsp;        envEnabled = Env.any;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(chanceDeflect &gt; 0f) stats.add(Stat.baseDeflectChance, chanceDeflect, StatUnit.none);</b>
+<b class="nc">&nbsp;        if(lightningChance &gt; 0f){</b>
+<b class="nc">&nbsp;            stats.add(Stat.lightningChance, lightningChance * 100f, StatUnit.percent);</b>
+<b class="nc">&nbsp;            stats.add(Stat.lightningDamage, lightningDamage, StatUnit.none);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{Core.atlas.find(Core.atlas.has(name) ? name : name + &quot;1&quot;)};</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class WallBuild extends Building{</b>
+&nbsp;        public float hit;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+&nbsp;            //draw flashing white overlay if enabled
+<b class="nc">&nbsp;            if(flashHit){</b>
+<b class="nc">&nbsp;                if(hit &lt; 0.0001f) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.color(flashColor);</b>
+<b class="nc">&nbsp;                Draw.alpha(hit * 0.5f);</b>
+<b class="nc">&nbsp;                Draw.blend(Blending.additive);</b>
+<b class="nc">&nbsp;                Fill.rect(x, y, tilesize * size, tilesize * size);</b>
+<b class="nc">&nbsp;                Draw.blend();</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!state.isPaused()){</b>
+<b class="nc">&nbsp;                    hit = Mathf.clamp(hit - Time.delta / 10f);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean collision(Bullet bullet){
+<b class="nc">&nbsp;            super.collision(bullet);</b>
+&nbsp;
+<b class="nc">&nbsp;            hit = 1f;</b>
+&nbsp;
+&nbsp;            //create lightning if necessary
+<b class="nc">&nbsp;            if(lightningChance &gt; 0f){</b>
+<b class="nc">&nbsp;                if(Mathf.chance(lightningChance)){</b>
+<b class="nc">&nbsp;                    Lightning.create(team, lightningColor, lightningDamage, x, y, bullet.rotation() + 180f, lightningLength);</b>
+<b class="nc">&nbsp;                    lightningSound.at(tile, Mathf.random(0.9f, 1.1f));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //deflect bullets if necessary
+<b class="nc">&nbsp;            if(chanceDeflect &gt; 0f){</b>
+&nbsp;                //slow bullets are not deflected
+<b class="nc">&nbsp;                if(bullet.vel.len() &lt;= 0.1f || !bullet.type.reflectable) return true;</b>
+&nbsp;
+&nbsp;                //bullet reflection chance depends on bullet damage
+<b class="nc">&nbsp;                if(!Mathf.chance(chanceDeflect / bullet.damage())) return true;</b>
+&nbsp;
+&nbsp;                //make sound
+<b class="nc">&nbsp;                deflectSound.at(tile, Mathf.random(0.9f, 1.1f));</b>
+&nbsp;
+&nbsp;                //translate bullet back to where it was upon collision
+<b class="nc">&nbsp;                bullet.trns(-bullet.vel.x, -bullet.vel.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                float penX = Math.abs(x - bullet.x), penY = Math.abs(y - bullet.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(penX &gt; penY){</b>
+<b class="nc">&nbsp;                    bullet.vel.x *= -1;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    bullet.vel.y *= -1;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                bullet.owner = this;</b>
+<b class="nc">&nbsp;                bullet.team = team;</b>
+<b class="nc">&nbsp;                bullet.time += 1f;</b>
+&nbsp;
+&nbsp;                //disable bullet collision by returning false
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

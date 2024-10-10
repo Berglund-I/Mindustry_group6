@@ -1,0 +1,366 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LightRenderer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: LightRenderer (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LightRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/146)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LightRenderer$CircleLight</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/151)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.gl.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Renders overlay lights. Client only. */
+<b class="nc">&nbsp;public class LightRenderer{</b>
+&nbsp;    private static final int scaling = 4;
+&nbsp;
+<b class="nc">&nbsp;    private float[] vertices = new float[24];</b>
+<b class="nc">&nbsp;    private FrameBuffer buffer = new FrameBuffer();</b>
+<b class="nc">&nbsp;    private Seq&lt;Runnable&gt; lights = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    private Seq&lt;CircleLight&gt; circles = new Seq&lt;&gt;(CircleLight.class);</b>
+<b class="nc">&nbsp;    private int circleIndex = 0;</b>
+&nbsp;    private TextureRegion circleRegion;
+&nbsp;
+&nbsp;    public void add(Runnable run){
+<b class="nc">&nbsp;        if(!enabled()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        lights.add(run);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(float x, float y, float radius, Color color, float opacity){
+<b class="nc">&nbsp;        if(!enabled() || radius &lt;= 0f) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float res = Color.toFloatBits(color.r, color.g, color.b, opacity);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(circles.size &lt;= circleIndex) circles.add(new CircleLight());</b>
+&nbsp;
+&nbsp;        //pool circles to prevent runaway GC usage from lambda capturing
+<b class="nc">&nbsp;        var light = circles.items[circleIndex];</b>
+<b class="nc">&nbsp;        light.set(x, y, res, radius);</b>
+&nbsp;
+<b class="nc">&nbsp;        circleIndex ++;</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    public void add(float x, float y, TextureRegion region, Color color, float opacity){
+<b class="nc">&nbsp;        add(x, y, region, 0f, color, opacity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(float x, float y, TextureRegion region, float rotation, Color color, float opacity){
+<b class="nc">&nbsp;        if(!enabled()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float res = color.toFloatBits();</b>
+<b class="nc">&nbsp;        float xscl = Draw.xscl, yscl = Draw.yscl;</b>
+<b class="nc">&nbsp;        add(() -&gt; {</b>
+<b class="nc">&nbsp;            Draw.color(res);</b>
+<b class="nc">&nbsp;            Draw.alpha(opacity);</b>
+<b class="nc">&nbsp;            Draw.scl(xscl, yscl);</b>
+<b class="nc">&nbsp;            Draw.rect(region, x, y, rotation);</b>
+<b class="nc">&nbsp;            Draw.scl();</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void line(float x, float y, float x2, float y2, float stroke, Color tint, float alpha){
+<b class="nc">&nbsp;        if(!enabled()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        add(() -&gt; {</b>
+<b class="nc">&nbsp;            Draw.color(tint, alpha);</b>
+&nbsp;
+<b class="nc">&nbsp;            float rot = Mathf.angleExact(x2 - x, y2 - y);</b>
+<b class="nc">&nbsp;            TextureRegion ledge = Core.atlas.find(&quot;circle-end&quot;), lmid = Core.atlas.find(&quot;circle-mid&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            float color = Draw.getColorPacked();</b>
+<b class="nc">&nbsp;            float u = lmid.u;</b>
+<b class="nc">&nbsp;            float v = lmid.v2;</b>
+<b class="nc">&nbsp;            float u2 = lmid.u2;</b>
+<b class="nc">&nbsp;            float v2 = lmid.v;</b>
+&nbsp;
+<b class="nc">&nbsp;            Vec2 v1 = Tmp.v1.trnsExact(rot + 90f, stroke);</b>
+<b class="nc">&nbsp;            float lx1 = x - v1.x, ly1 = y - v1.y,</b>
+<b class="nc">&nbsp;            lx2 = x + v1.x, ly2 = y + v1.y,</b>
+<b class="nc">&nbsp;            lx3 = x2 + v1.x, ly3 = y2 + v1.y,</b>
+<b class="nc">&nbsp;            lx4 = x2 - v1.x, ly4 = y2 - v1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[0] = lx1;</b>
+<b class="nc">&nbsp;            vertices[1] = ly1;</b>
+<b class="nc">&nbsp;            vertices[2] = color;</b>
+<b class="nc">&nbsp;            vertices[3] = u;</b>
+<b class="nc">&nbsp;            vertices[4] = v;</b>
+<b class="nc">&nbsp;            vertices[5] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[6] = lx2;</b>
+<b class="nc">&nbsp;            vertices[7] = ly2;</b>
+<b class="nc">&nbsp;            vertices[8] = color;</b>
+<b class="nc">&nbsp;            vertices[9] = u;</b>
+<b class="nc">&nbsp;            vertices[10] = v2;</b>
+<b class="nc">&nbsp;            vertices[11] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[12] = lx3;</b>
+<b class="nc">&nbsp;            vertices[13] = ly3;</b>
+<b class="nc">&nbsp;            vertices[14] = color;</b>
+<b class="nc">&nbsp;            vertices[15] = u2;</b>
+<b class="nc">&nbsp;            vertices[16] = v2;</b>
+<b class="nc">&nbsp;            vertices[17] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[18] = lx4;</b>
+<b class="nc">&nbsp;            vertices[19] = ly4;</b>
+<b class="nc">&nbsp;            vertices[20] = color;</b>
+<b class="nc">&nbsp;            vertices[21] = u2;</b>
+<b class="nc">&nbsp;            vertices[22] = v;</b>
+<b class="nc">&nbsp;            vertices[23] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.vert(ledge.texture, vertices, 0, vertices.length);</b>
+&nbsp;
+<b class="nc">&nbsp;            Vec2 v3 = Tmp.v2.trnsExact(rot, stroke);</b>
+&nbsp;
+<b class="nc">&nbsp;            u = ledge.u;</b>
+<b class="nc">&nbsp;            v = ledge.v2;</b>
+<b class="nc">&nbsp;            u2 = ledge.u2;</b>
+<b class="nc">&nbsp;            v2 = ledge.v;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[0] = lx4;</b>
+<b class="nc">&nbsp;            vertices[1] = ly4;</b>
+<b class="nc">&nbsp;            vertices[2] = color;</b>
+<b class="nc">&nbsp;            vertices[3] = u;</b>
+<b class="nc">&nbsp;            vertices[4] = v;</b>
+<b class="nc">&nbsp;            vertices[5] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[6] = lx3;</b>
+<b class="nc">&nbsp;            vertices[7] = ly3;</b>
+<b class="nc">&nbsp;            vertices[8] = color;</b>
+<b class="nc">&nbsp;            vertices[9] = u;</b>
+<b class="nc">&nbsp;            vertices[10] = v2;</b>
+<b class="nc">&nbsp;            vertices[11] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[12] = lx3 + v3.x;</b>
+<b class="nc">&nbsp;            vertices[13] = ly3 + v3.y;</b>
+<b class="nc">&nbsp;            vertices[14] = color;</b>
+<b class="nc">&nbsp;            vertices[15] = u2;</b>
+<b class="nc">&nbsp;            vertices[16] = v2;</b>
+<b class="nc">&nbsp;            vertices[17] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[18] = lx4 + v3.x;</b>
+<b class="nc">&nbsp;            vertices[19] = ly4 + v3.y;</b>
+<b class="nc">&nbsp;            vertices[20] = color;</b>
+<b class="nc">&nbsp;            vertices[21] = u2;</b>
+<b class="nc">&nbsp;            vertices[22] = v;</b>
+<b class="nc">&nbsp;            vertices[23] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.vert(ledge.texture, vertices, 0, vertices.length);</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[0] = lx2;</b>
+<b class="nc">&nbsp;            vertices[1] = ly2;</b>
+<b class="nc">&nbsp;            vertices[2] = color;</b>
+<b class="nc">&nbsp;            vertices[3] = u;</b>
+<b class="nc">&nbsp;            vertices[4] = v;</b>
+<b class="nc">&nbsp;            vertices[5] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[6] = lx1;</b>
+<b class="nc">&nbsp;            vertices[7] = ly1;</b>
+<b class="nc">&nbsp;            vertices[8] = color;</b>
+<b class="nc">&nbsp;            vertices[9] = u;</b>
+<b class="nc">&nbsp;            vertices[10] = v2;</b>
+<b class="nc">&nbsp;            vertices[11] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[12] = lx1 - v3.x;</b>
+<b class="nc">&nbsp;            vertices[13] = ly1 - v3.y;</b>
+<b class="nc">&nbsp;            vertices[14] = color;</b>
+<b class="nc">&nbsp;            vertices[15] = u2;</b>
+<b class="nc">&nbsp;            vertices[16] = v2;</b>
+<b class="nc">&nbsp;            vertices[17] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            vertices[18] = lx2 - v3.x;</b>
+<b class="nc">&nbsp;            vertices[19] = ly2 - v3.y;</b>
+<b class="nc">&nbsp;            vertices[20] = color;</b>
+<b class="nc">&nbsp;            vertices[21] = u2;</b>
+<b class="nc">&nbsp;            vertices[22] = v;</b>
+<b class="nc">&nbsp;            vertices[23] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.vert(ledge.texture, vertices, 0, vertices.length);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean enabled(){
+<b class="nc">&nbsp;        return state.rules.lighting &amp;&amp; state.rules.ambientLight.a &gt; 0.0001f &amp;&amp; renderer.drawLight;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        if(!Vars.enableLight){</b>
+<b class="nc">&nbsp;            lights.clear();</b>
+<b class="nc">&nbsp;            circleIndex = 0;</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(circleRegion == null) circleRegion = Core.atlas.find(&quot;circle-shadow&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        buffer.resize(Core.graphics.getWidth()/scaling, Core.graphics.getHeight()/scaling);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color();</b>
+<b class="nc">&nbsp;        buffer.begin(Color.clear);</b>
+<b class="nc">&nbsp;        Draw.sort(false);</b>
+<b class="nc">&nbsp;        Gl.blendEquationSeparate(Gl.funcAdd, Gl.max);</b>
+&nbsp;        //apparently necessary
+<b class="nc">&nbsp;        Blending.normal.apply();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Runnable run : lights){</b>
+<b class="nc">&nbsp;            run.run();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; circleIndex; i++){</b>
+<b class="nc">&nbsp;            var cir = circles.items[i];</b>
+<b class="nc">&nbsp;            Draw.color(cir.color);</b>
+<b class="nc">&nbsp;            Draw.rect(circleRegion, cir.x, cir.y, cir.radius * 2, cir.radius * 2);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Draw.sort(true);</b>
+<b class="nc">&nbsp;        buffer.end();</b>
+<b class="nc">&nbsp;        Gl.blendEquationSeparate(Gl.funcAdd, Gl.funcAdd);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color();</b>
+<b class="nc">&nbsp;        Shaders.light.ambient.set(state.rules.ambientLight);</b>
+<b class="nc">&nbsp;        buffer.blit(Shaders.light);</b>
+&nbsp;
+<b class="nc">&nbsp;        lights.clear();</b>
+<b class="nc">&nbsp;        circleIndex = 0;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static class CircleLight{</b>
+&nbsp;        float x, y, color, radius;
+&nbsp;
+&nbsp;        public void set(float x, float y, float color, float radius){
+<b class="nc">&nbsp;            this.x = x;</b>
+<b class="nc">&nbsp;            this.y = y;</b>
+<b class="nc">&nbsp;            this.color = color;</b>
+<b class="nc">&nbsp;            this.radius = radius;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

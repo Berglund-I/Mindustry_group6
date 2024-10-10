@@ -1,0 +1,421 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > OverlayRenderer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: OverlayRenderer (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OverlayRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/140)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">OverlayRenderer$CoreEdge</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/152)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class OverlayRenderer{
+&nbsp;    private static final float indicatorLength = 14f;
+&nbsp;    private static final float spawnerMargin = tilesize*11f;
+<b class="nc">&nbsp;    private static final Rect rect = new Rect();</b>
+&nbsp;
+&nbsp;    private float buildFade, unitFade;
+&nbsp;    private Sized lastSelect;
+<b class="nc">&nbsp;    private Seq&lt;CoreEdge&gt; cedges = new Seq&lt;&gt;();</b>
+&nbsp;    private boolean updatedCores;
+&nbsp;
+<b class="nc">&nbsp;    public OverlayRenderer(){</b>
+<b class="nc">&nbsp;        Events.on(WorldLoadEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            updatedCores = true;</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(CoreChangeEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            updatedCores = true;</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateCoreEdges(){
+<b class="nc">&nbsp;        if(!updatedCores){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        updatedCores = false;</b>
+<b class="nc">&nbsp;        cedges.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Vec2&gt; pos = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        Seq&lt;CoreBuild&gt; teams = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        for(TeamData team : state.teams.active){</b>
+<b class="nc">&nbsp;            for(CoreBuild b : team.cores){</b>
+<b class="nc">&nbsp;                teams.add(b);</b>
+<b class="nc">&nbsp;                pos.add(new Vec2(b.x, b.y));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(pos.isEmpty()){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;        //if this is laggy, it could be shoved in another thread.
+<b class="nc">&nbsp;        var result = Voronoi.generate(pos.toArray(Vec2.class), 0, world.unitWidth(), 0, world.unitHeight());</b>
+<b class="nc">&nbsp;        for(var edge : result){</b>
+<b class="nc">&nbsp;            cedges.add(new CoreEdge(edge.x1, edge.y1, edge.x2, edge.y2, teams.get(edge.site1).team, teams.get(edge.site2).team));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBottom(){
+<b class="nc">&nbsp;        InputHandler input = control.input;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(player.dead()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(player.isBuilder()){</b>
+<b class="nc">&nbsp;            player.unit().drawBuildPlans();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        input.drawBottom();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawTop(){
+&nbsp;
+<b class="nc">&nbsp;        if(!player.dead() &amp;&amp; ui.hudfrag.shown){</b>
+<b class="nc">&nbsp;            if(Core.settings.getBool(&quot;playerindicators&quot;)){</b>
+<b class="nc">&nbsp;                for(Player player : Groups.player){</b>
+<b class="nc">&nbsp;                    if(Vars.player != player &amp;&amp; Vars.player.team() == player.team()){</b>
+<b class="nc">&nbsp;                        if(!rect.setSize(Core.camera.width * 0.9f, Core.camera.height * 0.9f)</b>
+<b class="nc">&nbsp;                        .setCenter(Core.camera.position.x, Core.camera.position.y).contains(player.x, player.y)){</b>
+&nbsp;
+<b class="nc">&nbsp;                            Tmp.v1.set(player).sub(Vars.player).setLength(indicatorLength);</b>
+&nbsp;
+<b class="nc">&nbsp;                            Lines.stroke(2f, Vars.player.team().color);</b>
+<b class="nc">&nbsp;                            Lines.lineAngle(Vars.player.x + Tmp.v1.x, Vars.player.y + Tmp.v1.y, Tmp.v1.angle(), 4f);</b>
+<b class="nc">&nbsp;                            Draw.reset();</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Core.settings.getBool(&quot;indicators&quot;) &amp;&amp; !state.rules.fog){</b>
+<b class="nc">&nbsp;                Groups.unit.each(unit -&gt; {</b>
+<b class="nc">&nbsp;                    if(!unit.isLocal() &amp;&amp; unit.team != player.team() &amp;&amp; !rect.setSize(Core.camera.width * 0.9f, Core.camera.height * 0.9f)</b>
+<b class="nc">&nbsp;                    .setCenter(Core.camera.position.x, Core.camera.position.y).contains(unit.x, unit.y)){</b>
+<b class="nc">&nbsp;                        Tmp.v1.set(unit.x, unit.y).sub(player).setLength(indicatorLength);</b>
+&nbsp;
+<b class="nc">&nbsp;                        Lines.stroke(1f, unit.team().color);</b>
+<b class="nc">&nbsp;                        Lines.lineAngle(player.x + Tmp.v1.x, player.y + Tmp.v1.y, Tmp.v1.angle(), 3f);</b>
+<b class="nc">&nbsp;                        Draw.reset();</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(player.dead()) return; //dead players don&#39;t draw</b>
+&nbsp;
+<b class="nc">&nbsp;        InputHandler input = control.input;</b>
+&nbsp;
+<b class="nc">&nbsp;        Sized select = input.selectedUnit();</b>
+<b class="nc">&nbsp;        if(select == null) select = input.selectedControlBuild();</b>
+<b class="nc">&nbsp;        if(!Core.input.keyDown(Binding.control) || !state.rules.possessionAllowed) select = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        unitFade = Mathf.lerpDelta(unitFade, Mathf.num(select != null), 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(select != null) lastSelect = select;</b>
+<b class="nc">&nbsp;        if(select == null) select = lastSelect;</b>
+<b class="nc">&nbsp;        if(select != null &amp;&amp; (!(select instanceof Unitc u) || u.isAI())){</b>
+<b class="nc">&nbsp;            Draw.mixcol(Pal.accent, 1f);</b>
+<b class="nc">&nbsp;            Draw.alpha(unitFade);</b>
+<b class="nc">&nbsp;            Building build = (select instanceof BlockUnitc b ? b.tile() : select instanceof Building b ? b : null);</b>
+<b class="nc">&nbsp;            TextureRegion region = build != null ? build.block.fullIcon : Core.atlas.white();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!(select instanceof Unitc)){</b>
+<b class="nc">&nbsp;                Draw.rect(region, select.getX(), select.getY());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                float rot = i * 90f + 45f + (-Time.time) % 360f;</b>
+<b class="nc">&nbsp;                float length = select.hitSize() * 1.5f + (unitFade * 2.5f);</b>
+<b class="nc">&nbsp;                Draw.rect(&quot;select-arrow&quot;, select.getX() + Angles.trnsx(rot, length), select.getY() + Angles.trnsy(rot, length), length / 1.9f, length / 1.9f, rot - 135f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //draw config selected block
+<b class="nc">&nbsp;        if(input.config.isShown()){</b>
+<b class="nc">&nbsp;            Building tile = input.config.getSelected();</b>
+<b class="nc">&nbsp;            tile.drawConfigure();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        input.drawTop();</b>
+&nbsp;
+<b class="nc">&nbsp;        buildFade = Mathf.lerpDelta(buildFade, input.isPlacing() || input.isUsingSchematic() ? 1f : 0f, 0.06f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Lines.stroke(buildFade * 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(buildFade &gt; 0.005f){</b>
+<b class="nc">&nbsp;            if(state.rules.polygonCoreProtection){</b>
+<b class="nc">&nbsp;                updateCoreEdges();</b>
+<b class="nc">&nbsp;                Draw.color(Pal.accent);</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; 2; i++){</b>
+<b class="nc">&nbsp;                    float offset = (i == 0 ? -2f : 0f);</b>
+<b class="nc">&nbsp;                    for(CoreEdge edge : cedges){</b>
+<b class="nc">&nbsp;                        Team displayed = edge.displayed();</b>
+<b class="nc">&nbsp;                        if(displayed != null){</b>
+<b class="nc">&nbsp;                            Draw.color(i == 0 ? Color.darkGray : Tmp.c1.set(displayed.color).lerp(Pal.accent, Mathf.absin(Time.time, 10f, 0.2f)));</b>
+<b class="nc">&nbsp;                            Lines.line(edge.x1, edge.y1 + offset, edge.x2, edge.y2 + offset);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Draw.color();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                state.teams.eachEnemyCore(player.team(), core -&gt; {</b>
+&nbsp;                    //it must be clear that there is a core here.
+<b class="nc">&nbsp;                    if(/*core.wasVisible &amp;&amp; */Core.camera.bounds(Tmp.r1).overlaps(Tmp.r2.setCentered(core.x, core.y, state.rules.enemyCoreBuildRadius * 2f))){</b>
+<b class="nc">&nbsp;                        Draw.color(Color.darkGray);</b>
+<b class="nc">&nbsp;                        Lines.circle(core.x, core.y - 2, state.rules.enemyCoreBuildRadius);</b>
+<b class="nc">&nbsp;                        Draw.color(Pal.accent, core.team.color, 0.5f + Mathf.absin(Time.time, 10f, 0.5f));</b>
+<b class="nc">&nbsp;                        Lines.circle(core.x, core.y, state.rules.enemyCoreBuildRadius);</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(2f);</b>
+<b class="nc">&nbsp;        Draw.color(Color.gray, Color.lightGray, Mathf.absin(Time.time, 8f, 1f));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.hasSpawns()){</b>
+<b class="nc">&nbsp;            for(Tile tile : spawner.getSpawns()){</b>
+<b class="nc">&nbsp;                if(tile.within(player.x, player.y, state.rules.dropZoneRadius + spawnerMargin)){</b>
+<b class="nc">&nbsp;                    Draw.alpha(Mathf.clamp(1f - (player.dst(tile) - state.rules.dropZoneRadius) / spawnerMargin));</b>
+<b class="nc">&nbsp;                    Lines.dashCircle(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+&nbsp;        //draw selected block
+<b class="nc">&nbsp;        if(input.block == null &amp;&amp; !Core.scene.hasMouse()){</b>
+<b class="nc">&nbsp;            Vec2 vec = Core.input.mouseWorld(input.getMouseX(), input.getMouseY());</b>
+<b class="nc">&nbsp;            Building build = world.buildWorld(vec.x, vec.y);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(build != null &amp;&amp; build.team == player.team()){</b>
+<b class="nc">&nbsp;                build.drawSelect();</b>
+<b class="nc">&nbsp;                if(!build.enabled &amp;&amp; build.block.drawDisabled){</b>
+<b class="nc">&nbsp;                   build.drawDisabled();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(Core.input.keyDown(Binding.rotateplaced) &amp;&amp; build.block.rotate &amp;&amp; build.block.quickRotate &amp;&amp; build.interactable(player.team())){</b>
+<b class="nc">&nbsp;                    control.input.drawArrow(build.block, build.tileX(), build.tileY(), build.rotation, true);</b>
+<b class="nc">&nbsp;                    Draw.color(Pal.accent, 0.3f + Mathf.absin(4f, 0.2f));</b>
+<b class="nc">&nbsp;                    Fill.square(build.x, build.y, build.block.size * tilesize/2f);</b>
+<b class="nc">&nbsp;                    Draw.color();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        input.drawOverSelect();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(ui.hudfrag.blockfrag.hover() instanceof Unit unit &amp;&amp; unit.controller() instanceof LogicAI ai &amp;&amp; ai.controller != null &amp;&amp; ai.controller.isValid()){</b>
+<b class="nc">&nbsp;            var build = ai.controller;</b>
+<b class="nc">&nbsp;            Drawf.square(build.x, build.y, build.block.size * tilesize/2f + 2f);</b>
+<b class="nc">&nbsp;            if(!unit.within(build, unit.hitSize * 2f)){</b>
+<b class="nc">&nbsp;                Drawf.arrow(unit.x, unit.y, build.x, build.y, unit.hitSize *2f, 4f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //draw selection overlay when dropping item
+<b class="nc">&nbsp;        if(input.isDroppingItem()){</b>
+<b class="nc">&nbsp;            Vec2 v = Core.input.mouseWorld(input.getMouseX(), input.getMouseY());</b>
+<b class="nc">&nbsp;            float size = 8;</b>
+<b class="nc">&nbsp;            Draw.rect(player.unit().item().fullIcon, v.x, v.y, size, size);</b>
+<b class="nc">&nbsp;            Draw.color(Pal.accent);</b>
+<b class="nc">&nbsp;            Lines.circle(v.x, v.y, 6 + Mathf.absin(Time.time, 5f, 1f));</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;            Building build = world.buildWorld(v.x, v.y);</b>
+<b class="nc">&nbsp;            if(input.canDropItem() &amp;&amp; build != null &amp;&amp; build.interactable(player.team()) &amp;&amp; build.acceptStack(player.unit().item(), player.unit().stack.amount, player.unit()) &gt; 0 &amp;&amp; player.within(build, itemTransferRange) &amp;&amp;</b>
+&nbsp;                input.itemDepositCooldown &lt;= 0f){
+&nbsp;
+<b class="nc">&nbsp;                boolean invalid = (state.rules.onlyDepositCore &amp;&amp; !(build instanceof CoreBuild));</b>
+&nbsp;
+<b class="nc">&nbsp;                Lines.stroke(3f, Pal.gray);</b>
+<b class="nc">&nbsp;                Lines.square(build.x, build.y, build.block.size * tilesize / 2f + 3 + Mathf.absin(Time.time, 5f, 1f));</b>
+<b class="nc">&nbsp;                Lines.stroke(1f, invalid ? Pal.remove : Pal.place);</b>
+<b class="nc">&nbsp;                Lines.square(build.x, build.y, build.block.size * tilesize / 2f + 2 + Mathf.absin(Time.time, 5f, 1f));</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(invalid){</b>
+<b class="nc">&nbsp;                    build.block.drawPlaceText(Core.bundle.get(&quot;bar.onlycoredeposit&quot;), build.tileX(), build.tileY(), false);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void checkApplySelection(Unit u){
+<b class="nc">&nbsp;        if(unitFade &gt; 0.001f &amp;&amp; lastSelect == u){</b>
+<b class="nc">&nbsp;            Color prev = Draw.getMixColor();</b>
+<b class="nc">&nbsp;            Draw.mixcol(prev.a &gt; 0.001f ? prev.lerp(Pal.accent, unitFade) : Pal.accent, Math.max(unitFade, prev.a));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class CoreEdge{
+&nbsp;        float x1, y1, x2, y2;
+&nbsp;        Team t1, t2;
+&nbsp;
+<b class="nc">&nbsp;        public CoreEdge(float x1, float y1, float x2, float y2, Team t1, Team t2){</b>
+<b class="nc">&nbsp;            this.x1 = x1;</b>
+<b class="nc">&nbsp;            this.y1 = y1;</b>
+<b class="nc">&nbsp;            this.x2 = x2;</b>
+<b class="nc">&nbsp;            this.y2 = y2;</b>
+<b class="nc">&nbsp;            this.t1 = t1;</b>
+<b class="nc">&nbsp;            this.t2 = t2;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        Team displayed(){
+&nbsp;            return
+<b class="nc">&nbsp;                t1 == t2 ? null :</b>
+<b class="nc">&nbsp;                t1 == player.team() ? t2 :</b>
+<b class="nc">&nbsp;                t2 == player.team() ? t1 :</b>
+<b class="nc">&nbsp;                t2.id == 0 ? t1 :</b>
+<b class="nc">&nbsp;                t1.id &lt; t2.id &amp;&amp; t1.id != 0 ? t1 : t2;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

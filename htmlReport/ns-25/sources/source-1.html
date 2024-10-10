@@ -1,0 +1,291 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AsteroidGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps.planet</a>
+</div>
+
+<h1>Coverage Summary for Class: AsteroidGenerator (mindustry.maps.planet)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AsteroidGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (1/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10.3%
+  </span>
+  <span class="absValue">
+    (7/68)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AsteroidGenerator$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    11.1%
+  </span>
+  <span class="absValue">
+    (1/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.7%
+  </span>
+  <span class="absValue">
+    (7/72)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps.planet;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.graphics.g3d.*;
+&nbsp;import mindustry.maps.generators.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class AsteroidGenerator extends BlankPlanetGenerator{</b>
+<b class="fc">&nbsp;    public int min = 20, max = 30, octaves = 2, foct = 3;</b>
+<b class="fc">&nbsp;    public float radMin = 12f, radMax = 60f, persistence = 0.4f, scale = 30f, mag = 0.46f, thresh = 1f;</b>
+<b class="fc">&nbsp;    public float fmag = 0.5f, fscl = 50f, fper = 0.6f;</b>
+<b class="fc">&nbsp;    public float stoneChance = 0f, iceChance = 0f, carbonChance = 0f, berylChance = 0f, ferricChance = 1f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float thoriumScl = 1f, copperScale = 1f, leadScale = 1f, graphiteScale = 1f, berylliumScale = 1f;</b>
+&nbsp;
+&nbsp;    @Nullable Rand rand;
+&nbsp;    int seed;
+&nbsp;
+&nbsp;    {
+<b class="fc">&nbsp;        defaultLoadout = Loadouts.basicNucleus;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void asteroid(int ax, int ay, int radius){
+&nbsp;        Floor floor = (
+<b class="nc">&nbsp;            rand.chance(iceChance) ? Blocks.ice :</b>
+<b class="nc">&nbsp;            rand.chance(carbonChance) ? Blocks.carbonStone :</b>
+<b class="nc">&nbsp;            rand.chance(berylChance) ? Blocks.beryllicStone :</b>
+<b class="nc">&nbsp;            rand.chance(ferricChance) ? Blocks.ferricStone :</b>
+<b class="nc">&nbsp;            Blocks.stone</b>
+<b class="nc">&nbsp;        ).asFloor();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = ax - radius; x &lt;= ax + radius; x++){</b>
+<b class="nc">&nbsp;            for(int y = ay - radius; y &lt;= ay + radius; y++){</b>
+<b class="nc">&nbsp;                if(tiles.in(x, y) &amp;&amp;  Mathf.dst(x, y, ax, ay) / radius + Simplex.noise2d(seed, octaves, persistence, 1f / scale, x, y) * mag &lt; thresh){</b>
+<b class="nc">&nbsp;                    tiles.getn(x, y).setFloor(floor);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void generate(){
+<b class="nc">&nbsp;        seed = state.rules.sector.planet.id;</b>
+<b class="nc">&nbsp;        int sx = width/2, sy = height/2;</b>
+<b class="nc">&nbsp;        rand = new Rand(seed);</b>
+&nbsp;
+<b class="nc">&nbsp;        Floor background = Blocks.empty.asFloor();</b>
+&nbsp;
+<b class="nc">&nbsp;        tiles.eachTile(t -&gt; t.setFloor(background));</b>
+&nbsp;
+&nbsp;        //spawn asteroids
+<b class="nc">&nbsp;        asteroid(sx, sy, rand.random(30, 50));</b>
+&nbsp;
+<b class="nc">&nbsp;        int amount = rand.random(min, max);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; amount; i++){</b>
+<b class="nc">&nbsp;            float radius = rand.random(radMin, radMax), ax = rand.random(radius, width - radius), ay = rand.random(radius, height - radius);</b>
+&nbsp;
+<b class="nc">&nbsp;            asteroid((int)ax, (int)ay, (int)radius);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //tiny asteroids
+<b class="nc">&nbsp;        int smalls = rand.random(min, max) * 3;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; smalls; i++){</b>
+<b class="nc">&nbsp;            float radius = rand.random(1, 8), ax = rand.random(radius, width - radius), ay = rand.random(radius, height - radius);</b>
+&nbsp;
+<b class="nc">&nbsp;            asteroid((int)ax, (int)ay, (int)radius);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //random noise stone
+<b class="nc">&nbsp;        pass((x, y) -&gt; {</b>
+<b class="nc">&nbsp;            if(floor != background){</b>
+<b class="nc">&nbsp;                if(Ridged.noise2d(seed, x, y, foct, fper, 1f / fscl) - Ridged.noise2d(seed, x, y, 1, 1f, 5f)/2.7f &gt; fmag){</b>
+<b class="nc">&nbsp;                    floor = Blocks.stone;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;        //walls at insides
+<b class="nc">&nbsp;        pass((x, y) -&gt; {</b>
+<b class="nc">&nbsp;            if(floor == background || Ridged.noise2d(seed + 1, x, y, 4, 0.7f, 1f / 60f) &gt; 0.45f || Mathf.within(x, y, sx, sy, 20 + Ridged.noise2d(seed, x, y, 3, 0.5f, 1f / 30f) * 6f)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            int radius = 6;</b>
+<b class="nc">&nbsp;            for(int dx = x - radius; dx &lt;= x + radius; dx++){</b>
+<b class="nc">&nbsp;                for(int dy = y - radius; dy &lt;= y + radius; dy++){</b>
+<b class="nc">&nbsp;                    if(Mathf.within(dx, dy, x, y, radius + 0.0001f) &amp;&amp; tiles.in(dx, dy) &amp;&amp; tiles.getn(dx, dy).floor() == background){</b>
+&nbsp;                        return;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            block = floor.asFloor().wall;</b>
+&nbsp;        });
+&nbsp;
+&nbsp;        //random craters
+<b class="nc">&nbsp;        pass((x, y) -&gt; {</b>
+<b class="nc">&nbsp;            if(floor == Blocks.ferricStone &amp;&amp; rand.chance(0.02)) floor = Blocks.ferricCraters;</b>
+<b class="nc">&nbsp;            if(floor == Blocks.stone &amp;&amp; rand.chance(0.02)) floor = Blocks.craters;</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        decoration(0.017f);</b>
+&nbsp;
+&nbsp;        //lead generates around stone walls
+<b class="nc">&nbsp;        oreAround(Blocks.oreLead, Blocks.stoneWall, 3, 70f, 0.6f * leadScale);</b>
+&nbsp;
+&nbsp;        //copper only generates on ferric stone
+<b class="nc">&nbsp;        ore(Blocks.oreCopper, Blocks.ferricStone, 5f, 0.8f * copperScale);</b>
+&nbsp;
+&nbsp;        //thorium only generates on beryllic stone and graphitic stone
+<b class="nc">&nbsp;        ore(Blocks.oreThorium, Blocks.beryllicStone, 4f, 0.9f * thoriumScl);</b>
+<b class="nc">&nbsp;        ore(Blocks.oreThorium, Blocks.carbonStone, 4f, 0.9f * thoriumScl);</b>
+&nbsp;
+<b class="nc">&nbsp;        wallOre(Blocks.carbonWall, Blocks.graphiticWall, 35f, 0.57f * graphiteScale);</b>
+&nbsp;
+<b class="nc">&nbsp;        wallOre(Blocks.beryllicStoneWall, Blocks.wallOreBeryllium, 50f, 0.62f * berylliumScale);</b>
+&nbsp;
+&nbsp;        //titanium
+<b class="nc">&nbsp;        pass((x, y) -&gt; {</b>
+<b class="nc">&nbsp;            if(floor != Blocks.stone) return;</b>
+<b class="nc">&nbsp;            int i = 4;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Math.abs(0.5f - noise(x, y + i*999 - x*1.5f, 2, 0.65, (60 + i * 2))) &gt; 0.26f * 1f){</b>
+<b class="nc">&nbsp;                ore = Blocks.oreTitanium;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        int spawnSide = rand.random(3);</b>
+<b class="nc">&nbsp;        int sizeOffset = width / 2 - 1;</b>
+<b class="nc">&nbsp;        tiles.getn(sizeOffset * Geometry.d8edge[spawnSide].x + width/2, sizeOffset * Geometry.d8edge[spawnSide].y + height/2).setOverlay(Blocks.spawn);</b>
+&nbsp;
+<b class="nc">&nbsp;        Schematics.placeLaunchLoadout(sx, sy);</b>
+&nbsp;
+<b class="nc">&nbsp;        state.rules.planetBackground = new PlanetParams(){{</b>
+<b class="nc">&nbsp;            planet = sector.planet;</b>
+<b class="nc">&nbsp;            zoom = 1f;</b>
+<b class="nc">&nbsp;            camPos = new Vec3(1.2388899f, 1.6047299f, 2.4758825f);</b>
+&nbsp;        }};
+&nbsp;
+<b class="nc">&nbsp;        state.rules.dragMultiplier = 0.7f; //yes, space actually has 0 drag but true 0% drag is very annoying</b>
+<b class="nc">&nbsp;        state.rules.borderDarkness = false;</b>
+<b class="nc">&nbsp;        state.rules.waves = true;</b>
+&nbsp;
+&nbsp;        //TODO ???
+&nbsp;        //state.rules.hiddenBuildItems.addAll(Items.plastanium, Items.surgeAlloy);
+&nbsp;        //TODO maybe make this on by default everywhere
+<b class="nc">&nbsp;        state.rules.showSpawns = true;</b>
+&nbsp;        //TODO better wavegen, do it by hand even
+<b class="nc">&nbsp;        state.rules.spawns = Waves.generate(0.5f, rand, false, true, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int getSectorSize(Sector sector){
+<b class="nc">&nbsp;        return 500;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

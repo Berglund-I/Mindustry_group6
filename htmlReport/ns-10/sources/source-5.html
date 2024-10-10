@@ -1,0 +1,454 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SWorkshop</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.desktop.steam</a>
+</div>
+
+<h1>Coverage Summary for Class: SWorkshop (mindustry.desktop.steam)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SWorkshop</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/162)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SWorkshop$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/180)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.desktop.steam;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import com.codedisaster.steamworks.*;
+&nbsp;import com.codedisaster.steamworks.SteamRemoteStorage.*;
+&nbsp;import com.codedisaster.steamworks.SteamUGC.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.mod.Mods.*;
+&nbsp;import mindustry.service.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class SWorkshop implements SteamUGCCallback{
+<b class="nc">&nbsp;    public final SteamUGC ugc = new SteamUGC(this);</b>
+&nbsp;
+<b class="nc">&nbsp;    private ObjectMap&lt;Class&lt;? extends Publishable&gt;, Seq&lt;Fi&gt;&gt; workshopFiles = new ObjectMap&lt;&gt;();</b>
+<b class="nc">&nbsp;    private ObjectMap&lt;SteamUGCQuery, Cons2&lt;Seq&lt;SteamUGCDetails&gt;, SteamResult&gt;&gt; detailHandlers = new ObjectMap&lt;&gt;();</b>
+<b class="nc">&nbsp;    private Seq&lt;Cons&lt;SteamPublishedFileID&gt;&gt; itemHandlers = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    private ObjectMap&lt;SteamPublishedFileID, Runnable&gt; updatedHandlers = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;    public SWorkshop(){</b>
+<b class="nc">&nbsp;        int items = ugc.getNumSubscribedItems();</b>
+<b class="nc">&nbsp;        SteamPublishedFileID[] ids = new SteamPublishedFileID[items];</b>
+<b class="nc">&nbsp;        ItemInstallInfo info = new ItemInstallInfo();</b>
+<b class="nc">&nbsp;        ugc.getSubscribedItems(ids);</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Fi&gt; folders = Seq.with(ids)</b>
+<b class="nc">&nbsp;            .map(f -&gt; !ugc.getItemInstallInfo(f, info) || info.getFolder() == null ? null : new Fi(info.getFolder()))</b>
+<b class="nc">&nbsp;            .select(f -&gt; f != null &amp;&amp; f.list().length &gt; 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        workshopFiles.put(Map.class, folders.select(f -&gt; f.list().length == 1 &amp;&amp; f.list()[0].extension().equals(mapExtension)).map(f -&gt; f.list()[0]));</b>
+<b class="nc">&nbsp;        workshopFiles.put(Schematic.class, folders.select(f -&gt; f.list().length == 1 &amp;&amp; f.list()[0].extension().equals(schematicExtension)).map(f -&gt; f.list()[0]));</b>
+<b class="nc">&nbsp;        workshopFiles.put(LoadedMod.class, folders.select(f -&gt; f.child(&quot;mod.json&quot;).exists() || f.child(&quot;mod.hjson&quot;).exists()));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!workshopFiles.get(Map.class).isEmpty()){</b>
+<b class="nc">&nbsp;            Achievement.downloadMapWorkshop.complete();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        workshopFiles.each((type, list) -&gt; {</b>
+<b class="nc">&nbsp;            Log.info(&quot;Fetched content (@): @&quot;, type.getSimpleName(), list.size);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Fi&gt; getWorkshopFiles(Class&lt;? extends Publishable&gt; type){
+<b class="nc">&nbsp;        return workshopFiles.get(type, () -&gt; new Seq&lt;&gt;(0));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Publish a new item and submit an update for it.
+&nbsp;     * If it is already published, redirects to its page.*/
+&nbsp;    public void publish(Publishable p){
+<b class="nc">&nbsp;        Log.info(&quot;publish(): &quot; + p.steamTitle());</b>
+<b class="nc">&nbsp;        if(p.hasSteamID()){</b>
+<b class="nc">&nbsp;            Log.info(&quot;Content already published, redirecting to ID.&quot;);</b>
+<b class="nc">&nbsp;            viewListing(p);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!p.prePublish()){</b>
+<b class="nc">&nbsp;            Log.info(&quot;Rejecting due to pre-publish.&quot;);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        showPublish(id -&gt; update(p, id, null, true));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Fetches info for an item, checking to make sure that it exists.*/
+&nbsp;    public void viewListing(Publishable p){
+<b class="nc">&nbsp;        long handle = Strings.parseLong(p.getSteamID(), -1);</b>
+<b class="nc">&nbsp;        SteamPublishedFileID id = new SteamPublishedFileID(handle);</b>
+<b class="nc">&nbsp;        Log.info(&quot;Handle = &quot; + handle);</b>
+&nbsp;
+<b class="nc">&nbsp;        ui.loadfrag.show();</b>
+<b class="nc">&nbsp;        query(ugc.createQueryUGCDetailsRequest(id), (detailsList, result) -&gt; {</b>
+<b class="nc">&nbsp;            ui.loadfrag.hide();</b>
+<b class="nc">&nbsp;            Log.info(&quot;Fetch result = &quot; + result);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(result == SteamResult.OK){</b>
+<b class="nc">&nbsp;                SteamUGCDetails details = detailsList.first();</b>
+<b class="nc">&nbsp;                Log.info(&quot;Details result = &quot; + details.getResult());</b>
+<b class="nc">&nbsp;                if(details.getResult() == SteamResult.OK){</b>
+<b class="nc">&nbsp;                    if(details.getOwnerID().equals(SVars.user.user.getSteamID())){</b>
+&nbsp;
+<b class="nc">&nbsp;                        BaseDialog dialog = new BaseDialog(&quot;@workshop.info&quot;);</b>
+<b class="nc">&nbsp;                        dialog.setFillParent(false);</b>
+<b class="nc">&nbsp;                        dialog.cont.add(&quot;@workshop.menu&quot;).pad(20f);</b>
+<b class="nc">&nbsp;                        dialog.addCloseButton();</b>
+&nbsp;
+<b class="nc">&nbsp;                        dialog.buttons.button(&quot;@view.workshop&quot;, Icon.link, () -&gt; {</b>
+<b class="nc">&nbsp;                            viewListingID(id);</b>
+<b class="nc">&nbsp;                            dialog.hide();</b>
+<b class="nc">&nbsp;                        }).size(210f, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        dialog.buttons.button(&quot;@workshop.update&quot;, Icon.up, () -&gt; {</b>
+<b class="nc">&nbsp;                            new BaseDialog(&quot;@workshop.update&quot;){{</b>
+<b class="nc">&nbsp;                                setFillParent(false);</b>
+<b class="nc">&nbsp;                                cont.margin(10).add(&quot;@changelog&quot;).padRight(6f);</b>
+<b class="nc">&nbsp;                                cont.row();</b>
+<b class="nc">&nbsp;                                TextArea field = cont.area(&quot;&quot;, t -&gt; {}).size(500f, 160f).get();</b>
+<b class="nc">&nbsp;                                field.setMaxLength(400);</b>
+<b class="nc">&nbsp;                                cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                                boolean[] updatedesc = {false};</b>
+&nbsp;
+<b class="nc">&nbsp;                                cont.check(&quot;@updatedesc&quot;, b -&gt; updatedesc[0] = b).pad(4);</b>
+&nbsp;
+<b class="nc">&nbsp;                                buttons.defaults().size(120, 54).pad(4);</b>
+<b class="nc">&nbsp;                                buttons.button(&quot;@ok&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                                    if(!p.prePublish()){</b>
+<b class="nc">&nbsp;                                        Log.info(&quot;Rejecting due to pre-publish.&quot;);</b>
+&nbsp;                                        return;
+&nbsp;                                    }
+&nbsp;
+<b class="nc">&nbsp;                                    ui.loadfrag.show(&quot;@publishing&quot;);</b>
+<b class="nc">&nbsp;                                    SWorkshop.this.update(p, new SteamPublishedFileID(Strings.parseLong(p.getSteamID(), -1)), field.getText().replace(&quot;\r&quot;, &quot;\n&quot;), updatedesc[0]);</b>
+<b class="nc">&nbsp;                                    dialog.hide();</b>
+<b class="nc">&nbsp;                                    hide();</b>
+&nbsp;                                });
+<b class="nc">&nbsp;                                buttons.button(&quot;@cancel&quot;, this::hide);</b>
+<b class="nc">&nbsp;                            }}.show();</b>
+&nbsp;
+<b class="nc">&nbsp;                        }).size(210f, 64f);</b>
+<b class="nc">&nbsp;                        dialog.show();</b>
+<b class="nc">&nbsp;                    }else{</b>
+<b class="nc">&nbsp;                        SVars.net.friends.activateGameOverlayToWebPage(&quot;steam://url/CommunityFilePage/&quot; + details.getPublishedFileID().handle());</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }else if(details.getResult() == SteamResult.FileNotFound){</b>
+<b class="nc">&nbsp;                    p.removeSteamID();</b>
+<b class="nc">&nbsp;                    ui.showErrorMessage(&quot;@missing&quot;);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    ui.showErrorMessage(Core.bundle.format(&quot;workshop.error&quot;, details.getResult().name()));</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                ui.showErrorMessage(Core.bundle.format(&quot;workshop.error&quot;, result.name()));</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    void viewListingID(SteamPublishedFileID id){
+<b class="nc">&nbsp;        SVars.net.friends.activateGameOverlayToWebPage(&quot;steam://url/CommunityFilePage/&quot; + id.handle());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void update(Publishable p, SteamPublishedFileID id, String changelog, boolean updateDescription){
+<b class="nc">&nbsp;        Log.info(&quot;Calling update(@) @&quot;, p.steamTitle(), id.handle());</b>
+<b class="nc">&nbsp;        String sid = id.handle() + &quot;&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;        updateItem(id, h -&gt; {</b>
+<b class="nc">&nbsp;            if(updateDescription){</b>
+<b class="nc">&nbsp;                ugc.setItemTitle(h, p.steamTitle());</b>
+<b class="nc">&nbsp;                if(p.steamDescription() != null){</b>
+<b class="nc">&nbsp;                    ugc.setItemDescription(h, p.steamDescription());</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Seq&lt;String&gt; tags = p.extraTags();</b>
+<b class="nc">&nbsp;            tags.add(p.steamTag());</b>
+&nbsp;
+<b class="nc">&nbsp;            ugc.setItemTags(h, tags.toArray(String.class));</b>
+<b class="nc">&nbsp;            String path = p.createSteamPreview(sid).absolutePath();</b>
+&nbsp;
+<b class="nc">&nbsp;            Log.info(&quot;PREVIEW @ @ @&quot;,  ugc.setItemPreview(h, path), path, Fi.get(path).exists());</b>
+&nbsp;
+<b class="nc">&nbsp;            ugc.setItemContent(h, p.createSteamFolder(sid).absolutePath());</b>
+<b class="nc">&nbsp;            if(changelog == null){</b>
+<b class="nc">&nbsp;                ugc.setItemVisibility(h, PublishedFileVisibility.Private);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            ugc.submitItemUpdate(h, changelog == null ? &quot;&lt;Created&gt;&quot; : changelog);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(p instanceof Map){</b>
+<b class="nc">&nbsp;                Achievement.publishMap.complete();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }, () -&gt; p.addSteamID(sid));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void showPublish(Cons&lt;SteamPublishedFileID&gt; published){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;@confirm&quot;);</b>
+<b class="nc">&nbsp;        dialog.setFillParent(false);</b>
+<b class="nc">&nbsp;        dialog.cont.add(&quot;@publish.confirm&quot;).width(600f).wrap();</b>
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.buttons.button(&quot;@eula&quot;, Icon.link,</b>
+<b class="nc">&nbsp;            () -&gt; SVars.net.friends.activateGameOverlayToWebPage(&quot;https://steamcommunity.com/sharedfiles/workshoplegalagreement&quot;))</b>
+<b class="nc">&nbsp;            .size(210f, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.buttons.button(&quot;@ok&quot;, Icon.ok, () -&gt; {</b>
+<b class="nc">&nbsp;            Log.info(&quot;Accepted, publishing item...&quot;);</b>
+<b class="nc">&nbsp;            itemHandlers.add(published);</b>
+<b class="nc">&nbsp;            ugc.createItem(SVars.steamID, WorkshopFileType.Community);</b>
+<b class="nc">&nbsp;            ui.loadfrag.show(&quot;@publishing&quot;);</b>
+<b class="nc">&nbsp;            dialog.hide();</b>
+<b class="nc">&nbsp;        }).size(170f, 64f);</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void query(SteamUGCQuery query, Cons2&lt;Seq&lt;SteamUGCDetails&gt;, SteamResult&gt; handler){
+<b class="nc">&nbsp;        Log.info(&quot;POST QUERY &quot; + query);</b>
+<b class="nc">&nbsp;        detailHandlers.put(query, handler);</b>
+<b class="nc">&nbsp;        ugc.sendQueryUGCRequest(query);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void updateItem(SteamPublishedFileID publishedFileID, Cons&lt;SteamUGCUpdateHandle&gt; tagger, Runnable updated){
+&nbsp;        try{
+<b class="nc">&nbsp;            SteamUGCUpdateHandle h = ugc.startItemUpdate(SVars.steamID, publishedFileID);</b>
+<b class="nc">&nbsp;            Log.info(&quot;begin updateItem(@)&quot;, publishedFileID.handle());</b>
+&nbsp;
+<b class="nc">&nbsp;            tagger.get(h);</b>
+<b class="nc">&nbsp;            Log.info(&quot;Tagged.&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            ItemUpdateInfo info = new ItemUpdateInfo();</b>
+&nbsp;
+<b class="nc">&nbsp;            ui.loadfrag.setProgress(() -&gt; {</b>
+<b class="nc">&nbsp;                ItemUpdateStatus status = ugc.getItemUpdateProgress(h, info);</b>
+<b class="nc">&nbsp;                ui.loadfrag.setText(&quot;@&quot; + status.name().toLowerCase());</b>
+<b class="nc">&nbsp;                if(status == ItemUpdateStatus.Invalid){</b>
+<b class="nc">&nbsp;                    ui.loadfrag.setText(&quot;@done&quot;);</b>
+<b class="nc">&nbsp;                    return 1f;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                return (float)status.ordinal() / (float)ItemUpdateStatus.values().length;</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            updatedHandlers.put(publishedFileID, updated);</b>
+<b class="nc">&nbsp;        }catch(Throwable t){</b>
+<b class="nc">&nbsp;            ui.loadfrag.hide();</b>
+<b class="nc">&nbsp;            Log.err(t);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void onUGCQueryCompleted(SteamUGCQuery query, int numResultsReturned, int totalMatchingResults, boolean isCachedData, SteamResult result){
+<b class="nc">&nbsp;        Log.info(&quot;GET QUERY &quot; + query);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(detailHandlers.containsKey(query)){</b>
+<b class="nc">&nbsp;            Log.info(&quot;Query being handled...&quot;);</b>
+<b class="nc">&nbsp;            if(numResultsReturned &gt; 0){</b>
+<b class="nc">&nbsp;                Log.info(&quot;@ q results&quot;, numResultsReturned);</b>
+<b class="nc">&nbsp;                Seq&lt;SteamUGCDetails&gt; details = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; numResultsReturned; i++){</b>
+<b class="nc">&nbsp;                    details.add(new SteamUGCDetails());</b>
+<b class="nc">&nbsp;                    ugc.getQueryUGCResult(query, i, details.get(i));</b>
+&nbsp;                }
+<b class="nc">&nbsp;                detailHandlers.get(query).get(details, result);</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                Log.info(&quot;Nothing found.&quot;);</b>
+<b class="nc">&nbsp;                detailHandlers.get(query).get(new Seq&lt;&gt;(), SteamResult.FileNotFound);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            detailHandlers.remove(query);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Log.info(&quot;Query not handled.&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void onSubscribeItem(SteamPublishedFileID publishedFileID, SteamResult result){
+<b class="nc">&nbsp;        ItemInstallInfo info = new ItemInstallInfo();</b>
+<b class="nc">&nbsp;        ugc.getItemInstallInfo(publishedFileID, info);</b>
+<b class="nc">&nbsp;        Log.info(&quot;Item subscribed from @&quot;, info.getFolder());</b>
+<b class="nc">&nbsp;        Achievement.downloadMapWorkshop.complete();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void onUnsubscribeItem(SteamPublishedFileID publishedFileID, SteamResult result){
+<b class="nc">&nbsp;        ItemInstallInfo info = new ItemInstallInfo();</b>
+<b class="nc">&nbsp;        ugc.getItemInstallInfo(publishedFileID, info);</b>
+<b class="nc">&nbsp;        Log.info(&quot;Item unsubscribed from @&quot;, info.getFolder());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void onCreateItem(SteamPublishedFileID publishedFileID, boolean needsToAcceptWLA, SteamResult result){
+<b class="nc">&nbsp;        Log.info(&quot;onCreateItem(&quot; + result + &quot;)&quot;);</b>
+<b class="nc">&nbsp;        if(!itemHandlers.isEmpty()){</b>
+<b class="nc">&nbsp;            if(result == SteamResult.OK){</b>
+<b class="nc">&nbsp;                Log.info(&quot;Passing to first handler.&quot;);</b>
+<b class="nc">&nbsp;                itemHandlers.first().get(publishedFileID);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                ui.showErrorMessage(Core.bundle.format(&quot;publish.error&quot;, result.name()));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            itemHandlers.remove(0);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Log.err(&quot;No handlers for createItem()&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void onSubmitItemUpdate(SteamPublishedFileID publishedFileID, boolean needsToAcceptWLA, SteamResult result){
+<b class="nc">&nbsp;        ui.loadfrag.hide();</b>
+<b class="nc">&nbsp;        Log.info(&quot;onsubmititemupdate @ @ @&quot;, publishedFileID.handle(), needsToAcceptWLA, result);</b>
+<b class="nc">&nbsp;        if(result == SteamResult.OK){</b>
+&nbsp;            //redirect user to page for further updates
+<b class="nc">&nbsp;            SVars.net.friends.activateGameOverlayToWebPage(&quot;steam://url/CommunityFilePage/&quot; + publishedFileID.handle());</b>
+<b class="nc">&nbsp;            if(needsToAcceptWLA){</b>
+<b class="nc">&nbsp;                SVars.net.friends.activateGameOverlayToWebPage(&quot;https://steamcommunity.com/sharedfiles/workshoplegalagreement&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(updatedHandlers.containsKey(publishedFileID)){</b>
+<b class="nc">&nbsp;                updatedHandlers.get(publishedFileID).run();</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            ui.showErrorMessage(Core.bundle.format(&quot;publish.error&quot;, result.name()));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void onDownloadItemResult(int appID, SteamPublishedFileID publishedFileID, SteamResult result){
+<b class="nc">&nbsp;        Achievement.downloadMapWorkshop.complete();</b>
+<b class="nc">&nbsp;        ItemInstallInfo info = new ItemInstallInfo();</b>
+<b class="nc">&nbsp;        ugc.getItemInstallInfo(publishedFileID, info);</b>
+<b class="nc">&nbsp;        Log.info(&quot;Item downloaded to @&quot;, info.getFolder());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void onDeleteItem(SteamPublishedFileID publishedFileID, SteamResult result){
+<b class="nc">&nbsp;        ItemInstallInfo info = new ItemInstallInfo();</b>
+<b class="nc">&nbsp;        ugc.getItemInstallInfo(publishedFileID, info);</b>
+<b class="nc">&nbsp;        Log.info(&quot;Item removed from @&quot;, info.getFolder());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

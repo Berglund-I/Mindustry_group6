@@ -1,0 +1,653 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LoadRenderer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: LoadRenderer (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoadRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/276)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LoadRenderer$Bar</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/289)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.fx.*;
+&nbsp;import arc.fx.filters.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.Pixmap.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.g3d.*;
+&nbsp;import arc.graphics.gl.GLVersion.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.graphics.g3d.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;
+<b class="nc">&nbsp;public class LoadRenderer implements Disposable{</b>
+<b class="nc">&nbsp;    private static final Color color = new Color(Pal.accent).lerp(Color.black, 0.5f);</b>
+<b class="nc">&nbsp;    private static final Color colorRed = Pal.breakInvalid.cpy().lerp(Color.black, 0.3f);</b>
+<b class="nc">&nbsp;    private static final String red = &quot;[#&quot; + colorRed + &quot;]&quot;;</b>
+<b class="nc">&nbsp;    private static final String orange = &quot;[#&quot; + color + &quot;]&quot;;</b>
+<b class="nc">&nbsp;    private static final FloatSeq floats = new FloatSeq();</b>
+&nbsp;    private static final boolean preview = false;
+&nbsp;
+<b class="nc">&nbsp;    private float testprogress = 0f;</b>
+<b class="nc">&nbsp;    private StringBuilder assetText = new StringBuilder();</b>
+&nbsp;    private Bar[] bars;
+<b class="nc">&nbsp;    private Mesh mesh = MeshBuilder.buildHex(colorRed, 2, true, 1f);</b>
+<b class="nc">&nbsp;    private Camera3D cam = new Camera3D();</b>
+<b class="nc">&nbsp;    private int lastLength = -1;</b>
+&nbsp;    private FxProcessor fx;
+<b class="nc">&nbsp;    private WindowedMean renderTimes = new WindowedMean(20);</b>
+&nbsp;    private BloomFilter bloom;
+<b class="nc">&nbsp;    private boolean renderStencil = true;</b>
+&nbsp;    private long lastFrameTime;
+&nbsp;
+&nbsp;    {
+&nbsp;        //some systems don&#39;t support rgba8888 w/ a stencil buffer
+&nbsp;        try{
+<b class="nc">&nbsp;            fx = new FxProcessor(Format.rgba8888, 2, 2, false, true);</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                fx = new FxProcessor(Format.rgb565, 2, 2, false, true);</b>
+<b class="nc">&nbsp;            }catch(Exception awful){</b>
+<b class="nc">&nbsp;                renderStencil = false;</b>
+<b class="nc">&nbsp;                fx = new FxProcessor(Format.rgba8888, 2, 2, false, false);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //vignetting is probably too much
+&nbsp;        //fx.addEffect(new VignettingFilter(false));
+<b class="nc">&nbsp;        fx.addEffect(bloom = new BloomFilter());</b>
+&nbsp;
+<b class="nc">&nbsp;        bars = new Bar[]{</b>
+&nbsp;            new Bar(&quot;s_proc#&quot;, OS.cores / 16f, OS.cores &lt; 4),
+<b class="nc">&nbsp;            new Bar(&quot;c_aprog&quot;, () -&gt; assets != null, () -&gt; assets.getProgress(), () -&gt; false),</b>
+<b class="nc">&nbsp;            new Bar(&quot;g_vtype&quot;, graphics.getGLVersion().type == GlType.GLES ? 0.5f : 1f, graphics.getGLVersion().type == GlType.GLES),</b>
+<b class="nc">&nbsp;            new Bar(&quot;s_mem#&quot;, () -&gt; true, () -&gt; Core.app.getJavaHeap() / 1024f / 1024f / 200f, () -&gt; Core.app.getJavaHeap() &gt; 1024 * 1024 * 110),</b>
+<b class="nc">&nbsp;            new Bar(&quot;v_ver#&quot;, () -&gt; Version.build != 0, () -&gt; Version.build == -1 ? 0.3f : (Version.build - 103f) / 10f, () -&gt; !Version.modifier.equals(&quot;release&quot;)),</b>
+<b class="nc">&nbsp;            new Bar(&quot;s_osv&quot;, OS.isWindows ? 0.35f : OS.isLinux ? 0.9f : OS.isMac ? 0.5f : 0.2f, OS.isMac),</b>
+<b class="nc">&nbsp;            new Bar(&quot;v_worlds#&quot;, () -&gt; Vars.control != null &amp;&amp; Vars.control.saves != null, () -&gt; Vars.control.saves.getSaveSlots().size / 30f, () -&gt; Vars.control.saves.getSaveSlots().size &gt; 30),</b>
+<b class="nc">&nbsp;            new Bar(&quot;c_datas#&quot;, () -&gt; settings.keySize() &gt; 0, () -&gt; settings.keySize() / 50f, () -&gt; settings.keySize() &gt; 20),</b>
+<b class="nc">&nbsp;            new Bar(&quot;v_alterc&quot;, () -&gt; Vars.mods != null, () -&gt; (Vars.mods.list().size + 1) / 6f, () -&gt; Vars.mods.list().size &gt; 0),</b>
+<b class="nc">&nbsp;            new Bar(&quot;g_vcomp#&quot;, (graphics.getGLVersion().majorVersion + graphics.getGLVersion().minorVersion / 10f) / 4.6f, !graphics.getGLVersion().atLeast(3, 2)),</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+<b class="nc">&nbsp;        mesh.dispose();</b>
+<b class="nc">&nbsp;        fx.dispose();</b>
+<b class="nc">&nbsp;        bloom.dispose();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(){
+&nbsp;        if(!preview){
+<b class="nc">&nbsp;            if(lastFrameTime == 0){</b>
+<b class="nc">&nbsp;                lastFrameTime = Time.millis();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float timespace = Time.timeSinceMillis(lastFrameTime) / 1000f;</b>
+<b class="nc">&nbsp;            renderTimes.add(timespace);</b>
+<b class="nc">&nbsp;            lastFrameTime = Time.millis();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(fx.getWidth() != graphics.getWidth() || fx.getHeight() != graphics.getHeight()){</b>
+<b class="nc">&nbsp;            fx.resize(graphics.getWidth(), graphics.getHeight());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        fx.begin();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(assets.getLoadedAssets() != lastLength){</b>
+<b class="nc">&nbsp;            assetText.setLength(0);</b>
+<b class="nc">&nbsp;            for(String name : assets.getAssetNames()){</b>
+<b class="nc">&nbsp;                boolean isRed = name.toLowerCase().contains(&quot;mod&quot;) || assets.getAssetType(name).getSimpleName().toLowerCase().contains(&quot;mod&quot;) || name.contains(&quot;preview&quot;);</b>
+<b class="nc">&nbsp;                assetText</b>
+<b class="nc">&nbsp;                .append(isRed ? red : orange)</b>
+<b class="nc">&nbsp;                .append(name.replace(OS.username, &quot;&lt;&lt;host&gt;&gt;&quot;).replace(&quot;/&quot;, &quot;::&quot;)).append(red).append(&quot;::[]&quot;)</b>
+<b class="nc">&nbsp;                .append(assets.getAssetType(name).getSimpleName()).append(&quot;\n&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            lastLength = assets.getLoadedAssets();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Core.graphics.clear(Color.black);</b>
+&nbsp;
+<b class="nc">&nbsp;        float w = Core.graphics.getWidth(), h = Core.graphics.getHeight(), s = Scl.scl();</b>
+&nbsp;        //s = 2f;
+&nbsp;
+<b class="nc">&nbsp;        Draw.proj().setOrtho(0, 0, Core.graphics.getWidth(), Core.graphics.getHeight());</b>
+&nbsp;
+<b class="nc">&nbsp;        int lightVerts = 20;</b>
+<b class="nc">&nbsp;        float lightRad = Math.max(w, h)*0.6f;</b>
+<b class="nc">&nbsp;        float stroke = 5f * s;</b>
+&nbsp;
+&nbsp;        //light
+<b class="nc">&nbsp;        Fill.light(w/2, h/2, lightVerts, lightRad, Tmp.c1.set(color).a(0.15f), Color.clear);</b>
+&nbsp;
+<b class="nc">&nbsp;        float space = s*(60);</b>
+<b class="nc">&nbsp;        float progress = assets.getProgress();</b>
+<b class="nc">&nbsp;        int dotw = (int)(w / space)/2 + 1;</b>
+<b class="nc">&nbsp;        int doth = (int)(h / space)/2 + 1;</b>
+&nbsp;
+&nbsp;        //preview : no frametime
+&nbsp;        if(preview){
+&nbsp;            testprogress += Time.delta / (60f * 3);
+&nbsp;            progress = testprogress;
+&nbsp;            if(input.keyTap(KeyCode.space)){
+&nbsp;                testprogress = 0;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;
+&nbsp;        //square matrix
+<b class="nc">&nbsp;        Draw.color(Pal.accent, Color.black, 0.9f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(stroke);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int cx = -dotw; cx &lt;= dotw; cx++){</b>
+<b class="nc">&nbsp;            for(int cy = -doth; cy &lt;= doth; cy++){</b>
+<b class="nc">&nbsp;                float dx = cx * space + w/2f, dy = cy * space + h/2f;</b>
+&nbsp;
+<b class="nc">&nbsp;                Lines.poly(dx, dy, 4, space/2f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.flush();</b>
+&nbsp;
+<b class="nc">&nbsp;        float aspect = 1.94f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Vec2 size = Scaling.fit.apply(graphics.getWidth(), graphics.getWidth() / aspect, graphics.getWidth(), graphics.getHeight());</b>
+&nbsp;
+<b class="nc">&nbsp;        int viewportWidth = (int)size.x, viewportHeight = (int)size.y, viewportX = (int)(graphics.getWidth()/2f - size.x/2f), viewportY = (int)(graphics.getHeight()/2f - size.y/2f);</b>
+&nbsp;
+&nbsp;        //portrait? no viewport
+<b class="nc">&nbsp;        if(graphics.getHeight() &gt; graphics.getWidth()){</b>
+<b class="nc">&nbsp;            viewportHeight = graphics.getHeight();</b>
+<b class="nc">&nbsp;            viewportWidth = graphics.getWidth();</b>
+<b class="nc">&nbsp;            viewportX = viewportY = 0;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        w = viewportWidth;</b>
+<b class="nc">&nbsp;        h = viewportHeight;</b>
+&nbsp;
+<b class="nc">&nbsp;        Gl.viewport(viewportX, viewportY, viewportWidth, viewportHeight);</b>
+<b class="nc">&nbsp;        Draw.proj().setOrtho(0, 0, viewportWidth, viewportHeight);</b>
+&nbsp;
+&nbsp;        //background text and indicator
+<b class="nc">&nbsp;        float rads = 110 * s;</b>
+<b class="nc">&nbsp;        float rad = Math.min(Math.min(w, h) / 3.1f, Math.min(w, h)/2f - rads);</b>
+<b class="nc">&nbsp;        float rad2 = rad + rads;</b>
+<b class="nc">&nbsp;        float epad = 60f * s;</b>
+<b class="nc">&nbsp;        float mpad = 100f * s;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        Lines.stroke(stroke);</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.poly(w/2, h/2, 4, rad);</b>
+<b class="nc">&nbsp;        Lines.poly(w/2, h/2, 4, rad2);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(assets.isLoaded(&quot;tech&quot;) &amp;&amp; renderStencil){</b>
+<b class="nc">&nbsp;            Font font = assets.get(&quot;tech&quot;);</b>
+<b class="nc">&nbsp;            font.getData().markupEnabled = true;</b>
+&nbsp;
+<b class="nc">&nbsp;            int panei = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int sx : Mathf.signs){</b>
+<b class="nc">&nbsp;                for(int sy : Mathf.signs){</b>
+<b class="nc">&nbsp;                    float y1 = h/2f + sy*rad2, y2 = h/2f + sy*120f;</b>
+&nbsp;                    //if(sy &lt; 0) y1 = Math.min(y2, y1);
+<b class="nc">&nbsp;                    floats.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(w &gt; h){ //non-portrait</b>
+<b class="nc">&nbsp;                        floats.add(w/2f + sx*mpad, y1);</b>
+<b class="nc">&nbsp;                        floats.add(w/2f + (w/2f-epad)*sx, y1);</b>
+<b class="nc">&nbsp;                        floats.add(w/2f + (w/2f-epad)*sx, y2);</b>
+<b class="nc">&nbsp;                        floats.add(w/2f + sx*mpad + sx*Math.abs(y2-y1), y2);</b>
+&nbsp;                    }else{ //portrait
+<b class="nc">&nbsp;                        float py2 = h/2f + (h/2f-epad)*sy;</b>
+<b class="nc">&nbsp;                        float testval = sy &lt; 0 ? Math.min(y2, y1) : Math.max(y2, y1);</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(py2*sy &lt; testval*sy){</b>
+<b class="nc">&nbsp;                            continue;</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        floats.add(w/2f + sx*mpad, y1);</b>
+<b class="nc">&nbsp;                        floats.add(w/2f + sx*mpad, py2);</b>
+<b class="nc">&nbsp;                        floats.add(Mathf.clamp(w/2f + sx*(mpad + Math.abs(y2-y1)), stroke/2f, w - stroke/2f), py2);</b>
+<b class="nc">&nbsp;                        floats.add(Mathf.clamp(w/2f + sx*(mpad + Math.abs(y2-y1)), stroke/2f, w - stroke/2f), y2);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    float minx = Float.MAX_VALUE, miny = Float.MAX_VALUE, maxx = 0, maxy = 0;</b>
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; floats.size; i+= 2){</b>
+<b class="nc">&nbsp;                        float x = floats.items[i], y = floats.items[i + 1];</b>
+<b class="nc">&nbsp;                        minx = Math.min(x, minx);</b>
+<b class="nc">&nbsp;                        miny = Math.min(y, miny);</b>
+&nbsp;
+<b class="nc">&nbsp;                        maxx = Math.max(x, maxx);</b>
+<b class="nc">&nbsp;                        maxy = Math.max(y, maxy);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Draw.flush();</b>
+<b class="nc">&nbsp;                    Gl.clear(Gl.stencilBufferBit);</b>
+<b class="nc">&nbsp;                    Draw.beginStencil();</b>
+&nbsp;
+<b class="nc">&nbsp;                    Fill.poly(floats);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Draw.beginStenciled();</b>
+&nbsp;
+<b class="nc">&nbsp;                    GlyphLayout layout = GlyphLayout.obtain();</b>
+<b class="nc">&nbsp;                    float pad = 4;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(panei == 0){</b>
+<b class="nc">&nbsp;                        layout.setText(font, assetText);</b>
+<b class="nc">&nbsp;                        font.draw(assetText, minx + pad, maxy - pad + Math.max(0, layout.height - (maxy - miny)));</b>
+<b class="nc">&nbsp;                    }else if(panei == 1){</b>
+<b class="nc">&nbsp;                        float height = maxy - miny;</b>
+<b class="nc">&nbsp;                        float barpad = s * 8f;</b>
+&nbsp;
+<b class="nc">&nbsp;                        int barsUsed = Math.min((int)((height - barpad) / (font.getLineHeight() * 1.4f)), bars.length);</b>
+&nbsp;
+<b class="nc">&nbsp;                        float barspace = (height - barpad) / barsUsed;</b>
+<b class="nc">&nbsp;                        float barheight = barspace * 0.8f;</b>
+&nbsp;
+<b class="nc">&nbsp;                        for(int i = 0; i &lt; barsUsed; i++){</b>
+<b class="nc">&nbsp;                            Bar bar = bars[i];</b>
+<b class="nc">&nbsp;                            if(bar.valid()){</b>
+<b class="nc">&nbsp;                                Draw.color(bar.red() ? colorRed : color);</b>
+<b class="nc">&nbsp;                                float y = maxy - i * barspace - barpad - barheight;</b>
+<b class="nc">&nbsp;                                float width = Mathf.clamp(bar.value());</b>
+<b class="nc">&nbsp;                                float baseWidth = Core.graphics.isPortrait() ? maxx - minx : (maxx - minx) - (maxy - y) - barpad * 2f - s * 4;</b>
+<b class="nc">&nbsp;                                float cx = minx + barpad, cy = y, topY = cy + barheight, botY = cy;</b>
+&nbsp;
+<b class="nc">&nbsp;                                Lines.square(cx + barheight / 2f, botY + barheight / 2f, barheight / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                                Fill.quad(</b>
+&nbsp;                                cx + barheight, cy,
+&nbsp;                                cx + barheight, topY,
+&nbsp;                                cx + width * baseWidth + barheight, topY,
+&nbsp;                                cx + width * baseWidth, botY
+&nbsp;                                );
+&nbsp;
+<b class="nc">&nbsp;                                Draw.color(Color.black);</b>
+&nbsp;
+<b class="nc">&nbsp;                                Fill.quad(</b>
+&nbsp;                                cx + width * baseWidth + barheight, topY,
+&nbsp;                                cx + width * baseWidth, botY,
+&nbsp;                                cx + baseWidth, botY,
+&nbsp;                                cx + baseWidth + barheight, topY);
+&nbsp;
+<b class="nc">&nbsp;                                font.setColor(Color.black);</b>
+<b class="nc">&nbsp;                                layout.setText(font, bar.text);</b>
+<b class="nc">&nbsp;                                font.draw(bar.text, cx + barheight * 1.5f, botY + barheight / 2f + layout.height / 2f);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        Draw.color(color);</b>
+<b class="nc">&nbsp;                    }else if(panei == 2){</b>
+&nbsp;
+<b class="nc">&nbsp;                        float barw = 30f*s;</b>
+<b class="nc">&nbsp;                        float barspace = 40f*s;</b>
+<b class="nc">&nbsp;                        float barpad = 10f*s;</b>
+<b class="nc">&nbsp;                        int bars = (int)(maxx - minx / barspace) + 1;</b>
+<b class="nc">&nbsp;                        int barmax = (int)((maxy - miny) / barspace);</b>
+&nbsp;
+<b class="nc">&nbsp;                        for(int i = 0; i &lt; bars; i++){</b>
+<b class="nc">&nbsp;                            int index = i % renderTimes.getWindowSize();</b>
+<b class="nc">&nbsp;                            float val = renderTimes.get(index);</b>
+<b class="nc">&nbsp;                            float scale = Mathf.clamp(!renderTimes.hasEnoughData() ? Mathf.randomSeed(i) : (val / renderTimes.mean() - 0.5f));</b>
+&nbsp;
+<b class="nc">&nbsp;                            Color dst = scale &gt; 0.8f ? colorRed : color;</b>
+<b class="nc">&nbsp;                            Draw.color(dst);</b>
+<b class="nc">&nbsp;                            int height = Math.max((int)(scale * barmax), 1);</b>
+<b class="nc">&nbsp;                            float cx = maxx - barw/2f - barpad - i*barspace;</b>
+<b class="nc">&nbsp;                            for(int j = 0; j &lt; barmax; j++){</b>
+<b class="nc">&nbsp;                                if(j &gt;= height){</b>
+<b class="nc">&nbsp;                                    Draw.color(color, Color.black, 0.7f);</b>
+&nbsp;                                }else{
+<b class="nc">&nbsp;                                    Draw.color(dst);</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                                Fill.square(cx, miny + j * barspace + barw/2f + barpad, barw/2f);</b>
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                        Draw.color(color);</b>
+&nbsp;
+<b class="nc">&nbsp;                    }else if(panei == 3){</b>
+<b class="nc">&nbsp;                        Draw.flush();</b>
+&nbsp;
+<b class="nc">&nbsp;                        float vx = floats.get(6), vy = floats.get(7), vw = (maxx - vx), vh = (maxy - vy), cx = vx + vw/2f, cy = vy + vh/2f;</b>
+<b class="nc">&nbsp;                        float vpad = 30*s;</b>
+<b class="nc">&nbsp;                        float vcont = Math.min(vw, vh);</b>
+<b class="nc">&nbsp;                        float vsize = vcont - vpad*2;</b>
+<b class="nc">&nbsp;                        int rx = (int)(vx + vw/2f - vsize/2f), ry = (int)(vy + vh/2f - vsize/2f), rw = (int)vsize, rh = (int)vsize;</b>
+&nbsp;
+<b class="nc">&nbsp;                        float vrad = vsize/2f + vpad;</b>
+&nbsp;
+&nbsp;                        //planet + bars
+<b class="nc">&nbsp;                        if(!graphics.isPortrait()){</b>
+&nbsp;
+<b class="nc">&nbsp;                            String text = &quot;&lt;&lt;ready&gt;&gt;&quot;;</b>
+<b class="nc">&nbsp;                            layout.setText(font, text);</b>
+&nbsp;
+&nbsp;                            //draw only when text fits
+<b class="nc">&nbsp;                            if(layout.width * 1.5f &lt; vw){</b>
+<b class="nc">&nbsp;                                Lines.circle(cx, cy, vsize/2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                                if(rw &gt; 0 &amp;&amp; rh &gt; 0){</b>
+<b class="nc">&nbsp;                                    Gl.viewport(viewportX + rx, viewportY + ry, rw, rh);</b>
+&nbsp;
+<b class="nc">&nbsp;                                    cam.position.set(2, 0, 2);</b>
+<b class="nc">&nbsp;                                    cam.resize(rw, rh);</b>
+<b class="nc">&nbsp;                                    cam.lookAt(0, 0, 0);</b>
+<b class="nc">&nbsp;                                    cam.fov = 42f;</b>
+<b class="nc">&nbsp;                                    cam.update();</b>
+<b class="nc">&nbsp;                                    Shaders.mesh.bind();</b>
+<b class="nc">&nbsp;                                    Shaders.mesh.setUniformMatrix4(&quot;u_proj&quot;, cam.combined.val);</b>
+<b class="nc">&nbsp;                                    mesh.render(Shaders.mesh, Gl.lines);</b>
+&nbsp;
+&nbsp;                                    //restore viewport
+<b class="nc">&nbsp;                                    Gl.viewport(viewportX, viewportY, viewportWidth, viewportHeight);</b>
+&nbsp;                                }
+&nbsp;
+<b class="nc">&nbsp;                                int points = 4;</b>
+<b class="nc">&nbsp;                                for(int i = 0; i &lt; points; i++){</b>
+<b class="nc">&nbsp;                                    float ang = i * 360f / points + 45;</b>
+<b class="nc">&nbsp;                                    Fill.poly(cx + Angles.trnsx(ang, vrad), cy + Angles.trnsy(ang, vrad), 3, 20 * s, ang);</b>
+&nbsp;                                }
+&nbsp;
+<b class="nc">&nbsp;                                Draw.color(Color.black);</b>
+<b class="nc">&nbsp;                                Fill.rect(cx, cy, layout.width + 14f * s, layout.height + 14f * s);</b>
+&nbsp;
+<b class="nc">&nbsp;                                font.setColor(color);</b>
+<b class="nc">&nbsp;                                font.draw(text, cx - layout.width / 2f, cy + layout.height / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                                Draw.color(color);</b>
+&nbsp;
+<b class="nc">&nbsp;                                Lines.square(cx, cy, vcont / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                                Lines.line(vx, vy, vx, vy + vh);</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;                                float pspace = 70f * s;</b>
+<b class="nc">&nbsp;                                int pcount = (int)(vh / pspace / 2) + 2;</b>
+<b class="nc">&nbsp;                                float pw = (vw - vcont) / 2f;</b>
+<b class="nc">&nbsp;                                float slope = pw / 2f;</b>
+&nbsp;
+&nbsp;                                //side bars for planet
+<b class="nc">&nbsp;                                for(int i : Mathf.signs){</b>
+&nbsp;
+<b class="nc">&nbsp;                                    float px = cx + i * (vcont / 2f + pw / 2f);</b>
+<b class="nc">&nbsp;                                    float xleft = px - pw / 2f, xright = px + pw / 2f;</b>
+&nbsp;
+<b class="nc">&nbsp;                                    for(int j = -2; j &lt; pcount * 2; j++){</b>
+<b class="nc">&nbsp;                                        float py = vy + j * pspace * 2, ybot = py - slope, ytop = py + slope;</b>
+<b class="nc">&nbsp;                                        Fill.quad(</b>
+&nbsp;                                        xleft, ybot,
+&nbsp;                                        xleft, ybot + pspace,
+&nbsp;                                        xright, ytop + pspace,
+&nbsp;                                        xright, ytop
+&nbsp;                                        );
+&nbsp;                                    }
+&nbsp;                                }
+<b class="nc">&nbsp;                            }else{</b>
+&nbsp;                                //X
+<b class="nc">&nbsp;                                Lines.line(vx, vy, vx + vw, vy + vh);</b>
+<b class="nc">&nbsp;                                Lines.line(vx, vy + vh, vx + vw, vy);</b>
+&nbsp;                            }
+&nbsp;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        //fill the triangle with some stuff
+<b class="nc">&nbsp;                        float trispace = 70f*s, tpad = 5f*s;</b>
+<b class="nc">&nbsp;                        int tris = (int)(vh / trispace) + 1;</b>
+<b class="nc">&nbsp;                        for(int tx = 0; tx &lt; tris; tx++){</b>
+<b class="nc">&nbsp;                            for(int ty = 0; ty &lt; tris; ty++){</b>
+<b class="nc">&nbsp;                                float trix = vx - trispace/2f - trispace*tx - tpad, triy = vy + vh - trispace/2f - trispace*ty -tpad;</b>
+&nbsp;
+<b class="nc">&nbsp;                                Draw.color(Mathf.randomSeed(Pack.longInt(tx + 91, ty + 55)) &lt; 0.5 * (preview ? 1f : 1f - progress) ? colorRed : color);</b>
+<b class="nc">&nbsp;                                Fill.square(trix, triy, trispace/2.5f, 0);</b>
+<b class="nc">&nbsp;                                Draw.color(Color.black);</b>
+<b class="nc">&nbsp;                                Fill.square(trix, triy, trispace/2.5f / Mathf.sqrt2, 0);</b>
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                        Draw.color(color);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    layout.free();</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;                    Draw.endStencil();</b>
+&nbsp;
+<b class="nc">&nbsp;                    Lines.polyline(floats, true);</b>
+&nbsp;
+<b class="nc">&nbsp;                    panei ++;</b>
+&nbsp;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //middle display always has correct ratio, ignores viewport
+<b class="nc">&nbsp;        Draw.flush();</b>
+<b class="nc">&nbsp;        Gl.viewport(0, 0, graphics.getWidth(), graphics.getHeight());</b>
+<b class="nc">&nbsp;        Draw.proj(0, 0, graphics.getWidth(), graphics.getHeight());</b>
+<b class="nc">&nbsp;        w = graphics.getWidth();</b>
+<b class="nc">&nbsp;        h = graphics.getHeight();</b>
+&nbsp;
+&nbsp;        //middle display
+&nbsp;
+<b class="nc">&nbsp;        float bspace = s * 100f;</b>
+<b class="nc">&nbsp;        float bsize = s * 80f;</b>
+<b class="nc">&nbsp;        int bars = (int)(w / bspace / 2) + 1;</b>
+<b class="nc">&nbsp;        float pscale = 1f / bars;</b>
+<b class="nc">&nbsp;        float barScale = 1.5f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Color.black);</b>
+<b class="nc">&nbsp;        Fill.rect(w/2, h/2, w, bsize * barScale);</b>
+<b class="nc">&nbsp;        Lines.stroke(stroke);</b>
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        Lines.rect(0, h/2 - bsize * barScale/2f, w, bsize * barScale, 10, 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 1; i &lt; bars; i++){</b>
+<b class="nc">&nbsp;            float cx = i * bspace;</b>
+<b class="nc">&nbsp;            float fract = 1f - (i - 1) / (float)(bars - 1);</b>
+<b class="nc">&nbsp;            float alpha = progress &gt;= fract ? 1f : Mathf.clamp((pscale - (fract - progress)) / pscale);</b>
+<b class="nc">&nbsp;            Draw.color(Color.black, color, alpha);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int dir : Mathf.signs){</b>
+<b class="nc">&nbsp;                float width = bsize/1.7f;</b>
+<b class="nc">&nbsp;                float skew = bsize/2f;</b>
+&nbsp;
+<b class="nc">&nbsp;                float v = w / 2 + cx * dir - width / 2f;</b>
+<b class="nc">&nbsp;                Fill.rects(v + dir*skew, h/2f, width, bsize/2f, -dir*skew);</b>
+<b class="nc">&nbsp;                Fill.rects(v, h/2f - bsize/2f, width, bsize/2f, dir*skew);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        //centerpiece has different rendering
+<b class="nc">&nbsp;        float fract = 1f - (-1) / (float)(bars - 1);</b>
+<b class="nc">&nbsp;        float alpha = progress &gt;= fract ? 1f : Mathf.clamp((pscale - (fract - progress)) / pscale);</b>
+<b class="nc">&nbsp;        Draw.color(Color.black, color, alpha);</b>
+<b class="nc">&nbsp;        Fill.square(w/2f, h/2f, bsize/3f, 45);</b>
+&nbsp;
+&nbsp;        //note for translators: this text is unreadable and for debugging/show anyway, so it&#39;s not translated
+<b class="nc">&nbsp;        if(assets.isLoaded(&quot;tech&quot;)){</b>
+<b class="nc">&nbsp;            String name = assets.getCurrentLoading() != null ? assets.getCurrentLoading().fileName.toLowerCase() : &quot;system&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;            String key = name.contains(&quot;script&quot;) ? &quot;scripts&quot; : name.contains(&quot;content&quot;) ? &quot;content&quot; : name.contains(&quot;mod&quot;) ? &quot;mods&quot; : name.contains(&quot;msav&quot;) ||</b>
+<b class="nc">&nbsp;            name.contains(&quot;maps&quot;) ? &quot;map&quot; : name.contains(&quot;ogg&quot;) || name.contains(&quot;mp3&quot;) ? &quot;sound&quot; : name.contains(&quot;png&quot;) ? &quot;image&quot; : &quot;system&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;            Font font = assets.get(&quot;tech&quot;);</b>
+<b class="nc">&nbsp;            font.getData().markupEnabled = true;</b>
+<b class="nc">&nbsp;            font.setColor(Pal.accent);</b>
+<b class="nc">&nbsp;            Draw.color(Color.black);</b>
+<b class="nc">&nbsp;            font.draw(red + &quot;[[[[ &quot; + key + &quot; ]]\n&quot; + orange + &quot;&lt;&quot; + Version.modifier + &quot;  &quot; + (Version.build == 0 ? &quot;[init]&quot; : Version.buildString()) + &quot;&gt;&quot;, w/2f, h/2f + 110*s, Align.center);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.flush();</b>
+&nbsp;
+<b class="nc">&nbsp;        fx.end();</b>
+&nbsp;
+<b class="nc">&nbsp;        fx.applyEffects();</b>
+<b class="nc">&nbsp;        fx.render();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static class Bar{
+&nbsp;        final Floatp value;
+&nbsp;        final Boolp red, valid;
+&nbsp;        final String text;
+&nbsp;
+<b class="nc">&nbsp;        public Bar(String text, float value, boolean red){</b>
+<b class="nc">&nbsp;            this.value = () -&gt; value;</b>
+<b class="nc">&nbsp;            this.red = () -&gt; red;</b>
+<b class="nc">&nbsp;            this.valid = () -&gt; true;</b>
+<b class="nc">&nbsp;            this.text = text;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public Bar(String text, Boolp valid, Floatp value, Boolp red){</b>
+<b class="nc">&nbsp;            this.valid = valid;</b>
+<b class="nc">&nbsp;            this.value = value;</b>
+<b class="nc">&nbsp;            this.red = red;</b>
+<b class="nc">&nbsp;            this.text = text;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean valid(){
+<b class="nc">&nbsp;            return valid.get();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean red(){
+<b class="nc">&nbsp;            return red.get();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        float value(){
+<b class="nc">&nbsp;            return Mathf.clamp(value.get());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,488 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > GenericCrafter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.production</a>
+</div>
+
+<h1>Coverage Summary for Class: GenericCrafter (mindustry.world.blocks.production)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GenericCrafter</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (6/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (42/63)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GenericCrafter$GenericCrafterBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.9%
+  </span>
+  <span class="absValue">
+    (9/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55.4%
+  </span>
+  <span class="absValue">
+    (41/74)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    51.7%
+  </span>
+  <span class="absValue">
+    (15/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60.6%
+  </span>
+  <span class="absValue">
+    (83/137)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.production;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.liquid.Conduit.*;
+&nbsp;import mindustry.world.draw.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class GenericCrafter extends Block{</b>
+&nbsp;    /** Written to outputItems as a single-element array if outputItems is null. */
+&nbsp;    public @Nullable ItemStack outputItem;
+&nbsp;    /** Overwrites outputItem if not null. */
+&nbsp;    public @Nullable ItemStack[] outputItems;
+&nbsp;
+&nbsp;    /** Written to outputLiquids as a single-element array if outputLiquids is null. */
+&nbsp;    public @Nullable LiquidStack outputLiquid;
+&nbsp;    /** Overwrites outputLiquid if not null. */
+&nbsp;    public @Nullable LiquidStack[] outputLiquids;
+&nbsp;    /** Liquid output directions, specified in the same order as outputLiquids. Use -1 to dump in every direction. Rotations are relative to block. */
+<b class="fc">&nbsp;    public int[] liquidOutputDirections = {-1};</b>
+&nbsp;
+&nbsp;    /** if true, crafters with multiple liquid outputs will dump excess when there&#39;s still space for at least one liquid type */
+<b class="fc">&nbsp;    public boolean dumpExtraLiquid = true;</b>
+<b class="fc">&nbsp;    public boolean ignoreLiquidFullness = false;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float craftTime = 80;</b>
+<b class="fc">&nbsp;    public Effect craftEffect = Fx.none;</b>
+<b class="fc">&nbsp;    public Effect updateEffect = Fx.none;</b>
+<b class="fc">&nbsp;    public float updateEffectChance = 0.04f;</b>
+<b class="fc">&nbsp;    public float warmupSpeed = 0.019f;</b>
+&nbsp;    /** Only used for legacy cultivator blocks. */
+<b class="fc">&nbsp;    public boolean legacyReadWarmup = false;</b>
+&nbsp;
+<b class="fc">&nbsp;    public DrawBlock drawer = new DrawDefault();</b>
+&nbsp;
+&nbsp;    public GenericCrafter(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        ambientSound = Sounds.machine;</b>
+<b class="fc">&nbsp;        sync = true;</b>
+<b class="fc">&nbsp;        ambientSoundVolume = 0.03f;</b>
+<b class="fc">&nbsp;        flags = EnumSet.of(BlockFlag.factory);</b>
+<b class="fc">&nbsp;        drawArrow = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        stats.timePeriod = craftTime;</b>
+<b class="nc">&nbsp;        super.setStats();</b>
+<b class="nc">&nbsp;        if((hasItems &amp;&amp; itemCapacity &gt; 0) || outputItems != null){</b>
+<b class="nc">&nbsp;            stats.add(Stat.productionTime, craftTime / 60f, StatUnit.seconds);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(outputItems != null){</b>
+<b class="nc">&nbsp;            stats.add(Stat.output, StatValues.items(craftTime, outputItems));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(outputLiquids != null){</b>
+<b class="nc">&nbsp;            stats.add(Stat.output, StatValues.liquids(1f, outputLiquids));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+&nbsp;        //set up liquid bars for liquid outputs
+<b class="fc">&nbsp;        if(outputLiquids != null &amp;&amp; outputLiquids.length &gt; 0){</b>
+&nbsp;            //no need for dynamic liquid bar
+<b class="fc">&nbsp;            removeBar(&quot;liquid&quot;);</b>
+&nbsp;
+&nbsp;            //then display output buffer
+<b class="fc">&nbsp;            for(var stack : outputLiquids){</b>
+<b class="fc">&nbsp;                addLiquidBar(stack.liquid);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean rotatedOutput(int fromX, int fromY, Tile destination){
+<b class="fc">&nbsp;        if(!(destination.build instanceof ConduitBuild)) return false;</b>
+&nbsp;
+<b class="fc">&nbsp;        Building crafter = world.build(fromX, fromY);</b>
+<b class="fc">&nbsp;        if(crafter == null) return false;</b>
+<b class="fc">&nbsp;        int relative = Mathf.mod(crafter.relativeTo(destination) - crafter.rotation, 4);</b>
+<b class="fc">&nbsp;        for(int dir : liquidOutputDirections){</b>
+<b class="fc">&nbsp;            if(dir == -1 || dir == relative) return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        drawer.load(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        if(outputItems == null &amp;&amp; outputItem != null){</b>
+<b class="fc">&nbsp;            outputItems = new ItemStack[]{outputItem};</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if(outputLiquids == null &amp;&amp; outputLiquid != null){</b>
+<b class="fc">&nbsp;            outputLiquids = new LiquidStack[]{outputLiquid};</b>
+&nbsp;        }
+&nbsp;        //write back to outputLiquid, as it helps with sensing
+<b class="fc">&nbsp;        if(outputLiquid == null &amp;&amp; outputLiquids != null &amp;&amp; outputLiquids.length &gt; 0){</b>
+<b class="fc">&nbsp;            outputLiquid = outputLiquids[0];</b>
+&nbsp;        }
+<b class="fc">&nbsp;        outputsLiquid = outputLiquids != null;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(outputItems != null) hasItems = true;</b>
+<b class="fc">&nbsp;        if(outputLiquids != null) hasLiquids = true;</b>
+&nbsp;
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        drawer.drawPlan(this, plan, list);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return drawer.finalIcons(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return outputItems != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void getRegionsToOutline(Seq&lt;TextureRegion&gt; out){
+<b class="nc">&nbsp;        drawer.getRegionsToOutline(this, out);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawOverlay(float x, float y, int rotation){
+<b class="nc">&nbsp;        if(outputLiquids != null){</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; outputLiquids.length; i++){</b>
+<b class="nc">&nbsp;                int dir = liquidOutputDirections.length &gt; i ? liquidOutputDirections[i] : -1;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(dir != -1){</b>
+<b class="nc">&nbsp;                    Draw.rect(</b>
+&nbsp;                        outputLiquids[i].liquid.fullIcon,
+<b class="nc">&nbsp;                        x + Geometry.d4x(dir + rotation) * (size * tilesize / 2f + 4),</b>
+<b class="nc">&nbsp;                        y + Geometry.d4y(dir + rotation) * (size * tilesize / 2f + 4),</b>
+&nbsp;                        8f, 8f
+&nbsp;                    );
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class GenericCrafterBuild extends Building{</b>
+&nbsp;        public float progress;
+&nbsp;        public float totalProgress;
+&nbsp;        public float warmup;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            drawer.draw(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawLight(){
+<b class="nc">&nbsp;            super.drawLight();</b>
+<b class="nc">&nbsp;            drawer.drawLight(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            if(outputItems != null){</b>
+<b class="fc">&nbsp;                for(var output : outputItems){</b>
+<b class="fc">&nbsp;                    if(items.get(output.item) + output.amount &gt; itemCapacity){</b>
+<b class="nc">&nbsp;                        return false;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;            if(outputLiquids != null &amp;&amp; !ignoreLiquidFullness){</b>
+<b class="fc">&nbsp;                boolean allFull = true;</b>
+<b class="fc">&nbsp;                for(var output : outputLiquids){</b>
+<b class="fc">&nbsp;                    if(liquids.get(output.liquid) &gt;= liquidCapacity - 0.001f){</b>
+<b class="nc">&nbsp;                        if(!dumpExtraLiquid){</b>
+<b class="nc">&nbsp;                            return false;</b>
+&nbsp;                        }
+&nbsp;                    }else{
+&nbsp;                        //if there&#39;s still space left, it&#39;s not full for all liquids
+<b class="fc">&nbsp;                        allFull = false;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //if there is no space left for any liquid, it can&#39;t reproduce
+<b class="fc">&nbsp;                if(allFull){</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            return enabled;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(efficiency &gt; 0){</b>
+&nbsp;
+<b class="fc">&nbsp;                progress += getProgressIncrease(craftTime);</b>
+<b class="fc">&nbsp;                warmup = Mathf.approachDelta(warmup, warmupTarget(), warmupSpeed);</b>
+&nbsp;
+&nbsp;                //continuously output based on efficiency
+<b class="fc">&nbsp;                if(outputLiquids != null){</b>
+<b class="nc">&nbsp;                    float inc = getProgressIncrease(1f);</b>
+<b class="nc">&nbsp;                    for(var output : outputLiquids){</b>
+<b class="nc">&nbsp;                        handleLiquid(this, output.liquid, Math.min(output.amount * inc, liquidCapacity - liquids.get(output.liquid)));</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(wasVisible &amp;&amp; Mathf.chanceDelta(updateEffectChance)){</b>
+<b class="nc">&nbsp;                    updateEffect.at(x + Mathf.range(size * 4f), y + Mathf.range(size * 4));</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="fc">&nbsp;                warmup = Mathf.approachDelta(warmup, 0f, warmupSpeed);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //TODO may look bad, revert to edelta() if so
+<b class="fc">&nbsp;            totalProgress += warmup * Time.delta;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(progress &gt;= 1f){</b>
+<b class="nc">&nbsp;                craft();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            dumpOutputs();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float getProgressIncrease(float baseTime){
+<b class="fc">&nbsp;            if(ignoreLiquidFullness){</b>
+<b class="nc">&nbsp;                return super.getProgressIncrease(baseTime);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //limit progress increase by maximum amount of liquid it can produce
+<b class="fc">&nbsp;            float scaling = 1f, max = 1f;</b>
+<b class="fc">&nbsp;            if(outputLiquids != null){</b>
+<b class="nc">&nbsp;                max = 0f;</b>
+<b class="nc">&nbsp;                for(var s : outputLiquids){</b>
+<b class="nc">&nbsp;                    float value = (liquidCapacity - liquids.get(s.liquid)) / (s.amount * edelta());</b>
+<b class="nc">&nbsp;                    scaling = Math.min(scaling, value);</b>
+<b class="nc">&nbsp;                    max = Math.max(max, value);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //when dumping excess take the maximum value instead of the minimum.
+<b class="fc">&nbsp;            return super.getProgressIncrease(baseTime) * (dumpExtraLiquid ? Math.min(max, 1f) : scaling);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public float warmupTarget(){
+<b class="fc">&nbsp;            return 1f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float warmup(){
+<b class="nc">&nbsp;            return warmup;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float totalProgress(){
+<b class="nc">&nbsp;            return totalProgress;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void craft(){
+<b class="nc">&nbsp;            consume();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(outputItems != null){</b>
+<b class="nc">&nbsp;                for(var output : outputItems){</b>
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; output.amount; i++){</b>
+<b class="nc">&nbsp;                        offload(output.item);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(wasVisible){</b>
+<b class="nc">&nbsp;                craftEffect.at(x, y);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            progress %= 1f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void dumpOutputs(){
+<b class="fc">&nbsp;            if(outputItems != null &amp;&amp; timer(timerDump, dumpTime / timeScale)){</b>
+<b class="fc">&nbsp;                for(ItemStack output : outputItems){</b>
+<b class="fc">&nbsp;                    dump(output.item);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(outputLiquids != null){</b>
+<b class="fc">&nbsp;                for(int i = 0; i &lt; outputLiquids.length; i++){</b>
+<b class="fc">&nbsp;                    int dir = liquidOutputDirections.length &gt; i ? liquidOutputDirections[i] : -1;</b>
+&nbsp;
+<b class="fc">&nbsp;                    dumpLiquid(outputLiquids[i].liquid, 2f, dir);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public double sense(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.progress) return progress();</b>
+&nbsp;            //attempt to prevent wild total liquid fluctuation, at least for crafters
+<b class="nc">&nbsp;            if(sensor == LAccess.totalLiquids &amp;&amp; outputLiquid != null) return liquids.get(outputLiquid.liquid);</b>
+<b class="nc">&nbsp;            return super.sense(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float progress(){
+<b class="nc">&nbsp;            return Mathf.clamp(progress);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int getMaximumAccepted(Item item){
+<b class="fc">&nbsp;            return itemCapacity;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldAmbientSound(){
+<b class="nc">&nbsp;            return efficiency &gt; 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.f(progress);</b>
+<b class="fc">&nbsp;            write.f(warmup);</b>
+<b class="fc">&nbsp;            if(legacyReadWarmup) write.f(0f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            progress = read.f();</b>
+<b class="fc">&nbsp;            warmup = read.f();</b>
+<b class="fc">&nbsp;            if(legacyReadWarmup) read.f();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

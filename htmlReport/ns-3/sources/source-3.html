@@ -1,0 +1,323 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BuilderAI</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai.types</a>
+</div>
+
+<h1>Coverage Summary for Class: BuilderAI (mindustry.ai.types)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BuilderAI</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/96)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai.types;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class BuilderAI extends AIController{
+<b class="nc">&nbsp;    public static float buildRadius = 1500, retreatDst = 110f, retreatDelay = Time.toSeconds * 2f, defaultRebuildPeriod = 60f * 2f;</b>
+&nbsp;
+&nbsp;    public @Nullable Unit assistFollowing;
+&nbsp;    public @Nullable Unit following;
+&nbsp;    public @Nullable Teamc enemy;
+&nbsp;    public @Nullable BlockPlan lastPlan;
+&nbsp;
+<b class="nc">&nbsp;    public float fleeRange = 370f, rebuildPeriod = defaultRebuildPeriod;</b>
+&nbsp;    public boolean alwaysFlee;
+&nbsp;    public boolean onlyAssist;
+&nbsp;
+<b class="nc">&nbsp;    boolean found = false;</b>
+&nbsp;    float retreatTimer;
+&nbsp;
+<b class="nc">&nbsp;    public BuilderAI(boolean alwaysFlee, float fleeRange){</b>
+<b class="nc">&nbsp;        this.alwaysFlee = alwaysFlee;</b>
+<b class="nc">&nbsp;        this.fleeRange = fleeRange;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public BuilderAI(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+&nbsp;        //rebuild much faster with buildAI; there are usually few builder units so this is fine
+<b class="nc">&nbsp;        if(rebuildPeriod == defaultRebuildPeriod &amp;&amp; unit.team.rules().buildAi){</b>
+<b class="nc">&nbsp;            rebuildPeriod = 10f;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateMovement(){
+&nbsp;
+<b class="nc">&nbsp;        if(target != null &amp;&amp; shouldShoot()){</b>
+<b class="nc">&nbsp;            unit.lookAt(target);</b>
+<b class="nc">&nbsp;        }else if(!unit.type.flying){</b>
+<b class="nc">&nbsp;            unit.lookAt(unit.prefRotation());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        unit.updateBuilding = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(assistFollowing != null &amp;&amp; assistFollowing.activelyBuilding()){</b>
+<b class="nc">&nbsp;            following = assistFollowing;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean moving = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(following != null){</b>
+<b class="nc">&nbsp;            retreatTimer = 0f;</b>
+&nbsp;            //try to follow and mimic someone
+&nbsp;
+&nbsp;            //validate follower
+<b class="nc">&nbsp;            if(!following.isValid() || !following.activelyBuilding()){</b>
+<b class="nc">&nbsp;                following = null;</b>
+<b class="nc">&nbsp;                unit.plans.clear();</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+&nbsp;            //set to follower&#39;s first build plan, whatever that is
+<b class="nc">&nbsp;            unit.plans.clear();</b>
+<b class="nc">&nbsp;            unit.plans.addFirst(following.buildPlan());</b>
+<b class="nc">&nbsp;            lastPlan = null;</b>
+<b class="nc">&nbsp;        }else if(unit.buildPlan() == null || alwaysFlee){</b>
+&nbsp;            //not following anyone or building
+<b class="nc">&nbsp;            if(timer.get(timerTarget4, 40)){</b>
+<b class="nc">&nbsp;                enemy = target(unit.x, unit.y, fleeRange, true, true);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //fly away from enemy when not doing anything, but only after a delay
+<b class="nc">&nbsp;            if((retreatTimer += Time.delta) &gt;= retreatDelay || alwaysFlee){</b>
+<b class="nc">&nbsp;                if(enemy != null){</b>
+<b class="nc">&nbsp;                    unit.clearBuilding();</b>
+<b class="nc">&nbsp;                    var core = unit.closestCore();</b>
+<b class="nc">&nbsp;                    if(core != null &amp;&amp; !unit.within(core, retreatDst)){</b>
+<b class="nc">&nbsp;                        moveTo(core, retreatDst);</b>
+<b class="nc">&nbsp;                        moving = true;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(unit.buildPlan() != null){</b>
+<b class="nc">&nbsp;            if(!alwaysFlee) retreatTimer = 0f;</b>
+&nbsp;            //approach plan if building
+<b class="nc">&nbsp;            BuildPlan req = unit.buildPlan();</b>
+&nbsp;
+&nbsp;            //clear break plan if another player is breaking something
+<b class="nc">&nbsp;            if(!req.breaking &amp;&amp; timer.get(timerTarget2, 40f)){</b>
+<b class="nc">&nbsp;                for(Player player : Groups.player){</b>
+<b class="nc">&nbsp;                    if(player.isBuilder() &amp;&amp; player.unit().activelyBuilding() &amp;&amp; player.unit().buildPlan().samePos(req) &amp;&amp; player.unit().buildPlan().breaking){</b>
+<b class="nc">&nbsp;                        unit.plans.removeFirst();</b>
+&nbsp;                        //remove from list of plans
+<b class="nc">&nbsp;                        unit.team.data().plans.remove(p -&gt; p.x == req.x &amp;&amp; p.y == req.y);</b>
+&nbsp;                        return;
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            boolean valid =
+<b class="nc">&nbsp;                !(lastPlan != null &amp;&amp; lastPlan.removed) &amp;&amp;</b>
+<b class="nc">&nbsp;                    ((req.tile() != null &amp;&amp; req.tile().build instanceof ConstructBuild cons &amp;&amp; cons.current == req.block) ||</b>
+&nbsp;                    (req.breaking ?
+<b class="nc">&nbsp;                        Build.validBreak(unit.team(), req.x, req.y) :</b>
+<b class="nc">&nbsp;                        Build.validPlace(req.block, unit.team(), req.x, req.y, req.rotation)));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(valid){</b>
+&nbsp;                //move toward the plan
+<b class="nc">&nbsp;                moveTo(req.tile(), unit.type.buildRange - 20f, 20f);</b>
+<b class="nc">&nbsp;                moving = !unit.within(req.tile(), unit.type.buildRange - 10f);</b>
+&nbsp;            }else{
+&nbsp;                //discard invalid plan
+<b class="nc">&nbsp;                unit.plans.removeFirst();</b>
+<b class="nc">&nbsp;                lastPlan = null;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+&nbsp;
+<b class="nc">&nbsp;            if(assistFollowing != null){</b>
+<b class="nc">&nbsp;                moveTo(assistFollowing, assistFollowing.type.hitSize + unit.type.hitSize/2f + 60f);</b>
+<b class="nc">&nbsp;                moving = !unit.within(assistFollowing, assistFollowing.type.hitSize + unit.type.hitSize/2f + 65f);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //follow someone and help them build
+<b class="nc">&nbsp;            if(timer.get(timerTarget2, 20f)){</b>
+<b class="nc">&nbsp;                found = false;</b>
+&nbsp;
+<b class="nc">&nbsp;                Units.nearby(unit.team, unit.x, unit.y, buildRadius, u -&gt; {</b>
+<b class="nc">&nbsp;                    if(found) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(u.canBuild() &amp;&amp; u != unit &amp;&amp; u.activelyBuilding()){</b>
+<b class="nc">&nbsp;                        BuildPlan plan = u.buildPlan();</b>
+&nbsp;
+<b class="nc">&nbsp;                        Building build = world.build(plan.x, plan.y);</b>
+<b class="nc">&nbsp;                        if(build instanceof ConstructBuild cons){</b>
+<b class="nc">&nbsp;                            float dist = Math.min(cons.dst(unit) - unit.type.buildRange, 0);</b>
+&nbsp;
+&nbsp;                            //make sure you can reach the plan in time
+<b class="nc">&nbsp;                            if(dist / unit.speed() &lt; cons.buildCost * 0.9f){</b>
+<b class="nc">&nbsp;                                following = u;</b>
+<b class="nc">&nbsp;                                found = true;</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                if(onlyAssist){</b>
+<b class="nc">&nbsp;                    float minDst = Float.MAX_VALUE;</b>
+<b class="nc">&nbsp;                    Player closest = null;</b>
+<b class="nc">&nbsp;                    for(var player : Groups.player){</b>
+<b class="nc">&nbsp;                        if(!player.dead() &amp;&amp; player.isBuilder() &amp;&amp; player.team() == unit.team){</b>
+<b class="nc">&nbsp;                            float dst = player.dst2(unit);</b>
+<b class="nc">&nbsp;                            if(dst &lt; minDst){</b>
+<b class="nc">&nbsp;                                closest = player;</b>
+<b class="nc">&nbsp;                                minDst = dst;</b>
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    assistFollowing = closest == null ? null : closest.unit();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //find new plan
+<b class="nc">&nbsp;            if(!onlyAssist &amp;&amp; !unit.team.data().plans.isEmpty() &amp;&amp; following == null &amp;&amp; timer.get(timerTarget3, rebuildPeriod)){</b>
+<b class="nc">&nbsp;                Queue&lt;BlockPlan&gt; blocks = unit.team.data().plans;</b>
+<b class="nc">&nbsp;                BlockPlan block = blocks.first();</b>
+&nbsp;
+&nbsp;                //check if it&#39;s already been placed
+<b class="nc">&nbsp;                if(world.tile(block.x, block.y) != null &amp;&amp; world.tile(block.x, block.y).block().id == block.block){</b>
+<b class="nc">&nbsp;                    blocks.removeFirst();</b>
+<b class="nc">&nbsp;                }else if(Build.validPlace(content.block(block.block), unit.team(), block.x, block.y, block.rotation) &amp;&amp; (!alwaysFlee || !nearEnemy(block.x, block.y))){ //it&#39;s valid</b>
+<b class="nc">&nbsp;                    lastPlan = block;</b>
+&nbsp;                    //add build plan
+<b class="nc">&nbsp;                    unit.addBuild(new BuildPlan(block.x, block.y, block.rotation, content.block(block.block), block.config));</b>
+&nbsp;                    //shift build plan to tail so next unit builds something else
+<b class="nc">&nbsp;                    blocks.addLast(blocks.removeFirst());</b>
+&nbsp;                }else{
+&nbsp;                    //shift head of queue to tail, try something else next time
+<b class="nc">&nbsp;                    blocks.addLast(blocks.removeFirst());</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!unit.type.flying){</b>
+<b class="nc">&nbsp;            unit.updateBoosting(moving || unit.floorOn().isDuct || unit.floorOn().damageTaken &gt; 0f || unit.floorOn().isDeep());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean nearEnemy(int x, int y){
+<b class="nc">&nbsp;        return Units.nearEnemy(unit.team, x * tilesize - fleeRange/2f, y * tilesize - fleeRange/2f, fleeRange, fleeRange);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public AIController fallback(){
+<b class="nc">&nbsp;        return unit.type.flying ? new FlyingAI() : new GroundAI();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean useFallback(){
+<b class="nc">&nbsp;        return state.rules.waves &amp;&amp; unit.team == state.rules.waveTeam &amp;&amp; !unit.team.rules().rtsAi;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean shouldShoot(){
+<b class="nc">&nbsp;        return !unit.isBuilding() &amp;&amp; unit.type.canAttack;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

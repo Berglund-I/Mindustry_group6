@@ -1,0 +1,217 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PayloadSeq</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: PayloadSeq (mindustry.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PayloadSeq</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.8%
+  </span>
+  <span class="absValue">
+    (5/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.8%
+  </span>
+  <span class="absValue">
+    (11/41)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.ObjectIntMap.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;
+<b class="fc">&nbsp;public class PayloadSeq{</b>
+<b class="fc">&nbsp;    private ObjectIntMap&lt;UnlockableContent&gt; payloads = new ObjectIntMap&lt;&gt;();</b>
+&nbsp;    private int total;
+&nbsp;
+&nbsp;    public boolean isEmpty(){
+<b class="nc">&nbsp;        return total == 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean any(){
+<b class="nc">&nbsp;        return total &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int total(){
+<b class="nc">&nbsp;        return total;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(UnlockableContent block){
+<b class="nc">&nbsp;        add(block, 1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(UnlockableContent block, int amount){
+<b class="nc">&nbsp;        if(block == null) return;</b>
+<b class="nc">&nbsp;        payloads.increment(block, amount);</b>
+<b class="nc">&nbsp;        total += amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(UnlockableContent block){
+<b class="nc">&nbsp;        add(block, -1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(UnlockableContent block, int amount){
+<b class="nc">&nbsp;        add(block, -amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(Seq&lt;PayloadStack&gt; stacks){
+<b class="nc">&nbsp;        stacks.each(b -&gt; remove(b.item, b.amount));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return this object */
+&nbsp;    public PayloadSeq removeAll(Boolf&lt;UnlockableContent&gt; pred){
+<b class="nc">&nbsp;        Entries&lt;UnlockableContent&gt; iter = payloads.iterator();</b>
+<b class="nc">&nbsp;        while(iter.hasNext()){</b>
+<b class="nc">&nbsp;            Entry&lt;UnlockableContent&gt; e = iter.next();</b>
+<b class="nc">&nbsp;            if(pred.get(e.key)){</b>
+<b class="nc">&nbsp;                iter.remove();</b>
+<b class="nc">&nbsp;                total -= e.value;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clear(){
+<b class="nc">&nbsp;        payloads.clear();</b>
+<b class="nc">&nbsp;        total = 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int get(UnlockableContent block){
+<b class="fc">&nbsp;        return payloads.get(block);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean contains(Seq&lt;PayloadStack&gt; stacks){
+<b class="nc">&nbsp;        return !stacks.contains(b -&gt; get(b.item) &lt; b.amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean contains(UnlockableContent block, int amount){
+<b class="fc">&nbsp;        return get(block) &gt;= amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean contains(UnlockableContent block){
+<b class="nc">&nbsp;        return get(block) &gt;= 1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean contains(PayloadStack stack){
+<b class="nc">&nbsp;        return get(stack.item) &gt;= stack.amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void write(Writes write){
+&nbsp;        //IMPORTANT NOTICE: size is negated here because I changed the format of this class at some point
+&nbsp;        //negated = new format
+<b class="fc">&nbsp;        write.s(-payloads.size);</b>
+<b class="fc">&nbsp;        for(var entry : payloads.entries()){</b>
+<b class="nc">&nbsp;            write.b(entry.key.getContentType().ordinal());</b>
+<b class="nc">&nbsp;            write.s(entry.key.id);</b>
+<b class="nc">&nbsp;            write.i(entry.value);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void read(Reads read){
+<b class="fc">&nbsp;        total = 0;</b>
+<b class="fc">&nbsp;        payloads.clear();</b>
+<b class="fc">&nbsp;        short amount = read.s();</b>
+<b class="fc">&nbsp;        if(amount &gt;= 0){</b>
+&nbsp;            //old format, block only - can safely ignore, really
+<b class="fc">&nbsp;            for(int i = 0; i &lt; amount; i++){</b>
+<b class="nc">&nbsp;                add(Vars.content.block(read.s()), read.i());</b>
+&nbsp;            }
+&nbsp;        }else{
+&nbsp;            //new format
+<b class="nc">&nbsp;            for(int i = 0; i &lt; -amount; i++){</b>
+<b class="nc">&nbsp;                add(Vars.content.getByID(ContentType.all[read.ub()], read.s()), read.i());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

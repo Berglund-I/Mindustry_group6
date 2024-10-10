@@ -1,0 +1,152 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawArcSmelt</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawArcSmelt (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawArcSmelt</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29.6%
+  </span>
+  <span class="absValue">
+    (8/27)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+<b class="fc">&nbsp;public class DrawArcSmelt extends DrawBlock{</b>
+<b class="fc">&nbsp;    public Color flameColor = Color.valueOf(&quot;f58349&quot;), midColor = Color.valueOf(&quot;f2d585&quot;);</b>
+<b class="fc">&nbsp;    public float flameRad = 1f, circleSpace = 2f, flameRadiusScl = 3f, flameRadiusMag = 0.3f, circleStroke = 1.5f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float alpha = 0.68f;</b>
+<b class="fc">&nbsp;    public int particles = 25;</b>
+<b class="fc">&nbsp;    public float particleLife = 40f, particleRad = 7f, particleStroke = 1.1f, particleLen = 3f;</b>
+<b class="fc">&nbsp;    public boolean drawCenter = true;</b>
+<b class="fc">&nbsp;    public Blending blending = Blending.additive;</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+<b class="nc">&nbsp;        if(build.warmup() &gt; 0f &amp;&amp; flameColor.a &gt; 0.001f){</b>
+<b class="nc">&nbsp;            Lines.stroke(circleStroke * build.warmup());</b>
+&nbsp;
+<b class="nc">&nbsp;            float si = Mathf.absin(flameRadiusScl, flameRadiusMag);</b>
+<b class="nc">&nbsp;            float a = alpha * build.warmup();</b>
+<b class="nc">&nbsp;            Draw.blend(blending);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(midColor, a);</b>
+<b class="nc">&nbsp;            if(drawCenter) Fill.circle(build.x, build.y, flameRad + si);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(flameColor, a);</b>
+<b class="nc">&nbsp;            if(drawCenter) Lines.circle(build.x, build.y, (flameRad + circleSpace + si) * build.warmup());</b>
+&nbsp;
+<b class="nc">&nbsp;            Lines.stroke(particleStroke * build.warmup());</b>
+&nbsp;
+<b class="nc">&nbsp;            float base = (Time.time / particleLife);</b>
+<b class="nc">&nbsp;            rand.setSeed(build.id);</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; particles; i++){</b>
+<b class="nc">&nbsp;                float fin = (rand.random(1f) + base) % 1f, fout = 1f - fin;</b>
+<b class="nc">&nbsp;                float angle = rand.random(360f);</b>
+<b class="nc">&nbsp;                float len = particleRad * Interp.pow2Out.apply(fin);</b>
+<b class="nc">&nbsp;                Lines.lineAngle(build.x + Angles.trnsx(angle, len), build.y + Angles.trnsy(angle, len), angle, particleLen * fout * build.warmup());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.blend();</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

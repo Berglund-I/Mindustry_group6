@@ -1,0 +1,1581 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Block</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world</a>
+</div>
+
+<h1>Coverage Summary for Class: Block (mindustry.world)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Block</td>
+<td class="coverageStat">
+  <span class="percent">
+    49.3%
+  </span>
+  <span class="absValue">
+    (66/134)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.9%
+  </span>
+  <span class="absValue">
+    (320/583)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Block$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    48.9%
+  </span>
+  <span class="absValue">
+    (66/135)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.8%
+  </span>
+  <span class="absValue">
+    (320/584)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.g2d.TextureAtlas.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.EnumSet;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.graphics.MultiPacker.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import java.lang.reflect.*;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Block extends UnlockableContent implements Senseable{
+&nbsp;    /** If true, buildings have an ItemModule. */
+&nbsp;    public boolean hasItems;
+&nbsp;    /** If true, buildings have a LiquidModule. */
+&nbsp;    public boolean hasLiquids;
+&nbsp;    /** If true, buildings have a PowerModule. */
+&nbsp;    public boolean hasPower;
+&nbsp;    /** Flag for determining whether this block outputs liquid somewhere; used for connections. */
+<b class="fc">&nbsp;    public boolean outputsLiquid = false;</b>
+&nbsp;    /** Used by certain power blocks (nodes) to flag as non-consuming of power. True by default, even if this block has no power. */
+<b class="fc">&nbsp;    public boolean consumesPower = true;</b>
+&nbsp;    /** If true, this block is a generator that can produce power. */
+<b class="fc">&nbsp;    public boolean outputsPower = false;</b>
+&nbsp;    /** If false, power nodes cannot connect to this block. */
+<b class="fc">&nbsp;    public boolean connectedPower = true;</b>
+&nbsp;    /** If true, this block can conduct power like a cable. */
+<b class="fc">&nbsp;    public boolean conductivePower = false;</b>
+&nbsp;    /** If true, this block can output payloads; affects blending. */
+<b class="fc">&nbsp;    public boolean outputsPayload = false;</b>
+&nbsp;    /** If true, this block can input payloads; affects unit payload enter behavior. */
+<b class="fc">&nbsp;    public boolean acceptsUnitPayloads = false;</b>
+&nbsp;    /** If true, payloads will attempt to move into this block. */
+<b class="fc">&nbsp;    public boolean acceptsPayload = false;</b>
+&nbsp;    /** Visual flag use for blending of certain transportation blocks. */
+<b class="fc">&nbsp;    public boolean acceptsItems = false;</b>
+&nbsp;    /** If true, all item capacities of this block are separate instead of pooled as one number. */
+<b class="fc">&nbsp;    public boolean separateItemCapacity = false;</b>
+&nbsp;    /** maximum items this block can carry (usually, this is per-type of item) */
+<b class="fc">&nbsp;    public int itemCapacity = 10;</b>
+&nbsp;    /** maximum total liquids this block can carry if hasLiquids = true */
+<b class="fc">&nbsp;    public float liquidCapacity = 10f;</b>
+&nbsp;    /** higher numbers increase liquid output speed; TODO remove and replace with better liquids system */
+<b class="fc">&nbsp;    public float liquidPressure = 1f;</b>
+&nbsp;    /** If true, this block outputs to its facing direction, when applicable.
+&nbsp;     * Used for blending calculations. */
+<b class="fc">&nbsp;    public boolean outputFacing = true;</b>
+&nbsp;    /** if true, this block does not accept input from the sides (used for armored conveyors) */
+<b class="fc">&nbsp;    public boolean noSideBlend = false;</b>
+&nbsp;    /** whether to display flow rate */
+<b class="fc">&nbsp;    public boolean displayFlow = true;</b>
+&nbsp;    /** whether this block is visible in the editor */
+<b class="fc">&nbsp;    public boolean inEditor = true;</b>
+&nbsp;    /** the last configuration value applied to this block. */
+&nbsp;    public @Nullable Object lastConfig;
+&nbsp;    /** whether to save the last config and apply it to newly placed blocks */
+<b class="fc">&nbsp;    public boolean saveConfig = false;</b>
+&nbsp;    /** whether to allow copying the config through middle click */
+<b class="fc">&nbsp;    public boolean copyConfig = true;</b>
+&nbsp;    /** if true, double-tapping this configurable block clears configuration. */
+<b class="fc">&nbsp;    public boolean clearOnDoubleTap = false;</b>
+&nbsp;    /** whether this block has a tile entity that updates */
+&nbsp;    public boolean update;
+&nbsp;    /** whether this block has health and can be destroyed */
+&nbsp;    public boolean destructible;
+&nbsp;    /** whether unloaders work on this block */
+<b class="fc">&nbsp;    public boolean unloadable = true;</b>
+&nbsp;    /** if true, this block acts a duct and will connect to armored ducts from the side. */
+<b class="fc">&nbsp;    public boolean isDuct = false;</b>
+&nbsp;    /** whether units can resupply by taking items from this block */
+<b class="fc">&nbsp;    public boolean allowResupply = false;</b>
+&nbsp;    /** whether this is solid */
+&nbsp;    public boolean solid;
+&nbsp;    /** whether this block CAN be solid. */
+&nbsp;    public boolean solidifes;
+&nbsp;    /** if true, this counts as a non-solid block to this team. */
+&nbsp;    public boolean teamPassable;
+&nbsp;    /** if true, this block cannot be hit by bullets unless explicitly targeted. */
+&nbsp;    public boolean underBullets;
+&nbsp;    /** whether this is rotatable */
+&nbsp;    public boolean rotate;
+&nbsp;    /** if rotate is true and this is false, the region won&#39;t rotate when drawing */
+<b class="fc">&nbsp;    public boolean rotateDraw = true;</b>
+&nbsp;    /** if rotate = false and this is true, rotation will be locked at 0 when placing (default); advanced use only */
+<b class="fc">&nbsp;    public boolean lockRotation = true;</b>
+&nbsp;    /** if true, schematic flips with this block are inverted. */
+<b class="fc">&nbsp;    public boolean invertFlip = false;</b>
+&nbsp;    /** number of different variant regions to use */
+<b class="fc">&nbsp;    public int variants = 0;</b>
+&nbsp;    /** whether to draw a rotation arrow - this does not apply to lines of blocks */
+<b class="fc">&nbsp;    public boolean drawArrow = true;</b>
+&nbsp;    /** whether to draw the team corner by default */
+<b class="fc">&nbsp;    public boolean drawTeamOverlay = true;</b>
+&nbsp;    /** for static blocks only: if true, tile data() is saved in world data. */
+&nbsp;    public boolean saveData;
+&nbsp;    /** whether you can break this with rightclick */
+&nbsp;    public boolean breakable;
+&nbsp;    /** whether to add this block to brokenblocks */
+<b class="fc">&nbsp;    public boolean rebuildable = true;</b>
+&nbsp;    /** if true, this logic-related block can only be used with privileged processors (or is one itself) */
+<b class="fc">&nbsp;    public boolean privileged = false;</b>
+&nbsp;    /** whether this block can only be placed on water */
+<b class="fc">&nbsp;    public boolean requiresWater = false;</b>
+&nbsp;    /** whether this block can be placed on any liquids, anywhere */
+<b class="fc">&nbsp;    public boolean placeableLiquid = false;</b>
+&nbsp;    /** whether this block can be placed directly by the player via PlacementFragment */
+<b class="fc">&nbsp;    public boolean placeablePlayer = true;</b>
+&nbsp;    /** whether this floor can be placed on. */
+<b class="fc">&nbsp;    public boolean placeableOn = true;</b>
+&nbsp;    /** whether this block has insulating properties. */
+<b class="fc">&nbsp;    public boolean insulated = false;</b>
+&nbsp;    /** whether the sprite is a full square. */
+<b class="fc">&nbsp;    public boolean squareSprite = true;</b>
+&nbsp;    /** whether this block absorbs laser attacks. */
+<b class="fc">&nbsp;    public boolean absorbLasers = false;</b>
+&nbsp;    /** if false, the status is never drawn */
+<b class="fc">&nbsp;    public boolean enableDrawStatus = true;</b>
+&nbsp;    /** whether to draw disabled status */
+<b class="fc">&nbsp;    public boolean drawDisabled = true;</b>
+&nbsp;    /** whether to automatically reset enabled status after a logic block has not interacted for a while. */
+<b class="fc">&nbsp;    public boolean autoResetEnabled = true;</b>
+&nbsp;    /** if true, the block stops updating when disabled */
+<b class="fc">&nbsp;    public boolean noUpdateDisabled = false;</b>
+&nbsp;    /** if true, this block updates when it&#39;s a payload in a unit. */
+<b class="fc">&nbsp;    public boolean updateInUnits = true;</b>
+&nbsp;    /** if true, this block updates in payloads in units regardless of the experimental game rule */
+<b class="fc">&nbsp;    public boolean alwaysUpdateInUnits = false;</b>
+&nbsp;    /** if false, only incinerable liquids are dropped when deconstructing; otherwise, all liquids are dropped. */
+<b class="fc">&nbsp;    public boolean deconstructDropAllLiquid = false;</b>
+&nbsp;    /** Whether to use this block&#39;s color in the minimap. Only used for overlays. */
+<b class="fc">&nbsp;    public boolean useColor = true;</b>
+&nbsp;    /** item that drops from this block, used for drills */
+<b class="fc">&nbsp;    public @Nullable Item itemDrop = null;</b>
+&nbsp;    /** if true, this block cannot be mined by players. useful for annoying things like sand. */
+<b class="fc">&nbsp;    public boolean playerUnmineable = false;</b>
+&nbsp;    /** Array of affinities to certain things. */
+<b class="fc">&nbsp;    public Attributes attributes = new Attributes();</b>
+&nbsp;    /** Health per square tile that this block occupies; essentially, this is multiplied by size * size. Overridden if health is &gt; 0. If &lt;0, the default is 40. */
+<b class="fc">&nbsp;    public float scaledHealth = -1;</b>
+&nbsp;    /** building health; -1 to use scaledHealth */
+<b class="fc">&nbsp;    public int health = -1;</b>
+&nbsp;    /** damage absorption, similar to unit armor */
+<b class="fc">&nbsp;    public float armor = 0f;</b>
+&nbsp;    /** base block explosiveness */
+<b class="fc">&nbsp;    public float baseExplosiveness = 0f;</b>
+&nbsp;    /** bullet that this block spawns when destroyed */
+<b class="fc">&nbsp;    public @Nullable BulletType destroyBullet = null;</b>
+&nbsp;    /** if true, destroyBullet is spawned on the block&#39;s team instead of Derelict team */
+<b class="fc">&nbsp;    public boolean destroyBulletSameTeam = false;</b>
+&nbsp;    /** liquid used for lighting */
+&nbsp;    public @Nullable Liquid lightLiquid;
+&nbsp;    /** whether cracks are drawn when this block is damaged */
+<b class="fc">&nbsp;    public boolean drawCracks = true;</b>
+&nbsp;    /** whether rubble is created when this block is destroyed */
+<b class="fc">&nbsp;    public boolean createRubble = true;</b>
+&nbsp;    /** whether this block can be placed on edges of liquids. */
+<b class="fc">&nbsp;    public boolean floating = false;</b>
+&nbsp;    /** multiblock size */
+<b class="fc">&nbsp;    public int size = 1;</b>
+&nbsp;    /** multiblock offset */
+<b class="fc">&nbsp;    public float offset = 0f;</b>
+&nbsp;    /** offset for iteration (internal use only) */
+<b class="fc">&nbsp;    public int sizeOffset = 0;</b>
+&nbsp;    /** Clipping size of this block. Should be as large as the block will draw. */
+<b class="fc">&nbsp;    public float clipSize = -1f;</b>
+&nbsp;    /** When placeRangeCheck is enabled, this is the range checked for enemy blocks. */
+<b class="fc">&nbsp;    public float placeOverlapRange = 50f;</b>
+&nbsp;    /** Multiplier of damage dealt to this block by tanks. Does not apply to crawlers. */
+<b class="fc">&nbsp;    public float crushDamageMultiplier = 1f;</b>
+&nbsp;    /** Max of timers used. */
+<b class="fc">&nbsp;    public int timers = 0;</b>
+&nbsp;    /** Cache layer. Only used for &#39;cached&#39; rendering. */
+<b class="fc">&nbsp;    public CacheLayer cacheLayer = CacheLayer.normal;</b>
+&nbsp;    /** Special flag; if false, floor will be drawn under this block even if it is cached. */
+<b class="fc">&nbsp;    public boolean fillsTile = true;</b>
+&nbsp;    /** If true, this block can be covered by darkness / fog even if synthetic. */
+<b class="fc">&nbsp;    public boolean forceDark = false;</b>
+&nbsp;    /** whether this block can be replaced in all cases */
+<b class="fc">&nbsp;    public boolean alwaysReplace = false;</b>
+&nbsp;    /** if false, this block can never be replaced. */
+<b class="fc">&nbsp;    public boolean replaceable = true;</b>
+&nbsp;    /** The block group. Unless {@link #canReplace} is overridden, blocks in the same group can replace each other. */
+<b class="fc">&nbsp;    public BlockGroup group = BlockGroup.none;</b>
+&nbsp;    /** List of block flags. Used for AI indexing. */
+<b class="fc">&nbsp;    public EnumSet&lt;BlockFlag&gt; flags = EnumSet.of();</b>
+&nbsp;    /** Targeting priority of this block, as seen by enemies. */
+<b class="fc">&nbsp;    public float priority = TargetPriority.base;</b>
+&nbsp;    /** How much this block affects the unit cap by.
+&nbsp;     * The block flags must contain unitModifier in order for this to work. */
+<b class="fc">&nbsp;    public int unitCapModifier = 0;</b>
+&nbsp;    /** Whether the block can be tapped and selected to configure. */
+&nbsp;    public boolean configurable;
+&nbsp;    /** If true, this block does not have pointConfig with a transform called on map resize. */
+&nbsp;    public boolean ignoreResizeConfig;
+&nbsp;    /** If true, this building can be selected like a unit when commanding. */
+&nbsp;    public boolean commandable;
+&nbsp;    /** If true, the building inventory can be shown with the config. */
+<b class="fc">&nbsp;    public boolean allowConfigInventory = true;</b>
+&nbsp;    /** Defines how large selection menus, such as that of sorters, should be. */
+<b class="fc">&nbsp;    public int selectionRows = 5, selectionColumns = 4;</b>
+&nbsp;    /** If true, this block can be configured by logic. */
+<b class="fc">&nbsp;    public boolean logicConfigurable = false;</b>
+&nbsp;    /** Whether this block consumes touchDown events when tapped. */
+&nbsp;    public boolean consumesTap;
+&nbsp;    /** Whether to draw the glow of the liquid for this block, if it has one. */
+<b class="fc">&nbsp;    public boolean drawLiquidLight = true;</b>
+&nbsp;    /** Environmental flags that are *all* required for this block to function. 0 = any environment */
+<b class="fc">&nbsp;    public int envRequired = 0;</b>
+&nbsp;    /** The environment flags that this block can function in. If the env matches any of these, it will be enabled. */
+<b class="fc">&nbsp;    public int envEnabled = Env.terrestrial;</b>
+&nbsp;    /** The environment flags that this block *cannot* function in. If the env matches any of these, it will be *disabled*. */
+<b class="fc">&nbsp;    public int envDisabled = 0;</b>
+&nbsp;    /** Whether to periodically sync this block across the network. */
+&nbsp;    public boolean sync;
+&nbsp;    /** Whether this block uses conveyor-type placement mode. */
+&nbsp;    public boolean conveyorPlacement;
+&nbsp;    /** If false, diagonal placement (ctrl) for this block is not allowed. */
+<b class="fc">&nbsp;    public boolean allowDiagonal = true;</b>
+&nbsp;    /** Whether to swap the diagonal placement modes. */
+&nbsp;    public boolean swapDiagonalPlacement;
+&nbsp;    /** Whether to allow rectangular placement, as opposed to a line. */
+<b class="fc">&nbsp;    public boolean allowRectanglePlacement = false;</b>
+&nbsp;    /** Build queue priority in schematics. */
+<b class="fc">&nbsp;    public int schematicPriority = 0;</b>
+&nbsp;    /**
+&nbsp;     * The color of this block when displayed on the minimap or map preview.
+&nbsp;     * Do not set manually! This is overridden when loading for most blocks.
+&nbsp;     */
+<b class="fc">&nbsp;    public Color mapColor = new Color(0, 0, 0, 1);</b>
+&nbsp;    /** Whether this block has a minimap color. */
+<b class="fc">&nbsp;    public boolean hasColor = false;</b>
+&nbsp;    /** Whether units target this block. */
+<b class="fc">&nbsp;    public boolean targetable = true;</b>
+&nbsp;    /** If true, this block attacks and is considered a turret in the indexer. Building must implement Ranged. */
+<b class="fc">&nbsp;    public boolean attacks = false;</b>
+&nbsp;    /** If true, this block is mending-related and can be suppressed with special units/missiles. */
+<b class="fc">&nbsp;    public boolean suppressable = false;</b>
+&nbsp;    /** Whether the overdrive core has any effect on this block. */
+<b class="fc">&nbsp;    public boolean canOverdrive = true;</b>
+&nbsp;    /** Outlined icon color.*/
+<b class="fc">&nbsp;    public Color outlineColor = Color.valueOf(&quot;404049&quot;);</b>
+&nbsp;    /** Whether any icon region has an outline added. */
+<b class="fc">&nbsp;    public boolean outlineIcon = false;</b>
+&nbsp;    /** Outline icon radius. */
+<b class="fc">&nbsp;    public int outlineRadius = 4;</b>
+&nbsp;    /** Which of the icon regions gets the outline added. Uses last icon if &lt;= 0. */
+<b class="fc">&nbsp;    public int outlinedIcon = -1;</b>
+&nbsp;    /** Whether this block has a shadow under it. */
+<b class="fc">&nbsp;    public boolean hasShadow = true;</b>
+&nbsp;    /** If true, a custom shadow (name-shadow) is drawn under this block. */
+<b class="fc">&nbsp;    public boolean customShadow = false;</b>
+&nbsp;    /** Should the sound made when this block is built change in pitch. */
+<b class="fc">&nbsp;    public boolean placePitchChange = true;</b>
+&nbsp;    /** Should the sound made when this block is deconstructed change in pitch. */
+<b class="fc">&nbsp;    public boolean breakPitchChange = true;</b>
+&nbsp;    /** Sound made when this block is built. */
+<b class="fc">&nbsp;    public Sound placeSound = Sounds.place;</b>
+&nbsp;    /** Sound made when this block is deconstructed. */
+<b class="fc">&nbsp;    public Sound breakSound = Sounds.breaks;</b>
+&nbsp;    /** Sounds made when this block is destroyed.*/
+<b class="fc">&nbsp;    public Sound destroySound = Sounds.boom;</b>
+&nbsp;    /** How reflective this block is. */
+<b class="fc">&nbsp;    public float albedo = 0f;</b>
+&nbsp;    /** Environmental passive light color. */
+<b class="fc">&nbsp;    public Color lightColor = Color.white.cpy();</b>
+&nbsp;    /**
+&nbsp;     * Whether this environmental block passively emits light.
+&nbsp;     * Does not change behavior for non-environmental blocks, but still updates clipSize. */
+<b class="fc">&nbsp;    public boolean emitLight = false;</b>
+&nbsp;    /** Radius of the light emitted by this block. */
+<b class="fc">&nbsp;    public float lightRadius = 60f;</b>
+&nbsp;
+&nbsp;    /** How much fog this block uncovers, in tiles. Cannot be dynamic. &lt;= 0 to disable. */
+<b class="fc">&nbsp;    public int fogRadius = -1;</b>
+&nbsp;
+&nbsp;    /** The sound that this block makes while active. One sound loop. Do not overuse. */
+<b class="fc">&nbsp;    public Sound loopSound = Sounds.none;</b>
+&nbsp;    /** Active sound base volume. */
+<b class="fc">&nbsp;    public float loopSoundVolume = 0.5f;</b>
+&nbsp;
+&nbsp;    /** The sound that this block makes while idle. Uses one sound loop for all blocks. */
+<b class="fc">&nbsp;    public Sound ambientSound = Sounds.none;</b>
+&nbsp;    /** Idle sound base volume. */
+<b class="fc">&nbsp;    public float ambientSoundVolume = 0.05f;</b>
+&nbsp;
+&nbsp;    /** Cost of constructing this block. */
+<b class="fc">&nbsp;    public ItemStack[] requirements = {};</b>
+&nbsp;    /** Category in place menu. */
+<b class="fc">&nbsp;    public Category category = Category.distribution;</b>
+&nbsp;    /** Time to build this block in ticks; do not modify directly! */
+<b class="fc">&nbsp;    public float buildCost = 20f;</b>
+&nbsp;    /** Whether this block is visible and can currently be built. */
+<b class="fc">&nbsp;    public BuildVisibility buildVisibility = BuildVisibility.hidden;</b>
+&nbsp;    /** Multiplier for speed of building this block. */
+<b class="fc">&nbsp;    public float buildCostMultiplier = 1f;</b>
+&nbsp;    /** Build completion at which deconstruction finishes. */
+<b class="fc">&nbsp;    public float deconstructThreshold = 0f;</b>
+&nbsp;    /** If true, this block deconstructs immediately. Instant deconstruction implies no resource refund. */
+<b class="fc">&nbsp;    public boolean instantDeconstruct = false;</b>
+&nbsp;    /** If true, this block constructs immediately. This implies no resource requirement, and ignores configs - do not use, this is for performance only! */
+<b class="fc">&nbsp;    public boolean instantBuild = false;</b>
+&nbsp;    /** Effect for placing the block. Passes size as rotation. */
+<b class="fc">&nbsp;    public Effect placeEffect = Fx.placeBlock;</b>
+&nbsp;    /** Effect for breaking the block. Passes size as rotation. */
+<b class="fc">&nbsp;    public Effect breakEffect = Fx.breakBlock;</b>
+&nbsp;    /** Effect for destroying the block. */
+<b class="fc">&nbsp;    public Effect destroyEffect = Fx.dynamicExplosion;</b>
+&nbsp;    /** Multiplier for cost of research in tech tree. */
+<b class="fc">&nbsp;    public float researchCostMultiplier = 1;</b>
+&nbsp;    /** Cost multipliers per-item. */
+<b class="fc">&nbsp;    public ObjectFloatMap&lt;Item&gt; researchCostMultipliers = new ObjectFloatMap&lt;&gt;();</b>
+&nbsp;    /** Override for research cost. Uses multipliers above and building requirements if not set. */
+&nbsp;    public @Nullable ItemStack[] researchCost;
+&nbsp;    /** Whether this block has instant transfer.*/
+<b class="fc">&nbsp;    public boolean instantTransfer = false;</b>
+&nbsp;    /** Whether you can rotate this block after it is placed. */
+<b class="fc">&nbsp;    public boolean quickRotate = true;</b>
+&nbsp;    /** If true, this derelict block can be repair by clicking it. */
+<b class="fc">&nbsp;    public boolean allowDerelictRepair = true;</b>
+&nbsp;    /** Main subclass. Non-anonymous. */
+&nbsp;    public @Nullable Class&lt;?&gt; subclass;
+&nbsp;    /** Scroll position for certain blocks. */
+&nbsp;    public float selectScroll;
+&nbsp;    /** Building that is created for this block. Initialized in init() via reflection. Set manually if modded. */
+<b class="fc">&nbsp;    public Prov&lt;Building&gt; buildType = null;</b>
+&nbsp;    /** Configuration handlers by type. */
+<b class="fc">&nbsp;    public ObjectMap&lt;Class&lt;?&gt;, Cons2&gt; configurations = new ObjectMap&lt;&gt;();</b>
+&nbsp;    /** Consumption filters. */
+<b class="fc">&nbsp;    public boolean[] itemFilter = {}, liquidFilter = {};</b>
+&nbsp;    /** Array of consumers used by this block. Only populated after init(). */
+<b class="fc">&nbsp;    public Consume[] consumers = {}, optionalConsumers = {}, nonOptionalConsumers = {}, updateConsumers = {};</b>
+&nbsp;    /** Set to true if this block has any consumers in its array. */
+&nbsp;    public boolean hasConsumers;
+&nbsp;    /** The single power consumer, if applicable. */
+&nbsp;    public @Nullable ConsumePower consPower;
+&nbsp;
+&nbsp;    /** Map of bars by name. */
+<b class="fc">&nbsp;    protected OrderedMap&lt;String, Func&lt;Building, Bar&gt;&gt; barMap = new OrderedMap&lt;&gt;();</b>
+&nbsp;    /** List for building up consumption before init(). */
+<b class="fc">&nbsp;    protected Seq&lt;Consume&gt; consumeBuilder = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    protected TextureRegion[] generatedIcons;
+&nbsp;    protected TextureRegion[] editorVariantRegions;
+&nbsp;
+&nbsp;    /** Regions indexes from icons() that are rotated. If either of these is not -1, other regions won&#39;t be rotated in ConstructBlocks. */
+<b class="fc">&nbsp;    public int regionRotated1 = -1, regionRotated2 = -1;</b>
+&nbsp;    public TextureRegion region, editorIcon;
+&nbsp;    public @Load(&quot;@-shadow&quot;) TextureRegion customShadowRegion;
+&nbsp;    public @Load(&quot;@-team&quot;) TextureRegion teamRegion;
+&nbsp;    public TextureRegion[] teamRegions, variantRegions, variantShadowRegions;
+&nbsp;
+<b class="fc">&nbsp;    protected static final Seq&lt;Tile&gt; tempTiles = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    protected static final Seq&lt;Building&gt; tempBuilds = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    /** Dump timer ID.*/
+<b class="fc">&nbsp;    protected final int timerDump = timers++;</b>
+&nbsp;    /** How often to try dumping items in ticks, e.g. 5 = 12 times/sec*/
+<b class="fc">&nbsp;    public int dumpTime = 5;</b>
+&nbsp;
+&nbsp;    public Block(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        initBuilding();</b>
+<b class="fc">&nbsp;        selectionSize = 28f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBase(Tile tile){
+&nbsp;        //delegates to entity unless it is null
+<b class="nc">&nbsp;        if(tile.build != null){</b>
+<b class="nc">&nbsp;            tile.build.draw();</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Draw.rect(</b>
+<b class="nc">&nbsp;                variants == 0 ? region :</b>
+<b class="nc">&nbsp;                variantRegions[Mathf.randomSeed(tile.pos(), 0, Math.max(0, variantRegions.length - 1))],</b>
+<b class="nc">&nbsp;            tile.drawx(), tile.drawy());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawShadow(Tile tile){
+<b class="nc">&nbsp;        Draw.color(0f, 0f, 0f, BlockRenderer.shadowColor.a);</b>
+<b class="nc">&nbsp;        Draw.rect(</b>
+<b class="nc">&nbsp;            variants == 0 ? customShadowRegion :</b>
+<b class="nc">&nbsp;            variantShadowRegions[Mathf.randomSeed(tile.pos(), 0, Math.max(0, variantShadowRegions.length - 1))],</b>
+<b class="nc">&nbsp;        tile.drawx(), tile.drawy());</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float percentSolid(int x, int y){
+<b class="nc">&nbsp;        Tile tile = world.tile(x, y);</b>
+<b class="nc">&nbsp;        if(tile == null) return 0;</b>
+<b class="nc">&nbsp;        return tile.getLinkedTilesAs(this, tempTiles)</b>
+<b class="nc">&nbsp;            .sumf(other -&gt; !other.floor().isLiquid ? 1f : 0f) / size / size;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawEnvironmentLight(Tile tile){
+<b class="nc">&nbsp;        Drawf.light(tile.worldx(), tile.worldy(), lightRadius, lightColor, lightColor.a);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Drawn when you are placing a block. */
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        drawPotentialLinks(x, y);</b>
+<b class="nc">&nbsp;        drawOverlay(x * tilesize + offset, y * tilesize + offset, rotation);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawPotentialLinks(int x, int y){
+<b class="nc">&nbsp;        if((consumesPower || outputsPower) &amp;&amp; hasPower &amp;&amp; connectedPower){</b>
+<b class="nc">&nbsp;            Tile tile = world.tile(x, y);</b>
+<b class="nc">&nbsp;            if(tile != null){</b>
+<b class="nc">&nbsp;                PowerNode.getNodeLinks(tile, this, player.team(), other -&gt; {</b>
+<b class="nc">&nbsp;                    PowerNode node = (PowerNode)other.block;</b>
+<b class="nc">&nbsp;                    Draw.color(node.laserColor1, Renderer.laserOpacity * 0.5f);</b>
+<b class="nc">&nbsp;                    node.drawLaser(x * tilesize + offset, y * tilesize + offset, other.x, other.y, size, other.block.size);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Drawf.square(other.x, other.y, other.block.size * tilesize / 2f + 2f, Pal.place);</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                BeamNode.getNodeLinks(tile, this, player.team(), other -&gt; {</b>
+<b class="nc">&nbsp;                    BeamNode node = (BeamNode)other.block;</b>
+<b class="nc">&nbsp;                    Draw.color(node.laserColor1, Renderer.laserOpacity * 0.5f);</b>
+<b class="nc">&nbsp;                    node.drawLaser(other.x, other.y, x * tilesize + offset, y * tilesize + offset, size, other.block.size);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Drawf.square(other.x, other.y, other.block.size * tilesize / 2f + 2f, Pal.place);</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public float drawPlaceText(String text, int x, int y, boolean valid){
+<b class="nc">&nbsp;        if(renderer.pixelate) return 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        Color color = valid ? Pal.accent : Pal.remove;</b>
+<b class="nc">&nbsp;        Font font = Fonts.outline;</b>
+<b class="nc">&nbsp;        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);</b>
+<b class="nc">&nbsp;        boolean ints = font.usesIntegerPositions();</b>
+<b class="nc">&nbsp;        font.setUseIntegerPositions(false);</b>
+<b class="nc">&nbsp;        font.getData().setScale(1f / 4f / Scl.scl(1f));</b>
+<b class="nc">&nbsp;        layout.setText(font, text);</b>
+&nbsp;
+<b class="nc">&nbsp;        float width = layout.width;</b>
+&nbsp;
+<b class="nc">&nbsp;        font.setColor(color);</b>
+<b class="nc">&nbsp;        float dx = x * tilesize + offset, dy = y * tilesize + offset + size * tilesize / 2f + 3;</b>
+<b class="nc">&nbsp;        font.draw(text, dx, dy + layout.height + 1, Align.center);</b>
+<b class="nc">&nbsp;        dy -= 1f;</b>
+<b class="nc">&nbsp;        Lines.stroke(2f, Color.darkGray);</b>
+<b class="nc">&nbsp;        Lines.line(dx - layout.width / 2f - 2f, dy, dx + layout.width / 2f + 1.5f, dy);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f, color);</b>
+<b class="nc">&nbsp;        Lines.line(dx - layout.width / 2f - 2f, dy, dx + layout.width / 2f + 1.5f, dy);</b>
+&nbsp;
+<b class="nc">&nbsp;        font.setUseIntegerPositions(ints);</b>
+<b class="nc">&nbsp;        font.setColor(Color.white);</b>
+<b class="nc">&nbsp;        font.getData().setScale(1f);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Pools.free(layout);</b>
+&nbsp;
+<b class="nc">&nbsp;        return width;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Drawn when placing and when hovering over. */
+&nbsp;    public void drawOverlay(float x, float y, int rotation){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public float sumAttribute(@Nullable Attribute attr, int x, int y){
+<b class="fc">&nbsp;        if(attr == null) return 0;</b>
+<b class="fc">&nbsp;        Tile tile = world.tile(x, y);</b>
+<b class="fc">&nbsp;        if(tile == null) return 0;</b>
+<b class="fc">&nbsp;        return tile.getLinkedTilesAs(this, tempTiles)</b>
+<b class="fc">&nbsp;            .sumf(other -&gt; !floating &amp;&amp; other.floor().isDeep() ? 0 : other.floor().attributes.get(attr));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TextureRegion getDisplayIcon(Tile tile){
+<b class="nc">&nbsp;        return tile.build == null ? uiIcon : tile.build.getDisplayIcon();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getDisplayName(Tile tile){
+<b class="nc">&nbsp;        return tile.build == null ? localizedName : tile.build.getDisplayName();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return a custom minimap color for this or 0 to use default colors. */
+&nbsp;    public int minimapColor(Tile tile){
+<b class="nc">&nbsp;        return 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return hasItems;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this block can be placed on the specified tile. */
+&nbsp;    public boolean canPlaceOn(Tile tile, Team team, int rotation){
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this block can be broken on the specified tile. */
+&nbsp;    public boolean canBreak(Tile tile){
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean rotatedOutput(int x, int y){
+<b class="fc">&nbsp;        return rotate;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean rotatedOutput(int fromX, int fromY, Tile destination){
+<b class="fc">&nbsp;        return rotatedOutput(fromX, fromY);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean synthetic(){
+<b class="fc">&nbsp;        return update || destructible;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean checkForceDark(Tile tile){
+<b class="fc">&nbsp;        return forceDark;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.size, &quot;@x@&quot;, size, size);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(synthetic()){</b>
+<b class="nc">&nbsp;            stats.add(Stat.health, health, StatUnit.none);</b>
+<b class="nc">&nbsp;            if(armor &gt; 0){</b>
+<b class="nc">&nbsp;                stats.add(Stat.armor, armor, StatUnit.none);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(canBeBuilt() &amp;&amp; requirements.length &gt; 0){</b>
+<b class="nc">&nbsp;            stats.add(Stat.buildTime, buildCost / 60, StatUnit.seconds);</b>
+<b class="nc">&nbsp;            stats.add(Stat.buildCost, StatValues.items(false, requirements));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(instantTransfer){</b>
+<b class="nc">&nbsp;            stats.add(Stat.maxConsecutive, 2, StatUnit.none);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(var c : consumers){</b>
+<b class="nc">&nbsp;            c.display(stats);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //Note: Power stats are added by the consumers.
+<b class="nc">&nbsp;        if(hasLiquids) stats.add(Stat.liquidCapacity, liquidCapacity, StatUnit.liquidUnits);</b>
+<b class="nc">&nbsp;        if(hasItems &amp;&amp; itemCapacity &gt; 0) stats.add(Stat.itemCapacity, itemCapacity, StatUnit.items);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T extends Building&gt; void addBar(String name, Func&lt;T, Bar&gt; sup){
+<b class="fc">&nbsp;        barMap.put(name, (Func&lt;Building, Bar&gt;)sup);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeBar(String name){
+<b class="fc">&nbsp;        barMap.remove(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Iterable&lt;Func&lt;Building, Bar&gt;&gt; listBars(){
+<b class="nc">&nbsp;        return barMap.values();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addLiquidBar(Liquid liq){
+<b class="fc">&nbsp;        addBar(&quot;liquid-&quot; + liq.name, entity -&gt; !liq.unlockedNow() ? null : new Bar(</b>
+<b class="nc">&nbsp;            () -&gt; liq.localizedName,</b>
+<b class="nc">&nbsp;            liq::barColor,</b>
+<b class="nc">&nbsp;            () -&gt; entity.liquids.get(liq) / liquidCapacity</b>
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a liquid bar that dynamically displays a liquid type. */
+&nbsp;    public &lt;T extends Building&gt; void addLiquidBar(Func&lt;T, Liquid&gt; current){
+<b class="fc">&nbsp;        addBar(&quot;liquid&quot;, entity -&gt; new Bar(</b>
+<b class="nc">&nbsp;            () -&gt; current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) &lt;= 0.001f ? Core.bundle.get(&quot;bar.liquid&quot;) : current.get((T)entity).localizedName,</b>
+<b class="nc">&nbsp;            () -&gt; current.get((T)entity) == null ? Color.clear : current.get((T)entity).barColor(),</b>
+<b class="nc">&nbsp;            () -&gt; current.get((T)entity) == null ? 0f : entity.liquids.get(current.get((T)entity)) / liquidCapacity)</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        addBar(&quot;health&quot;, entity -&gt; new Bar(&quot;stat.health&quot;, Pal.health, entity::healthf).blink(Color.white));</b>
+&nbsp;
+<b class="fc">&nbsp;        if(consPower != null){</b>
+<b class="fc">&nbsp;            boolean buffered = consPower.buffered;</b>
+<b class="fc">&nbsp;            float capacity = consPower.capacity;</b>
+&nbsp;
+<b class="fc">&nbsp;            addBar(&quot;power&quot;, entity -&gt; new Bar(</b>
+<b class="nc">&nbsp;                () -&gt; buffered ? Core.bundle.format(&quot;bar.poweramount&quot;, Float.isNaN(entity.power.status * capacity) ? &quot;&lt;ERROR&gt;&quot; : UI.formatAmount((int)(entity.power.status * capacity))) :</b>
+<b class="nc">&nbsp;                Core.bundle.get(&quot;bar.power&quot;),</b>
+<b class="nc">&nbsp;                () -&gt; Pal.powerBar,</b>
+<b class="nc">&nbsp;                () -&gt; Mathf.zero(consPower.requestedPower(entity)) &amp;&amp; entity.power.graph.getPowerProduced() + entity.power.graph.getBatteryStored() &gt; 0f ? 1f : entity.power.status)</b>
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(hasItems &amp;&amp; configurable){</b>
+<b class="fc">&nbsp;            addBar(&quot;items&quot;, entity -&gt; new Bar(</b>
+<b class="nc">&nbsp;                () -&gt; Core.bundle.format(&quot;bar.items&quot;, entity.items.total()),</b>
+<b class="nc">&nbsp;                () -&gt; Pal.items,</b>
+<b class="nc">&nbsp;                () -&gt; (float)entity.items.total() / itemCapacity)</b>
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(unitCapModifier != 0){</b>
+<b class="fc">&nbsp;            stats.add(Stat.maxUnits, (unitCapModifier &lt; 0 ? &quot;-&quot; : &quot;+&quot;) + Math.abs(unitCapModifier));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //liquids added last
+<b class="fc">&nbsp;        if(hasLiquids){</b>
+&nbsp;            //TODO liquids need to be handled VERY carefully. there are several potential possibilities:
+&nbsp;            //1. no consumption or output (conduit/tank)
+&nbsp;            // - display current(), 1 bar
+&nbsp;            //2. static set of inputs and outputs
+&nbsp;            // - create bars for each input/output, straightforward
+&nbsp;            //3. TODO dynamic input/output combo???
+&nbsp;            // - confusion
+&nbsp;
+<b class="fc">&nbsp;            boolean added = false;</b>
+&nbsp;
+&nbsp;            //TODO handle in consumer
+&nbsp;            //add bars for *specific* consumed liquids
+<b class="fc">&nbsp;            for(var consl : consumers){</b>
+<b class="fc">&nbsp;                if(consl instanceof ConsumeLiquid liq){</b>
+<b class="fc">&nbsp;                    added = true;</b>
+<b class="fc">&nbsp;                    addLiquidBar(liq.liquid);</b>
+<b class="fc">&nbsp;                }else if(consl instanceof ConsumeLiquids multi){</b>
+<b class="fc">&nbsp;                    added = true;</b>
+<b class="fc">&nbsp;                    for(var stack : multi.liquids){</b>
+<b class="fc">&nbsp;                        addLiquidBar(stack.liquid);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //nothing was added, so it&#39;s safe to add a dynamic liquid bar (probably?)
+<b class="fc">&nbsp;            if(!added){</b>
+<b class="fc">&nbsp;                addLiquidBar(build -&gt; build.liquids.current());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean consumesItem(Item item){
+<b class="fc">&nbsp;        return itemFilter[item.id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean consumesLiquid(Liquid liq){
+<b class="fc">&nbsp;        return liquidFilter[liq.id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canReplace(Block other){
+<b class="fc">&nbsp;        if(other.alwaysReplace) return true;</b>
+<b class="nc">&nbsp;        if(other.privileged) return false;</b>
+<b class="nc">&nbsp;        return other.replaceable &amp;&amp; (other != this || (rotate &amp;&amp; quickRotate)) &amp;&amp; ((this.group != BlockGroup.none &amp;&amp; other.group == this.group) || other == this) &amp;&amp;</b>
+&nbsp;            (size == other.size || (size &gt;= other.size &amp;&amp; ((subclass != null &amp;&amp; subclass == other.subclass) || group.anyReplace)));
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return a possible replacement for this block when placed in a line by the player. */
+&nbsp;    public Block getReplacement(BuildPlan req, Seq&lt;BuildPlan&gt; plans){
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Mutates the given list of points used during line placement. */
+&nbsp;    public void changePlacementPath(Seq&lt;Point2&gt; points, int rotation, boolean diagonalOn){
+<b class="nc">&nbsp;        changePlacementPath(points, rotation);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Mutates the given list of points used during line placement. */
+&nbsp;    public void changePlacementPath(Seq&lt;Point2&gt; points, int rotation){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Mutates the given list of plans used during line placement. */
+&nbsp;    public void handlePlacementLine(Seq&lt;BuildPlan&gt; plans){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean configSenseable(){
+<b class="nc">&nbsp;        return configurations.containsKey(Item.class) || configurations.containsKey(Liquid.class) || configurations.containsKey(UnlockableContent.class) ||</b>
+<b class="nc">&nbsp;               configurations.containsKey(Block.class) || configurations.containsKey(UnitType.class);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object nextConfig(){
+<b class="nc">&nbsp;        if(saveConfig &amp;&amp; lastConfig != null){</b>
+<b class="nc">&nbsp;            return lastConfig;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when a new build plan is created in the player&#39;s queue. Blocks can maintain a reference to this plan and add configs to it later. */
+&nbsp;    public void onNewPlan(BuildPlan plan){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void drawPlan(BuildPlan plan, Eachable&lt;BuildPlan&gt; list, boolean valid){
+<b class="nc">&nbsp;        drawPlan(plan, list, valid, 1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawPlan(BuildPlan plan, Eachable&lt;BuildPlan&gt; list, boolean valid, float alpha){
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Draw.mixcol(!valid ? Pal.breakInvalid : Color.white, (!valid ? 0.4f : 0.24f) + Mathf.absin(Time.globalTime, 6f, 0.28f));</b>
+<b class="nc">&nbsp;        Draw.alpha(alpha);</b>
+<b class="nc">&nbsp;        float prevScale = Draw.scl;</b>
+<b class="nc">&nbsp;        Draw.scl *= plan.animScale;</b>
+<b class="nc">&nbsp;        drawPlanRegion(plan, list);</b>
+<b class="nc">&nbsp;        Draw.scl = prevScale;</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        drawDefaultPlanRegion(plan, list);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** this is a different method so subclasses can call it even after overriding the base */
+&nbsp;    public void drawDefaultPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        TextureRegion reg = getPlanRegion(plan, list);</b>
+<b class="nc">&nbsp;        Draw.rect(reg, plan.drawx(), plan.drawy(), !rotate || !rotateDraw ? 0 : plan.rotation * 90);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(plan.worldContext &amp;&amp; player != null &amp;&amp; teamRegion != null &amp;&amp; teamRegion.found()){</b>
+<b class="nc">&nbsp;            if(teamRegions[player.team().id] == teamRegion) Draw.color(player.team().color);</b>
+<b class="nc">&nbsp;            Draw.rect(teamRegions[player.team().id], plan.drawx(), plan.drawy());</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        drawPlanConfig(plan, list);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TextureRegion getPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        return fullIcon;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawPlanConfig(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void drawPlanConfigCenter(BuildPlan plan, Object content, String region, boolean cross){
+<b class="nc">&nbsp;        if(content == null){</b>
+<b class="nc">&nbsp;            if(cross){</b>
+<b class="nc">&nbsp;                Draw.rect(&quot;cross&quot;, plan.drawx(), plan.drawy());</b>
+&nbsp;            }
+&nbsp;            return;
+&nbsp;        }
+<b class="nc">&nbsp;        Color color = content instanceof Item i ? i.color : content instanceof Liquid l ? l.color : null;</b>
+<b class="nc">&nbsp;        if(color == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy());</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawPlanConfigCenter(BuildPlan plan, Object content, String region){
+<b class="nc">&nbsp;        drawPlanConfigCenter(plan, content, region, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawPlanConfigTop(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Transforms the internal position of this config using the specified function, and return the result. */
+&nbsp;    public Object pointConfig(Object config, Cons&lt;Point2&gt; transformer){
+<b class="nc">&nbsp;        return config;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Configure when a null value is passed.*/
+&nbsp;    public &lt;E extends Building&gt; void configClear(Cons&lt;E&gt; cons){
+<b class="fc">&nbsp;        configurations.put(void.class, (tile, value) -&gt; cons.get((E)tile));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Listen for a config by class type. */
+&nbsp;    public &lt;T, E extends Building&gt; void config(Class&lt;T&gt; type, Cons2&lt;E, T&gt; config){
+<b class="fc">&nbsp;        configurations.put(type, config);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAccessible(){
+<b class="nc">&nbsp;        return (hasItems &amp;&amp; itemCapacity &gt; 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** sets {@param out} to the index-th side outside of this block, using the given rotation. */
+&nbsp;    public void nearbySide(int x, int y, int rotation, int index, Point2 out){
+<b class="fc">&nbsp;        int cornerX = x - (size-1)/2, cornerY = y - (size-1)/2, s = size;</b>
+<b class="fc">&nbsp;        switch(rotation){</b>
+<b class="fc">&nbsp;            case 0 -&gt; out.set(cornerX + s, cornerY + index);</b>
+<b class="fc">&nbsp;            case 1 -&gt; out.set(cornerX + index, cornerY + s);</b>
+<b class="fc">&nbsp;            case 2 -&gt; out.set(cornerX - 1, cornerY + index);</b>
+<b class="fc">&nbsp;            case 3 -&gt; out.set(cornerX + index, cornerY - 1);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Point2[] getEdges(){
+<b class="nc">&nbsp;        return Edges.getEdges(size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Point2[] getInsideEdges(){
+<b class="fc">&nbsp;        return Edges.getInsideEdges(size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterate through ever grid position taken up by this block. */
+&nbsp;    public void iterateTaken(int x, int y, Intc2 placer){
+<b class="nc">&nbsp;        if(isMultiblock()){</b>
+<b class="nc">&nbsp;            int offsetx = -(size - 1) / 2;</b>
+<b class="nc">&nbsp;            int offsety = -(size - 1) / 2;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int dx = 0; dx &lt; size; dx++){</b>
+<b class="nc">&nbsp;                for(int dy = 0; dy &lt; size; dy++){</b>
+<b class="nc">&nbsp;                    placer.get(dx + offsetx + x, dy + offsety + y);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            placer.get(x, y);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Never use outside of the editor! */
+&nbsp;    public TextureRegion editorIcon(){
+<b class="nc">&nbsp;        return editorIcon == null ? (editorIcon = Core.atlas.find(name + &quot;-icon-editor&quot;)) : editorIcon;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Never use outside of the editor! */
+&nbsp;    public TextureRegion[] editorVariantRegions(){
+<b class="nc">&nbsp;        if(editorVariantRegions == null){</b>
+<b class="nc">&nbsp;            variantRegions();</b>
+<b class="nc">&nbsp;            editorVariantRegions = new TextureRegion[variantRegions.length];</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; variantRegions.length; i++){</b>
+<b class="nc">&nbsp;                AtlasRegion region = (AtlasRegion)variantRegions[i];</b>
+<b class="nc">&nbsp;                editorVariantRegions[i] = Core.atlas.find(&quot;editor-&quot; + region.name);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return editorVariantRegions;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return special icons to outline and save with an -outline variant. Vanilla only. */
+&nbsp;    public TextureRegion[] makeIconRegions(){
+<b class="nc">&nbsp;        return new TextureRegion[0];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected TextureRegion[] icons(){
+&nbsp;        //use team region in vanilla team blocks
+<b class="nc">&nbsp;        TextureRegion r = variants &gt; 0 ? Core.atlas.find(name + &quot;1&quot;) : region;</b>
+<b class="nc">&nbsp;        return teamRegion.found() &amp;&amp; minfo.mod == null ? new TextureRegion[]{r, teamRegions[Team.sharded.id]} : new TextureRegion[]{r};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void getRegionsToOutline(Seq&lt;TextureRegion&gt; out){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public TextureRegion[] getGeneratedIcons(){
+<b class="nc">&nbsp;        return generatedIcons == null ? (generatedIcons = icons()) : generatedIcons;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resetGeneratedIcons(){
+<b class="nc">&nbsp;        generatedIcons = null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TextureRegion[] variantRegions(){
+<b class="nc">&nbsp;        return variantRegions == null ? (variantRegions = new TextureRegion[]{fullIcon}) : variantRegions;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasBuilding(){
+<b class="fc">&nbsp;        return destructible || update;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public final Building newBuilding(){
+<b class="fc">&nbsp;        return buildType.get();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateClipRadius(float size){
+<b class="fc">&nbsp;        clipSize = Math.max(clipSize, size * tilesize + size * 2f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Rect bounds(int x, int y, Rect rect){
+<b class="fc">&nbsp;        return rect.setSize(size * tilesize).setCenter(x * tilesize + offset, y * tilesize + offset);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isMultiblock(){
+<b class="fc">&nbsp;        return size &gt; 1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isVisible(){
+<b class="fc">&nbsp;        return !isHidden() &amp;&amp; (state.rules.editor || (!state.rules.hideBannedBlocks || !state.rules.isBanned(this)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isPlaceable(){
+<b class="fc">&nbsp;        return isVisible() &amp;&amp; (!state.rules.isBanned(this) || state.rules.editor) &amp;&amp; supportsEnv(state.rules.env);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this block supports a specific environment. */
+&nbsp;    public boolean supportsEnv(int env){
+<b class="fc">&nbsp;        return (envEnabled &amp; env) != 0 &amp;&amp; (envDisabled &amp; env) == 0 &amp;&amp; (envRequired == 0 || (envRequired &amp; env) == envRequired);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when building of this block begins. */
+&nbsp;    public void placeBegan(Tile tile, Block previous){
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called when building of this block begins. */
+&nbsp;    public void placeBegan(Tile tile, Block previous, @Nullable Unit builder){
+<b class="fc">&nbsp;        placeBegan(tile, previous);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called right before building of this block begins. */
+&nbsp;    public void beforePlaceBegan(Tile tile, Block previous){
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isFloor(){
+<b class="fc">&nbsp;        return this instanceof Floor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isOverlay(){
+<b class="fc">&nbsp;        return this instanceof OverlayFloor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Floor asFloor(){
+<b class="fc">&nbsp;        return (Floor)this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAir(){
+<b class="nc">&nbsp;        return id == 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canBeBuilt(){
+<b class="fc">&nbsp;        return buildVisibility != BuildVisibility.hidden &amp;&amp; buildVisibility != BuildVisibility.debugOnly;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean environmentBuildable(){
+<b class="fc">&nbsp;        return isOnPlanet(state.getPlanet());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isStatic(){
+<b class="fc">&nbsp;        return cacheLayer == CacheLayer.walls;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T extends Consume&gt; T findConsumer(Boolf&lt;Consume&gt; filter){
+<b class="fc">&nbsp;        return consumers.length == 0 ? (T)consumeBuilder.find(filter) : (T)Structs.find(consumers, filter);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasConsumer(Consume cons){
+<b class="fc">&nbsp;        return consumeBuilder.contains(cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeConsumer(Consume cons){
+<b class="fc">&nbsp;        if(consumers.length &gt; 0){</b>
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;You can only remove consumers before init(). After init(), all consumers have already been initialized.&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        consumeBuilder.remove(cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeConsumers(Boolf&lt;Consume&gt; b){
+<b class="nc">&nbsp;        consumeBuilder.removeAll(b);</b>
+&nbsp;        //the power was removed, unassign it
+<b class="nc">&nbsp;        if(!consumeBuilder.contains(c -&gt; c instanceof ConsumePower)){</b>
+<b class="nc">&nbsp;            consPower = null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConsumeLiquid consumeLiquid(Liquid liquid, float amount){
+<b class="fc">&nbsp;        return consume(new ConsumeLiquid(liquid, amount));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConsumeLiquids consumeLiquids(LiquidStack... stacks){
+<b class="fc">&nbsp;        return consume(new ConsumeLiquids(stacks));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Creates a consumer which directly uses power without buffering it.
+&nbsp;     * @param powerPerTick The amount of power which is required each tick for 100% efficiency.
+&nbsp;     * @return the created consumer object.
+&nbsp;     */
+&nbsp;    public ConsumePower consumePower(float powerPerTick){
+<b class="fc">&nbsp;        return consume(new ConsumePower(powerPerTick, 0.0f, false));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Creates a consumer which only consumes power when the condition is met. */
+&nbsp;    public &lt;T extends Building&gt; ConsumePower consumePowerCond(float usage, Boolf&lt;T&gt; cons){
+<b class="fc">&nbsp;        return consume(new ConsumePowerCondition(usage, (Boolf&lt;Building&gt;)cons));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Creates a consumer that consumes a dynamic amount of power. */
+&nbsp;    public &lt;T extends Building&gt; ConsumePower consumePowerDynamic(Floatf&lt;T&gt; usage){
+<b class="fc">&nbsp;        return consume(new ConsumePowerDynamic((Floatf&lt;Building&gt;)usage));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Creates a consumer that consumes a dynamic amount of power. */
+&nbsp;    public &lt;T extends Building&gt; ConsumePower consumePowerDynamic(float displayed, Floatf&lt;T&gt; usage){
+<b class="fc">&nbsp;        return consume(new ConsumePowerDynamic(displayed, (Floatf&lt;Building&gt;)usage));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Creates a consumer which stores power.
+&nbsp;     * @param powerCapacity The maximum capacity in power units.
+&nbsp;     */
+&nbsp;    public ConsumePower consumePowerBuffered(float powerCapacity){
+<b class="fc">&nbsp;        return consume(new ConsumePower(0f, powerCapacity, true));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConsumeItems consumeItem(Item item){
+<b class="fc">&nbsp;        return consumeItem(item, 1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConsumeItems consumeItem(Item item, int amount){
+<b class="fc">&nbsp;        return consume(new ConsumeItems(new ItemStack[]{new ItemStack(item, amount)}));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConsumeItems consumeItems(ItemStack... items){
+<b class="fc">&nbsp;        return consume(new ConsumeItems(items));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConsumeCoolant consumeCoolant(float amount){
+<b class="fc">&nbsp;        return consume(new ConsumeCoolant(amount));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConsumeCoolant consumeCoolant(float amount, boolean allowLiquid, boolean allowGas){
+<b class="nc">&nbsp;        return consume(new ConsumeCoolant(amount, allowLiquid, allowGas));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T extends Consume&gt; T consume(T consume){
+<b class="fc">&nbsp;        if(consume instanceof ConsumePower){</b>
+&nbsp;            //there can only be one power consumer
+<b class="fc">&nbsp;            consumeBuilder.removeAll(b -&gt; b instanceof ConsumePower);</b>
+<b class="fc">&nbsp;            consPower = (ConsumePower)consume;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        consumeBuilder.add(consume);</b>
+<b class="fc">&nbsp;        return consume;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setupRequirements(Category cat, ItemStack[] stacks){
+<b class="nc">&nbsp;        requirements(cat, stacks);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setupRequirements(Category cat, BuildVisibility visible, ItemStack[] stacks){
+<b class="nc">&nbsp;        requirements(cat, visible, stacks);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void requirements(Category cat, ItemStack[] stacks, boolean unlocked){
+<b class="nc">&nbsp;        requirements(cat, BuildVisibility.shown, stacks);</b>
+<b class="nc">&nbsp;        this.alwaysUnlocked = unlocked;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void requirements(Category cat, ItemStack[] stacks){
+<b class="fc">&nbsp;        requirements(cat, BuildVisibility.shown, stacks);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Sets up requirements. Use only this method to set up requirements. */
+&nbsp;    public void requirements(Category cat, BuildVisibility visible, ItemStack[] stacks){
+<b class="fc">&nbsp;        this.category = cat;</b>
+<b class="fc">&nbsp;        this.requirements = stacks;</b>
+<b class="fc">&nbsp;        this.buildVisibility = visible;</b>
+&nbsp;
+<b class="fc">&nbsp;        Arrays.sort(requirements, Structs.comparingInt(i -&gt; i.item.id));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void initBuilding(){
+&nbsp;        //attempt to find the first declared class and use it as the entity type
+&nbsp;        try{
+<b class="fc">&nbsp;            Class&lt;?&gt; current = getClass();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(current.isAnonymousClass()){</b>
+<b class="fc">&nbsp;                current = current.getSuperclass();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            subclass = current;</b>
+&nbsp;
+<b class="fc">&nbsp;            while(buildType == null &amp;&amp; Block.class.isAssignableFrom(current)){</b>
+&nbsp;                //first class that is subclass of Building
+<b class="fc">&nbsp;                Class&lt;?&gt; type = Structs.find(current.getDeclaredClasses(), t -&gt; Building.class.isAssignableFrom(t) &amp;&amp; !t.isInterface());</b>
+<b class="fc">&nbsp;                if(type != null){</b>
+&nbsp;                    //these are inner classes, so they have an implicit parameter generated
+<b class="fc">&nbsp;                    Constructor&lt;? extends Building&gt; cons = (Constructor&lt;? extends Building&gt;)type.getDeclaredConstructor(type.getDeclaringClass());</b>
+<b class="fc">&nbsp;                    buildType = () -&gt; {</b>
+&nbsp;                        try{
+<b class="fc">&nbsp;                            return cons.newInstance(this);</b>
+<b class="nc">&nbsp;                        }catch(Exception e){</b>
+<b class="nc">&nbsp;                            throw new RuntimeException(e);</b>
+&nbsp;                        }
+&nbsp;                    };
+&nbsp;                }
+&nbsp;
+&nbsp;                //scan through every superclass looking for it
+<b class="fc">&nbsp;                current = current.getSuperclass();</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;        }catch(Throwable ignored){</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        if(buildType == null){</b>
+&nbsp;            //assign default value
+<b class="fc">&nbsp;            buildType = Building::create;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ItemStack[] researchRequirements(){
+<b class="fc">&nbsp;        if(researchCost != null) return researchCost;</b>
+<b class="fc">&nbsp;        if(researchCostMultiplier &lt;= 0f) return ItemStack.empty;</b>
+<b class="fc">&nbsp;        ItemStack[] out = new ItemStack[requirements.length];</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; out.length; i++){</b>
+<b class="fc">&nbsp;            int quantity = Mathf.round(60 * researchCostMultiplier + Mathf.pow(requirements[i].amount, 1.11f) * 20 * researchCostMultiplier * researchCostMultipliers.get(requirements[i].item, 1f), 10);</b>
+&nbsp;
+<b class="fc">&nbsp;            out[i] = new ItemStack(requirements[i].item, UI.roundAmount(quantity));</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void getDependencies(Cons&lt;UnlockableContent&gt; cons){
+&nbsp;        //just requires items
+<b class="fc">&nbsp;        for(ItemStack stack : requirements){</b>
+<b class="fc">&nbsp;            cons.get(stack.item);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //also requires inputs
+<b class="fc">&nbsp;        for(var c : consumeBuilder){</b>
+<b class="fc">&nbsp;            if(c.optional) continue;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(c instanceof ConsumeItems i){</b>
+<b class="fc">&nbsp;                for(ItemStack stack : i.items){</b>
+<b class="fc">&nbsp;                    cons.get(stack.item);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;            //TODO: requiring liquid dependencies is usually a bad idea, because there is no reason to pump/produce something until you actually need it.
+&nbsp;            /*else if(c instanceof ConsumeLiquid i){
+&nbsp;                cons.get(i.liquid);
+&nbsp;            }else if(c instanceof ConsumeLiquids i){
+&nbsp;                for(var stack : i.liquids){
+&nbsp;                    cons.get(stack.liquid);
+&nbsp;                }
+&nbsp;            }*/
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ContentType getContentType(){
+<b class="fc">&nbsp;        return ContentType.block;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean logicVisible(){
+<b class="nc">&nbsp;        return buildVisibility != BuildVisibility.hidden;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void postInit(){
+&nbsp;        //usually, an empty set of planets is a configuration error. auto-assign based on requirements
+<b class="fc">&nbsp;        if(requirements.length &gt; 0 &amp;&amp; shownPlanets.isEmpty()){</b>
+<b class="fc">&nbsp;            for(Planet planet : content.planets()){</b>
+<b class="fc">&nbsp;                if(planet.isLandable()){</b>
+<b class="fc">&nbsp;                    if(!Structs.contains(requirements, s -&gt; !s.item.isOnPlanet(planet))){</b>
+<b class="fc">&nbsp;                        shownPlanets.add(planet);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        super.postInit();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called after all blocks are created. */
+&nbsp;    @Override
+&nbsp;    @CallSuper
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+&nbsp;        //disable standard shadow
+<b class="fc">&nbsp;        if(customShadow){</b>
+<b class="fc">&nbsp;            hasShadow = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(fogRadius &gt; 0){</b>
+<b class="fc">&nbsp;            flags = flags.with(BlockFlag.hasFogRadius);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //initialize default health based on size
+<b class="fc">&nbsp;        if(health == -1){</b>
+<b class="fc">&nbsp;            boolean round = false;</b>
+<b class="fc">&nbsp;            if(scaledHealth &lt; 0){</b>
+<b class="fc">&nbsp;                scaledHealth = 40;</b>
+&nbsp;
+<b class="fc">&nbsp;                float scaling = 1f;</b>
+<b class="fc">&nbsp;                for(var stack : requirements){</b>
+<b class="fc">&nbsp;                    scaling += stack.item.healthScaling;</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                scaledHealth *= scaling;</b>
+<b class="fc">&nbsp;                round = true;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            health = round ?</b>
+<b class="fc">&nbsp;                Mathf.round(size * size * scaledHealth, 5) :</b>
+<b class="fc">&nbsp;                (int)(size * size * scaledHealth);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        clipSize = Math.max(clipSize, size * tilesize);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(hasLiquids &amp;&amp; drawLiquidLight){</b>
+<b class="fc">&nbsp;            clipSize = Math.max(size * 30f * 2f, clipSize);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(emitLight){</b>
+<b class="fc">&nbsp;            clipSize = Math.max(clipSize, lightRadius * 2f);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(group == BlockGroup.transportation || category == Category.distribution){</b>
+<b class="fc">&nbsp;            acceptsItems = true;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        offset = ((size + 1) % 2) * tilesize / 2f;</b>
+<b class="fc">&nbsp;        sizeOffset = -((size - 1) / 2);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(requirements.length &gt; 0){</b>
+<b class="fc">&nbsp;            buildCost = 0f;</b>
+<b class="fc">&nbsp;            for(ItemStack stack : requirements){</b>
+<b class="fc">&nbsp;                buildCost += stack.amount * stack.item.cost;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        buildCost *= buildCostMultiplier;</b>
+&nbsp;
+<b class="fc">&nbsp;        consumers = consumeBuilder.toArray(Consume.class);</b>
+<b class="fc">&nbsp;        optionalConsumers = consumeBuilder.select(consume -&gt; consume.optional &amp;&amp; !consume.ignore()).toArray(Consume.class);</b>
+<b class="fc">&nbsp;        nonOptionalConsumers = consumeBuilder.select(consume -&gt; !consume.optional &amp;&amp; !consume.ignore()).toArray(Consume.class);</b>
+<b class="fc">&nbsp;        updateConsumers = consumeBuilder.select(consume -&gt; consume.update &amp;&amp; !consume.ignore()).toArray(Consume.class);</b>
+<b class="fc">&nbsp;        hasConsumers = consumers.length &gt; 0;</b>
+<b class="fc">&nbsp;        itemFilter = new boolean[content.items().size];</b>
+<b class="fc">&nbsp;        liquidFilter = new boolean[content.liquids().size];</b>
+&nbsp;
+<b class="fc">&nbsp;        for(Consume cons : consumers){</b>
+<b class="fc">&nbsp;            cons.apply(this);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        stats.useCategories = true;</b>
+&nbsp;
+&nbsp;        //TODO check for double power consumption
+&nbsp;
+<b class="fc">&nbsp;        if(!logicConfigurable){</b>
+<b class="fc">&nbsp;            configurations.each((key, val) -&gt; {</b>
+<b class="fc">&nbsp;                if(UnlockableContent.class.isAssignableFrom(key)){</b>
+<b class="fc">&nbsp;                    logicConfigurable = true;</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(!outputsPower &amp;&amp; consPower != null &amp;&amp; consPower.buffered){</b>
+<b class="nc">&nbsp;            Log.warn(&quot;Consumer using buffered power: @. Disabling buffered power.&quot;, name);</b>
+<b class="nc">&nbsp;            consPower.buffered = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(buildVisibility == BuildVisibility.sandboxOnly){</b>
+<b class="fc">&nbsp;            hideDetails = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        region = Core.atlas.find(name);</b>
+&nbsp;
+<b class="nc">&nbsp;        ContentRegions.loadRegions(this);</b>
+&nbsp;
+&nbsp;        //load specific team regions
+<b class="nc">&nbsp;        teamRegions = new TextureRegion[Team.all.length];</b>
+<b class="nc">&nbsp;        for(Team team : Team.all){</b>
+<b class="nc">&nbsp;            teamRegions[team.id] = teamRegion.found() &amp;&amp; team.hasPalette ? Core.atlas.find(name + &quot;-team-&quot; + team.name, teamRegion) : teamRegion;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(variants != 0){</b>
+<b class="nc">&nbsp;            variantRegions = new TextureRegion[variants];</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; variants; i++){</b>
+<b class="nc">&nbsp;                variantRegions[i] = Core.atlas.find(name + (i + 1));</b>
+&nbsp;            }
+<b class="nc">&nbsp;            region = variantRegions[0];</b>
+&nbsp;
+<b class="nc">&nbsp;            if(customShadow){</b>
+<b class="nc">&nbsp;                variantShadowRegions = new TextureRegion[variants];</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; variants; i++){</b>
+<b class="nc">&nbsp;                    variantShadowRegions[i] = Core.atlas.find(name + &quot;-shadow&quot; + (i + 1));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isHidden(){
+<b class="fc">&nbsp;        return !buildVisibility.visible() &amp;&amp; !state.rules.revealedBlocks.contains(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void createIcons(MultiPacker packer){
+<b class="nc">&nbsp;        super.createIcons(packer);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!synthetic()){</b>
+<b class="nc">&nbsp;            PixmapRegion image = Core.atlas.getPixmap(fullIcon);</b>
+<b class="nc">&nbsp;            mapColor.set(image.get(image.width/2, image.height/2));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(variants &gt; 0){</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; variants; i++){</b>
+<b class="nc">&nbsp;                String rname = name + (i + 1);</b>
+<b class="nc">&nbsp;                packer.add(PageType.editor, &quot;editor-&quot; + rname, Core.atlas.getPixmap(rname));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Pixmap&gt; toDispose = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;        //generate paletted team regions
+<b class="nc">&nbsp;        if(teamRegion != null &amp;&amp; teamRegion.found()){</b>
+<b class="nc">&nbsp;            for(Team team : Team.all){</b>
+&nbsp;                //if there&#39;s an override, don&#39;t generate anything
+<b class="nc">&nbsp;                if(team.hasPalette &amp;&amp; !Core.atlas.has(name + &quot;-team-&quot; + team.name)){</b>
+<b class="nc">&nbsp;                    var base = Core.atlas.getPixmap(teamRegion);</b>
+<b class="nc">&nbsp;                    Pixmap out = new Pixmap(base.width, base.height);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int x = 0; x &lt; base.width; x++){</b>
+<b class="nc">&nbsp;                        for(int y = 0; y &lt; base.height; y++){</b>
+<b class="nc">&nbsp;                            int color = base.get(x, y);</b>
+<b class="nc">&nbsp;                            int index = switch(color){</b>
+<b class="nc">&nbsp;                                case 0xffffffff -&gt; 0;</b>
+<b class="nc">&nbsp;                                case 0xdcc6c6ff, 0xdbc5c5ff -&gt; 1;</b>
+<b class="nc">&nbsp;                                case 0x9d7f7fff, 0x9e8080ff -&gt; 2;</b>
+<b class="nc">&nbsp;                                default -&gt; -1;</b>
+&nbsp;                            };
+<b class="nc">&nbsp;                            out.setRaw(x, y, index == -1 ? base.get(x, y) : team.palettei[index]);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Drawf.checkBleed(out);</b>
+&nbsp;
+<b class="nc">&nbsp;                    packer.add(PageType.main, name + &quot;-team-&quot; + team.name, out);</b>
+<b class="nc">&nbsp;                    toDispose.add(out);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            teamRegions = new TextureRegion[Team.all.length];</b>
+<b class="nc">&nbsp;            for(Team team : Team.all){</b>
+<b class="nc">&nbsp;                teamRegions[team.id] = teamRegion.found() &amp;&amp; team.hasPalette ? Core.atlas.find(name + &quot;-team-&quot; + team.name, teamRegion) : teamRegion;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Pixmap last = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        var gen = icons();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(outlineIcon){</b>
+<b class="nc">&nbsp;            AtlasRegion atlasRegion = (AtlasRegion)gen[outlinedIcon &gt;= 0 ? Math.min(outlinedIcon, gen.length - 1) : gen.length -1];</b>
+<b class="nc">&nbsp;            PixmapRegion region = Core.atlas.getPixmap(atlasRegion);</b>
+<b class="nc">&nbsp;            Pixmap out = last = Pixmaps.outline(region, outlineColor, outlineRadius);</b>
+<b class="nc">&nbsp;            Drawf.checkBleed(out);</b>
+<b class="nc">&nbsp;            packer.add(PageType.main, atlasRegion.name, out);</b>
+<b class="nc">&nbsp;            toDispose.add(out);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var toOutline = new Seq&lt;TextureRegion&gt;();</b>
+<b class="nc">&nbsp;        getRegionsToOutline(toOutline);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var region : toOutline){</b>
+<b class="nc">&nbsp;            if(region instanceof AtlasRegion atlas){</b>
+<b class="nc">&nbsp;                String regionName = atlas.name;</b>
+<b class="nc">&nbsp;                Pixmap outlined = Pixmaps.outline(Core.atlas.getPixmap(region), outlineColor, outlineRadius);</b>
+&nbsp;
+<b class="nc">&nbsp;                Drawf.checkBleed(outlined);</b>
+&nbsp;
+<b class="nc">&nbsp;                packer.add(PageType.main, regionName + &quot;-outline&quot;, outlined);</b>
+<b class="nc">&nbsp;                toDispose.add(outlined);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        PixmapRegion editorBase;
+&nbsp;
+<b class="nc">&nbsp;        if(gen.length &gt; 1){</b>
+<b class="nc">&nbsp;            Pixmap base = Core.atlas.getPixmap(gen[0]).crop();</b>
+<b class="nc">&nbsp;            for(int i = 1; i &lt; gen.length; i++){</b>
+<b class="nc">&nbsp;                if(i == gen.length - 1 &amp;&amp; last != null){</b>
+<b class="nc">&nbsp;                    base.draw(last, 0, 0, true);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    base.draw(Core.atlas.getPixmap(gen[i]), true);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            packer.add(PageType.main, &quot;block-&quot; + name + &quot;-full&quot;, base);</b>
+&nbsp;
+<b class="nc">&nbsp;            editorBase = new PixmapRegion(base);</b>
+<b class="nc">&nbsp;            toDispose.add(base);</b>
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            if(gen[0] != null) packer.add(PageType.main, &quot;block-&quot; + name + &quot;-full&quot;, Core.atlas.getPixmap(gen[0]));</b>
+<b class="nc">&nbsp;            editorBase = gen[0] == null ? Core.atlas.getPixmap(fullIcon) : Core.atlas.getPixmap(gen[0]);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        packer.add(PageType.editor, name + &quot;-icon-editor&quot;, editorBase);</b>
+&nbsp;
+<b class="nc">&nbsp;        toDispose.each(Pixmap::dispose);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int planRotation(int rot){
+<b class="fc">&nbsp;        return !rotate &amp;&amp; lockRotation ? 0 : rot;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void flipRotation(BuildPlan req, boolean x){
+<b class="nc">&nbsp;        if((x == (req.rotation % 2 == 0)) != invertFlip){</b>
+<b class="nc">&nbsp;            req.rotation = planRotation(Mathf.mod(req.rotation + 2, 4));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public double sense(LAccess sensor){
+<b class="nc">&nbsp;        return switch(sensor){</b>
+<b class="nc">&nbsp;            case color -&gt; mapColor.toDoubleBits();</b>
+<b class="nc">&nbsp;            case health, maxHealth -&gt; health;</b>
+<b class="nc">&nbsp;            case solid -&gt; solid ? 1 : 0;</b>
+<b class="nc">&nbsp;            case size -&gt; size;</b>
+<b class="nc">&nbsp;            case itemCapacity -&gt; itemCapacity;</b>
+<b class="nc">&nbsp;            case liquidCapacity -&gt; liquidCapacity;</b>
+<b class="nc">&nbsp;            case powerCapacity -&gt; consPower != null &amp;&amp; consPower.buffered ? consPower.capacity : 0f;</b>
+<b class="nc">&nbsp;            case id -&gt; getLogicId();</b>
+<b class="nc">&nbsp;            default -&gt; Double.NaN;</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public double sense(Content content){
+<b class="nc">&nbsp;        return Double.NaN;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Object senseObject(LAccess sensor){
+<b class="nc">&nbsp;        if(sensor == LAccess.name) return name;</b>
+<b class="nc">&nbsp;        return noSensed;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

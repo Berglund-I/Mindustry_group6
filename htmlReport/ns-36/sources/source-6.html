@@ -1,0 +1,441 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ForceProjector</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense</a>
+</div>
+
+<h1>Coverage Summary for Class: ForceProjector (mindustry.world.blocks.defense)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ForceProjector</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.5%
+  </span>
+  <span class="absValue">
+    (5/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    61.4%
+  </span>
+  <span class="absValue">
+    (35/57)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ForceProjector$ForceBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (6/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.9%
+  </span>
+  <span class="absValue">
+    (29/91)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    45.8%
+  </span>
+  <span class="absValue">
+    (11/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.2%
+  </span>
+  <span class="absValue">
+    (64/148)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class ForceProjector extends Block{
+<b class="fc">&nbsp;    public final int timerUse = timers++;</b>
+<b class="fc">&nbsp;    public float phaseUseTime = 350f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float phaseRadiusBoost = 80f;</b>
+<b class="fc">&nbsp;    public float phaseShieldBoost = 400f;</b>
+<b class="fc">&nbsp;    public float radius = 101.7f;</b>
+<b class="fc">&nbsp;    public int sides = 6;</b>
+<b class="fc">&nbsp;    public float shieldRotation = 0f;</b>
+<b class="fc">&nbsp;    public float shieldHealth = 700f;</b>
+<b class="fc">&nbsp;    public float cooldownNormal = 1.75f;</b>
+<b class="fc">&nbsp;    public float cooldownLiquid = 1.5f;</b>
+<b class="fc">&nbsp;    public float cooldownBrokenBase = 0.35f;</b>
+<b class="fc">&nbsp;    public float coolantConsumption = 0.1f;</b>
+<b class="fc">&nbsp;    public boolean consumeCoolant = true;</b>
+<b class="fc">&nbsp;    public float crashDamageMultiplier = 2f;</b>
+<b class="fc">&nbsp;    public Effect absorbEffect = Fx.absorb;</b>
+<b class="fc">&nbsp;    public Effect shieldBreakEffect = Fx.shieldBreak;</b>
+&nbsp;    public @Load(&quot;@-top&quot;) TextureRegion topRegion;
+&nbsp;
+&nbsp;    //TODO json support
+&nbsp;    public @Nullable Consume itemConsumer, coolantConsumer;
+&nbsp;
+&nbsp;    protected static ForceBuild paramEntity;
+&nbsp;    protected static Effect paramEffect;
+<b class="fc">&nbsp;    protected static final Cons&lt;Bullet&gt; shieldConsumer = bullet -&gt; {</b>
+<b class="nc">&nbsp;        if(bullet.team != paramEntity.team &amp;&amp; bullet.type.absorbable &amp;&amp; !bullet.absorbed &amp;&amp; Intersector.isInRegularPolygon(((ForceProjector)(paramEntity.block)).sides, paramEntity.x, paramEntity.y, paramEntity.realRadius(), ((ForceProjector)(paramEntity.block)).shieldRotation, bullet.x, bullet.y)){</b>
+<b class="nc">&nbsp;            bullet.absorb();</b>
+<b class="nc">&nbsp;            paramEffect.at(bullet);</b>
+<b class="nc">&nbsp;            paramEntity.hit = 1f;</b>
+<b class="nc">&nbsp;            paramEntity.buildup += bullet.damage;</b>
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+&nbsp;    public ForceProjector(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.projectors;</b>
+<b class="fc">&nbsp;        hasPower = true;</b>
+<b class="fc">&nbsp;        hasLiquids = true;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        envEnabled |= Env.space;</b>
+<b class="fc">&nbsp;        ambientSound = Sounds.shield;</b>
+<b class="fc">&nbsp;        ambientSoundVolume = 0.08f;</b>
+<b class="fc">&nbsp;        flags = EnumSet.of(BlockFlag.shield);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(consumeCoolant){</b>
+<b class="fc">&nbsp;            consume(coolantConsumer = new ConsumeCoolant(coolantConsumption)).boost().update(false);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        updateClipRadius(radius + phaseRadiusBoost + 3f);</b>
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+<b class="fc">&nbsp;        addBar(&quot;shield&quot;, (ForceBuild entity) -&gt; new Bar(&quot;stat.shieldhealth&quot;, Pal.accent, () -&gt; entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat)).blink(Color.white));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        boolean consItems = itemConsumer != null;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(consItems) stats.timePeriod = phaseUseTime;</b>
+<b class="nc">&nbsp;        super.setStats();</b>
+<b class="nc">&nbsp;        stats.add(Stat.shieldHealth, shieldHealth, StatUnit.none);</b>
+<b class="nc">&nbsp;        stats.add(Stat.cooldownTime, (int) (shieldHealth / cooldownBrokenBase / 60f), StatUnit.seconds);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(consItems &amp;&amp; itemConsumer instanceof ConsumeItems coni){</b>
+<b class="nc">&nbsp;            stats.remove(Stat.booster);</b>
+<b class="nc">&nbsp;            stats.add(Stat.booster, StatValues.itemBoosters(&quot;+{0} &quot; + StatUnit.shieldHealth.localized(), stats.timePeriod, phaseShieldBoost, phaseRadiusBoost, coni.items, this::consumesItem));</b>
+<b class="nc">&nbsp;            stats.add(Stat.booster, StatValues.speedBoosters(&quot;&quot;, coolantConsumption, Float.MAX_VALUE, true, this::consumesLiquid));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        super.drawPlace(x, y, rotation, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Pal.gray);</b>
+<b class="nc">&nbsp;        Lines.stroke(3f);</b>
+<b class="nc">&nbsp;        Lines.poly(x * tilesize + offset, y * tilesize + offset, sides, radius, shieldRotation);</b>
+<b class="nc">&nbsp;        Draw.color(player.team().color);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f);</b>
+<b class="nc">&nbsp;        Lines.poly(x * tilesize + offset, y * tilesize + offset, sides, radius, shieldRotation);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ForceBuild extends Building implements Ranged, ExplosionShield{</b>
+<b class="fc">&nbsp;        public boolean broken = true;</b>
+&nbsp;        public float buildup, radscl, hit, warmup, phaseHeat;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float range(){
+<b class="nc">&nbsp;            return realRadius();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldAmbientSound(){
+<b class="nc">&nbsp;            return !broken &amp;&amp; realRadius() &gt; 1f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onRemoved(){
+<b class="nc">&nbsp;            float radius = realRadius();</b>
+<b class="nc">&nbsp;            if(!broken &amp;&amp; radius &gt; 1f) Fx.forceShrink.at(x, y, radius, team.color);</b>
+<b class="nc">&nbsp;            super.onRemoved();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void pickedUp(){
+<b class="nc">&nbsp;            super.pickedUp();</b>
+<b class="nc">&nbsp;            radscl = warmup = 0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean inFogTo(Team viewer){
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            boolean phaseValid = itemConsumer != null &amp;&amp; itemConsumer.efficiency(this) &gt; 0;</b>
+&nbsp;
+<b class="fc">&nbsp;            phaseHeat = Mathf.lerpDelta(phaseHeat, Mathf.num(phaseValid), 0.1f);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(phaseValid &amp;&amp; !broken &amp;&amp; timer(timerUse, phaseUseTime) &amp;&amp; efficiency &gt; 0){</b>
+<b class="nc">&nbsp;                consume();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            radscl = Mathf.lerpDelta(radscl, broken ? 0f : warmup, 0.05f);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(Mathf.chanceDelta(buildup / shieldHealth * 0.1f)){</b>
+<b class="nc">&nbsp;                Fx.reactorsmoke.at(x + Mathf.range(tilesize / 2f), y + Mathf.range(tilesize / 2f));</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            warmup = Mathf.lerpDelta(warmup, efficiency, 0.1f);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(buildup &gt; 0){</b>
+<b class="nc">&nbsp;                float scale = !broken ? cooldownNormal : cooldownBrokenBase;</b>
+&nbsp;
+&nbsp;                //TODO I hate this system
+<b class="nc">&nbsp;                if(coolantConsumer != null){</b>
+<b class="nc">&nbsp;                    if(coolantConsumer.efficiency(this) &gt; 0){</b>
+<b class="nc">&nbsp;                        coolantConsumer.update(this);</b>
+<b class="nc">&nbsp;                        scale *= (cooldownLiquid * (1f + (liquids.current().heatCapacity - 0.4f) * 0.9f));</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                buildup -= delta() * scale;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(broken &amp;&amp; buildup &lt;= 0){</b>
+<b class="fc">&nbsp;                broken = false;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(buildup &gt;= shieldHealth + phaseShieldBoost * phaseHeat &amp;&amp; !broken){</b>
+<b class="nc">&nbsp;                broken = true;</b>
+<b class="nc">&nbsp;                buildup = shieldHealth;</b>
+<b class="nc">&nbsp;                shieldBreakEffect.at(x, y, realRadius(), team.color);</b>
+<b class="nc">&nbsp;                if(team != state.rules.defaultTeam){</b>
+<b class="nc">&nbsp;                    Events.fire(Trigger.forceProjectorBreak);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(hit &gt; 0f){</b>
+<b class="nc">&nbsp;                hit -= 1f / 5f * Time.delta;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            deflectBullets();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void deflectBullets(){
+<b class="fc">&nbsp;            float realRadius = realRadius();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(realRadius &gt; 0 &amp;&amp; !broken){</b>
+<b class="nc">&nbsp;                paramEntity = this;</b>
+<b class="nc">&nbsp;                paramEffect = absorbEffect;</b>
+<b class="nc">&nbsp;                Groups.bullet.intersect(x - realRadius, y - realRadius, realRadius * 2f, realRadius * 2f, shieldConsumer);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean absorbExplosion(float ex, float ey, float damage){
+<b class="nc">&nbsp;            boolean absorb = !broken &amp;&amp; Intersector.isInRegularPolygon(sides, x, y, realRadius(), shieldRotation, ex, ey);</b>
+<b class="nc">&nbsp;            if(absorb){</b>
+<b class="nc">&nbsp;                absorbEffect.at(ex, ey);</b>
+<b class="nc">&nbsp;                hit = 1f;</b>
+<b class="nc">&nbsp;                buildup += damage * crashDamageMultiplier;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return absorb;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public float realRadius(){
+<b class="fc">&nbsp;            return (radius + phaseHeat * phaseRadiusBoost) * radscl;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public double sense(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.heat) return buildup;</b>
+<b class="nc">&nbsp;            if(sensor == LAccess.shield) return broken ? 0f : Math.max(shieldHealth + phaseShieldBoost * phaseHeat - buildup, 0);</b>
+<b class="nc">&nbsp;            return super.sense(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(buildup &gt; 0f){</b>
+<b class="nc">&nbsp;                Draw.alpha(buildup / shieldHealth * 0.75f);</b>
+<b class="nc">&nbsp;                Draw.z(Layer.blockAdditive);</b>
+<b class="nc">&nbsp;                Draw.blend(Blending.additive);</b>
+<b class="nc">&nbsp;                Draw.rect(topRegion, x, y);</b>
+<b class="nc">&nbsp;                Draw.blend();</b>
+<b class="nc">&nbsp;                Draw.z(Layer.block);</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            drawShield();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void drawShield(){
+<b class="nc">&nbsp;            if(!broken){</b>
+<b class="nc">&nbsp;                float radius = realRadius();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(radius &gt; 0.001f){</b>
+<b class="nc">&nbsp;                    Draw.color(team.color, Color.white, Mathf.clamp(hit));</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(renderer.animateShields){</b>
+<b class="nc">&nbsp;                        Draw.z(Layer.shields + 0.001f * hit);</b>
+<b class="nc">&nbsp;                        Fill.poly(x, y, sides, radius, shieldRotation);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        Draw.z(Layer.shields);</b>
+<b class="nc">&nbsp;                        Lines.stroke(1.5f);</b>
+<b class="nc">&nbsp;                        Draw.alpha(0.09f + Mathf.clamp(0.08f * hit));</b>
+<b class="nc">&nbsp;                        Fill.poly(x, y, sides, radius, shieldRotation);</b>
+<b class="nc">&nbsp;                        Draw.alpha(1f);</b>
+<b class="nc">&nbsp;                        Lines.poly(x, y, sides, radius, shieldRotation);</b>
+<b class="nc">&nbsp;                        Draw.reset();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void overwrote(Seq&lt;Building&gt; previous){
+<b class="nc">&nbsp;            if(previous.size &gt; 0 &amp;&amp; previous.first().block == block &amp;&amp; previous.first() instanceof ForceBuild b){</b>
+<b class="nc">&nbsp;                broken = b.broken;</b>
+<b class="nc">&nbsp;                buildup = b.buildup;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.bool(broken);</b>
+<b class="fc">&nbsp;            write.f(buildup);</b>
+<b class="fc">&nbsp;            write.f(radscl);</b>
+<b class="fc">&nbsp;            write.f(warmup);</b>
+<b class="fc">&nbsp;            write.f(phaseHeat);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            broken = read.bool();</b>
+<b class="fc">&nbsp;            buildup = read.f();</b>
+<b class="fc">&nbsp;            radscl = read.f();</b>
+<b class="fc">&nbsp;            warmup = read.f();</b>
+<b class="fc">&nbsp;            phaseHeat = read.f();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,932 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnitComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: UnitComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnitComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/72)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/322)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">UnitComp$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/73)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/323)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.logic.GlobalVars.*;
+&nbsp;
+&nbsp;@Component(base = true)
+<b class="nc">&nbsp;abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, Itemsc, Rotc, Unitc, Weaponsc, Drawc, Boundedc, Syncc, Shieldc, Displayable, Ranged, Minerc, Builderc, Senseable, Settable{</b>
+&nbsp;
+&nbsp;    @Import boolean hovering, dead, disarmed;
+&nbsp;    @Import float x, y, rotation, elevation, maxHealth, drag, armor, hitSize, health, shield, ammo, dragMultiplier, armorOverride, speedMultiplier;
+&nbsp;    @Import Team team;
+&nbsp;    @Import int id;
+&nbsp;    @Import @Nullable Tile mineTile;
+&nbsp;    @Import Vec2 vel;
+&nbsp;    @Import WeaponMount[] mounts;
+&nbsp;    @Import ItemStack stack;
+&nbsp;
+&nbsp;    private UnitController controller;
+<b class="nc">&nbsp;    Ability[] abilities = {};</b>
+<b class="nc">&nbsp;    UnitType type = UnitTypes.alpha;</b>
+&nbsp;    boolean spawnedByCore;
+&nbsp;    double flag;
+&nbsp;
+&nbsp;    transient @Nullable Trail trail;
+&nbsp;    //TODO could be better represented as a unit
+&nbsp;    transient @Nullable UnitType dockedType;
+&nbsp;
+&nbsp;    transient String lastCommanded;
+<b class="nc">&nbsp;    transient float shadowAlpha = -1f, healTime;</b>
+&nbsp;    transient int lastFogPos;
+<b class="nc">&nbsp;    private transient float resupplyTime = Mathf.random(10f);</b>
+&nbsp;    private transient boolean wasPlayer;
+&nbsp;    private transient boolean wasHealed;
+&nbsp;
+&nbsp;    /** Called when this unit was unloaded from a factory or spawn point. */
+&nbsp;    public void unloaded(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void updateBoosting(boolean boost){
+<b class="nc">&nbsp;        if(!type.canBoost || dead) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        elevation = Mathf.approachDelta(elevation, type.canBoost ? Mathf.num(boost || onSolid() || (isFlying() &amp;&amp; !canLand())) : 0f, type.riseSpeed);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Move based on preferred unit movement type. */
+&nbsp;    public void movePref(Vec2 movement){
+<b class="nc">&nbsp;        if(type.omniMovement){</b>
+<b class="nc">&nbsp;            moveAt(movement);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            rotateMove(movement);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void moveAt(Vec2 vector){
+<b class="nc">&nbsp;        moveAt(vector, type.accel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void approach(Vec2 vector){
+<b class="nc">&nbsp;        vel.approachDelta(vector, type.accel * speed());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void rotateMove(Vec2 vec){
+<b class="nc">&nbsp;        moveAt(Tmp.v2.trns(rotation, vec.len()));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!vec.isZero()){</b>
+<b class="nc">&nbsp;            rotation = Angles.moveToward(rotation, vec.angle(), type.rotateSpeed * Time.delta * speedMultiplier);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void aimLook(Position pos){
+<b class="nc">&nbsp;        aim(pos);</b>
+<b class="nc">&nbsp;        lookAt(pos);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void aimLook(float x, float y){
+<b class="nc">&nbsp;        aim(x, y);</b>
+<b class="nc">&nbsp;        lookAt(x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isPathImpassable(int tileX, int tileY){
+<b class="nc">&nbsp;        return !type.flying &amp;&amp; world.tiles.in(tileX, tileY) &amp;&amp; type.pathCost.getCost(team.id, pathfinder.get(tileX, tileY)) == -1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return approx. square size of the physical hitbox for physics */
+&nbsp;    public float physicSize(){
+<b class="nc">&nbsp;        return hitSize * 0.7f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether there is solid, un-occupied ground under this unit. */
+&nbsp;    public boolean canLand(){
+<b class="nc">&nbsp;        return !onSolid() &amp;&amp; Units.count(x, y, physicSize(), f -&gt; f != self() &amp;&amp; f.isGrounded()) == 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean inRange(Position other){
+<b class="nc">&nbsp;        return within(other, type.range);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasWeapons(){
+<b class="nc">&nbsp;        return type.hasWeapons();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return speed with boost &amp; floor multipliers factored in. */
+&nbsp;    public float speed(){
+<b class="nc">&nbsp;        float strafePenalty = isGrounded() || !isPlayer() ? 1f : Mathf.lerp(1f, type.strafePenalty, Angles.angleDist(vel().angle(), rotation) / 180f);</b>
+<b class="nc">&nbsp;        float boost = Mathf.lerp(1f, type.canBoost ? type.boostMultiplier : 1f, elevation);</b>
+<b class="nc">&nbsp;        return type.speed * strafePenalty * boost * floorSpeedMultiplier();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return where the unit wants to look at. */
+&nbsp;    public float prefRotation(){
+<b class="nc">&nbsp;        if(activelyBuilding() &amp;&amp; type.rotateToBuilding){</b>
+<b class="nc">&nbsp;            return angleTo(buildPlan());</b>
+<b class="nc">&nbsp;        }else if(mineTile != null){</b>
+<b class="nc">&nbsp;            return angleTo(mineTile);</b>
+<b class="nc">&nbsp;        }else if(moving() &amp;&amp; type.omniMovement){</b>
+<b class="nc">&nbsp;            return vel().angle();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return rotation;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean displayable(){
+<b class="nc">&nbsp;        return type.hoverable;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public boolean isSyncHidden(Player player){
+&nbsp;        //shooting reveals position so bullets can be seen
+<b class="nc">&nbsp;        return !isShooting() &amp;&amp; inFogTo(player.team());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void handleSyncHidden(){
+<b class="nc">&nbsp;        remove();</b>
+<b class="nc">&nbsp;        netClient.clearRemovedEntity(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public boolean inFogTo(Team viewer){
+<b class="nc">&nbsp;        if(this.team == viewer || !state.rules.fog) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(hitSize &lt;= 16f){</b>
+<b class="nc">&nbsp;            return !fogControl.isVisible(viewer, x, y);</b>
+&nbsp;        }else{
+&nbsp;            //for large hitsizes, check around the unit instead
+<b class="nc">&nbsp;            float trns = hitSize / 2f;</b>
+<b class="nc">&nbsp;            for(var p : Geometry.d8){</b>
+<b class="nc">&nbsp;                if(fogControl.isVisible(viewer, x + p.x * trns, y + p.y * trns)){</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float range(){
+<b class="nc">&nbsp;        return type.maxRange;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    public float clipSize(){
+<b class="nc">&nbsp;        if(isBuilding()){</b>
+<b class="nc">&nbsp;            return state.rules.infiniteResources ? Float.MAX_VALUE : Math.max(type.clipSize, type.region.width) + type.buildRange + tilesize*4f;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(mining()){</b>
+<b class="nc">&nbsp;            return type.clipSize + type.mineRange;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return type.clipSize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public double sense(LAccess sensor){
+<b class="nc">&nbsp;        return switch(sensor){</b>
+<b class="nc">&nbsp;            case totalItems -&gt; stack().amount;</b>
+<b class="nc">&nbsp;            case itemCapacity -&gt; type.itemCapacity;</b>
+<b class="nc">&nbsp;            case rotation -&gt; rotation;</b>
+<b class="nc">&nbsp;            case health -&gt; health;</b>
+<b class="nc">&nbsp;            case shield -&gt; shield;</b>
+<b class="nc">&nbsp;            case maxHealth -&gt; maxHealth;</b>
+<b class="nc">&nbsp;            case ammo -&gt; !state.rules.unitAmmo ? type.ammoCapacity : ammo;</b>
+<b class="nc">&nbsp;            case ammoCapacity -&gt; type.ammoCapacity;</b>
+<b class="nc">&nbsp;            case x -&gt; World.conv(x);</b>
+<b class="nc">&nbsp;            case y -&gt; World.conv(y);</b>
+<b class="nc">&nbsp;            case velocityX -&gt; vel.x * 60f / tilesize;</b>
+<b class="nc">&nbsp;            case velocityY -&gt; vel.y * 60f / tilesize;</b>
+<b class="nc">&nbsp;            case dead -&gt; dead || !isAdded() ? 1 : 0;</b>
+<b class="nc">&nbsp;            case team -&gt; team.id;</b>
+<b class="nc">&nbsp;            case shooting -&gt; isShooting() ? 1 : 0;</b>
+<b class="nc">&nbsp;            case boosting -&gt; type.canBoost &amp;&amp; isFlying() ? 1 : 0;</b>
+<b class="nc">&nbsp;            case range -&gt; range() / tilesize;</b>
+<b class="nc">&nbsp;            case shootX -&gt; World.conv(aimX());</b>
+<b class="nc">&nbsp;            case shootY -&gt; World.conv(aimY());</b>
+<b class="nc">&nbsp;            case cameraX -&gt; controller instanceof Player player ? World.conv(player.con == null ? Core.camera.position.x : player.con.viewX) : 0;</b>
+<b class="nc">&nbsp;            case cameraY -&gt; controller instanceof Player player ? World.conv(player.con == null ? Core.camera.position.y : player.con.viewY) : 0;</b>
+<b class="nc">&nbsp;            case cameraWidth -&gt; controller instanceof Player player ? World.conv(player.con == null ? Core.camera.width : player.con.viewWidth) : 0;</b>
+<b class="nc">&nbsp;            case cameraHeight -&gt; controller instanceof Player player ? World.conv(player.con == null ? Core.camera.height : player.con.viewHeight) : 0;</b>
+<b class="nc">&nbsp;            case mining -&gt; mining() ? 1 : 0;</b>
+<b class="nc">&nbsp;            case mineX -&gt; mining() ? mineTile.x : -1;</b>
+<b class="nc">&nbsp;            case mineY -&gt; mining() ? mineTile.y : -1;</b>
+<b class="nc">&nbsp;            case armor -&gt; armorOverride &gt;= 0f ? armorOverride : armor;</b>
+<b class="nc">&nbsp;            case flag -&gt; flag;</b>
+<b class="nc">&nbsp;            case speed -&gt; type.speed * 60f / tilesize * speedMultiplier;</b>
+<b class="nc">&nbsp;            case controlled -&gt; !isValid() ? 0 :</b>
+<b class="nc">&nbsp;                    controller instanceof LogicAI ? ctrlProcessor :</b>
+<b class="nc">&nbsp;                    controller instanceof Player ? ctrlPlayer :</b>
+<b class="nc">&nbsp;                    controller instanceof CommandAI command &amp;&amp; command.hasCommand() ? ctrlCommand :</b>
+<b class="nc">&nbsp;                    0;</b>
+<b class="nc">&nbsp;            case payloadCount -&gt; ((Object)this) instanceof Payloadc pay ? pay.payloads().size : 0;</b>
+<b class="nc">&nbsp;            case size -&gt; hitSize / tilesize;</b>
+<b class="nc">&nbsp;            case color -&gt; Color.toDoubleBits(team.color.r, team.color.g, team.color.b, 1f);</b>
+<b class="nc">&nbsp;            default -&gt; Float.NaN;</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Object senseObject(LAccess sensor){
+<b class="nc">&nbsp;        return switch(sensor){</b>
+<b class="nc">&nbsp;            case type -&gt; type;</b>
+<b class="nc">&nbsp;            case name -&gt; controller instanceof Player p ? p.name : null;</b>
+<b class="nc">&nbsp;            case firstItem -&gt; stack().amount == 0 ? null : item();</b>
+<b class="nc">&nbsp;            case controller -&gt; !isValid() ? null : controller instanceof LogicAI log ? log.controller : this;</b>
+<b class="nc">&nbsp;            case payloadType -&gt; ((Object)this) instanceof Payloadc pay ?</b>
+<b class="nc">&nbsp;                (pay.payloads().isEmpty() ? null :</b>
+<b class="nc">&nbsp;                pay.payloads().peek() instanceof UnitPayload p1 ? p1.unit.type :</b>
+<b class="nc">&nbsp;                pay.payloads().peek() instanceof BuildPayload p2 ? p2.block() : null) : null;</b>
+<b class="nc">&nbsp;            default -&gt; noSensed;</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public double sense(Content content){
+<b class="nc">&nbsp;        if(content == stack().item) return stack().amount;</b>
+<b class="nc">&nbsp;        return Float.NaN;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setProp(LAccess prop, double value){
+<b class="nc">&nbsp;        switch(prop){</b>
+&nbsp;            case health -&gt; {
+<b class="nc">&nbsp;                health = (float)Mathf.clamp(value, 0, maxHealth);</b>
+<b class="nc">&nbsp;                if(health &lt;= 0f &amp;&amp; !dead){</b>
+<b class="nc">&nbsp;                    kill();</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            case shield -&gt; shield = Math.max((float)value, 0f);</b>
+&nbsp;            case x -&gt; {
+<b class="nc">&nbsp;                x = World.unconv((float)value);</b>
+<b class="nc">&nbsp;                if(!isLocal()) snapInterpolation();</b>
+&nbsp;            }
+&nbsp;            case y -&gt; {
+<b class="nc">&nbsp;                y = World.unconv((float)value);</b>
+<b class="nc">&nbsp;                if(!isLocal()) snapInterpolation();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            case velocityX -&gt; vel.x = (float)(value * tilesize / 60d);</b>
+<b class="nc">&nbsp;            case velocityY -&gt; vel.y = (float)(value * tilesize / 60d);</b>
+<b class="nc">&nbsp;            case rotation -&gt; rotation = (float)value;</b>
+&nbsp;            case team -&gt; {
+<b class="nc">&nbsp;                if(!net.client()){</b>
+<b class="nc">&nbsp;                    Team team = Team.get((int)value);</b>
+<b class="nc">&nbsp;                    if(controller instanceof Player p){</b>
+<b class="nc">&nbsp;                        p.team(team);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    this.team = team;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;            case flag -&gt; flag = value;</b>
+<b class="nc">&nbsp;            case speed -&gt; statusSpeed(Math.max((float)value, 0f));</b>
+<b class="nc">&nbsp;            case armor -&gt; statusArmor(Math.max((float)value, 0f));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setProp(LAccess prop, Object value){
+<b class="nc">&nbsp;        switch(prop){</b>
+&nbsp;            case team -&gt; {
+<b class="nc">&nbsp;                if(value instanceof Team t &amp;&amp; !net.client()){</b>
+<b class="nc">&nbsp;                    if(controller instanceof Player p) p.team(t);</b>
+<b class="nc">&nbsp;                    team = t;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;            case payloadType -&gt; {
+&nbsp;                //only serverside
+<b class="nc">&nbsp;                if(((Object)this) instanceof Payloadc pay &amp;&amp; !net.client()){</b>
+<b class="nc">&nbsp;                    if(value instanceof Block b){</b>
+<b class="nc">&nbsp;                        if(b.synthetic()){</b>
+<b class="nc">&nbsp;                            Building build = b.newBuilding().create(b, team());</b>
+<b class="nc">&nbsp;                            if(pay.canPickup(build)) pay.addPayload(new BuildPayload(build));</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }else if(value instanceof UnitType ut){</b>
+<b class="nc">&nbsp;                        Unit unit = ut.create(team());</b>
+<b class="nc">&nbsp;                        if(pay.canPickup(unit)) pay.addPayload(new UnitPayload(unit));</b>
+<b class="nc">&nbsp;                    }else if(value == null &amp;&amp; pay.payloads().size &gt; 0){</b>
+<b class="nc">&nbsp;                        pay.payloads().pop();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setProp(UnlockableContent content, double value){
+<b class="nc">&nbsp;        if(content instanceof Item item){</b>
+<b class="nc">&nbsp;            stack.item = item;</b>
+<b class="nc">&nbsp;            stack.amount = Mathf.clamp((int)value, 0, type.itemCapacity);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public boolean canDrown(){
+<b class="nc">&nbsp;        return isGrounded() &amp;&amp; !hovering &amp;&amp; type.canDrown;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public boolean canShoot(){
+&nbsp;        //cannot shoot while boosting
+<b class="nc">&nbsp;        return !disarmed &amp;&amp; !(type.canBoost &amp;&amp; isFlying());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isEnemy(){
+<b class="nc">&nbsp;        return type.isEnemy;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public boolean collides(Hitboxc other){
+<b class="nc">&nbsp;        return hittable();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void collision(Hitboxc other, float x, float y){
+<b class="nc">&nbsp;        if(other instanceof Bullet bullet){</b>
+<b class="nc">&nbsp;            controller.hit(bullet);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int itemCapacity(){
+<b class="nc">&nbsp;        return type.itemCapacity;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float bounds(){
+<b class="nc">&nbsp;        return hitSize *  2f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void controller(UnitController next){
+<b class="nc">&nbsp;        this.controller = next;</b>
+<b class="nc">&nbsp;        if(controller.unit() != self()) controller.unit(self());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public UnitController controller(){
+<b class="nc">&nbsp;        return controller;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resetController(){
+<b class="nc">&nbsp;        controller(type.createController(self()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void set(UnitType def, UnitController controller){
+<b class="nc">&nbsp;        if(this.type != def){</b>
+<b class="nc">&nbsp;            setType(def);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        controller(controller);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the collision layer to use for unit physics. Returning anything outside of PhysicsProcess contents will crash the game. */
+&nbsp;    public int collisionLayer(){
+<b class="nc">&nbsp;        return type.allowLegStep &amp;&amp; type.legPhysicsLayer ? PhysicsProcess.layerLegs : isGrounded() ? PhysicsProcess.layerGround : PhysicsProcess.layerFlying;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return pathfinder path type for calculating costs. This is used for wave AI only. (TODO: remove) */
+&nbsp;    public int pathType(){
+<b class="nc">&nbsp;        return Pathfinder.costGround;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void lookAt(float angle){
+<b class="nc">&nbsp;        rotation = Angles.moveToward(rotation, angle, type.rotateSpeed * Time.delta * speedMultiplier());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void lookAt(Position pos){
+<b class="nc">&nbsp;        lookAt(angleTo(pos));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void lookAt(float x, float y){
+<b class="nc">&nbsp;        lookAt(angleTo(x, y));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAI(){
+<b class="nc">&nbsp;        return controller instanceof AIController;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isCommandable(){
+<b class="nc">&nbsp;        return controller instanceof CommandAI;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canTarget(Unit other){
+<b class="nc">&nbsp;        return other != null &amp;&amp; other.checkTarget(type.targetAir, type.targetGround);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public CommandAI command(){
+<b class="nc">&nbsp;        if(controller instanceof CommandAI ai){</b>
+<b class="nc">&nbsp;            return ai;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Unit cannot be commanded - check isCommandable() first.&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int count(){
+<b class="nc">&nbsp;        return team.data().countType(type);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int cap(){
+<b class="nc">&nbsp;        return Units.getCap(team);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setType(UnitType type){
+<b class="nc">&nbsp;        this.type = type;</b>
+<b class="nc">&nbsp;        this.maxHealth = type.health;</b>
+<b class="nc">&nbsp;        this.drag = type.drag;</b>
+<b class="nc">&nbsp;        this.armor = type.armor;</b>
+<b class="nc">&nbsp;        this.hitSize = type.hitSize;</b>
+<b class="nc">&nbsp;        this.hovering = type.hovering;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(controller == null) controller(type.createController(self()));</b>
+<b class="nc">&nbsp;        if(mounts().length != type.weapons.size) setupWeapons(type);</b>
+<b class="nc">&nbsp;        if(abilities.length != type.abilities.size){</b>
+<b class="nc">&nbsp;            abilities = new Ability[type.abilities.size];</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; type.abilities.size; i ++){</b>
+<b class="nc">&nbsp;                abilities[i] = type.abilities.get(i).copy();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean targetable(Team targeter){
+<b class="nc">&nbsp;        return type.targetable(self(), targeter);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hittable(){
+<b class="nc">&nbsp;        return type.hittable(self());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void afterSync(){
+&nbsp;        //set up type info after reading
+<b class="nc">&nbsp;        setType(this.type);</b>
+<b class="nc">&nbsp;        controller.unit(self());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void afterRead(){
+<b class="nc">&nbsp;        afterSync();</b>
+&nbsp;        //reset controller state
+<b class="nc">&nbsp;        if(!(controller instanceof AIController ai &amp;&amp; ai.keepState())){</b>
+<b class="nc">&nbsp;            controller(type.createController(self()));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void afterAllRead(){
+<b class="nc">&nbsp;        controller.afterRead(self());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void add(){
+<b class="nc">&nbsp;        team.data().updateCount(type, 1);</b>
+&nbsp;
+&nbsp;        //check if over unit cap
+<b class="nc">&nbsp;        if(type.useUnitCap &amp;&amp; count() &gt; cap() &amp;&amp; !spawnedByCore &amp;&amp; !dead &amp;&amp; !state.rules.editor){</b>
+<b class="nc">&nbsp;            Call.unitCapDeath(self());</b>
+<b class="nc">&nbsp;            team.data().updateCount(type, -1);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void remove(){
+<b class="nc">&nbsp;        team.data().updateCount(type, -1);</b>
+<b class="nc">&nbsp;        controller.removed(self());</b>
+&nbsp;
+&nbsp;        //make sure trail doesn&#39;t just go poof
+<b class="nc">&nbsp;        if(trail != null &amp;&amp; trail.size() &gt; 0){</b>
+<b class="nc">&nbsp;            Fx.trailFade.at(x, y, trail.width(), type.trailColor == null ? team.color : type.trailColor, trail.copy());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void landed(){
+<b class="nc">&nbsp;        if(type.mechLandShake &gt; 0f){</b>
+<b class="nc">&nbsp;            Effect.shake(type.mechLandShake, type.mechLandShake, this);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        type.landed(self());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void heal(float amount){
+<b class="nc">&nbsp;        if(health &lt; maxHealth &amp;&amp; amount &gt; 0){</b>
+<b class="nc">&nbsp;            wasHealed = true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+&nbsp;
+<b class="nc">&nbsp;        type.update(self());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(wasHealed &amp;&amp; healTime &lt;= -1f){</b>
+<b class="nc">&nbsp;            healTime = 1f;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        healTime -= Time.delta / 20f;</b>
+<b class="nc">&nbsp;        wasHealed = false;</b>
+&nbsp;
+&nbsp;        //die on captured sectors immediately
+<b class="nc">&nbsp;        if(team.isOnlyAI() &amp;&amp; state.isCampaign() &amp;&amp; state.getSector().isCaptured()){</b>
+<b class="nc">&nbsp;            kill();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!headless &amp;&amp; type.loopSound != Sounds.none){</b>
+<b class="nc">&nbsp;            control.sound.loop(type.loopSound, this, type.loopSoundVolume);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //check if environment is unsupported
+<b class="nc">&nbsp;        if(!type.supportsEnv(state.rules.env) &amp;&amp; !dead){</b>
+<b class="nc">&nbsp;            Call.unitEnvDeath(self());</b>
+<b class="nc">&nbsp;            team.data().updateCount(type, -1);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.unitAmmo &amp;&amp; ammo &lt; type.ammoCapacity - 0.0001f){</b>
+<b class="nc">&nbsp;            resupplyTime += Time.delta;</b>
+&nbsp;
+&nbsp;            //resupply only at a fixed interval to prevent lag
+<b class="nc">&nbsp;            if(resupplyTime &gt; 10f){</b>
+<b class="nc">&nbsp;                type.ammoType.resupply(self());</b>
+<b class="nc">&nbsp;                resupplyTime = 0f;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(Ability a : abilities){</b>
+<b class="nc">&nbsp;            a.update(self());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(trail != null){</b>
+<b class="nc">&nbsp;            trail.length = type.trailLength;</b>
+&nbsp;
+<b class="nc">&nbsp;            float scale = type.useEngineElevation ? elevation : 1f;</b>
+<b class="nc">&nbsp;            float offset = type.engineOffset/2f + type.engineOffset/2f*scale;</b>
+&nbsp;
+<b class="nc">&nbsp;            float cx = x + Angles.trnsx(rotation + 180, offset), cy = y + Angles.trnsy(rotation + 180, offset);</b>
+<b class="nc">&nbsp;            trail.update(cx, cy);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        drag = type.drag * (isGrounded() ? (floorOn().dragMultiplier) : 1f) * dragMultiplier * state.rules.dragMultiplier;</b>
+&nbsp;
+&nbsp;        //apply knockback based on spawns
+<b class="nc">&nbsp;        if(team != state.rules.waveTeam &amp;&amp; state.hasSpawns() &amp;&amp; (!net.client() || isLocal()) &amp;&amp; hittable()){</b>
+<b class="nc">&nbsp;            float relativeSize = state.rules.dropZoneRadius + hitSize/2f + 1f;</b>
+<b class="nc">&nbsp;            for(Tile spawn : spawner.getSpawns()){</b>
+<b class="nc">&nbsp;                if(within(spawn.worldx(), spawn.worldy(), relativeSize)){</b>
+<b class="nc">&nbsp;                    velAddNet(Tmp.v1.set(this).sub(spawn.worldx(), spawn.worldy()).setLength(0.1f + 1f - dst(spawn) / relativeSize).scl(0.45f * Time.delta));</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //simulate falling down
+<b class="nc">&nbsp;        if(dead || health &lt;= 0){</b>
+&nbsp;            //less drag when dead
+<b class="nc">&nbsp;            drag = 0.01f;</b>
+&nbsp;
+&nbsp;            //standard fall smoke
+<b class="nc">&nbsp;            if(Mathf.chanceDelta(0.1)){</b>
+<b class="nc">&nbsp;                Tmp.v1.rnd(Mathf.range(hitSize));</b>
+<b class="nc">&nbsp;                type.fallEffect.at(x + Tmp.v1.x, y + Tmp.v1.y);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //thruster fall trail
+<b class="nc">&nbsp;            if(Mathf.chanceDelta(0.2)){</b>
+<b class="nc">&nbsp;                float offset = type.engineOffset/2f + type.engineOffset/2f * elevation;</b>
+<b class="nc">&nbsp;                float range = Mathf.range(type.engineSize);</b>
+<b class="nc">&nbsp;                type.fallEngineEffect.at(</b>
+<b class="nc">&nbsp;                    x + Angles.trnsx(rotation + 180, offset) + Mathf.range(range),</b>
+<b class="nc">&nbsp;                    y + Angles.trnsy(rotation + 180, offset) + Mathf.range(range),</b>
+<b class="nc">&nbsp;                    Mathf.random()</b>
+&nbsp;                );
+&nbsp;            }
+&nbsp;
+&nbsp;            //move down
+<b class="nc">&nbsp;            elevation -= type.fallSpeed * Time.delta;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(isGrounded() || health &lt;= -maxHealth){</b>
+<b class="nc">&nbsp;                Call.unitDestroy(id);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        Floor floor = floorOn();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(tile != null &amp;&amp; isGrounded() &amp;&amp; !type.hovering){</b>
+&nbsp;            //unit block update
+<b class="nc">&nbsp;            if(tile.build != null){</b>
+<b class="nc">&nbsp;                tile.build.unitOn(self());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //apply damage
+<b class="nc">&nbsp;            if(floor.damageTaken &gt; 0f){</b>
+<b class="nc">&nbsp;                damageContinuous(floor.damageTaken);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //kill entities on tiles that are solid to them
+<b class="nc">&nbsp;        if(tile != null &amp;&amp; !canPassOn()){</b>
+&nbsp;            //boost if possible
+<b class="nc">&nbsp;            if(type.canBoost){</b>
+<b class="nc">&nbsp;                elevation = 1f;</b>
+<b class="nc">&nbsp;            }else if(!net.client()){</b>
+<b class="nc">&nbsp;                kill();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //AI only updates on the server
+<b class="nc">&nbsp;        if(!net.client() &amp;&amp; !dead){</b>
+<b class="nc">&nbsp;            controller.updateUnit();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //clear controller when it becomes invalid
+<b class="nc">&nbsp;        if(!controller.isValidController()){</b>
+<b class="nc">&nbsp;            resetController();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //remove units spawned by the core
+<b class="nc">&nbsp;        if(spawnedByCore &amp;&amp; !isPlayer() &amp;&amp; !dead){</b>
+<b class="nc">&nbsp;            Call.unitDespawn(self());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return a preview UI icon for this unit. */
+&nbsp;    public TextureRegion icon(){
+<b class="nc">&nbsp;        return type.uiIcon;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Actually destroys the unit, removing it and creating explosions. **/
+&nbsp;    public void destroy(){
+<b class="nc">&nbsp;        if(!isAdded() || !type.killable) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float explosiveness = 2f + item().explosiveness * stack().amount * 1.53f;</b>
+<b class="nc">&nbsp;        float flammability = item().flammability * stack().amount / 1.9f;</b>
+<b class="nc">&nbsp;        float power = item().charge * Mathf.pow(stack().amount, 1.11f) * 160f;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!spawnedByCore){</b>
+<b class="nc">&nbsp;            Damage.dynamicExplosion(x, y, flammability, explosiveness, power, (bounds() + type.legLength/1.7f) / 2f, state.rules.damageExplosions &amp;&amp; state.rules.unitCrashDamage(team) &gt; 0, item().flammability &gt; 1, team, type.deathExplosionEffect);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            type.deathExplosionEffect.at(x, y, bounds() / 2f / 8f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float shake = hitSize / 3f;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(type.createScorch){</b>
+<b class="nc">&nbsp;            Effect.scorch(x, y, (int)(hitSize / 5));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Effect.shake(shake, shake, this);</b>
+<b class="nc">&nbsp;        type.deathSound.at(this);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(new UnitDestroyEvent(self()));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(explosiveness &gt; 7f &amp;&amp; (isLocal() || wasPlayer)){</b>
+<b class="nc">&nbsp;            Events.fire(Trigger.suicideBomb);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(WeaponMount mount : mounts){</b>
+<b class="nc">&nbsp;            if(mount.weapon.shootOnDeath &amp;&amp; !(mount.weapon.bullet.killShooter &amp;&amp; mount.totalShots &gt; 0)){</b>
+<b class="nc">&nbsp;                mount.reload = 0f;</b>
+<b class="nc">&nbsp;                mount.shoot = true;</b>
+<b class="nc">&nbsp;                mount.weapon.update(self(), mount);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //if this unit crash landed (was flying), damage stuff in a radius
+<b class="nc">&nbsp;        if(type.flying &amp;&amp; !spawnedByCore &amp;&amp; type.createWreck &amp;&amp; state.rules.unitCrashDamage(team) &gt; 0){</b>
+<b class="nc">&nbsp;            var shields = indexer.getEnemy(team, BlockFlag.shield);</b>
+<b class="nc">&nbsp;            float crashDamage = Mathf.pow(hitSize, 0.75f) * type.crashDamageMultiplier * 5f * state.rules.unitCrashDamage(team);</b>
+<b class="nc">&nbsp;            if(shields.isEmpty() || !shields.contains(b -&gt; b instanceof ExplosionShield s &amp;&amp; s.absorbExplosion(x, y, crashDamage))){</b>
+<b class="nc">&nbsp;                Damage.damage(team, x, y, Mathf.pow(hitSize, 0.94f) * 1.25f, crashDamage, true, false, true);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!headless &amp;&amp; type.createScorch){</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; type.wreckRegions.length; i++){</b>
+<b class="nc">&nbsp;                if(type.wreckRegions[i].found()){</b>
+<b class="nc">&nbsp;                    float range = type.hitSize /4f;</b>
+<b class="nc">&nbsp;                    Tmp.v1.rnd(range);</b>
+<b class="nc">&nbsp;                    Effect.decal(type.wreckRegions[i], x + Tmp.v1.x, y + Tmp.v1.y, rotation - 90);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(Ability a : abilities){</b>
+<b class="nc">&nbsp;            a.death(self());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        type.killed(self());</b>
+&nbsp;
+<b class="nc">&nbsp;        remove();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return name of direct or indirect player controller. */
+&nbsp;    @Override
+&nbsp;    public @Nullable String getControllerName(){
+<b class="nc">&nbsp;        if(isPlayer()) return getPlayer().coloredName();</b>
+<b class="nc">&nbsp;        if(controller instanceof LogicAI ai &amp;&amp; ai.controller != null) return ai.controller.lastAccessed;</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void display(Table table){
+<b class="nc">&nbsp;        type.display(self(), table);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isImmune(StatusEffect effect){
+<b class="nc">&nbsp;        return type.immunities.contains(effect);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        type.draw(self());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isPlayer(){
+<b class="nc">&nbsp;        return controller instanceof Player;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Player getPlayer(){
+<b class="nc">&nbsp;        return isPlayer() ? (Player)controller : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void killed(){
+<b class="nc">&nbsp;        wasPlayer = isLocal();</b>
+<b class="nc">&nbsp;        health = Math.min(health, 0);</b>
+<b class="nc">&nbsp;        dead = true;</b>
+&nbsp;
+&nbsp;        //don&#39;t waste time when the unit is already on the ground, just destroy it
+<b class="nc">&nbsp;        if(!type.flying || !type.createWreck){</b>
+<b class="nc">&nbsp;            destroy();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public void kill(){
+<b class="nc">&nbsp;        if(dead || net.client() || !type.killable) return;</b>
+&nbsp;
+&nbsp;        //deaths are synced; this calls killed()
+<b class="nc">&nbsp;        Call.unitDeath(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return &quot;Unit#&quot; + id() + &quot;:&quot; + type + &quot; (&quot; + x + &quot;, &quot; + y + &quot;)&quot;;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

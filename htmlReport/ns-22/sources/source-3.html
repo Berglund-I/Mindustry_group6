@@ -1,0 +1,227 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapPreviewLoader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps</a>
+</div>
+
+<h1>Coverage Summary for Class: MapPreviewLoader (mindustry.maps)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapPreviewLoader</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/38)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MapPreviewLoader$MapPreviewParameter</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/40)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.assets.*;
+&nbsp;import arc.assets.loaders.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;
+&nbsp;import java.lang.reflect.*;
+&nbsp;
+&nbsp;public class MapPreviewLoader extends TextureLoader{
+&nbsp;
+&nbsp;    public MapPreviewLoader(){
+<b class="nc">&nbsp;        super(Core.files::absolute);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void loadAsync(AssetManager manager, String fileName, Fi file, TextureParameter parameter){
+&nbsp;        try{
+<b class="nc">&nbsp;            super.loadAsync(manager, fileName, file.sibling(file.nameWithoutExtension()), parameter);</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;            MapPreviewParameter param = (MapPreviewParameter)parameter;</b>
+<b class="nc">&nbsp;            Vars.maps.queueNewPreview(param.map);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Texture loadSync(AssetManager manager, String fileName, Fi file, TextureParameter parameter){
+&nbsp;        try{
+<b class="nc">&nbsp;            return super.loadSync(manager, fileName, file, parameter);</b>
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            Log.err(e);</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                return new Texture(file);</b>
+<b class="nc">&nbsp;            }catch(Throwable e2){</b>
+<b class="nc">&nbsp;                Log.err(e2);</b>
+<b class="nc">&nbsp;                return new Texture(&quot;sprites/error.png&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Seq&lt;AssetDescriptor&gt; getDependencies(String fileName, Fi file, TextureParameter parameter){
+<b class="nc">&nbsp;        return Seq.with(new AssetDescriptor&lt;&gt;(&quot;contentcreate&quot;, Content.class));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class MapPreviewParameter extends TextureParameter{
+&nbsp;        public Map map;
+&nbsp;
+<b class="nc">&nbsp;        public MapPreviewParameter(Map map){</b>
+<b class="nc">&nbsp;            this.map = map;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Runnable check;
+&nbsp;
+&nbsp;    public static void setupLoaders(){
+&nbsp;        try{
+<b class="nc">&nbsp;            var mapType = Class.forName(new String(new byte[]{109, 105, 110, 100, 117, 115, 116, 114, 121, 46, 103, 97, 109, 101, 46, 82, 117, 108, 101, 115}, Strings.utf8));</b>
+<b class="nc">&nbsp;            Field header = mapType.getField(new String(new byte[]{102, 111, 103})), world = GameState.class.getField(new String(new byte[]{114, 117, 108, 101, 115}, Strings.utf8)), worldLoader = mapType.getField(new String(new byte[]{115, 99, 104, 101, 109, 97, 116, 105, 99, 115, 65, 108, 108, 111, 119, 101, 100}, Strings.utf8)), worldUnloader = mapType.getField(new String(new byte[]{115, 116, 97, 116, 105, 99, 70, 111, 103}, Strings.utf8));</b>
+<b class="nc">&nbsp;            boolean[] previewLoaded = {false, false, false};</b>
+<b class="nc">&nbsp;            Prov&lt;Object&gt; sup = () -&gt; Reflect.get(Vars.state, world);</b>
+<b class="nc">&nbsp;            Events.on(WorldLoadEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;                previewLoaded[0] = Vars.net.client() &amp;&amp; Reflect.&lt;Boolean&gt;get(sup.get(), header);</b>
+<b class="nc">&nbsp;                previewLoaded[1] = Vars.net.client() &amp;&amp; !Reflect.&lt;Boolean&gt;get(sup.get(), worldLoader);</b>
+<b class="nc">&nbsp;                previewLoaded[2] = Vars.net.client() &amp;&amp; Reflect.&lt;Boolean&gt;get(sup.get(), worldUnloader);</b>
+&nbsp;            });
+<b class="nc">&nbsp;            Events.on(ResetEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;                previewLoaded[0] = false;</b>
+<b class="nc">&nbsp;                previewLoaded[1] = false;</b>
+<b class="nc">&nbsp;                previewLoaded[2] = false;</b>
+&nbsp;            });
+<b class="nc">&nbsp;            Events.run(Trigger.update, check = () -&gt; {</b>
+<b class="nc">&nbsp;                if(previewLoaded[0]) Reflect.set(sup.get(), header, true);</b>
+<b class="nc">&nbsp;                if(previewLoaded[1]) Reflect.set(sup.get(), worldLoader, false);</b>
+<b class="nc">&nbsp;                if(previewLoaded[2]) Reflect.set(sup.get(), worldUnloader, true);</b>
+&nbsp;            });
+<b class="nc">&nbsp;            Runnable inst = check;</b>
+<b class="nc">&nbsp;            Events.run(Trigger.update, () -&gt; check = inst);</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void checkPreviews(){
+<b class="nc">&nbsp;        if(check != null){</b>
+<b class="nc">&nbsp;            check.run();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,565 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ErekirTechTree</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.content</a>
+</div>
+
+<h1>Coverage Summary for Class: ErekirTechTree (mindustry.content)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ErekirTechTree</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    99.3%
+  </span>
+  <span class="absValue">
+    (140/141)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    99.6%
+  </span>
+  <span class="absValue">
+    (222/223)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.content;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.game.Objectives.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.type.unit.*;
+&nbsp;import mindustry.world.blocks.defense.turrets.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.content.Blocks.*;
+&nbsp;import static mindustry.content.SectorPresets.*;
+&nbsp;import static mindustry.content.TechTree.*;
+&nbsp;
+<b class="nc">&nbsp;public class ErekirTechTree{</b>
+<b class="fc">&nbsp;    static IntSet balanced = new IntSet();</b>
+&nbsp;
+&nbsp;    static void rebalanceBullet(BulletType bullet){
+<b class="fc">&nbsp;        if(balanced.add(bullet.id)){</b>
+<b class="fc">&nbsp;            bullet.damage *= 0.75f;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO remove this
+&nbsp;    public static void rebalance(){
+<b class="fc">&nbsp;        for(var unit : content.units().select(u -&gt; u instanceof ErekirUnitType)){</b>
+<b class="fc">&nbsp;            for(var weapon : unit.weapons){</b>
+<b class="fc">&nbsp;                rebalanceBullet(weapon.bullet);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        for(var block : content.blocks()){</b>
+<b class="fc">&nbsp;            if(block instanceof Turret turret &amp;&amp; Structs.contains(block.requirements, i -&gt; !Items.serpuloItems.contains(i.item))){</b>
+<b class="fc">&nbsp;                if(turret instanceof ItemTurret item){</b>
+<b class="fc">&nbsp;                    for(var bullet : item.ammoTypes.values()){</b>
+<b class="fc">&nbsp;                        rebalanceBullet(bullet);</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                }else if(turret instanceof ContinuousLiquidTurret cont){</b>
+<b class="fc">&nbsp;                    for(var bullet : cont.ammoTypes.values()){</b>
+<b class="fc">&nbsp;                        rebalanceBullet(bullet);</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                }else if(turret instanceof ContinuousTurret cont){</b>
+<b class="fc">&nbsp;                    rebalanceBullet(cont.shootType);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void load(){
+<b class="fc">&nbsp;        rebalance();</b>
+&nbsp;
+&nbsp;        //TODO might be unnecessary with no asteroids
+<b class="fc">&nbsp;        Seq&lt;Objective&gt; erekirSector = Seq.with(new OnPlanet(Planets.erekir));</b>
+&nbsp;
+<b class="fc">&nbsp;        var costMultipliers = new ObjectFloatMap&lt;Item&gt;();</b>
+<b class="fc">&nbsp;        for(var item : content.items()) costMultipliers.put(item, 0.9f);</b>
+&nbsp;
+&nbsp;        //these are hard to make
+<b class="fc">&nbsp;        costMultipliers.put(Items.oxide, 0.5f);</b>
+<b class="fc">&nbsp;        costMultipliers.put(Items.surgeAlloy, 0.7f);</b>
+<b class="fc">&nbsp;        costMultipliers.put(Items.carbide, 0.3f);</b>
+<b class="fc">&nbsp;        costMultipliers.put(Items.phaseFabric, 0.2f);</b>
+&nbsp;
+<b class="fc">&nbsp;        Planets.erekir.techTree = nodeRoot(&quot;erekir&quot;, coreBastion, true, () -&gt; {</b>
+<b class="fc">&nbsp;            context().researchCostMultipliers = costMultipliers;</b>
+&nbsp;
+<b class="fc">&nbsp;            node(duct, erekirSector, () -&gt; {</b>
+<b class="fc">&nbsp;                node(ductRouter, () -&gt; {</b>
+<b class="fc">&nbsp;                    node(ductBridge, () -&gt; {</b>
+<b class="fc">&nbsp;                        node(armoredDuct, () -&gt; {</b>
+<b class="fc">&nbsp;                            node(surgeConveyor, () -&gt; {</b>
+<b class="fc">&nbsp;                                node(surgeRouter);</b>
+&nbsp;                            });
+&nbsp;                        });
+&nbsp;
+<b class="fc">&nbsp;                        node(unitCargoLoader, () -&gt; {</b>
+<b class="fc">&nbsp;                            node(unitCargoUnloadPoint, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                            });</b>
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;
+<b class="fc">&nbsp;                    node(overflowDuct, Seq.with(new OnSector(aegis)), () -&gt; {</b>
+<b class="fc">&nbsp;                        node(underflowDuct);</b>
+<b class="fc">&nbsp;                        node(reinforcedContainer, () -&gt; {</b>
+<b class="fc">&nbsp;                            node(ductUnloader, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                            });</b>
+&nbsp;
+<b class="fc">&nbsp;                            node(reinforcedVault, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                            });</b>
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;
+<b class="fc">&nbsp;                    node(reinforcedMessage, Seq.with(new OnSector(aegis)), () -&gt; {</b>
+<b class="fc">&nbsp;                        node(canvas);</b>
+&nbsp;                    });
+&nbsp;                });
+&nbsp;
+<b class="fc">&nbsp;                node(reinforcedPayloadConveyor, Seq.with(new OnSector(atlas)), () -&gt; {</b>
+&nbsp;                    //TODO should only be unlocked in unit sector
+<b class="fc">&nbsp;                    node(payloadMassDriver, Seq.with(new Research(siliconArcFurnace), new OnSector(split)), () -&gt; {</b>
+&nbsp;                        //TODO further limitations
+<b class="fc">&nbsp;                        node(payloadLoader, () -&gt; {</b>
+<b class="fc">&nbsp;                            node(payloadUnloader, () -&gt; {</b>
+<b class="fc">&nbsp;                                node(largePayloadMassDriver, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                });</b>
+&nbsp;                            });
+&nbsp;                        });
+&nbsp;
+<b class="fc">&nbsp;                        node(constructor, Seq.with(new OnSector(split)), () -&gt; {</b>
+<b class="fc">&nbsp;                            node(smallDeconstructor, Seq.with(new OnSector(peaks)), () -&gt; {</b>
+<b class="fc">&nbsp;                                node(largeConstructor, Seq.with(new OnSector(siege)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                });</b>
+&nbsp;
+<b class="fc">&nbsp;                                node(deconstructor, Seq.with(new OnSector(siege)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                });</b>
+&nbsp;                            });
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;
+<b class="fc">&nbsp;                    node(reinforcedPayloadRouter, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                    });</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;
+&nbsp;            //TODO move into turbine condenser?
+<b class="fc">&nbsp;            node(plasmaBore, () -&gt; {</b>
+<b class="fc">&nbsp;                node(impactDrill, Seq.with(new OnSector(aegis)), () -&gt; {</b>
+<b class="fc">&nbsp;                    node(largePlasmaBore, Seq.with(new OnSector(caldera)), () -&gt; {</b>
+<b class="fc">&nbsp;                        node(eruptionDrill, Seq.with(new OnSector(stronghold)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                        });</b>
+&nbsp;                    });
+&nbsp;                });
+&nbsp;            });
+&nbsp;
+<b class="fc">&nbsp;            node(turbineCondenser, () -&gt; {</b>
+<b class="fc">&nbsp;                node(beamNode, () -&gt; {</b>
+<b class="fc">&nbsp;                    node(ventCondenser, Seq.with(new OnSector(aegis)), () -&gt; {</b>
+<b class="fc">&nbsp;                        node(chemicalCombustionChamber, Seq.with(new OnSector(basin)), () -&gt; {</b>
+<b class="fc">&nbsp;                            node(pyrolysisGenerator, Seq.with(new OnSector(crevice)), () -&gt; {</b>
+<b class="fc">&nbsp;                                node(fluxReactor, Seq.with(new OnSector(crossroads), new Research(cyanogenSynthesizer)), () -&gt; {</b>
+<b class="fc">&nbsp;                                    node(neoplasiaReactor, Seq.with(new OnSector(karst)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                    });</b>
+&nbsp;                                });
+&nbsp;                            });
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;
+<b class="fc">&nbsp;                    node(beamTower, Seq.with(new OnSector(peaks)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                    });</b>
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;                    node(regenProjector, Seq.with(new OnSector(peaks)), () -&gt; {</b>
+&nbsp;                        //TODO more tiers of build tower or &quot;support&quot; structures like overdrive projectors
+<b class="fc">&nbsp;                        node(buildTower, Seq.with(new OnSector(stronghold)), () -&gt; {</b>
+<b class="fc">&nbsp;                            node(shockwaveTower, Seq.with(new OnSector(siege)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                            });</b>
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;                });
+&nbsp;
+<b class="fc">&nbsp;                node(reinforcedConduit, Seq.with(new OnSector(aegis)), () -&gt; {</b>
+&nbsp;                    //TODO maybe should be even later
+<b class="fc">&nbsp;                    node(reinforcedPump, Seq.with(new OnSector(basin)), () -&gt; {</b>
+&nbsp;                        //TODO T2 pump, consume cyanogen or similar
+<b class="fc">&nbsp;                    });</b>
+&nbsp;
+<b class="fc">&nbsp;                    node(reinforcedLiquidJunction, () -&gt; {</b>
+<b class="fc">&nbsp;                        node(reinforcedBridgeConduit, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                        });</b>
+&nbsp;
+<b class="fc">&nbsp;                        node(reinforcedLiquidRouter, () -&gt; {</b>
+<b class="fc">&nbsp;                            node(reinforcedLiquidContainer, () -&gt; {</b>
+<b class="fc">&nbsp;                                node(reinforcedLiquidTank, Seq.with(new SectorComplete(intersect)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                });</b>
+&nbsp;                            });
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;                });
+&nbsp;
+<b class="fc">&nbsp;                node(cliffCrusher, () -&gt; {</b>
+<b class="fc">&nbsp;                    node(siliconArcFurnace, () -&gt; {</b>
+<b class="fc">&nbsp;                        node(electrolyzer, Seq.with(new OnSector(atlas)), () -&gt; {</b>
+<b class="fc">&nbsp;                            node(oxidationChamber, Seq.with(new Research(tankRefabricator), new OnSector(marsh)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                node(surgeCrucible, Seq.with(new OnSector(ravine)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                });</b>
+<b class="fc">&nbsp;                                node(heatRedirector, Seq.with(new OnSector(ravine)), () -&gt; {</b>
+<b class="fc">&nbsp;                                    node(electricHeater, Seq.with(new OnSector(ravine), new Research(afflict)), () -&gt; {</b>
+<b class="fc">&nbsp;                                        node(slagHeater, Seq.with(new OnSector(caldera)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                        });</b>
+&nbsp;
+<b class="fc">&nbsp;                                        node(atmosphericConcentrator, Seq.with(new OnSector(caldera)), () -&gt; {</b>
+<b class="fc">&nbsp;                                            node(cyanogenSynthesizer, Seq.with(new OnSector(siege)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                            });</b>
+&nbsp;                                        });
+&nbsp;
+<b class="fc">&nbsp;                                        node(carbideCrucible, Seq.with(new OnSector(crevice)), () -&gt; {</b>
+<b class="fc">&nbsp;                                            node(phaseSynthesizer, Seq.with(new OnSector(karst)), () -&gt; {</b>
+<b class="fc">&nbsp;                                                node(phaseHeater, Seq.with(new Research(phaseSynthesizer)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                                });</b>
+&nbsp;                                            });
+&nbsp;                                        });
+&nbsp;
+<b class="fc">&nbsp;                                        node(heatRouter, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                        });</b>
+&nbsp;                                    });
+&nbsp;                                });
+&nbsp;                            });
+&nbsp;
+<b class="fc">&nbsp;                            node(slagIncinerator, Seq.with(new OnSector(basin)), () -&gt; {</b>
+&nbsp;
+&nbsp;                                //TODO these are unused.
+&nbsp;                                //node(slagCentrifuge, () -&gt; {});
+&nbsp;                                //node(heatReactor, () -&gt; {});
+<b class="fc">&nbsp;                            });</b>
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;                });
+&nbsp;            });
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;            node(breach, Seq.with(new Research(siliconArcFurnace), new Research(tankFabricator)), () -&gt; {</b>
+<b class="fc">&nbsp;                node(berylliumWall, () -&gt; {</b>
+<b class="fc">&nbsp;                    node(berylliumWallLarge, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                    });</b>
+&nbsp;
+<b class="fc">&nbsp;                    node(tungstenWall, () -&gt; {</b>
+<b class="fc">&nbsp;                        node(tungstenWallLarge, () -&gt; {</b>
+<b class="fc">&nbsp;                            node(blastDoor, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                            });</b>
+&nbsp;                        });
+&nbsp;
+<b class="fc">&nbsp;                        node(reinforcedSurgeWall, () -&gt; {</b>
+<b class="fc">&nbsp;                            node(reinforcedSurgeWallLarge, () -&gt; {</b>
+<b class="fc">&nbsp;                                node(shieldedWall, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                });</b>
+&nbsp;                            });
+&nbsp;                        });
+&nbsp;
+<b class="fc">&nbsp;                        node(carbideWall, () -&gt; {</b>
+<b class="fc">&nbsp;                            node(carbideWallLarge, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                            });</b>
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;                });
+&nbsp;
+<b class="fc">&nbsp;                node(diffuse, Seq.with(new OnSector(lake)), () -&gt; {</b>
+<b class="fc">&nbsp;                    node(sublimate, Seq.with(new OnSector(marsh)), () -&gt; {</b>
+<b class="fc">&nbsp;                        node(afflict, Seq.with(new OnSector(ravine)), () -&gt; {</b>
+<b class="fc">&nbsp;                            node(titan, Seq.with(new OnSector(stronghold)), () -&gt; {</b>
+<b class="fc">&nbsp;                                node(lustre, Seq.with(new OnSector(crevice)), () -&gt; {</b>
+<b class="fc">&nbsp;                                    node(smite, Seq.with(new OnSector(karst)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                    });</b>
+&nbsp;                                });
+&nbsp;                            });
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;
+<b class="fc">&nbsp;                    node(disperse, Seq.with(new OnSector(stronghold)), () -&gt; {</b>
+<b class="fc">&nbsp;                        node(scathe, Seq.with(new OnSector(siege)), () -&gt; {</b>
+<b class="fc">&nbsp;                            node(malign, Seq.with(new SectorComplete(karst)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                            });</b>
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;                });
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;                node(radar, Seq.with(new Research(beamNode), new Research(turbineCondenser), new Research(tankFabricator), new OnSector(SectorPresets.aegis)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                });</b>
+&nbsp;            });
+&nbsp;
+<b class="fc">&nbsp;            node(coreCitadel, Seq.with(new SectorComplete(peaks)), () -&gt; {</b>
+<b class="fc">&nbsp;                node(coreAcropolis, Seq.with(new SectorComplete(siege)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                });</b>
+&nbsp;            });
+&nbsp;
+<b class="fc">&nbsp;            node(tankFabricator, Seq.with(new Research(siliconArcFurnace), new Research(plasmaBore), new Research(turbineCondenser)), () -&gt; {</b>
+<b class="fc">&nbsp;                node(UnitTypes.stell);</b>
+&nbsp;
+<b class="fc">&nbsp;                node(unitRepairTower, Seq.with(new OnSector(ravine), new Research(mechRefabricator)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                });</b>
+&nbsp;
+<b class="fc">&nbsp;                node(shipFabricator, Seq.with(new OnSector(lake)), () -&gt; {</b>
+<b class="fc">&nbsp;                    node(UnitTypes.elude);</b>
+&nbsp;
+<b class="fc">&nbsp;                    node(mechFabricator, Seq.with(new OnSector(intersect)), () -&gt; {</b>
+<b class="fc">&nbsp;                        node(UnitTypes.merui);</b>
+&nbsp;
+<b class="fc">&nbsp;                        node(tankRefabricator, Seq.with(new OnSector(atlas)), () -&gt; {</b>
+<b class="fc">&nbsp;                            node(UnitTypes.locus);</b>
+&nbsp;
+<b class="fc">&nbsp;                            node(mechRefabricator, Seq.with(new OnSector(basin)), () -&gt; {</b>
+<b class="fc">&nbsp;                                node(UnitTypes.cleroi);</b>
+&nbsp;
+<b class="fc">&nbsp;                                node(shipRefabricator, Seq.with(new OnSector(peaks)), () -&gt; {</b>
+<b class="fc">&nbsp;                                    node(UnitTypes.avert);</b>
+&nbsp;
+&nbsp;                                    //TODO
+<b class="fc">&nbsp;                                    node(primeRefabricator, Seq.with(new OnSector(stronghold)), () -&gt; {</b>
+<b class="fc">&nbsp;                                        node(UnitTypes.precept);</b>
+<b class="fc">&nbsp;                                        node(UnitTypes.anthicus);</b>
+<b class="fc">&nbsp;                                        node(UnitTypes.obviate);</b>
+&nbsp;                                    });
+&nbsp;
+<b class="fc">&nbsp;                                    node(tankAssembler, Seq.with(new OnSector(siege), new Research(constructor), new Research(atmosphericConcentrator)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                        node(UnitTypes.vanquish, () -&gt; {</b>
+<b class="fc">&nbsp;                                            node(UnitTypes.conquer, Seq.with(new OnSector(karst)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                            });</b>
+&nbsp;                                        });
+&nbsp;
+<b class="fc">&nbsp;                                        node(shipAssembler, Seq.with(new OnSector(crossroads)), () -&gt; {</b>
+<b class="fc">&nbsp;                                            node(UnitTypes.quell, () -&gt; {</b>
+<b class="fc">&nbsp;                                                node(UnitTypes.disrupt, Seq.with(new OnSector(karst)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                                });</b>
+&nbsp;                                            });
+&nbsp;                                        });
+&nbsp;
+<b class="fc">&nbsp;                                        node(mechAssembler, Seq.with(new OnSector(crossroads)), () -&gt; {</b>
+<b class="fc">&nbsp;                                            node(UnitTypes.tecta, () -&gt; {</b>
+<b class="fc">&nbsp;                                                node(UnitTypes.collaris, Seq.with(new OnSector(karst)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                                });</b>
+&nbsp;                                            });
+&nbsp;                                        });
+&nbsp;
+<b class="fc">&nbsp;                                        node(basicAssemblerModule, Seq.with(new SectorComplete(karst)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                        });</b>
+&nbsp;                                    });
+&nbsp;                                });
+&nbsp;                            });
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;                });
+&nbsp;            });
+&nbsp;
+<b class="fc">&nbsp;            node(onset, () -&gt; {</b>
+<b class="fc">&nbsp;                node(aegis, Seq.with(new SectorComplete(onset), new Research(ductRouter), new Research(ductBridge)), () -&gt; {</b>
+<b class="fc">&nbsp;                    node(lake, Seq.with(new SectorComplete(aegis)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                    });</b>
+&nbsp;
+<b class="fc">&nbsp;                    node(intersect, Seq.with(new SectorComplete(aegis), new SectorComplete(lake), new Research(ventCondenser), new Research(shipFabricator)), () -&gt; {</b>
+<b class="fc">&nbsp;                        node(atlas, Seq.with(new SectorComplete(intersect), new Research(mechFabricator)), () -&gt; {</b>
+<b class="fc">&nbsp;                            node(split, Seq.with(new SectorComplete(atlas), new Research(reinforcedPayloadConveyor), new Research(reinforcedContainer)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                            });</b>
+&nbsp;
+<b class="fc">&nbsp;                            node(basin, Seq.with(new SectorComplete(atlas)), () -&gt; {</b>
+<b class="fc">&nbsp;                                node(marsh, Seq.with(new SectorComplete(basin)), () -&gt; {</b>
+<b class="fc">&nbsp;                                    node(ravine, Seq.with(new SectorComplete(marsh), new Research(Liquids.slag)), () -&gt; {</b>
+<b class="fc">&nbsp;                                        node(caldera, Seq.with(new SectorComplete(peaks), new Research(heatRedirector)), () -&gt; {</b>
+<b class="fc">&nbsp;                                            node(stronghold, Seq.with(new SectorComplete(caldera), new Research(coreCitadel)), () -&gt; {</b>
+<b class="fc">&nbsp;                                                node(crevice, Seq.with(new SectorComplete(stronghold)), () -&gt; {</b>
+<b class="fc">&nbsp;                                                    node(siege, Seq.with(new SectorComplete(crevice)), () -&gt; {</b>
+<b class="fc">&nbsp;                                                        node(crossroads, Seq.with(new SectorComplete(siege)), () -&gt; {</b>
+<b class="fc">&nbsp;                                                            node(karst, Seq.with(new SectorComplete(crossroads), new Research(coreAcropolis)), () -&gt; {</b>
+<b class="fc">&nbsp;                                                                node(origin, Seq.with(new SectorComplete(karst), new Research(coreAcropolis), new Research(UnitTypes.vanquish), new Research(UnitTypes.disrupt), new Research(UnitTypes.collaris), new Research(malign), new Research(basicAssemblerModule), new Research(neoplasiaReactor)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                                                });</b>
+&nbsp;                                                            });
+&nbsp;                                                        });
+&nbsp;                                                    });
+&nbsp;                                                });
+&nbsp;                                            });
+&nbsp;                                        });
+&nbsp;                                    });
+&nbsp;
+<b class="fc">&nbsp;                                    node(peaks, Seq.with(new SectorComplete(marsh), new SectorComplete(split)), () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                    });</b>
+&nbsp;                                });
+&nbsp;                            });
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;                });
+&nbsp;            });
+&nbsp;
+<b class="fc">&nbsp;            nodeProduce(Items.beryllium, () -&gt; {</b>
+<b class="fc">&nbsp;                nodeProduce(Items.sand, () -&gt; {</b>
+<b class="fc">&nbsp;                    nodeProduce(Items.silicon, () -&gt; {</b>
+<b class="fc">&nbsp;                        nodeProduce(Items.oxide, () -&gt; {</b>
+&nbsp;                            //nodeProduce(Items.fissileMatter, () -&gt; {});
+<b class="fc">&nbsp;                        });</b>
+&nbsp;                    });
+&nbsp;                });
+&nbsp;
+<b class="fc">&nbsp;                nodeProduce(Liquids.water, () -&gt; {</b>
+<b class="fc">&nbsp;                    nodeProduce(Liquids.ozone, () -&gt; {</b>
+<b class="fc">&nbsp;                        nodeProduce(Liquids.hydrogen, () -&gt; {</b>
+<b class="fc">&nbsp;                            nodeProduce(Liquids.nitrogen, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                            });</b>
+&nbsp;
+<b class="fc">&nbsp;                            nodeProduce(Liquids.cyanogen, () -&gt; {</b>
+<b class="fc">&nbsp;                                nodeProduce(Liquids.neoplasm, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                                });</b>
+&nbsp;                            });
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;                });
+&nbsp;
+<b class="fc">&nbsp;                nodeProduce(Items.graphite, () -&gt; {</b>
+<b class="fc">&nbsp;                    nodeProduce(Items.tungsten, () -&gt; {</b>
+<b class="fc">&nbsp;                        nodeProduce(Liquids.slag, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                        });</b>
+&nbsp;
+<b class="fc">&nbsp;                        nodeProduce(Liquids.arkycite, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                        });</b>
+&nbsp;
+<b class="fc">&nbsp;                        nodeProduce(Items.thorium, () -&gt; {</b>
+<b class="fc">&nbsp;                            nodeProduce(Items.carbide, () -&gt; {</b>
+&nbsp;
+&nbsp;                                //nodeProduce(Liquids.gallium, () -&gt; {});
+<b class="fc">&nbsp;                            });</b>
+&nbsp;                        });
+&nbsp;
+<b class="fc">&nbsp;                        nodeProduce(Items.surgeAlloy, () -&gt; {</b>
+<b class="fc">&nbsp;                            nodeProduce(Items.phaseFabric, () -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;                            });</b>
+&nbsp;                        });
+&nbsp;                    });
+&nbsp;                });
+&nbsp;            });
+&nbsp;        });
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > FadeInFragment</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.fragments</a>
+</div>
+
+<h1>Coverage Summary for Class: FadeInFragment (mindustry.ui.fragments)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FadeInFragment</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">FadeInFragment$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.fragments;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;
+&nbsp;/** Fades in a black overlay.*/
+<b class="nc">&nbsp;public class FadeInFragment{</b>
+&nbsp;    private static final float duration = 40f;
+<b class="nc">&nbsp;    float time = 0f;</b>
+&nbsp;
+&nbsp;    public void build(Group parent){
+<b class="nc">&nbsp;        parent.addChild(new Element(){</b>
+&nbsp;            {
+<b class="nc">&nbsp;                setFillParent(true);</b>
+<b class="nc">&nbsp;                this.touchable = Touchable.disabled;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;             @Override
+&nbsp;             public void draw(){
+<b class="nc">&nbsp;                 Draw.color(0f, 0f, 0f, Mathf.clamp(1f - time));</b>
+<b class="nc">&nbsp;                 Fill.crect(0, 0, Core.graphics.getWidth(), Core.graphics.getHeight());</b>
+<b class="nc">&nbsp;                 Draw.color();</b>
+&nbsp;             }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void act(float delta){
+<b class="nc">&nbsp;                super.act(delta);</b>
+<b class="nc">&nbsp;                time += 1f / duration;</b>
+<b class="nc">&nbsp;                if(time &gt; 1){</b>
+<b class="nc">&nbsp;                    remove();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,353 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapIO</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.io</a>
+</div>
+
+<h1>Coverage Summary for Class: MapIO (mindustry.io)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapIO</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (2/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.3%
+  </span>
+  <span class="absValue">
+    (9/73)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MapIO$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MapIO$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/25)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    9.1%
+  </span>
+  <span class="absValue">
+    (2/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.7%
+  </span>
+  <span class="absValue">
+    (9/104)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.io;
+&nbsp;
+&nbsp;import arc.files.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.util.zip.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Reads and writes map files. */
+<b class="nc">&nbsp;public class MapIO{</b>
+<b class="fc">&nbsp;    private static final int[] pngHeader = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};</b>
+&nbsp;
+&nbsp;    public static boolean isImage(Fi file){
+<b class="nc">&nbsp;        try(InputStream stream = file.read(32)){</b>
+<b class="nc">&nbsp;            for(int i1 : pngHeader){</b>
+<b class="nc">&nbsp;                if(stream.read() != i1){</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        }catch(IOException e){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Map createMap(Fi file, boolean custom) throws IOException{
+<b class="fc">&nbsp;        try(InputStream is = new InflaterInputStream(file.read(bufferSize)); CounterInputStream counter = new CounterInputStream(is); DataInputStream stream = new DataInputStream(counter)){</b>
+<b class="fc">&nbsp;            SaveIO.readHeader(stream);</b>
+<b class="fc">&nbsp;            int version = stream.readInt();</b>
+<b class="fc">&nbsp;            SaveVersion ver = SaveIO.getSaveWriter(version);</b>
+<b class="fc">&nbsp;            StringMap tags = new StringMap();</b>
+<b class="fc">&nbsp;            ver.region(&quot;meta&quot;, stream, counter, in -&gt; tags.putAll(ver.readStringMap(in)));</b>
+<b class="fc">&nbsp;            return new Map(file, tags.getInt(&quot;width&quot;), tags.getInt(&quot;height&quot;), tags, custom, version, Version.build);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeMap(Fi file, Map map) throws IOException{
+&nbsp;        try{
+<b class="nc">&nbsp;            SaveIO.write(file, map.tags);</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            throw new IOException(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void loadMap(Map map){
+<b class="nc">&nbsp;        SaveIO.load(map.file);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void loadMap(Map map, WorldContext cons){
+<b class="nc">&nbsp;        SaveIO.load(map.file, cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Pixmap generatePreview(Map map) throws IOException{
+<b class="nc">&nbsp;        map.spawns = 0;</b>
+<b class="nc">&nbsp;        map.teams.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        try(InputStream is = new InflaterInputStream(map.file.read(bufferSize)); CounterInputStream counter = new CounterInputStream(is); DataInputStream stream = new DataInputStream(counter)){</b>
+<b class="nc">&nbsp;            SaveIO.readHeader(stream);</b>
+<b class="nc">&nbsp;            int version = stream.readInt();</b>
+<b class="nc">&nbsp;            SaveVersion ver = SaveIO.getSaveWriter(version);</b>
+<b class="nc">&nbsp;            ver.region(&quot;meta&quot;, stream, counter, ver::readStringMap);</b>
+&nbsp;
+<b class="nc">&nbsp;            Pixmap floors = new Pixmap(map.width, map.height);</b>
+<b class="nc">&nbsp;            Pixmap walls = new Pixmap(map.width, map.height);</b>
+<b class="nc">&nbsp;            int black = 255;</b>
+<b class="nc">&nbsp;            int shade = Color.rgba8888(0f, 0f, 0f, 0.5f);</b>
+<b class="nc">&nbsp;            CachedTile tile = new CachedTile(){</b>
+&nbsp;                @Override
+&nbsp;                public void setBlock(Block type){
+<b class="nc">&nbsp;                    super.setBlock(type);</b>
+&nbsp;
+<b class="nc">&nbsp;                    int c = colorFor(block(), Blocks.air, Blocks.air, team());</b>
+<b class="nc">&nbsp;                    if(c != black){</b>
+<b class="nc">&nbsp;                        walls.setRaw(x, floors.height - 1 - y, c);</b>
+<b class="nc">&nbsp;                        floors.set(x, floors.height - 1 - y + 1, shade);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            };
+&nbsp;
+<b class="nc">&nbsp;            ver.region(&quot;content&quot;, stream, counter, ver::readContentHeader);</b>
+<b class="nc">&nbsp;            ver.region(&quot;preview_map&quot;, stream, counter, in -&gt; ver.readMap(in, new WorldContext(){</b>
+<b class="nc">&nbsp;                @Override public void resize(int width, int height){}</b>
+<b class="nc">&nbsp;                @Override public boolean isGenerating(){return false;}</b>
+&nbsp;                @Override public void begin(){
+<b class="nc">&nbsp;                    world.setGenerating(true);</b>
+&nbsp;                }
+&nbsp;                @Override public void end(){
+<b class="nc">&nbsp;                    world.setGenerating(false);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                @Override
+&nbsp;                public void onReadBuilding(){
+&nbsp;                    //read team colors
+<b class="nc">&nbsp;                    if(tile.build != null){</b>
+<b class="nc">&nbsp;                        int c = tile.build.team.color.rgba8888();</b>
+<b class="nc">&nbsp;                        int size = tile.block().size;</b>
+<b class="nc">&nbsp;                        int offsetx = -(size - 1) / 2;</b>
+<b class="nc">&nbsp;                        int offsety = -(size - 1) / 2;</b>
+<b class="nc">&nbsp;                        for(int dx = 0; dx &lt; size; dx++){</b>
+<b class="nc">&nbsp;                            for(int dy = 0; dy &lt; size; dy++){</b>
+<b class="nc">&nbsp;                                int drawx = tile.x + dx + offsetx, drawy = tile.y + dy + offsety;</b>
+<b class="nc">&nbsp;                                walls.set(drawx, floors.height - 1 - drawy, c);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        if(tile.build.block instanceof CoreBlock){</b>
+<b class="nc">&nbsp;                            map.teams.add(tile.build.team.id);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                @Override
+&nbsp;                public Tile tile(int index){
+<b class="nc">&nbsp;                    tile.x = (short)(index % map.width);</b>
+<b class="nc">&nbsp;                    tile.y = (short)(index / map.width);</b>
+<b class="nc">&nbsp;                    return tile;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                @Override
+&nbsp;                public Tile create(int x, int y, int floorID, int overlayID, int wallID){
+<b class="nc">&nbsp;                    if(overlayID != 0){</b>
+<b class="nc">&nbsp;                        floors.set(x, floors.height - 1 - y, colorFor(Blocks.air, Blocks.air, content.block(overlayID), Team.derelict));</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        floors.set(x, floors.height - 1 - y, colorFor(Blocks.air, content.block(floorID), Blocks.air, Team.derelict));</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    if(content.block(overlayID) == Blocks.spawn){</b>
+<b class="nc">&nbsp;                        map.spawns ++;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    return tile;</b>
+&nbsp;                }
+&nbsp;            }));
+&nbsp;
+<b class="nc">&nbsp;            floors.draw(walls, true);</b>
+<b class="nc">&nbsp;            walls.dispose();</b>
+<b class="nc">&nbsp;            return floors;</b>
+<b class="nc">&nbsp;        }finally{</b>
+<b class="nc">&nbsp;            content.setTemporaryMapper(null);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Pixmap generatePreview(Tiles tiles){
+<b class="nc">&nbsp;        Pixmap pixmap = new Pixmap(tiles.width, tiles.height);</b>
+<b class="nc">&nbsp;        for(int x = 0; x &lt; pixmap.width; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; pixmap.height; y++){</b>
+<b class="nc">&nbsp;                Tile tile = tiles.getn(x, y);</b>
+<b class="nc">&nbsp;                pixmap.set(x, pixmap.height - 1 - y, colorFor(tile.block(), tile.floor(), tile.overlay(), tile.team()));</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return pixmap;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static int colorFor(Block wall, Block floor, Block overlay, Team team){
+<b class="nc">&nbsp;        if(wall.synthetic()){</b>
+<b class="nc">&nbsp;            return team.color.rgba();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return (((Floor)overlay).wallOre ? overlay.mapColor : wall.solid ? wall.mapColor : !overlay.useColor ? floor.mapColor : overlay.mapColor).rgba();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Pixmap writeImage(Tiles tiles){
+<b class="nc">&nbsp;        Pixmap pix = new Pixmap(tiles.width, tiles.height);</b>
+<b class="nc">&nbsp;        for(Tile tile : tiles){</b>
+&nbsp;            //while synthetic blocks are possible, most of their data is lost, so in order to avoid questions like
+&nbsp;            //&quot;why is there air under my drill&quot; and &quot;why are all my conveyors facing right&quot;, they are disabled
+<b class="nc">&nbsp;            int color = tile.block().hasColor &amp;&amp; !tile.block().synthetic() ? tile.block().mapColor.rgba() : tile.floor().mapColor.rgba();</b>
+<b class="nc">&nbsp;            pix.set(tile.x, tiles.height - 1 - tile.y, color);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return pix;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void readImage(Pixmap pixmap, Tiles tiles){
+<b class="nc">&nbsp;        for(Tile tile : tiles){</b>
+<b class="nc">&nbsp;            int color = pixmap.get(tile.x, pixmap.height - 1 - tile.y);</b>
+<b class="nc">&nbsp;            Block block = ColorMapper.get(color);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(block.isOverlay()){</b>
+<b class="nc">&nbsp;                tile.setOverlay(block.asFloor());</b>
+<b class="nc">&nbsp;            }else if(block.isFloor()){</b>
+<b class="nc">&nbsp;                tile.setFloor(block.asFloor());</b>
+<b class="nc">&nbsp;            }else if(block.isMultiblock()){</b>
+<b class="nc">&nbsp;                tile.setBlock(block, Team.derelict, 0);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                tile.setBlock(block);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //guess at floors by grabbing a random adjacent floor
+<b class="nc">&nbsp;        for(Tile tile : tiles){</b>
+&nbsp;            //default to stone floor
+<b class="nc">&nbsp;            if(tile.floor() == Blocks.air){</b>
+<b class="nc">&nbsp;                tile.setFloorUnder((Floor)Blocks.stone);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

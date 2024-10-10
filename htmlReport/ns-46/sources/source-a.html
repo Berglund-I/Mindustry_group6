@@ -1,0 +1,818 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > StatValues</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.meta</a>
+</div>
+
+<h1>Coverage Summary for Class: StatValues (mindustry.world.meta)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StatValues</td>
+<td class="coverageStat">
+  <span class="percent">
+    1%
+  </span>
+  <span class="absValue">
+    (1/97)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.6%
+  </span>
+  <span class="absValue">
+    (2/340)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">StatValues$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    1%
+  </span>
+  <span class="absValue">
+    (1/98)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.6%
+  </span>
+  <span class="absValue">
+    (2/346)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.meta;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.Tooltip.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.defense.turrets.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Utilities for displaying certain stats in a table. */
+<b class="nc">&nbsp;public class StatValues{</b>
+&nbsp;
+&nbsp;    public static StatValue string(String value, Object... args){
+<b class="fc">&nbsp;        String result = Strings.format(value, args);</b>
+<b class="fc">&nbsp;        return table -&gt; table.add(result);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue bool(boolean value){
+<b class="nc">&nbsp;        return table -&gt;  table.add(!value ? &quot;@no&quot; : &quot;@yes&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String fixValue(float value){
+<b class="nc">&nbsp;        return Strings.autoFixed(value, 2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue squared(float value, StatUnit unit){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            String fixed = fixValue(value);</b>
+<b class="nc">&nbsp;            table.add(fixed + &quot;x&quot; + fixed);</b>
+<b class="nc">&nbsp;            table.add((unit.space ? &quot; &quot; : &quot;&quot;) + unit.localized());</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue number(float value, StatUnit unit, boolean merge){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            String l1 = (unit.icon == null ? &quot;&quot; : unit.icon + &quot; &quot;) + fixValue(value), l2 = (unit.space ? &quot; &quot; : &quot;&quot;) + unit.localized();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(merge){</b>
+<b class="nc">&nbsp;                table.add(l1 + l2).left();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                table.add(l1).left();</b>
+<b class="nc">&nbsp;                table.add(l2).left();</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue number(float value, StatUnit unit){
+<b class="nc">&nbsp;        return number(value, unit, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue liquid(Liquid liquid, float amount, boolean perSecond){
+<b class="nc">&nbsp;        return table -&gt; table.add(displayLiquid(liquid, amount, perSecond));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue liquids(Boolf&lt;Liquid&gt; filter, float amount, boolean perSecond){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            Seq&lt;Liquid&gt; list = content.liquids().select(i -&gt; filter.get(i) &amp;&amp; i.unlockedNow() &amp;&amp; !i.isHidden());</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; list.size; i++){</b>
+<b class="nc">&nbsp;                table.add(displayLiquid(list.get(i), amount, perSecond)).padRight(5);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(i != list.size - 1){</b>
+<b class="nc">&nbsp;                    table.add(&quot;/&quot;);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue liquids(float timePeriod, LiquidStack... stacks){
+<b class="nc">&nbsp;        return liquids(timePeriod, true, stacks);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue liquids(float timePeriod, boolean perSecond, LiquidStack... stacks){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            for(var stack : stacks){</b>
+<b class="nc">&nbsp;                table.add(displayLiquid(stack.liquid, stack.amount * (60f / timePeriod), perSecond)).padRight(5);</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue items(ItemStack... stacks){
+<b class="nc">&nbsp;        return items(true, stacks);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue items(boolean displayName, ItemStack... stacks){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            for(ItemStack stack : stacks){</b>
+<b class="nc">&nbsp;                table.add(displayItem(stack.item, stack.amount, displayName)).padRight(5);</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue items(float timePeriod, ItemStack... stacks){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            for(ItemStack stack : stacks){</b>
+<b class="nc">&nbsp;                table.add(displayItem(stack.item, stack.amount, timePeriod, true)).padRight(5);</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue items(Boolf&lt;Item&gt; filter){
+<b class="nc">&nbsp;        return items(-1, filter);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue items(float timePeriod, Boolf&lt;Item&gt; filter){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            Seq&lt;Item&gt; list = content.items().select(i -&gt; filter.get(i) &amp;&amp; i.unlockedNow() &amp;&amp; !i.isHidden());</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; list.size; i++){</b>
+<b class="nc">&nbsp;                Item item = list.get(i);</b>
+&nbsp;
+<b class="nc">&nbsp;                table.add(timePeriod &lt;= 0 ? displayItem(item) : displayItem(item, 1, timePeriod, true)).padRight(5);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(i != list.size - 1){</b>
+<b class="nc">&nbsp;                    table.add(&quot;/&quot;);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Table displayLiquid(Liquid liquid, float amount, boolean perSecond){
+<b class="nc">&nbsp;        Table t = new Table();</b>
+&nbsp;
+<b class="nc">&nbsp;        t.add(new Stack(){{</b>
+<b class="nc">&nbsp;            add(new Image(liquid.uiIcon).setScaling(Scaling.fit));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(amount != 0){</b>
+<b class="nc">&nbsp;                Table t = new Table().left().bottom();</b>
+<b class="nc">&nbsp;                t.add(Strings.autoFixed(amount, 2)).style(Styles.outlineLabel);</b>
+<b class="nc">&nbsp;                add(t);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }}).size(iconMed).padRight(3  + (amount != 0 &amp;&amp; Strings.autoFixed(amount, 2).length() &gt; 2 ? 8 : 0)).with(s -&gt; withTooltip(s, liquid, false));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(perSecond){</b>
+<b class="nc">&nbsp;            t.add(StatUnit.perSecond.localized()).padLeft(2).padRight(5).color(Color.lightGray).style(Styles.outlineLabel);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        t.add(liquid.localizedName);</b>
+&nbsp;
+<b class="nc">&nbsp;        return t;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T extends Element&gt; T withTooltip(T element, UnlockableContent content, boolean tooltip){
+<b class="nc">&nbsp;        if(content != null){</b>
+<b class="nc">&nbsp;            if(!mobile){</b>
+<b class="nc">&nbsp;                if(tooltip){</b>
+<b class="nc">&nbsp;                    element.addListener(Tooltips.getInstance().create(content.localizedName, mobile));</b>
+&nbsp;                }
+<b class="nc">&nbsp;                element.addListener(new HandCursorListener(() -&gt; !content.isHidden(), true));</b>
+&nbsp;            }
+<b class="nc">&nbsp;            element.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;                if(!content.isHidden()){</b>
+<b class="nc">&nbsp;                    Vars.ui.content.show(content);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+<b class="nc">&nbsp;        return element;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T extends Element&gt; T withTooltip(T element, UnlockableContent content){
+<b class="nc">&nbsp;        return withTooltip(element, content, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Displays an item with a specified amount. */
+&nbsp;    private static Stack stack(TextureRegion region, int amount, @Nullable UnlockableContent content, boolean tooltip){
+<b class="nc">&nbsp;        Stack stack = new Stack();</b>
+&nbsp;
+<b class="nc">&nbsp;        stack.add(new Table(o -&gt; {</b>
+<b class="nc">&nbsp;            o.left();</b>
+<b class="nc">&nbsp;            o.add(new Image(region)).size(32f).scaling(Scaling.fit);</b>
+&nbsp;        }));
+&nbsp;
+<b class="nc">&nbsp;        if(amount != 0){</b>
+<b class="nc">&nbsp;            stack.add(new Table(t -&gt; {</b>
+<b class="nc">&nbsp;                t.left().bottom();</b>
+<b class="nc">&nbsp;                t.add(amount &gt;= 1000 ? UI.formatAmount(amount) : amount + &quot;&quot;).style(Styles.outlineLabel);</b>
+<b class="nc">&nbsp;                t.pack();</b>
+&nbsp;            }));
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        withTooltip(stack, content, tooltip);</b>
+&nbsp;
+<b class="nc">&nbsp;        return stack;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Displays an item with a specified amount. */
+&nbsp;    private static Stack stack(TextureRegion region, int amount, @Nullable UnlockableContent content){
+<b class="nc">&nbsp;        return stack(region, amount, content, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Stack stack(ItemStack stack){
+<b class="nc">&nbsp;        return stack(stack.item.uiIcon, stack.amount, stack.item);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Stack stack(UnlockableContent item, int amount){
+<b class="nc">&nbsp;        return stack(item.uiIcon, amount, item);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Stack stack(UnlockableContent item, int amount, boolean tooltip){
+<b class="nc">&nbsp;        return stack(item.uiIcon, amount, item, tooltip);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Stack stack(Item item){
+<b class="nc">&nbsp;        return stack(item.uiIcon, 0, item);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Stack stack(PayloadStack stack){
+<b class="nc">&nbsp;        return stack(stack.item.uiIcon, stack.amount, stack.item);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Table displayItem(Item item){
+<b class="nc">&nbsp;        return displayItem(item, 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Table displayItem(Item item, int amount, boolean showName){
+<b class="nc">&nbsp;        Table t = new Table();</b>
+<b class="nc">&nbsp;        t.add(stack(item, amount, !showName));</b>
+<b class="nc">&nbsp;        if(showName) t.add(item.localizedName).padLeft(4 + amount &gt; 99 ? 4 : 0);</b>
+<b class="nc">&nbsp;        return t;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Table displayItem(Item item, int amount){
+<b class="nc">&nbsp;        return displayItem(item, amount, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Displays the item with a &quot;/sec&quot; qualifier based on the time period, in ticks. */
+&nbsp;    public static Table displayItem(Item item, int amount, float timePeriod, boolean showName){
+<b class="nc">&nbsp;        Table t = new Table();</b>
+<b class="nc">&nbsp;        t.add(stack(item, amount, !showName));</b>
+<b class="nc">&nbsp;        t.add((showName ? item.localizedName + &quot;\n&quot; : &quot;&quot;) + &quot;[lightgray]&quot; + Strings.autoFixed(amount / (timePeriod / 60f), 2) + StatUnit.perSecond.localized()).padLeft(2).padRight(5).style(Styles.outlineLabel);</b>
+<b class="nc">&nbsp;        return t;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Displays the item with a &quot;/sec&quot; qualifier based on the time period, in ticks. */
+&nbsp;    public static Table displayItemPercent(Item item, int percent, boolean showName){
+<b class="nc">&nbsp;        Table t = new Table();</b>
+<b class="nc">&nbsp;        t.add(stack(item, 0, !showName));</b>
+<b class="nc">&nbsp;        t.add((showName ? item.localizedName + &quot;\n&quot; : &quot;&quot;) + &quot;[lightgray]&quot; +  percent + &quot;%&quot;).padLeft(2).padRight(5).style(Styles.outlineLabel);</b>
+<b class="nc">&nbsp;        return t;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue content(UnlockableContent content){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            table.add(new Image(content.uiIcon)).size(iconSmall).padRight(3);</b>
+<b class="nc">&nbsp;            table.add(content.localizedName).padRight(3);</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue blockEfficiency(Block floor, float multiplier, boolean startZero){
+<b class="nc">&nbsp;        return table -&gt; table.stack(</b>
+<b class="nc">&nbsp;            new Image(floor.uiIcon).setScaling(Scaling.fit),</b>
+<b class="nc">&nbsp;            new Table(t -&gt; t.top().right().add((multiplier &lt; 0 ? &quot;[scarlet]&quot; : startZero ? &quot;[accent]&quot; : &quot;[accent]+&quot;) + (int)((multiplier) * 100) + &quot;%&quot;).style(Styles.outlineLabel))</b>
+<b class="nc">&nbsp;        ).maxSize(64f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue blocks(Attribute attr, boolean floating, float scale, boolean startZero){
+<b class="nc">&nbsp;        return blocks(attr, floating, scale, startZero, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue blocks(Attribute attr, boolean floating, float scale, boolean startZero, boolean checkFloors){
+<b class="nc">&nbsp;        return table -&gt; table.table(c -&gt; {</b>
+<b class="nc">&nbsp;            Runnable[] rebuild = {null};</b>
+<b class="nc">&nbsp;            Map[] lastMap = {null};</b>
+&nbsp;
+<b class="nc">&nbsp;            rebuild[0] = () -&gt; {</b>
+<b class="nc">&nbsp;                c.clearChildren();</b>
+<b class="nc">&nbsp;                c.left();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(state.isGame()){</b>
+<b class="nc">&nbsp;                    var blocks = Vars.content.blocks()</b>
+<b class="nc">&nbsp;                    .select(block -&gt; (!checkFloors || block instanceof Floor) &amp;&amp; indexer.isBlockPresent(block) &amp;&amp; block.attributes.get(attr) != 0 &amp;&amp; !((block instanceof Floor f &amp;&amp; f.isDeep()) &amp;&amp; !floating))</b>
+<b class="nc">&nbsp;                    .with(s -&gt; s.sort(f -&gt; f.attributes.get(attr)));</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(blocks.any()){</b>
+<b class="nc">&nbsp;                        int i = 0;</b>
+<b class="nc">&nbsp;                        for(var block : blocks){</b>
+&nbsp;
+<b class="nc">&nbsp;                            blockEfficiency(block, block.attributes.get(attr) * scale, startZero).display(c);</b>
+<b class="nc">&nbsp;                            if(++i % 5 == 0){</b>
+<b class="nc">&nbsp;                                c.row();</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }else{</b>
+<b class="nc">&nbsp;                        c.add(&quot;@none.inmap&quot;);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }else{</b>
+<b class="nc">&nbsp;                    c.add(&quot;@stat.showinmap&quot;);</b>
+&nbsp;                }
+&nbsp;            };
+&nbsp;
+<b class="nc">&nbsp;            rebuild[0].run();</b>
+&nbsp;
+&nbsp;            //rebuild when map changes.
+<b class="nc">&nbsp;            c.update(() -&gt; {</b>
+<b class="nc">&nbsp;                Map current = state.isGame() ? state.map : null;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(current != lastMap[0]){</b>
+<b class="nc">&nbsp;                    rebuild[0].run();</b>
+<b class="nc">&nbsp;                    lastMap[0] = current;</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        });
+&nbsp;    }
+&nbsp;    public static StatValue content(Seq&lt;UnlockableContent&gt; list){
+<b class="nc">&nbsp;        return content(list, i -&gt; true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T extends UnlockableContent&gt; StatValue content(Seq&lt;T&gt; list, Boolf&lt;T&gt; check){
+<b class="nc">&nbsp;        return table -&gt; table.table(l -&gt; {</b>
+<b class="nc">&nbsp;            l.left();</b>
+&nbsp;
+<b class="nc">&nbsp;            boolean any = false;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; list.size; i++){</b>
+<b class="nc">&nbsp;                var item = list.get(i);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!check.get(item)) continue;</b>
+<b class="nc">&nbsp;                any = true;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(item.uiIcon.found()) l.image(item.uiIcon).size(iconSmall).scaling(Scaling.fit).padRight(2).padLeft(2).padTop(3).padBottom(3).with(img -&gt; withTooltip(img, item, false));</b>
+<b class="nc">&nbsp;                l.add(item.localizedName).left().padLeft(1).padRight(4).colspan(item.uiIcon.found() ? 1 : 2);</b>
+<b class="nc">&nbsp;                if(i % 5 == 4){</b>
+<b class="nc">&nbsp;                    l.row();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!any){</b>
+<b class="nc">&nbsp;                l.add(&quot;@none.inmap&quot;);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue blocks(Boolf&lt;Block&gt; pred){
+<b class="nc">&nbsp;        return content(content.blocks(), pred);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue blocks(Seq&lt;Block&gt; list){
+<b class="nc">&nbsp;        return content(list.as());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue statusEffects(Seq&lt;StatusEffect&gt; list){
+<b class="nc">&nbsp;        return content(list.as());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue drillables(float drillTime, float drillMultiplier, float size, ObjectFloatMap&lt;Item&gt; multipliers, Boolf&lt;Block&gt; filter){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.table(c -&gt; {</b>
+<b class="nc">&nbsp;                int i = 0;</b>
+<b class="nc">&nbsp;                for(Block block : content.blocks()){</b>
+<b class="nc">&nbsp;                    if(!filter.get(block)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    c.table(Styles.grayPanel, b -&gt; {</b>
+<b class="nc">&nbsp;                        b.image(block.uiIcon).size(40).pad(10f).left().scaling(Scaling.fit);</b>
+<b class="nc">&nbsp;                        b.table(info -&gt; {</b>
+<b class="nc">&nbsp;                            info.left();</b>
+<b class="nc">&nbsp;                            info.add(block.localizedName).left().row();</b>
+<b class="nc">&nbsp;                            info.add(block.itemDrop.emoji()).with(l -&gt; withTooltip(l, block.itemDrop)).left();</b>
+<b class="nc">&nbsp;                        }).grow();</b>
+<b class="nc">&nbsp;                        if(multipliers != null){</b>
+<b class="nc">&nbsp;                            b.add(Strings.autoFixed(60f / (Math.max(drillTime + drillMultiplier * block.itemDrop.hardness, drillTime) / multipliers.get(block.itemDrop, 1f)) * size, 2) + StatUnit.perSecond.localized())</b>
+<b class="nc">&nbsp;                            .right().pad(10f).padRight(15f).color(Color.lightGray);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }).growX().pad(5);</b>
+<b class="nc">&nbsp;                    if(++i % 2 == 0) c.row();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }).growX().colspan(table.getColumns());</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue boosters(float reload, float maxUsed, float multiplier, boolean baseReload, Boolf&lt;Liquid&gt; filter){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.table(c -&gt; {</b>
+<b class="nc">&nbsp;                for(Liquid liquid : content.liquids()){</b>
+<b class="nc">&nbsp;                    if(!filter.get(liquid)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    c.table(Styles.grayPanel, b -&gt; {</b>
+<b class="nc">&nbsp;                        b.image(liquid.uiIcon).size(40).pad(10f).left().scaling(Scaling.fit).with(i -&gt; withTooltip(i, liquid, false));;</b>
+<b class="nc">&nbsp;                        b.table(info -&gt; {</b>
+<b class="nc">&nbsp;                            info.add(liquid.localizedName).left().row();</b>
+<b class="nc">&nbsp;                            info.add(Strings.autoFixed(maxUsed * 60f, 2) + StatUnit.perSecond.localized()).left().color(Color.lightGray);</b>
+&nbsp;                        });
+&nbsp;
+<b class="nc">&nbsp;                        b.table(bt -&gt; {</b>
+<b class="nc">&nbsp;                            bt.right().defaults().padRight(3).left();</b>
+&nbsp;
+<b class="nc">&nbsp;                            float reloadRate = (baseReload ? 1f : 0f) + maxUsed * multiplier * liquid.heatCapacity;</b>
+<b class="nc">&nbsp;                            float standardReload = baseReload ? reload : reload / (maxUsed * multiplier * 0.4f);</b>
+<b class="nc">&nbsp;                            float result = standardReload / (reload / reloadRate);</b>
+<b class="nc">&nbsp;                            bt.add(Core.bundle.format(&quot;bullet.reload&quot;, Strings.autoFixed(result * 100, 2))).pad(5);</b>
+<b class="nc">&nbsp;                        }).right().grow().pad(10f).padRight(15f);</b>
+<b class="nc">&nbsp;                    }).growX().pad(5).row();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }).growX().colspan(table.getColumns());</b>
+<b class="nc">&nbsp;            table.row();</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue speedBoosters(String unit, float amount, float speed, boolean strength, Boolf&lt;Liquid&gt; filter){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.table(c -&gt; {</b>
+<b class="nc">&nbsp;                for(Liquid liquid : content.liquids()){</b>
+<b class="nc">&nbsp;                    if(!filter.get(liquid)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    c.table(Styles.grayPanel, b -&gt; {</b>
+<b class="nc">&nbsp;                        b.image(liquid.uiIcon).size(40).pad(10f).left().scaling(Scaling.fit).with(i -&gt; withTooltip(i, liquid, false));;</b>
+<b class="nc">&nbsp;                        b.table(info -&gt; {</b>
+<b class="nc">&nbsp;                            info.add(liquid.localizedName).left().row();</b>
+<b class="nc">&nbsp;                            info.add(Strings.autoFixed(amount * 60f, 2) + StatUnit.perSecond.localized()).left().color(Color.lightGray);</b>
+&nbsp;                        });
+&nbsp;
+<b class="nc">&nbsp;                        b.table(bt -&gt; {</b>
+<b class="nc">&nbsp;                            bt.right().defaults().padRight(3).left();</b>
+<b class="nc">&nbsp;                            if(speed != Float.MAX_VALUE) bt.add(unit.replace(&quot;{0}&quot;, &quot;[stat]&quot; + Strings.autoFixed(speed * (strength ? liquid.heatCapacity : 1f) + (strength ? 1f : 0f), 2) + &quot;[lightgray]&quot;)).pad(5);</b>
+<b class="nc">&nbsp;                        }).right().grow().pad(10f).padRight(15f);</b>
+<b class="nc">&nbsp;                    }).growX().pad(5).row();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }).growX().colspan(table.getColumns());</b>
+<b class="nc">&nbsp;            table.row();</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue itemBoosters(String unit, float timePeriod, float speedBoost, float rangeBoost, ItemStack[] items, Boolf&lt;Item&gt; filter){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.table(c -&gt; {</b>
+<b class="nc">&nbsp;                for(Item item : content.items()){</b>
+<b class="nc">&nbsp;                    if(!filter.get(item)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    c.table(Styles.grayPanel, b -&gt; {</b>
+<b class="nc">&nbsp;                        for(ItemStack stack : items){</b>
+<b class="nc">&nbsp;                            if(timePeriod &lt; 0){</b>
+<b class="nc">&nbsp;                                b.add(displayItem(stack.item, stack.amount, true)).pad(20f).left();</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                b.add(displayItem(stack.item, stack.amount, timePeriod, true)).pad(20f).left();</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                            if(items.length &gt; 1) b.row();</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        b.table(bt -&gt; {</b>
+<b class="nc">&nbsp;                            bt.right().defaults().padRight(3).left();</b>
+<b class="nc">&nbsp;                            if(rangeBoost != 0) bt.add(&quot;[lightgray]+[stat]&quot; + Strings.autoFixed(rangeBoost / tilesize, 2) + &quot;[lightgray] &quot; + StatUnit.blocks.localized()).row();</b>
+<b class="nc">&nbsp;                            if(speedBoost != 0) bt.add(&quot;[lightgray]&quot; + unit.replace(&quot;{0}&quot;, &quot;[stat]&quot; + Strings.autoFixed(speedBoost, 2) + &quot;[lightgray]&quot;));</b>
+<b class="nc">&nbsp;                        }).right().grow().pad(10f).padRight(15f);</b>
+<b class="nc">&nbsp;                    }).growX().pad(5).padBottom(-5).row();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }).growX().colspan(table.getColumns());</b>
+<b class="nc">&nbsp;            table.row();</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue weapons(UnitType unit, Seq&lt;Weapon&gt; weapons){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; weapons.size; i++){</b>
+<b class="nc">&nbsp;                Weapon weapon = weapons.get(i);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(weapon.flipSprite || !weapon.hasStats(unit)){</b>
+&nbsp;                    //flipped weapons are not given stats
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                TextureRegion region = !weapon.name.isEmpty() ? Core.atlas.find(weapon.name + &quot;-preview&quot;, weapon.region) : null;</b>
+&nbsp;
+<b class="nc">&nbsp;                table.table(Styles.grayPanel, w -&gt; {</b>
+<b class="nc">&nbsp;                    w.left().top().defaults().padRight(3).left();</b>
+<b class="nc">&nbsp;                    if(region != null &amp;&amp; region.found() &amp;&amp; weapon.showStatSprite) w.image(region).size(60).scaling(Scaling.bounded).left().top();</b>
+<b class="nc">&nbsp;                    w.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                    weapon.addStats(unit, w);</b>
+<b class="nc">&nbsp;                }).growX().pad(5).margin(10);</b>
+<b class="nc">&nbsp;                table.row();</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatValue abilities(Seq&lt;Ability&gt; abilities){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.table(t -&gt; {</b>
+<b class="nc">&nbsp;                int count = 0;</b>
+<b class="nc">&nbsp;                for(Ability ability : abilities){</b>
+<b class="nc">&nbsp;                    if(ability.display){</b>
+<b class="nc">&nbsp;                        t.table(Styles.grayPanel, a -&gt; {</b>
+<b class="nc">&nbsp;                            a.add(&quot;[accent]&quot; + ability.localized()).padBottom(4).center().top().expandX();</b>
+<b class="nc">&nbsp;                            a.row();</b>
+<b class="nc">&nbsp;                            a.left().top().defaults().left();</b>
+<b class="nc">&nbsp;                            ability.addStats(a);</b>
+<b class="nc">&nbsp;                        }).pad(5).margin(10).growX().top().uniformX();</b>
+<b class="nc">&nbsp;                        if((++count) == 2){</b>
+<b class="nc">&nbsp;                            count = 0;</b>
+<b class="nc">&nbsp;                            t.row();</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                };</b>
+&nbsp;            });
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T extends UnlockableContent&gt; StatValue ammo(ObjectMap&lt;T, BulletType&gt; map){
+<b class="nc">&nbsp;        return ammo(map, 0, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T extends UnlockableContent&gt; StatValue ammo(ObjectMap&lt;T, BulletType&gt; map, boolean showUnit){
+<b class="nc">&nbsp;        return ammo(map, 0, showUnit);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T extends UnlockableContent&gt; StatValue ammo(ObjectMap&lt;T, BulletType&gt; map, int indent, boolean showUnit){
+<b class="nc">&nbsp;        return table -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;            table.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            var orderedKeys = map.keys().toSeq();</b>
+<b class="nc">&nbsp;            orderedKeys.sort();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(T t : orderedKeys){</b>
+<b class="nc">&nbsp;                boolean compact = t instanceof UnitType &amp;&amp; !showUnit || indent &gt; 0;</b>
+&nbsp;
+<b class="nc">&nbsp;                BulletType type = map.get(t);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(type.spawnUnit != null &amp;&amp; type.spawnUnit.weapons.size &gt; 0){</b>
+<b class="nc">&nbsp;                    ammo(ObjectMap.of(t, type.spawnUnit.weapons.first().bullet), indent, false).display(table);</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                table.table(Styles.grayPanel, bt -&gt; {</b>
+<b class="nc">&nbsp;                    bt.left().top().defaults().padRight(3).left();</b>
+&nbsp;                    //no point in displaying unit icon twice
+<b class="nc">&nbsp;                    if(!compact &amp;&amp; !(t instanceof Turret)){</b>
+<b class="nc">&nbsp;                        bt.table(title -&gt; {</b>
+<b class="nc">&nbsp;                            title.image(icon(t)).size(3 * 8).padRight(4).right().scaling(Scaling.fit).top().with(i -&gt; withTooltip(i, t, false));</b>
+<b class="nc">&nbsp;                            title.add(t.localizedName).padRight(10).left().top();</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                        bt.row();</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.damage &gt; 0 &amp;&amp; (type.collides || type.splashDamage &lt;= 0)){</b>
+<b class="nc">&nbsp;                        if(type.continuousDamage() &gt; 0){</b>
+<b class="nc">&nbsp;                            bt.add(Core.bundle.format(&quot;bullet.damage&quot;, type.continuousDamage()) + StatUnit.perSecond.localized());</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            bt.add(Core.bundle.format(&quot;bullet.damage&quot;, type.damage));</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.buildingDamageMultiplier != 1){</b>
+<b class="nc">&nbsp;                        int val = (int)(type.buildingDamageMultiplier * 100 - 100);</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.buildingdamage&quot;, ammoStat(val)));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.rangeChange != 0 &amp;&amp; !compact){</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.range&quot;, ammoStat(type.rangeChange / tilesize)));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.splashDamage &gt; 0){</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.splashdamage&quot;, (int)type.splashDamage, Strings.fixed(type.splashDamageRadius / tilesize, 1)));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(!compact &amp;&amp; !Mathf.equal(type.ammoMultiplier, 1f) &amp;&amp; type.displayAmmoMultiplier &amp;&amp; (!(t instanceof Turret turret) || turret.displayAmmoMultiplier)){</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.multiplier&quot;, (int)type.ammoMultiplier));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(!compact &amp;&amp; !Mathf.equal(type.reloadMultiplier, 1f)){</b>
+<b class="nc">&nbsp;                        int val = (int)(type.reloadMultiplier * 100 - 100);</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.reload&quot;, ammoStat(val)));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.knockback &gt; 0){</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.knockback&quot;, Strings.autoFixed(type.knockback, 2)));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.healPercent &gt; 0f){</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.healpercent&quot;, Strings.autoFixed(type.healPercent, 2)));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.healAmount &gt; 0f){</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.healamount&quot;, Strings.autoFixed(type.healAmount, 2)));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.pierce || type.pierceCap != -1){</b>
+<b class="nc">&nbsp;                        sep(bt, type.pierceCap == -1 ? &quot;@bullet.infinitepierce&quot; : Core.bundle.format(&quot;bullet.pierce&quot;, type.pierceCap));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.incendAmount &gt; 0){</b>
+<b class="nc">&nbsp;                        sep(bt, &quot;@bullet.incendiary&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.homingPower &gt; 0.01f){</b>
+<b class="nc">&nbsp;                        sep(bt, &quot;@bullet.homing&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.lightning &gt; 0){</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.lightning&quot;, type.lightning, type.lightningDamage &lt; 0 ? type.damage : type.lightningDamage));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.pierceArmor){</b>
+<b class="nc">&nbsp;                        sep(bt, &quot;@bullet.armorpierce&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.maxDamageFraction &gt; 0){</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.maxdamagefraction&quot;, (int)(type.maxDamageFraction * 100))); </b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.suppressionRange &gt; 0){</b>
+<b class="nc">&nbsp;                        sep(bt, Core.bundle.format(&quot;bullet.suppression&quot;, Strings.autoFixed(type.suppressionDuration / 60f, 2), Strings.fixed(type.suppressionRange / tilesize, 1)));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.status != StatusEffects.none){</b>
+<b class="nc">&nbsp;                        sep(bt, (type.status.hasEmoji() ? type.status.emoji() : &quot;&quot;) + &quot;[stat]&quot; + type.status.localizedName + (type.status.reactive ? &quot;&quot; : &quot;[lightgray] ~ [stat]&quot; +</b>
+<b class="nc">&nbsp;                            ((int)(type.statusDuration / 60f)) + &quot;[lightgray] &quot; + Core.bundle.get(&quot;unit.seconds&quot;))).with(c -&gt; withTooltip(c, type.status));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.intervalBullet != null){</b>
+<b class="nc">&nbsp;                        bt.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        Table ic = new Table();</b>
+<b class="nc">&nbsp;                        ammo(ObjectMap.of(t, type.intervalBullet), indent + 1, false).display(ic);</b>
+<b class="nc">&nbsp;                        Collapser coll = new Collapser(ic, true);</b>
+<b class="nc">&nbsp;                        coll.setDuration(0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        bt.table(it -&gt; {</b>
+<b class="nc">&nbsp;                            it.left().defaults().left();</b>
+&nbsp;
+<b class="nc">&nbsp;                            it.add(Core.bundle.format(&quot;bullet.interval&quot;, Strings.autoFixed(type.intervalBullets / type.bulletInterval * 60, 2)));</b>
+<b class="nc">&nbsp;                            it.button(Icon.downOpen, Styles.emptyi, () -&gt; coll.toggle(false)).update(i -&gt; i.getStyle().imageUp = (!coll.isCollapsed() ? Icon.upOpen : Icon.downOpen)).size(8).padLeft(16f).expandX();</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                        bt.row();</b>
+<b class="nc">&nbsp;                        bt.add(coll);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.fragBullet != null){</b>
+<b class="nc">&nbsp;                        bt.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        Table fc = new Table();</b>
+<b class="nc">&nbsp;                        ammo(ObjectMap.of(t, type.fragBullet), indent + 1, false).display(fc);</b>
+<b class="nc">&nbsp;                        Collapser coll = new Collapser(fc, true);</b>
+<b class="nc">&nbsp;                        coll.setDuration(0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        bt.table(ft -&gt; {</b>
+<b class="nc">&nbsp;                            ft.left().defaults().left();</b>
+&nbsp;
+<b class="nc">&nbsp;                            ft.add(Core.bundle.format(&quot;bullet.frags&quot;, type.fragBullets));</b>
+<b class="nc">&nbsp;                            ft.button(Icon.downOpen, Styles.emptyi, () -&gt; coll.toggle(false)).update(i -&gt; i.getStyle().imageUp = (!coll.isCollapsed() ? Icon.upOpen : Icon.downOpen)).size(8).padLeft(16f).expandX();</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                        bt.row();</b>
+<b class="nc">&nbsp;                        bt.add(coll);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }).padLeft(indent * 5).padTop(5).padBottom(compact ? 0 : 5).growX().margin(compact ? 0 : 10);</b>
+<b class="nc">&nbsp;                table.row();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    //for AmmoListValue
+&nbsp;    private static Cell&lt;?&gt; sep(Table table, String text){
+<b class="nc">&nbsp;        table.row();</b>
+<b class="nc">&nbsp;        return table.add(text);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //for AmmoListValue
+&nbsp;    private static String ammoStat(float val){
+<b class="nc">&nbsp;        return (val &gt; 0 ? &quot;[stat]+&quot; : &quot;[negstat]&quot;) + Strings.autoFixed(val, 1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static TextureRegion icon(UnlockableContent t){
+<b class="nc">&nbsp;        return t.uiIcon;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

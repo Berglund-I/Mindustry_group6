@@ -1,0 +1,550 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > WaveGraph</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: WaveGraph (mindustry.editor)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WaveGraph</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/197)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">WaveGraph$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WaveGraph$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WaveGraph$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WaveGraph$Mode</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/209)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+<b class="nc">&nbsp;public class WaveGraph extends Table{</b>
+<b class="nc">&nbsp;    public Seq&lt;SpawnGroup&gt; groups = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;    private Mode mode = Mode.counts;</b>
+&nbsp;    private int[][] values;
+<b class="nc">&nbsp;    private OrderedSet&lt;UnitType&gt; used = new OrderedSet&lt;&gt;();</b>
+&nbsp;    private int max, maxTotal;
+&nbsp;    private float maxHealth;
+&nbsp;    private Table colors;
+<b class="nc">&nbsp;    private ObjectSet&lt;UnitType&gt; hidden = new ObjectSet&lt;&gt;();</b>
+<b class="nc">&nbsp;    private StringBuilder countStr = new StringBuilder();</b>
+&nbsp;
+&nbsp;    private float pan;
+<b class="nc">&nbsp;    private float zoom = 1f;</b>
+<b class="nc">&nbsp;    private int from = 0, to = 20;</b>
+<b class="nc">&nbsp;    private int lastFrom = -1, lastTo = -1;</b>
+<b class="nc">&nbsp;    private float lastZoom = -1f;</b>
+&nbsp;
+<b class="nc">&nbsp;    private float defaultSpace = Scl.scl(40f);</b>
+<b class="nc">&nbsp;    private FloatSeq points = new FloatSeq(40);</b>
+&nbsp;
+<b class="nc">&nbsp;    public WaveGraph(){</b>
+<b class="nc">&nbsp;        background(Tex.pane);</b>
+&nbsp;
+<b class="nc">&nbsp;        scrolled((scroll) -&gt; {</b>
+<b class="nc">&nbsp;            zoom -= scroll * 2f / 10f * zoom;</b>
+<b class="nc">&nbsp;            clampZoom();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        touchable = Touchable.enabled;</b>
+<b class="nc">&nbsp;        addListener(new InputListener(){</b>
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void enter(InputEvent event, float x, float y, int pointer, Element fromActor){
+<b class="nc">&nbsp;                requestScroll();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        addListener(new ElementGestureListener(){</b>
+&nbsp;            @Override
+&nbsp;            public void pan(InputEvent event, float x, float y, float deltaX, float deltaY){
+<b class="nc">&nbsp;                pan -= deltaX/zoom;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void zoom(InputEvent event, float initialDistance, float distance){
+<b class="nc">&nbsp;                if(lastZoom &lt; 0) lastZoom = zoom;</b>
+&nbsp;
+<b class="nc">&nbsp;                zoom = distance / initialDistance * lastZoom;</b>
+<b class="nc">&nbsp;                clampZoom();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button){
+<b class="nc">&nbsp;                lastZoom = zoom;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        rect((x, y, width, height) -&gt; {</b>
+<b class="nc">&nbsp;            Lines.stroke(Scl.scl(3f));</b>
+<b class="nc">&nbsp;            countStr.setLength(0);</b>
+&nbsp;
+<b class="nc">&nbsp;            Vec2 mouse = stageToLocalCoordinates(Core.input.mouse());</b>
+&nbsp;
+<b class="nc">&nbsp;            GlyphLayout lay = Pools.obtain(GlyphLayout.class, GlyphLayout::new);</b>
+<b class="nc">&nbsp;            Font font = Fonts.outline;</b>
+&nbsp;
+<b class="nc">&nbsp;            int maxY = switch(mode){</b>
+<b class="nc">&nbsp;                case counts -&gt; nextStep(max);</b>
+<b class="nc">&nbsp;                case health -&gt; nextStep((int)maxHealth);</b>
+<b class="nc">&nbsp;                case totals -&gt; nextStep(maxTotal);</b>
+&nbsp;            };
+&nbsp;
+<b class="nc">&nbsp;            lay.setText(font, maxY + &quot;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            float spacing = zoom * defaultSpace;</b>
+<b class="nc">&nbsp;            pan = Math.max(pan, (width/2f)/zoom-defaultSpace);</b>
+&nbsp;
+<b class="nc">&nbsp;            float fh = lay.height;</b>
+<b class="nc">&nbsp;            float offsetX = lay.width, offsetY = Scl.scl(22f) + fh + Scl.scl(5f);</b>
+<b class="nc">&nbsp;            float graphX = x + offsetX - pan * zoom + width/2f, graphY = y + offsetY, graphW = width - offsetX, graphH = height - offsetY;</b>
+&nbsp;
+<b class="nc">&nbsp;            float left = (x-graphX)/spacing, right = (x + width - graphX)/spacing;</b>
+&nbsp;
+&nbsp;            //int radius = Mathf.ceil(graphW / spacing / 2f);
+&nbsp;
+<b class="nc">&nbsp;            from = (int)left - 1;</b>
+<b class="nc">&nbsp;            to = (int)right + 1;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(lastFrom != from || lastTo != to){</b>
+<b class="nc">&nbsp;                rebuild();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            lastFrom = from;</b>
+<b class="nc">&nbsp;            lastTo = to;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!clipBegin(x + offsetX, y + offsetY, graphW, graphH)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            int selcol = Rect.contains(x, y, width, height, mouse.x, mouse.y) ? Mathf.round((mouse.x - graphX - (from * spacing)) / spacing) : -1;</b>
+<b class="nc">&nbsp;            if(selcol + from &lt;= -1) selcol = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(mode == Mode.counts){</b>
+<b class="nc">&nbsp;                for(UnitType type : used.orderedItems()){</b>
+<b class="nc">&nbsp;                    Draw.color(color(type));</b>
+<b class="nc">&nbsp;                    Draw.alpha(parentAlpha);</b>
+&nbsp;
+<b class="nc">&nbsp;                    beginLine();</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; values.length; i++){</b>
+<b class="nc">&nbsp;                        int val = values[i][type.id];</b>
+<b class="nc">&nbsp;                        float cx = graphX + (i+from) * spacing, cy = graphY + val * graphH / maxY;</b>
+<b class="nc">&nbsp;                        linePoint(cx, cy);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    endLine();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }else if(mode == Mode.totals){</b>
+<b class="nc">&nbsp;                beginLine();</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.color(Pal.accent);</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; values.length; i++){</b>
+<b class="nc">&nbsp;                    int sum = 0;</b>
+<b class="nc">&nbsp;                    for(UnitType type : used.orderedItems()){</b>
+<b class="nc">&nbsp;                        sum += values[i][type.id];</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    float cx = graphX + (i+from) * spacing, cy = graphY + sum * graphH / maxY;</b>
+<b class="nc">&nbsp;                    linePoint(cx, cy);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                endLine();</b>
+<b class="nc">&nbsp;            }else if(mode == Mode.health){</b>
+<b class="nc">&nbsp;                beginLine();</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.color(Pal.health);</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; values.length; i++){</b>
+<b class="nc">&nbsp;                    float sum = 0;</b>
+<b class="nc">&nbsp;                    for(UnitType type : used.orderedItems()){</b>
+<b class="nc">&nbsp;                        sum += (type.health) * values[i][type.id];</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    float cx = graphX + (i+from) * spacing, cy = graphY + sum * graphH / maxY;</b>
+<b class="nc">&nbsp;                    linePoint(cx, cy);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                endLine();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;            if(selcol &gt;= 0 &amp;&amp; selcol &lt; values.length){</b>
+<b class="nc">&nbsp;                Draw.color(1f, 0f, 0f, 0.2f);</b>
+<b class="nc">&nbsp;                Fill.crect((selcol+from) * spacing + graphX - spacing/2f, graphY, spacing, graphH);</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+<b class="nc">&nbsp;                font.getData().setScale(1.5f);</b>
+<b class="nc">&nbsp;                for(UnitType type : used.orderedItems()){</b>
+<b class="nc">&nbsp;                    int amount = values[Mathf.clamp(selcol, 0, values.length - 1)][type.id];</b>
+<b class="nc">&nbsp;                    if(amount &gt; 0){</b>
+<b class="nc">&nbsp;                        countStr.append(type.emoji()).append(&quot; &quot;).append(amount).append(&quot;\n&quot;);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;                float pad = Scl.scl(5f);</b>
+<b class="nc">&nbsp;                font.draw(countStr, (selcol+from) * spacing + graphX - spacing/2f + pad, graphY + graphH - pad);</b>
+<b class="nc">&nbsp;                font.getData().setScale(1f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            clipEnd();</b>
+&nbsp;
+&nbsp;            //how many numbers can fit here
+<b class="nc">&nbsp;            float totalMarks = Mathf.clamp(maxY, 1, 10);</b>
+&nbsp;
+<b class="nc">&nbsp;            int markSpace = Math.max(1, Mathf.ceil(maxY / totalMarks));</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(Color.lightGray);</b>
+<b class="nc">&nbsp;            Draw.alpha(0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; maxY; i += markSpace){</b>
+<b class="nc">&nbsp;                float cy = graphY + i * graphH / maxY, cx = offsetX + x;</b>
+&nbsp;
+<b class="nc">&nbsp;                Lines.line(cx, cy, cx + graphW, cy);</b>
+&nbsp;
+<b class="nc">&nbsp;                lay.setText(font, &quot;&quot; + i);</b>
+&nbsp;
+<b class="nc">&nbsp;                font.draw(&quot;&quot; + i, cx, cy + lay.height / 2f, Align.right);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Draw.alpha(1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            float len = Scl.scl(4f);</b>
+<b class="nc">&nbsp;            font.setColor(Color.lightGray);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; values.length; i++){</b>
+<b class="nc">&nbsp;                float cy = y + fh, cx = graphX + spacing * (i + from);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(cx &gt;= x + offsetX &amp;&amp; cx &lt;= x + offsetX + graphW){</b>
+<b class="nc">&nbsp;                    Lines.line(cx, cy, cx, cy + len);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                if(i == selcol){</b>
+<b class="nc">&nbsp;                    font.draw(&quot;&quot; + (i + from + 1), cx, cy - Scl.scl(2f), Align.center);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            font.setColor(Color.white);</b>
+&nbsp;
+<b class="nc">&nbsp;            Pools.free(lay);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+<b class="nc">&nbsp;        }).pad(4).padBottom(10).grow();</b>
+&nbsp;
+<b class="nc">&nbsp;        row();</b>
+&nbsp;
+<b class="nc">&nbsp;        table(t -&gt; colors = t).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;        row();</b>
+&nbsp;
+<b class="nc">&nbsp;        table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.left();</b>
+<b class="nc">&nbsp;            ButtonGroup&lt;Button&gt; group = new ButtonGroup&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Mode m : Mode.all){</b>
+<b class="nc">&nbsp;                t.button(&quot;@wavemode.&quot; + m.name(), Styles.fullTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                    mode = m;</b>
+<b class="nc">&nbsp;                }).group(group).height(35f).update(b -&gt; b.setChecked(m == mode)).width(130f);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).growX();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void clampZoom(){
+<b class="nc">&nbsp;        zoom = Mathf.clamp(zoom, 0.5f / Scl.scl(1f), 40f / Scl.scl(1f));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void linePoint(float x, float y){
+<b class="nc">&nbsp;        points.add(x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void beginLine(){
+<b class="nc">&nbsp;        points.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void endLine(){
+<b class="nc">&nbsp;        var items = points.items;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; points.size - 2; i += 2){</b>
+<b class="nc">&nbsp;            Lines.line(items[i], items[i + 1], items[i + 2], items[i + 3], false);</b>
+<b class="nc">&nbsp;            Fill.circle(items[i], items[i + 1], Lines.getStroke()/2f);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Fill.circle(items[points.size - 2], items[points.size - 1], Lines.getStroke());</b>
+<b class="nc">&nbsp;        points.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void rebuild(){
+<b class="nc">&nbsp;        values = new int[to - from + 1][Vars.content.units().size];</b>
+<b class="nc">&nbsp;        used.clear();</b>
+<b class="nc">&nbsp;        max = maxTotal = 1;</b>
+<b class="nc">&nbsp;        maxHealth = 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = from; i &lt;= to; i++){</b>
+<b class="nc">&nbsp;            int index = i - from;</b>
+<b class="nc">&nbsp;            float healthsum = 0f;</b>
+<b class="nc">&nbsp;            int sum = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(SpawnGroup spawn : groups){</b>
+<b class="nc">&nbsp;                int spawned = spawn.getSpawned(i);</b>
+<b class="nc">&nbsp;                values[index][spawn.type.id] += spawned;</b>
+<b class="nc">&nbsp;                if(spawned &gt; 0){</b>
+<b class="nc">&nbsp;                    used.add(spawn.type);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                max = Math.max(max, values[index][spawn.type.id]);</b>
+<b class="nc">&nbsp;                healthsum += spawned * (spawn.type.health);</b>
+<b class="nc">&nbsp;                sum += spawned;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;            maxTotal = Math.max(maxTotal, sum);</b>
+<b class="nc">&nbsp;            maxHealth = Math.max(maxHealth, healthsum);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        used.orderedItems().sort();</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectSet&lt;UnitType&gt; usedCopy = new ObjectSet&lt;&gt;(used);</b>
+&nbsp;
+<b class="nc">&nbsp;        colors.clear();</b>
+<b class="nc">&nbsp;        colors.left();</b>
+<b class="nc">&nbsp;        colors.button(&quot;@waves.units.hide&quot;, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;            if(hidden.size == usedCopy.size){</b>
+<b class="nc">&nbsp;                hidden.clear();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                hidden.addAll(usedCopy);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            used.clear();</b>
+<b class="nc">&nbsp;            used.addAll(usedCopy);</b>
+<b class="nc">&nbsp;            for(UnitType o : hidden) used.remove(o);</b>
+<b class="nc">&nbsp;        }).update(b -&gt; b.setText(hidden.size == usedCopy.size ? &quot;@waves.units.show&quot; : &quot;@waves.units.hide&quot;)).height(32f).width(130f);</b>
+<b class="nc">&nbsp;        colors.pane(t -&gt; {</b>
+<b class="nc">&nbsp;            t.left();</b>
+<b class="nc">&nbsp;            for(UnitType type : used){</b>
+<b class="nc">&nbsp;                t.button(b -&gt; {</b>
+<b class="nc">&nbsp;                    Color tcolor = color(type).cpy();</b>
+<b class="nc">&nbsp;                    b.image().size(32f).update(i -&gt; i.setColor(b.isChecked() ? Tmp.c1.set(tcolor).mul(0.5f) : tcolor)).get().act(1);</b>
+<b class="nc">&nbsp;                    b.image(type.uiIcon).size(32f).padRight(20).update(i -&gt; i.setColor(b.isChecked() ? Color.gray : Color.white)).get().act(1);</b>
+<b class="nc">&nbsp;                    b.margin(0f);</b>
+&nbsp;                }, Styles.fullTogglet, () -&gt; {
+<b class="nc">&nbsp;                    if(!hidden.add(type)){</b>
+<b class="nc">&nbsp;                        hidden.remove(type);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    used.clear();</b>
+<b class="nc">&nbsp;                    used.addAll(usedCopy);</b>
+<b class="nc">&nbsp;                    for(UnitType o : hidden) used.remove(o);</b>
+<b class="nc">&nbsp;                }).update(b -&gt; b.setChecked(hidden.contains(type)));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }).scrollY(false);</b>
+&nbsp;
+<b class="nc">&nbsp;        colors.act(0.000001f);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(UnitType type : hidden){</b>
+<b class="nc">&nbsp;            used.remove(type);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Color color(UnitType type){
+<b class="nc">&nbsp;        return Tmp.c1.fromHsv(type.id / (float)Vars.content.units().size * 360f, 0.7f, 1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int nextStep(float value){
+<b class="nc">&nbsp;        int order = 1;</b>
+<b class="nc">&nbsp;        while(order &lt; value){</b>
+<b class="nc">&nbsp;            if(order * 2 &gt; value){</b>
+<b class="nc">&nbsp;                return order * 2;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(order * 5 &gt; value){</b>
+<b class="nc">&nbsp;                return order * 5;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(order * 10 &gt; value){</b>
+<b class="nc">&nbsp;                return order * 10;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            order *= 10;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return order;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    enum Mode{</b>
+<b class="nc">&nbsp;        counts, totals, health;</b>
+&nbsp;
+<b class="nc">&nbsp;        static Mode[] all = values();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

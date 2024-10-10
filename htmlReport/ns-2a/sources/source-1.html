@@ -1,0 +1,137 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Category</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: Category (mindustry.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Category</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.7%
+  </span>
+  <span class="absValue">
+    (12/14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+<b class="fc">&nbsp;public enum Category{</b>
+&nbsp;    /** Offensive turrets. */
+<b class="fc">&nbsp;    turret,</b>
+&nbsp;    /** Blocks that produce raw resources, such as drills. */
+<b class="fc">&nbsp;    production,</b>
+&nbsp;    /** Blocks that move items around. */
+<b class="fc">&nbsp;    distribution,</b>
+&nbsp;    /** Blocks that move liquids around. */
+<b class="fc">&nbsp;    liquid,</b>
+&nbsp;    /** Blocks that generate or transport power. */
+<b class="fc">&nbsp;    power,</b>
+&nbsp;    /** Walls and other defensive structures. */
+<b class="fc">&nbsp;    defense,</b>
+&nbsp;    /** Blocks that craft things. */
+<b class="fc">&nbsp;    crafting,</b>
+&nbsp;    /** Blocks that create units. */
+<b class="fc">&nbsp;    units,</b>
+&nbsp;    /** Things for storage or passive effects. */
+<b class="fc">&nbsp;    effect,</b>
+&nbsp;    /** Blocks related to logic. */
+<b class="fc">&nbsp;    logic;</b>
+&nbsp;
+<b class="fc">&nbsp;    public static final Category[] all = values();</b>
+&nbsp;
+&nbsp;    public Category prev(){
+<b class="nc">&nbsp;        return all[(ordinal() - 1 + all.length) % all.length];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Category next(){
+<b class="nc">&nbsp;        return all[(ordinal() + 1) % all.length];</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,996 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SchematicsDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: SchematicsDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SchematicsDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/67)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/373)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SchematicsDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/23)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">SchematicsDialog$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/38)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">SchematicsDialog$SchematicImage</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/37)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">SchematicsDialog$SchematicInfoDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/40)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/83)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/511)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.Texture.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.ImageButton.*;
+&nbsp;import arc.scene.ui.TextButton.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.scene.utils.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import java.util.regex.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class SchematicsDialog extends BaseDialog{</b>
+&nbsp;    private static final float tagh = 42f;
+<b class="nc">&nbsp;    private SchematicInfoDialog info = new SchematicInfoDialog();</b>
+&nbsp;    private Schematic firstSchematic;
+<b class="nc">&nbsp;    private String search = &quot;&quot;;</b>
+&nbsp;    private TextField searchField;
+<b class="nc">&nbsp;    private Runnable rebuildPane = () -&gt; {}, rebuildTags = () -&gt; {};</b>
+<b class="nc">&nbsp;    private Pattern ignoreSymbols = Pattern.compile(&quot;[`~!@#$%^&amp;*()\\-_=+{}|;:&#39;\&quot;,&lt;.&gt;/?]&quot;);</b>
+<b class="nc">&nbsp;    private Seq&lt;String&gt; tags, selectedTags = new Seq&lt;&gt;();</b>
+&nbsp;    private boolean checkedTags;
+&nbsp;
+&nbsp;    public SchematicsDialog(){
+<b class="nc">&nbsp;        super(&quot;@schematics&quot;);</b>
+<b class="nc">&nbsp;        Core.assets.load(&quot;sprites/schematic-background.png&quot;, Texture.class).loaded = t -&gt; t.setWrap(TextureWrap.repeat);</b>
+&nbsp;
+<b class="nc">&nbsp;        tags = Core.settings.getJson(&quot;schematic-tags&quot;, Seq.class, String.class, Seq::new);</b>
+&nbsp;
+<b class="nc">&nbsp;        shouldPause = true;</b>
+<b class="nc">&nbsp;        addCloseButton();</b>
+<b class="nc">&nbsp;        buttons.button(&quot;@schematic.import&quot;, Icon.download, this::showImport);</b>
+<b class="nc">&nbsp;        makeButtonOverlay();</b>
+<b class="nc">&nbsp;        shown(this::setup);</b>
+<b class="nc">&nbsp;        onResize(this::setup);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void setup(){
+<b class="nc">&nbsp;        if(!checkedTags){</b>
+<b class="nc">&nbsp;            checkTags();</b>
+<b class="nc">&nbsp;            checkedTags = true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        search = &quot;&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.top();</b>
+<b class="nc">&nbsp;        cont.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.table(s -&gt; {</b>
+<b class="nc">&nbsp;            s.left();</b>
+<b class="nc">&nbsp;            s.image(Icon.zoom);</b>
+<b class="nc">&nbsp;            searchField = s.field(search, res -&gt; {</b>
+<b class="nc">&nbsp;                search = res;</b>
+<b class="nc">&nbsp;                rebuildPane.run();</b>
+<b class="nc">&nbsp;            }).growX().get();</b>
+<b class="nc">&nbsp;            searchField.setMessageText(&quot;@schematic.search&quot;);</b>
+<b class="nc">&nbsp;            searchField.clicked(KeyCode.mouseRight, () -&gt; {</b>
+<b class="nc">&nbsp;                if(!search.isEmpty()){</b>
+<b class="nc">&nbsp;                    search = &quot;&quot;;</b>
+<b class="nc">&nbsp;                    searchField.clearText();</b>
+<b class="nc">&nbsp;                    rebuildPane.run();</b>
+&nbsp;                }
+&nbsp;            });
+<b class="nc">&nbsp;        }).fillX().padBottom(4);</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.table(in -&gt; {</b>
+<b class="nc">&nbsp;            in.left();</b>
+<b class="nc">&nbsp;            in.add(&quot;@schematic.tags&quot;).padRight(4);</b>
+&nbsp;
+&nbsp;            //tags (no scroll pane visible)
+<b class="nc">&nbsp;            in.pane(Styles.noBarPane, t -&gt; {</b>
+<b class="nc">&nbsp;                rebuildTags = () -&gt; {</b>
+<b class="nc">&nbsp;                    t.clearChildren();</b>
+<b class="nc">&nbsp;                    t.left();</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.defaults().pad(2).height(tagh);</b>
+<b class="nc">&nbsp;                    for(var tag : tags){</b>
+<b class="nc">&nbsp;                        t.button(tag, Styles.togglet, () -&gt; {</b>
+<b class="nc">&nbsp;                            if(selectedTags.contains(tag)){</b>
+<b class="nc">&nbsp;                                selectedTags.remove(tag);</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                selectedTags.add(tag);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                            rebuildPane.run();</b>
+<b class="nc">&nbsp;                        }).checked(selectedTags.contains(tag)).with(c -&gt; c.getLabel().setWrap(false));</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                };
+<b class="nc">&nbsp;                rebuildTags.run();</b>
+<b class="nc">&nbsp;            }).fillX().height(tagh).scrollY(false);</b>
+&nbsp;
+<b class="nc">&nbsp;            in.button(Icon.pencilSmall, this::showAllTags).size(tagh).pad(2).tooltip(&quot;@schematic.edittags&quot;);</b>
+<b class="nc">&nbsp;        }).height(tagh).fillX();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;            t.top();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.update(() -&gt; {</b>
+<b class="nc">&nbsp;                if(Core.input.keyTap(Binding.chat) &amp;&amp; Core.scene.getKeyboardFocus() == searchField &amp;&amp; firstSchematic != null){</b>
+<b class="nc">&nbsp;                    if(!state.rules.schematicsAllowed){</b>
+<b class="nc">&nbsp;                        ui.showInfo(&quot;@schematic.disabled&quot;);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        control.input.useSchematic(firstSchematic);</b>
+<b class="nc">&nbsp;                        hide();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            rebuildPane = () -&gt; {</b>
+<b class="nc">&nbsp;                int cols = Math.max((int)(Core.graphics.getWidth() / Scl.scl(230)), 1);</b>
+&nbsp;
+<b class="nc">&nbsp;                t.clear();</b>
+<b class="nc">&nbsp;                int i = 0;</b>
+<b class="nc">&nbsp;                String searchString = ignoreSymbols.matcher(search.toLowerCase()).replaceAll(&quot;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                firstSchematic = null;</b>
+&nbsp;
+<b class="nc">&nbsp;                for(Schematic s : schematics.all()){</b>
+&nbsp;                    //make sure *tags* fit
+<b class="nc">&nbsp;                    if(selectedTags.any() &amp;&amp; !s.labels.containsAll(selectedTags)) continue;</b>
+&nbsp;                    //make sure search fits
+<b class="nc">&nbsp;                    if(!search.isEmpty() &amp;&amp; !ignoreSymbols.matcher(s.name().toLowerCase()).replaceAll(&quot;&quot;).contains(searchString)) continue;</b>
+<b class="nc">&nbsp;                    if(firstSchematic == null) firstSchematic = s;</b>
+&nbsp;
+<b class="nc">&nbsp;                    Button[] sel = {null};</b>
+<b class="nc">&nbsp;                    sel[0] = t.button(b -&gt; {</b>
+<b class="nc">&nbsp;                        b.top();</b>
+<b class="nc">&nbsp;                        b.margin(0f);</b>
+<b class="nc">&nbsp;                        b.table(buttons -&gt; {</b>
+<b class="nc">&nbsp;                            buttons.left();</b>
+<b class="nc">&nbsp;                            buttons.defaults().size(50f);</b>
+&nbsp;
+<b class="nc">&nbsp;                            ImageButtonStyle style = Styles.emptyi;</b>
+&nbsp;
+<b class="nc">&nbsp;                            buttons.button(Icon.info, style, () -&gt; showInfo(s)).tooltip(&quot;@info.title&quot;);</b>
+<b class="nc">&nbsp;                            buttons.button(Icon.upload, style, () -&gt; showExport(s)).tooltip(&quot;@editor.export&quot;);</b>
+<b class="nc">&nbsp;                            buttons.button(Icon.pencil, style, () -&gt; showEdit(s)).tooltip(&quot;@schematic.edit&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(s.hasSteamID()){</b>
+<b class="nc">&nbsp;                                buttons.button(Icon.link, style, () -&gt; platform.viewListing(s)).tooltip(&quot;@view.workshop&quot;);</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                buttons.button(Icon.trash, style, () -&gt; {</b>
+<b class="nc">&nbsp;                                    if(s.mod != null){</b>
+<b class="nc">&nbsp;                                        ui.showInfo(Core.bundle.format(&quot;mod.item.remove&quot;, s.mod.meta.displayName));</b>
+&nbsp;                                    }else{
+<b class="nc">&nbsp;                                        ui.showConfirm(&quot;@confirm&quot;, &quot;@schematic.delete.confirm&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                                            schematics.remove(s);</b>
+<b class="nc">&nbsp;                                            rebuildPane.run();</b>
+&nbsp;                                        });
+&nbsp;                                    }
+<b class="nc">&nbsp;                                }).tooltip(&quot;@save.delete&quot;);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }).growX().height(50f);</b>
+<b class="nc">&nbsp;                        b.row();</b>
+<b class="nc">&nbsp;                        b.stack(new SchematicImage(s).setScaling(Scaling.fit), new Table(n -&gt; {</b>
+<b class="nc">&nbsp;                            n.top();</b>
+<b class="nc">&nbsp;                            n.table(Styles.black3, c -&gt; {</b>
+<b class="nc">&nbsp;                                Label label = c.add(s.name()).style(Styles.outlineLabel).color(Color.white).top().growX().maxWidth(200f - 8f).get();</b>
+<b class="nc">&nbsp;                                label.setEllipsis(true);</b>
+<b class="nc">&nbsp;                                label.setAlignment(Align.center);</b>
+<b class="nc">&nbsp;                            }).growX().margin(1).pad(4).maxWidth(Scl.scl(200f - 8f)).padBottom(0);</b>
+<b class="nc">&nbsp;                        })).size(200f);</b>
+&nbsp;                    }, () -&gt; {
+<b class="nc">&nbsp;                        if(sel[0].childrenPressed()) return;</b>
+<b class="nc">&nbsp;                        if(state.isMenu()){</b>
+<b class="nc">&nbsp;                            showInfo(s);</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            if(!state.rules.schematicsAllowed){</b>
+<b class="nc">&nbsp;                                ui.showInfo(&quot;@schematic.disabled&quot;);</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                control.input.useSchematic(s);</b>
+<b class="nc">&nbsp;                                hide();</b>
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                    }).pad(4).style(Styles.flati).get();</b>
+&nbsp;
+<b class="nc">&nbsp;                    sel[0].getStyle().up = Tex.pane;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(++i % cols == 0){</b>
+<b class="nc">&nbsp;                        t.row();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if(firstSchematic == null){</b>
+<b class="nc">&nbsp;                    if(!searchString.isEmpty() || selectedTags.any()){</b>
+<b class="nc">&nbsp;                        t.add(&quot;@none.found&quot;);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        t.add(&quot;@none&quot;).color(Color.lightGray);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            };
+&nbsp;
+<b class="nc">&nbsp;            rebuildPane.run();</b>
+<b class="nc">&nbsp;        }).grow().scrollX(false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void showInfo(Schematic schematic){
+<b class="nc">&nbsp;        info.show(schematic);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void showImport(){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;@editor.import&quot;);</b>
+<b class="nc">&nbsp;        dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            p.margin(10f);</b>
+<b class="nc">&nbsp;            p.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                TextButtonStyle style = Styles.flatt;</b>
+<b class="nc">&nbsp;                t.defaults().size(280f, 60f).left();</b>
+<b class="nc">&nbsp;                t.row();</b>
+<b class="nc">&nbsp;                t.button(&quot;@schematic.copy.import&quot;, Icon.copy, style, () -&gt; {</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        Schematic s = Schematics.readBase64(Core.app.getClipboardText());</b>
+<b class="nc">&nbsp;                        s.removeSteamID();</b>
+<b class="nc">&nbsp;                        schematics.add(s);</b>
+<b class="nc">&nbsp;                        setup();</b>
+<b class="nc">&nbsp;                        ui.showInfoFade(&quot;@schematic.saved&quot;);</b>
+<b class="nc">&nbsp;                        checkTags(s);</b>
+<b class="nc">&nbsp;                        showInfo(s);</b>
+<b class="nc">&nbsp;                    }catch(Throwable e){</b>
+<b class="nc">&nbsp;                        ui.showException(e);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }).marginLeft(12f).disabled(b -&gt; Core.app.getClipboardText() == null || !Core.app.getClipboardText().startsWith(schematicBaseStart));</b>
+<b class="nc">&nbsp;                t.row();</b>
+<b class="nc">&nbsp;                t.button(&quot;@schematic.importfile&quot;, Icon.download, style, () -&gt; platform.showFileChooser(true, schematicExtension, file -&gt; {</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+&nbsp;
+&nbsp;                    try{
+<b class="nc">&nbsp;                        Schematic s = Schematics.read(file);</b>
+<b class="nc">&nbsp;                        s.removeSteamID();</b>
+<b class="nc">&nbsp;                        schematics.add(s);</b>
+<b class="nc">&nbsp;                        setup();</b>
+<b class="nc">&nbsp;                        showInfo(s);</b>
+<b class="nc">&nbsp;                        checkTags(s);</b>
+<b class="nc">&nbsp;                    }catch(Exception e){</b>
+<b class="nc">&nbsp;                        ui.showException(e);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                })).marginLeft(12f);</b>
+<b class="nc">&nbsp;                t.row();</b>
+<b class="nc">&nbsp;                if(steam){</b>
+<b class="nc">&nbsp;                    t.button(&quot;@schematic.browseworkshop&quot;, Icon.book, style, () -&gt; {</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+<b class="nc">&nbsp;                        platform.openWorkshop();</b>
+<b class="nc">&nbsp;                    }).marginLeft(12f);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void showExport(Schematic s){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;@editor.export&quot;);</b>
+<b class="nc">&nbsp;        dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            p.margin(10f);</b>
+<b class="nc">&nbsp;            p.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                TextButtonStyle style = Styles.flatt;</b>
+<b class="nc">&nbsp;                t.defaults().size(280f, 60f).left();</b>
+<b class="nc">&nbsp;                if(steam &amp;&amp; !s.hasSteamID()){</b>
+<b class="nc">&nbsp;                    t.button(&quot;@schematic.shareworkshop&quot;, Icon.book, style,</b>
+<b class="nc">&nbsp;                        () -&gt; platform.publish(s)).marginLeft(12f);</b>
+<b class="nc">&nbsp;                    t.row();</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+&nbsp;                }
+<b class="nc">&nbsp;                t.button(&quot;@schematic.copy&quot;, Icon.copy, style, () -&gt; {</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                    ui.showInfoFade(&quot;@copied&quot;);</b>
+<b class="nc">&nbsp;                    Core.app.setClipboardText(schematics.writeBase64(s));</b>
+<b class="nc">&nbsp;                }).marginLeft(12f);</b>
+<b class="nc">&nbsp;                t.row();</b>
+<b class="nc">&nbsp;                t.button(&quot;@schematic.exportfile&quot;, Icon.export, style, () -&gt; {</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                    platform.export(s.name(), schematicExtension, file -&gt; Schematics.write(s, file));</b>
+<b class="nc">&nbsp;                }).marginLeft(12f);</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void showEdit(Schematic s){
+<b class="nc">&nbsp;        new BaseDialog(&quot;@schematic.edit&quot;){{</b>
+<b class="nc">&nbsp;            setFillParent(true);</b>
+<b class="nc">&nbsp;            addCloseListener();</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.margin(30);</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.add(&quot;@schematic.tags&quot;).padRight(6f);</b>
+<b class="nc">&nbsp;            cont.table(tags -&gt; buildTags(s, tags, false)).maxWidth(400f).fillX().left().row();</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.margin(30).add(&quot;@name&quot;).padRight(6f);</b>
+<b class="nc">&nbsp;            TextField nameField = cont.field(s.name(), null).size(400f, 55f).left().get();</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.margin(30).add(&quot;@editor.description&quot;).padRight(6f);</b>
+<b class="nc">&nbsp;            TextField descField = cont.area(s.description(), Styles.areaField, t -&gt; {}).size(400f, 140f).left().get();</b>
+&nbsp;
+<b class="nc">&nbsp;            Runnable accept = () -&gt; {</b>
+<b class="nc">&nbsp;                s.tags.put(&quot;name&quot;, nameField.getText());</b>
+<b class="nc">&nbsp;                s.tags.put(&quot;description&quot;, descField.getText());</b>
+<b class="nc">&nbsp;                s.save();</b>
+<b class="nc">&nbsp;                hide();</b>
+<b class="nc">&nbsp;                rebuildPane.run();</b>
+&nbsp;            };
+&nbsp;
+<b class="nc">&nbsp;            buttons.defaults().size(210f, 64f).pad(4);</b>
+<b class="nc">&nbsp;            buttons.button(&quot;@ok&quot;, Icon.ok, accept).disabled(b -&gt; nameField.getText().isEmpty());</b>
+<b class="nc">&nbsp;            buttons.button(&quot;@cancel&quot;, Icon.cancel, this::hide);</b>
+&nbsp;
+<b class="nc">&nbsp;            keyDown(KeyCode.enter, () -&gt; {</b>
+<b class="nc">&nbsp;                if(!nameField.getText().isEmpty() &amp;&amp; Core.scene.getKeyboardFocus() != descField){</b>
+<b class="nc">&nbsp;                    accept.run();</b>
+&nbsp;                }
+&nbsp;            });
+<b class="nc">&nbsp;        }}.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //adds all new tags to the global list of tags
+&nbsp;    //alternatively, unknown tags could be discarded on import?
+&nbsp;    void checkTags(){
+<b class="nc">&nbsp;        ObjectSet&lt;String&gt; encountered = new ObjectSet&lt;&gt;();</b>
+<b class="nc">&nbsp;        encountered.addAll(tags);</b>
+<b class="nc">&nbsp;        for(Schematic s : schematics.all()){</b>
+<b class="nc">&nbsp;            for(var tag : s.labels){</b>
+<b class="nc">&nbsp;                if(encountered.add(tag)){</b>
+<b class="nc">&nbsp;                    tags.add(tag);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //adds any new tags found to the global tag list
+&nbsp;    //TODO remove tags from it instead?
+&nbsp;    void checkTags(Schematic s){
+<b class="nc">&nbsp;        boolean any = false;</b>
+<b class="nc">&nbsp;        for(var tag : s.labels){</b>
+<b class="nc">&nbsp;            if(!tags.contains(tag)){</b>
+<b class="nc">&nbsp;                tags.add(tag);</b>
+<b class="nc">&nbsp;                any = true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        if(any){</b>
+<b class="nc">&nbsp;            rebuildTags.run();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void tagsChanged(){
+<b class="nc">&nbsp;        rebuildTags.run();</b>
+<b class="nc">&nbsp;        if(selectedTags.any()){</b>
+<b class="nc">&nbsp;            rebuildPane.run();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Core.settings.putJson(&quot;schematic-tags&quot;, String.class, tags);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void addTag(Schematic s, String tag){
+<b class="nc">&nbsp;        s.labels.add(tag);</b>
+<b class="nc">&nbsp;        s.save();</b>
+<b class="nc">&nbsp;        tagsChanged();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void removeTag(Schematic s, String tag){
+<b class="nc">&nbsp;        s.labels.remove(tag);</b>
+<b class="nc">&nbsp;        s.save();</b>
+<b class="nc">&nbsp;        tagsChanged();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //shows a dialog for creating a new tag
+&nbsp;    void showNewTag(Cons&lt;String&gt; result){
+<b class="nc">&nbsp;        ui.showTextInput(&quot;@schematic.addtag&quot;, &quot;&quot;, &quot;&quot;, out -&gt; {</b>
+<b class="nc">&nbsp;            if(tags.contains(out)){</b>
+<b class="nc">&nbsp;                ui.showInfo(&quot;@schematic.tagexists&quot;);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                tags.add(out);</b>
+<b class="nc">&nbsp;                tagsChanged();</b>
+<b class="nc">&nbsp;                result.get(out);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    void showNewIconTag(Cons&lt;String&gt; cons){
+<b class="nc">&nbsp;        new Dialog(){{</b>
+<b class="nc">&nbsp;            closeOnBack();</b>
+<b class="nc">&nbsp;            setFillParent(true);</b>
+&nbsp;
+&nbsp;            //TODO: use IconSelectDialog
+<b class="nc">&nbsp;            cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;                resized(true, () -&gt; {</b>
+<b class="nc">&nbsp;                    t.clearChildren();</b>
+<b class="nc">&nbsp;                    t.marginRight(19f).marginLeft(12f);</b>
+<b class="nc">&nbsp;                    t.defaults().size(48f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    int cols = (int)Math.min(20, Core.graphics.getWidth() / Scl.scl(52f));</b>
+&nbsp;
+<b class="nc">&nbsp;                    int i = 0;</b>
+<b class="nc">&nbsp;                    for(String icon : accessibleIcons){</b>
+<b class="nc">&nbsp;                        String out = (char)Iconc.codes.get(icon) + &quot;&quot;;</b>
+<b class="nc">&nbsp;                        if(tags.contains(out)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.button(Icon.icons.get(icon), Styles.flati, iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                            tags.add(out);</b>
+<b class="nc">&nbsp;                            tagsChanged();</b>
+<b class="nc">&nbsp;                            cons.get(out);</b>
+<b class="nc">&nbsp;                            hide();</b>
+&nbsp;                        });
+&nbsp;
+<b class="nc">&nbsp;                        if(++i % cols == 0) t.row();</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    for(ContentType ctype : defaultContentIcons){</b>
+<b class="nc">&nbsp;                        var all = content.getBy(ctype).&lt;UnlockableContent&gt;as().select(u -&gt; !u.isHidden() &amp;&amp; u.unlockedNow() &amp;&amp; u.hasEmoji());</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.row();</b>
+<b class="nc">&nbsp;                        if(all.count(u -&gt; !tags.contains(u.emoji())) &gt; 0) t.image().colspan(cols).growX().width(Float.NEGATIVE_INFINITY).height(3f).color(Pal.accent);</b>
+<b class="nc">&nbsp;                        t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        i = 0;</b>
+<b class="nc">&nbsp;                        for(UnlockableContent u : all){</b>
+<b class="nc">&nbsp;                            if(tags.contains(u.emoji())) continue;</b>
+<b class="nc">&nbsp;                            t.button(new TextureRegionDrawable(u.uiIcon), Styles.flati, iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                                String out = u.emoji() + &quot;&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;                                tags.add(out);</b>
+<b class="nc">&nbsp;                                tagsChanged();</b>
+<b class="nc">&nbsp;                                cons.get(out);</b>
+&nbsp;
+<b class="nc">&nbsp;                                hide();</b>
+<b class="nc">&nbsp;                            }).tooltip(u.localizedName);</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(++i % cols == 0) t.row();</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;                });
+<b class="nc">&nbsp;            }).scrollX(false);</b>
+<b class="nc">&nbsp;            buttons.button(&quot;@back&quot;, Icon.left, this::hide).size(210f, 64f);</b>
+<b class="nc">&nbsp;        }}.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void showAllTags(){
+<b class="nc">&nbsp;        var dialog = new BaseDialog(&quot;@schematic.edittags&quot;);</b>
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        Runnable[] rebuild = {null};</b>
+<b class="nc">&nbsp;        dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            rebuild[0] = () -&gt; {</b>
+<b class="nc">&nbsp;                p.clearChildren();</b>
+<b class="nc">&nbsp;                p.margin(12f).defaults().fillX().left();</b>
+&nbsp;
+<b class="nc">&nbsp;                float sum = 0f;</b>
+<b class="nc">&nbsp;                Table current = new Table().left();</b>
+&nbsp;
+<b class="nc">&nbsp;                for(var tag : tags){</b>
+<b class="nc">&nbsp;                    float si = 40f;</b>
+&nbsp;
+<b class="nc">&nbsp;                    var next = new Table(Tex.whiteui, n -&gt; {</b>
+<b class="nc">&nbsp;                        n.setColor(Pal.gray);</b>
+<b class="nc">&nbsp;                        n.margin(5f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        n.table(move -&gt; {</b>
+&nbsp;
+&nbsp;                            //move up
+<b class="nc">&nbsp;                            move.button(Icon.upOpen, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                                int idx = tags.indexOf(tag);</b>
+<b class="nc">&nbsp;                                if(idx &gt; 0){</b>
+<b class="nc">&nbsp;                                    tags.swap(idx, idx - 1);</b>
+<b class="nc">&nbsp;                                    tagsChanged();</b>
+<b class="nc">&nbsp;                                    rebuild[0].run();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).size(si).tooltip(&quot;@editor.moveup&quot;).row();</b>
+&nbsp;                            //move down
+<b class="nc">&nbsp;                            move.button(Icon.downOpen, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                                int idx = tags.indexOf(tag);</b>
+<b class="nc">&nbsp;                                if(idx &lt; tags.size - 1){</b>
+<b class="nc">&nbsp;                                    tags.swap(idx, idx + 1);</b>
+<b class="nc">&nbsp;                                    tagsChanged();</b>
+<b class="nc">&nbsp;                                    rebuild[0].run();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).size(si).tooltip(&quot;@editor.movedown&quot;);</b>
+<b class="nc">&nbsp;                        }).fillY();</b>
+&nbsp;
+<b class="nc">&nbsp;                        n.table(t -&gt; {</b>
+<b class="nc">&nbsp;                            t.add(tag).left().row();</b>
+<b class="nc">&nbsp;                            t.add(Core.bundle.format(&quot;schematic.tagged&quot;, schematics.all().count(s -&gt; s.labels.contains(tag)))).left()</b>
+<b class="nc">&nbsp;                            .update(b -&gt; b.setColor(b.hasMouse() ? Pal.accent : Color.lightGray)).get().clicked(() -&gt; {</b>
+<b class="nc">&nbsp;                                dialog.hide();</b>
+<b class="nc">&nbsp;                                selectedTags.clear().add(tag);</b>
+<b class="nc">&nbsp;                                rebuildTags.run();</b>
+<b class="nc">&nbsp;                                rebuildPane.run();</b>
+&nbsp;                            });
+<b class="nc">&nbsp;                        }).growX().fillY();</b>
+&nbsp;
+<b class="nc">&nbsp;                        n.table(b -&gt; {</b>
+<b class="nc">&nbsp;                            b.margin(2);</b>
+&nbsp;
+&nbsp;                            //rename tag
+<b class="nc">&nbsp;                            b.button(Icon.pencil, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                                ui.showTextInput(&quot;@schematic.renametag&quot;, &quot;@name&quot;, tag, result -&gt; {</b>
+&nbsp;                                    //same tag, nothing was renamed
+<b class="nc">&nbsp;                                    if(result.equals(tag)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                                    if(tags.contains(result)){</b>
+<b class="nc">&nbsp;                                        ui.showInfo(&quot;@schematic.tagexists&quot;);</b>
+&nbsp;                                    }else{
+<b class="nc">&nbsp;                                        for(Schematic s : schematics.all()){</b>
+<b class="nc">&nbsp;                                            if(s.labels.any()){</b>
+<b class="nc">&nbsp;                                                s.labels.replace(tag, result);</b>
+<b class="nc">&nbsp;                                                s.save();</b>
+&nbsp;                                            }
+<b class="nc">&nbsp;                                        }</b>
+<b class="nc">&nbsp;                                        selectedTags.replace(tag, result);</b>
+<b class="nc">&nbsp;                                        tags.replace(tag, result);</b>
+<b class="nc">&nbsp;                                        tagsChanged();</b>
+<b class="nc">&nbsp;                                        rebuild[0].run();</b>
+&nbsp;                                    }
+&nbsp;                                });
+<b class="nc">&nbsp;                            }).size(si).tooltip(&quot;@schematic.renametag&quot;).row();</b>
+&nbsp;                            //delete tag
+<b class="nc">&nbsp;                            b.button(Icon.trash, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                                ui.showConfirm(&quot;@schematic.tagdelconfirm&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                                    for(Schematic s : schematics.all()){</b>
+<b class="nc">&nbsp;                                        if(s.labels.any()){</b>
+<b class="nc">&nbsp;                                            s.labels.remove(tag);</b>
+<b class="nc">&nbsp;                                            s.save();</b>
+&nbsp;                                        }
+<b class="nc">&nbsp;                                    }</b>
+<b class="nc">&nbsp;                                    selectedTags.remove(tag);</b>
+<b class="nc">&nbsp;                                    tags.remove(tag);</b>
+<b class="nc">&nbsp;                                    tagsChanged();</b>
+<b class="nc">&nbsp;                                    rebuildPane.run();</b>
+<b class="nc">&nbsp;                                    rebuild[0].run();</b>
+&nbsp;                                });
+<b class="nc">&nbsp;                            }).size(si).tooltip(&quot;@save.delete&quot;);</b>
+<b class="nc">&nbsp;                        }).fillY();</b>
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    next.pack();</b>
+<b class="nc">&nbsp;                    float w = next.getWidth() + Scl.scl(9f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(w + sum &gt;= Core.graphics.getWidth() * 0.9f){</b>
+<b class="nc">&nbsp;                        p.add(current).row();</b>
+<b class="nc">&nbsp;                        current = new Table();</b>
+<b class="nc">&nbsp;                        current.left();</b>
+<b class="nc">&nbsp;                        sum = 0;</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    current.add(next).minWidth(210).pad(4);</b>
+&nbsp;
+<b class="nc">&nbsp;                    sum += w;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if(sum &gt; 0){</b>
+<b class="nc">&nbsp;                    p.add(current).row();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                p.table(t -&gt; {</b>
+<b class="nc">&nbsp;                    t.left().defaults().fillX().height(tagh).pad(2);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.button(&quot;@schematic.texttag&quot;, Icon.add, () -&gt; showNewTag(res -&gt; rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);</b>
+<b class="nc">&nbsp;                    t.button(&quot;@schematic.icontag&quot;, Icon.add, () -&gt; showNewIconTag(res -&gt; rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);</b>
+&nbsp;                });
+&nbsp;
+&nbsp;            };
+&nbsp;
+<b class="nc">&nbsp;            resized(true, rebuild[0]);</b>
+<b class="nc">&nbsp;        }).scrollX(false);</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void buildTags(Schematic schem, Table t){
+<b class="nc">&nbsp;        buildTags(schem, t, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void buildTags(Schematic schem, Table t, boolean name){
+<b class="nc">&nbsp;        t.clearChildren();</b>
+<b class="nc">&nbsp;        t.left();</b>
+&nbsp;
+&nbsp;        //sort by order in the main target array. the complexity of this is probably awful
+<b class="nc">&nbsp;        schem.labels.sort(s -&gt; tags.indexOf(s));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(name) t.add(&quot;@schematic.tags&quot;).padRight(4);</b>
+<b class="nc">&nbsp;        t.pane(s -&gt; {</b>
+<b class="nc">&nbsp;            s.left();</b>
+<b class="nc">&nbsp;            s.defaults().pad(3).height(tagh);</b>
+<b class="nc">&nbsp;            for(var tag : schem.labels){</b>
+<b class="nc">&nbsp;                s.table(Tex.button, i -&gt; {</b>
+<b class="nc">&nbsp;                    i.add(tag).padRight(4).height(tagh).labelAlign(Align.center);</b>
+<b class="nc">&nbsp;                    i.button(Icon.cancelSmall, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                        removeTag(schem, tag);</b>
+<b class="nc">&nbsp;                        buildTags(schem, t, name);</b>
+<b class="nc">&nbsp;                    }).size(tagh).padRight(-9f).padLeft(-9f);</b>
+&nbsp;                });
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;        }).fillX().left().height(tagh).scrollY(false);</b>
+&nbsp;
+<b class="nc">&nbsp;        t.button(Icon.addSmall, () -&gt; {</b>
+<b class="nc">&nbsp;            var dialog = new BaseDialog(&quot;@schematic.addtag&quot;);</b>
+<b class="nc">&nbsp;            dialog.addCloseButton();</b>
+<b class="nc">&nbsp;            dialog.cont.pane(p -&gt; resized(true, () -&gt; {</b>
+<b class="nc">&nbsp;                p.clearChildren();</b>
+<b class="nc">&nbsp;                p.defaults().fillX().left();</b>
+&nbsp;
+<b class="nc">&nbsp;                float sum = 0f;</b>
+<b class="nc">&nbsp;                Table current = new Table().left();</b>
+<b class="nc">&nbsp;                for(var tag : tags){</b>
+<b class="nc">&nbsp;                    if(schem.labels.contains(tag)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    var next = Elem.newButton(tag, () -&gt; {</b>
+<b class="nc">&nbsp;                        addTag(schem, tag);</b>
+<b class="nc">&nbsp;                        buildTags(schem, t, name);</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+&nbsp;                    });
+<b class="nc">&nbsp;                    next.getLabel().setWrap(false);</b>
+&nbsp;
+<b class="nc">&nbsp;                    next.pack();</b>
+<b class="nc">&nbsp;                    float w = next.getPrefWidth() + Scl.scl(6f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(w + sum &gt;= Core.graphics.getWidth() * (Core.graphics.isPortrait() ? 1f : 0.8f)){</b>
+<b class="nc">&nbsp;                        p.add(current).row();</b>
+<b class="nc">&nbsp;                        current = new Table();</b>
+<b class="nc">&nbsp;                        current.left();</b>
+<b class="nc">&nbsp;                        current.add(next).height(tagh).pad(2);</b>
+<b class="nc">&nbsp;                        sum = 0;</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        current.add(next).height(tagh).pad(2);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    sum += w;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if(sum &gt; 0){</b>
+<b class="nc">&nbsp;                    p.add(current).row();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Cons&lt;String&gt; handleTag = res -&gt; {</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                    addTag(schem, res);</b>
+<b class="nc">&nbsp;                    buildTags(schem, t, name);</b>
+&nbsp;                };
+&nbsp;
+<b class="nc">&nbsp;                p.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                p.table(v -&gt; {</b>
+<b class="nc">&nbsp;                    v.left().defaults().fillX().height(tagh).pad(2);</b>
+<b class="nc">&nbsp;                    v.button(&quot;@schematic.texttag&quot;, Icon.add, () -&gt; showNewTag(handleTag)).wrapLabel(false).get().getLabelCell().padLeft(4);</b>
+<b class="nc">&nbsp;                    v.button(&quot;@schematic.icontag&quot;, Icon.add, () -&gt; showNewIconTag(handleTag)).wrapLabel(false).get().getLabelCell().padLeft(4);</b>
+&nbsp;                });
+&nbsp;            }));
+<b class="nc">&nbsp;            dialog.show();</b>
+<b class="nc">&nbsp;        }).size(tagh).tooltip(&quot;@schematic.addtag&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Dialog show(){
+<b class="nc">&nbsp;        super.show();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.app.isDesktop() &amp;&amp; searchField != null){</b>
+<b class="nc">&nbsp;            Core.scene.setKeyboardFocus(searchField);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class SchematicImage extends Image{
+<b class="nc">&nbsp;        public float scaling = 16f;</b>
+<b class="nc">&nbsp;        public float thickness = 4f;</b>
+<b class="nc">&nbsp;        public Color borderColor = Pal.gray;</b>
+&nbsp;
+&nbsp;        private Schematic schematic;
+&nbsp;        private Texture lastTexture;
+&nbsp;        boolean set;
+&nbsp;
+&nbsp;        public SchematicImage(Schematic s){
+<b class="nc">&nbsp;            super(Tex.clear);</b>
+<b class="nc">&nbsp;            setScaling(Scaling.fit);</b>
+<b class="nc">&nbsp;            schematic = s;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(schematics.hasPreview(s)){</b>
+<b class="nc">&nbsp;                setPreview();</b>
+<b class="nc">&nbsp;                set = true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            boolean checked = parent.parent instanceof Button</b>
+<b class="nc">&nbsp;                &amp;&amp; ((Button)parent.parent).isOver();</b>
+&nbsp;
+<b class="nc">&nbsp;            boolean wasSet = set;</b>
+<b class="nc">&nbsp;            if(!set){</b>
+<b class="nc">&nbsp;                Core.app.post(this::setPreview);</b>
+<b class="nc">&nbsp;                set = true;</b>
+<b class="nc">&nbsp;            }else if(lastTexture != null &amp;&amp; lastTexture.isDisposed()){</b>
+<b class="nc">&nbsp;                set = wasSet = false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Texture background = Core.assets.get(&quot;sprites/schematic-background.png&quot;, Texture.class);</b>
+<b class="nc">&nbsp;            TextureRegion region = Draw.wrap(background);</b>
+<b class="nc">&nbsp;            float xr = width / scaling;</b>
+<b class="nc">&nbsp;            float yr = height / scaling;</b>
+<b class="nc">&nbsp;            region.setU2(xr);</b>
+<b class="nc">&nbsp;            region.setV2(yr);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+<b class="nc">&nbsp;            Draw.alpha(parentAlpha);</b>
+<b class="nc">&nbsp;            Draw.rect(region, x + width/2f, y + height/2f, width, height);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(wasSet){</b>
+<b class="nc">&nbsp;                super.draw();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Draw.rect(Icon.refresh.getRegion(), x + width/2f, y + height/2f, width/4f, height/4f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(checked ? Pal.accent : borderColor);</b>
+<b class="nc">&nbsp;            Draw.alpha(parentAlpha);</b>
+<b class="nc">&nbsp;            Lines.stroke(Scl.scl(thickness));</b>
+<b class="nc">&nbsp;            Lines.rect(x, y, width, height);</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private void setPreview(){
+<b class="nc">&nbsp;            TextureRegionDrawable draw = new TextureRegionDrawable(new TextureRegion(lastTexture = schematics.getPreview(schematic)));</b>
+<b class="nc">&nbsp;            setDrawable(draw);</b>
+<b class="nc">&nbsp;            setScaling(Scaling.fit);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public class SchematicInfoDialog extends BaseDialog{
+&nbsp;
+<b class="nc">&nbsp;        SchematicInfoDialog(){</b>
+<b class="nc">&nbsp;            super(&quot;&quot;);</b>
+<b class="nc">&nbsp;            setFillParent(true);</b>
+<b class="nc">&nbsp;            addCloseListener();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void show(Schematic schem){
+<b class="nc">&nbsp;            cont.clear();</b>
+<b class="nc">&nbsp;            title.setText(&quot;[[&quot; + Core.bundle.get(&quot;schematic&quot;) + &quot;] &quot; +schem.name());</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.add(Core.bundle.format(&quot;schematic.info&quot;, schem.width, schem.height, schem.tiles.size)).color(Color.lightGray).row();</b>
+<b class="nc">&nbsp;            cont.table(tags -&gt; buildTags(schem, tags)).fillX().left().row();</b>
+<b class="nc">&nbsp;            cont.add(new SchematicImage(schem)).maxSize(800f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;            ItemSeq arr = schem.requirements();</b>
+<b class="nc">&nbsp;            cont.table(r -&gt; {</b>
+<b class="nc">&nbsp;                int i = 0;</b>
+<b class="nc">&nbsp;                for(ItemStack s : arr){</b>
+<b class="nc">&nbsp;                    r.image(s.item.uiIcon).left().size(iconMed);</b>
+<b class="nc">&nbsp;                    r.label(() -&gt; {</b>
+<b class="nc">&nbsp;                        Building core = player.core();</b>
+<b class="nc">&nbsp;                        if(core == null || state.isMenu() || state.rules.infiniteResources || core.items.has(s.item, s.amount)) return &quot;[lightgray]&quot; + s.amount + &quot;&quot;;</b>
+<b class="nc">&nbsp;                        return (core.items.has(s.item, s.amount) ? &quot;[lightgray]&quot; : &quot;[scarlet]&quot;) + Math.min(core.items.get(s.item), s.amount) + &quot;[lightgray]/&quot; + s.amount;</b>
+<b class="nc">&nbsp;                    }).padLeft(2).left().padRight(4);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(++i % 4 == 0){</b>
+<b class="nc">&nbsp;                        r.row();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            });
+<b class="nc">&nbsp;            cont.row();</b>
+<b class="nc">&nbsp;            float cons = schem.powerConsumption() * 60, prod = schem.powerProduction() * 60;</b>
+<b class="nc">&nbsp;            if(!Mathf.zero(cons) || !Mathf.zero(prod)){</b>
+<b class="nc">&nbsp;                cont.table(t -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(!Mathf.zero(prod)){</b>
+<b class="nc">&nbsp;                        t.image(Icon.powerSmall).color(Pal.powerLight).padRight(3);</b>
+<b class="nc">&nbsp;                        t.add(&quot;+&quot; + Strings.autoFixed(prod, 2)).color(Pal.powerLight).left();</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(!Mathf.zero(cons)){</b>
+<b class="nc">&nbsp;                            t.add().width(15);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(!Mathf.zero(cons)){</b>
+<b class="nc">&nbsp;                        t.image(Icon.powerSmall).color(Pal.remove).padRight(3);</b>
+<b class="nc">&nbsp;                        t.add(&quot;-&quot; + Strings.autoFixed(cons, 2)).color(Pal.remove).left();</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            buttons.clearChildren();</b>
+<b class="nc">&nbsp;            buttons.defaults().size(Core.graphics.isPortrait() ? 150f : 210f, 64f);</b>
+<b class="nc">&nbsp;            buttons.button(&quot;@back&quot;, Icon.left, this::hide);</b>
+<b class="nc">&nbsp;            buttons.button(&quot;@editor.export&quot;, Icon.upload, () -&gt; showExport(schem));</b>
+<b class="nc">&nbsp;            buttons.button(&quot;@edit&quot;, Icon.edit, () -&gt; showEdit(schem));</b>
+&nbsp;
+<b class="nc">&nbsp;            show();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

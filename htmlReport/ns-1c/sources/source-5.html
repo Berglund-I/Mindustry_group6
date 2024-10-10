@@ -1,0 +1,210 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > EnvRenderers</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: EnvRenderers (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EnvRenderers</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/53)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.Texture.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class EnvRenderers{</b>
+&nbsp;
+&nbsp;    public static void init(){
+&nbsp;
+<b class="nc">&nbsp;        Color waterColor = Color.valueOf(&quot;353982&quot;);</b>
+<b class="nc">&nbsp;        Rand rand = new Rand();</b>
+&nbsp;
+<b class="nc">&nbsp;        Core.assets.load(&quot;sprites/rays.png&quot;, Texture.class).loaded = t -&gt; {</b>
+<b class="nc">&nbsp;            t.setFilter(TextureFilter.linear);</b>
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        Color particleColor = Color.valueOf(&quot;a7c1fa&quot;);</b>
+<b class="nc">&nbsp;        float windSpeed = 0.03f, windAngle = 45f;</b>
+<b class="nc">&nbsp;        float windx = Mathf.cosDeg(windAngle) * windSpeed, windy = Mathf.sinDeg(windAngle) * windSpeed;</b>
+&nbsp;
+<b class="nc">&nbsp;        renderer.addEnvRenderer(Env.underwater, () -&gt; {</b>
+<b class="nc">&nbsp;            Draw.draw(Layer.light + 1, () -&gt; {</b>
+<b class="nc">&nbsp;                Draw.color(waterColor, 0.4f);</b>
+<b class="nc">&nbsp;                Fill.rect(Core.camera.position.x, Core.camera.position.y, Core.camera.width, Core.camera.height);</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;                Blending.additive.apply();</b>
+<b class="nc">&nbsp;                Draw.blit(Shaders.caustics);</b>
+<b class="nc">&nbsp;                Blending.normal.apply();</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.light + 2);</b>
+&nbsp;
+<b class="nc">&nbsp;            int rays = 50;</b>
+<b class="nc">&nbsp;            float timeScale = 2000f;</b>
+<b class="nc">&nbsp;            rand.setSeed(0);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.blend(Blending.additive);</b>
+&nbsp;
+<b class="nc">&nbsp;            float t = Time.time / timeScale;</b>
+<b class="nc">&nbsp;            Texture tex = Core.assets.get(&quot;sprites/rays.png&quot;, Texture.class);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; rays; i++){</b>
+<b class="nc">&nbsp;                float offset = rand.random(0f, 1f);</b>
+<b class="nc">&nbsp;                float time = t + offset;</b>
+&nbsp;
+<b class="nc">&nbsp;                int pos = (int)time;</b>
+<b class="nc">&nbsp;                float life = time % 1f;</b>
+<b class="nc">&nbsp;                float opacity = rand.random(0.2f, 0.7f) * Mathf.slope(life) * 0.7f;</b>
+<b class="nc">&nbsp;                float x = (rand.random(0f, world.unitWidth()) + (pos % 100)*753) % world.unitWidth();</b>
+<b class="nc">&nbsp;                float y = (rand.random(0f, world.unitHeight()) + (pos % 120)*453) % world.unitHeight();</b>
+<b class="nc">&nbsp;                float rot = rand.range(7f);</b>
+<b class="nc">&nbsp;                float sizeScale = 1f + rand.range(0.3f);</b>
+&nbsp;
+<b class="nc">&nbsp;                float topDst = (Core.camera.position.y + Core.camera.height/2f) - (y + tex.height/2f + tex.height*1.9f*sizeScale/2f);</b>
+<b class="nc">&nbsp;                float invDst = topDst/1000f;</b>
+<b class="nc">&nbsp;                opacity = Math.min(opacity, -invDst);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(opacity &gt; 0.01){</b>
+<b class="nc">&nbsp;                    Draw.alpha(opacity);</b>
+<b class="nc">&nbsp;                    Draw.rect(Draw.wrap(tex), x, y + tex.height/2f, tex.width*2*sizeScale, tex.height*2*sizeScale, rot);</b>
+<b class="nc">&nbsp;                    Draw.color();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //suspended particles
+<b class="nc">&nbsp;            Draw.draw(Layer.weather, () -&gt; {</b>
+<b class="nc">&nbsp;                Weather.drawParticles(</b>
+<b class="nc">&nbsp;                    Core.atlas.find(&quot;particle&quot;), particleColor,</b>
+&nbsp;                    1.4f, 4f, //minmax size
+&nbsp;                    10000f, 1f, 1f, //density
+&nbsp;                    windx, windy, //wind vectors
+&nbsp;                    0.5f, 1f, //minmax alpha
+&nbsp;                    30f, 80f, //sinscl
+&nbsp;                    1f, 7f, //sinmag
+&nbsp;                    false
+&nbsp;                );
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            Draw.blend();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Core.assets.load(&quot;sprites/distortAlpha.png&quot;, Texture.class);</b>
+&nbsp;
+<b class="nc">&nbsp;        renderer.addEnvRenderer(Env.scorching, () -&gt; {</b>
+<b class="nc">&nbsp;            Texture tex = Core.assets.get(&quot;sprites/distortAlpha.png&quot;, Texture.class);</b>
+<b class="nc">&nbsp;            if(tex.getMagFilter() != TextureFilter.linear){</b>
+<b class="nc">&nbsp;                tex.setFilter(TextureFilter.linear);</b>
+<b class="nc">&nbsp;                tex.setWrap(TextureWrap.repeat);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //TODO layer looks better? should not be conditional
+<b class="nc">&nbsp;            Draw.z(state.rules.fog ? Layer.fogOfWar + 1 : Layer.weather - 1);</b>
+<b class="nc">&nbsp;            Weather.drawNoiseLayers(tex, Color.scarlet, 1000f, 0.24f, 0.4f, 1f, 1f, 0f, 4, -1.3f, 0.7f, 0.8f, 0.9f);</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

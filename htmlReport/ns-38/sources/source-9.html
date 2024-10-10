@@ -1,0 +1,321 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DuctRouter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: DuctRouter (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DuctRouter</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    73.1%
+  </span>
+  <span class="absValue">
+    (19/26)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DuctRouter$DuctRouterBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.5%
+  </span>
+  <span class="absValue">
+    (5/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.4%
+  </span>
+  <span class="absValue">
+    (11/49)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    36.8%
+  </span>
+  <span class="absValue">
+    (7/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (30/75)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class DuctRouter extends Block{
+<b class="fc">&nbsp;    public float speed = 5f;</b>
+&nbsp;
+&nbsp;    public @Load(value = &quot;@-top&quot;) TextureRegion topRegion;
+&nbsp;
+&nbsp;    public DuctRouter(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        group = BlockGroup.transportation;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = false;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        unloadable = false;</b>
+<b class="fc">&nbsp;        itemCapacity = 1;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        saveConfig = true;</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        clearOnDoubleTap = true;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+<b class="fc">&nbsp;        priority = TargetPriority.transport;</b>
+<b class="fc">&nbsp;        envEnabled = Env.space | Env.terrestrial | Env.underwater;</b>
+&nbsp;
+<b class="fc">&nbsp;        config(Item.class, (DuctRouterBuild tile, Item item) -&gt; tile.sortItem = item);</b>
+<b class="fc">&nbsp;        configClear((DuctRouterBuild tile) -&gt; tile.sortItem = null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.itemsMoved, 60f / speed * itemCapacity, StatUnit.itemsSecond);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{region, topRegion};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy());</b>
+<b class="nc">&nbsp;        Draw.rect(topRegion, plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int minimapColor(Tile tile){
+<b class="nc">&nbsp;        var build = (DuctRouterBuild)tile.build;</b>
+<b class="nc">&nbsp;        return build == null || build.sortItem == null ? 0 : build.sortItem.color.rgba();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean rotatedOutput(int x, int y){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class DuctRouterBuild extends Building{</b>
+&nbsp;        public @Nullable Item sortItem;
+&nbsp;
+&nbsp;        public float progress;
+&nbsp;        public @Nullable Item current;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y);</b>
+<b class="nc">&nbsp;            if(sortItem != null){</b>
+<b class="nc">&nbsp;                Draw.color(sortItem.color);</b>
+<b class="nc">&nbsp;                Draw.rect(&quot;center&quot;, x, y);</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Draw.rect(topRegion, x, y, rotdeg());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            progress += edelta() / speed * 2f;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(current != null){</b>
+<b class="nc">&nbsp;                if(progress &gt;= (1f - 1f/speed)){</b>
+<b class="nc">&nbsp;                    var target = target();</b>
+<b class="nc">&nbsp;                    if(target != null){</b>
+<b class="nc">&nbsp;                        target.handleItem(this, current);</b>
+<b class="nc">&nbsp;                        items.remove(current, 1);</b>
+<b class="nc">&nbsp;                        current = null;</b>
+<b class="nc">&nbsp;                        progress %= (1f - 1f/speed);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                progress = 0;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(current == null &amp;&amp; items.total() &gt; 0){</b>
+<b class="nc">&nbsp;                current = items.first();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            ItemSelection.buildTable(DuctRouter.this, table, content.items(), () -&gt; sortItem, this::configure);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public Building target(){
+<b class="nc">&nbsp;            if(current == null) return null;</b>
+&nbsp;
+<b class="nc">&nbsp;            int dump = cdump;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; proximity.size; i++){</b>
+<b class="nc">&nbsp;                Building other = proximity.get((i + dump) % proximity.size);</b>
+<b class="nc">&nbsp;                int rel = relativeTo(other);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!(sortItem != null &amp;&amp; (current == sortItem) != (rel == rotation)) &amp;&amp; !(rel == (rotation + 2) % 4) &amp;&amp; other.team == team &amp;&amp; other.acceptItem(this, current)){</b>
+<b class="nc">&nbsp;                    incrementDump(proximity.size);</b>
+<b class="nc">&nbsp;                    return other;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                incrementDump(proximity.size);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            return current == null &amp;&amp; items.total() == 0 &amp;&amp;</b>
+<b class="nc">&nbsp;                (Edges.getFacingEdge(source.tile(), tile).relativeTo(tile) == rotation);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int removeStack(Item item, int amount){
+<b class="nc">&nbsp;            int removed = super.removeStack(item, amount);</b>
+<b class="nc">&nbsp;            if(item == current) current = null;</b>
+<b class="nc">&nbsp;            return removed;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleStack(Item item, int amount, Teamc source){
+<b class="nc">&nbsp;            super.handleStack(item, amount, source);</b>
+<b class="nc">&nbsp;            current = item;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleItem(Building source, Item item){
+<b class="nc">&nbsp;            current = item;</b>
+<b class="nc">&nbsp;            progress = -1f;</b>
+<b class="nc">&nbsp;            items.add(item, 1);</b>
+<b class="nc">&nbsp;            noSleep();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Item config(){
+<b class="nc">&nbsp;            return sortItem;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.s(sortItem == null ? -1 : sortItem.id);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                sortItem = content.item(read.s());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

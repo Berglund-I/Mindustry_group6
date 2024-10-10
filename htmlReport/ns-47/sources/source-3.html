@@ -1,0 +1,306 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LiquidModule</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.modules</a>
+</div>
+
+<h1>Coverage Summary for Class: LiquidModule (mindustry.world.modules)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LiquidModule</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.9%
+  </span>
+  <span class="absValue">
+    (11/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.8%
+  </span>
+  <span class="absValue">
+    (32/73)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LiquidModule$LiquidCalculator</td>
+  </tr>
+  <tr>
+    <td class="name">LiquidModule$LiquidConsumer</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    57.9%
+  </span>
+  <span class="absValue">
+    (11/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.8%
+  </span>
+  <span class="absValue">
+    (32/73)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.modules;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class LiquidModule extends BlockModule{</b>
+&nbsp;    private static final int windowSize = 3;
+<b class="fc">&nbsp;    private static final Interval flowTimer = new Interval(2);</b>
+&nbsp;    private static final float pollScl = 20f;
+&nbsp;
+&nbsp;    private static WindowedMean[] cacheFlow;
+&nbsp;    private static float[] cacheSums;
+&nbsp;    private static float[] displayFlow;
+<b class="fc">&nbsp;    private static final Bits cacheBits = new Bits();</b>
+&nbsp;
+<b class="fc">&nbsp;    private float[] liquids = new float[content.liquids().size];</b>
+<b class="fc">&nbsp;    private Liquid current = content.liquid(0);</b>
+&nbsp;
+&nbsp;    private @Nullable WindowedMean[] flow;
+&nbsp;
+&nbsp;    public void updateFlow(){
+<b class="nc">&nbsp;        if(flowTimer.get(1, pollScl)){</b>
+<b class="nc">&nbsp;            if(flow == null){</b>
+<b class="nc">&nbsp;                if(cacheFlow == null || cacheFlow.length != liquids.length){</b>
+<b class="nc">&nbsp;                    cacheFlow = new WindowedMean[liquids.length];</b>
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; liquids.length; i++){</b>
+<b class="nc">&nbsp;                        cacheFlow[i] = new WindowedMean(windowSize);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    cacheSums = new float[liquids.length];</b>
+<b class="nc">&nbsp;                    displayFlow = new float[liquids.length];</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; liquids.length; i++){</b>
+<b class="nc">&nbsp;                        cacheFlow[i].reset();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    Arrays.fill(cacheSums, 0);</b>
+<b class="nc">&nbsp;                    cacheBits.clear();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Arrays.fill(displayFlow, -1);</b>
+&nbsp;
+<b class="nc">&nbsp;                flow = cacheFlow;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            boolean updateFlow = flowTimer.get(30);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; liquids.length; i++){</b>
+<b class="nc">&nbsp;                flow[i].add(cacheSums[i]);</b>
+<b class="nc">&nbsp;                if(cacheSums[i] &gt; 0){</b>
+<b class="nc">&nbsp;                    cacheBits.set(i);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                cacheSums[i] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(updateFlow){</b>
+<b class="nc">&nbsp;                    displayFlow[i] = flow[i].hasEnoughData() ? flow[i].mean() / pollScl : -1;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void stopFlow(){
+<b class="nc">&nbsp;        flow = null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return current liquid&#39;s flow rate in u/s; any value &lt; 0 means &#39;not ready&#39;. */
+&nbsp;    public float getFlowRate(Liquid liquid){
+<b class="nc">&nbsp;        return flow == null ? -1f : displayFlow[liquid.id] * 60;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasFlowLiquid(Liquid liquid){
+<b class="nc">&nbsp;        return flow != null &amp;&amp; cacheBits.get(liquid.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Last received or loaded liquid. Only valid for liquid modules with 1 type of liquid. */
+&nbsp;    public Liquid current(){
+<b class="fc">&nbsp;        return current;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reset(Liquid liquid, float amount){
+<b class="nc">&nbsp;        Arrays.fill(liquids, 0f);</b>
+<b class="nc">&nbsp;        liquids[liquid.id] = amount;</b>
+<b class="nc">&nbsp;        current = liquid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void set(Liquid liquid, float amount){
+<b class="fc">&nbsp;        if(amount &gt;= liquids[current.id]){</b>
+<b class="fc">&nbsp;            current = liquid;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        liquids[liquid.id] = amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float currentAmount(){
+<b class="fc">&nbsp;        return liquids[current.id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float get(Liquid liquid){
+<b class="fc">&nbsp;        return liquids[liquid.id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clear(){
+<b class="fc">&nbsp;        Arrays.fill(liquids, 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(Liquid liquid, float amount){
+<b class="fc">&nbsp;        liquids[liquid.id] += amount;</b>
+<b class="fc">&nbsp;        current = liquid;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(flow != null){</b>
+<b class="nc">&nbsp;            cacheSums[liquid.id] += Math.max(amount, 0);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handleFlow(Liquid liquid, float amount){
+<b class="nc">&nbsp;        if(flow != null){</b>
+<b class="nc">&nbsp;            cacheSums[liquid.id] += Math.max(amount, 0);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(Liquid liquid, float amount){
+&nbsp;        //cap to prevent negative removal
+<b class="fc">&nbsp;        add(liquid, Math.max(-amount, -liquids[liquid.id]));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void each(LiquidConsumer cons){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; liquids.length; i++){</b>
+<b class="nc">&nbsp;            if(liquids[i] &gt; 0){</b>
+<b class="nc">&nbsp;                cons.accept(content.liquid(i), liquids[i]);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public float sum(LiquidCalculator calc){
+<b class="nc">&nbsp;        float sum = 0f;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; liquids.length; i++){</b>
+<b class="nc">&nbsp;            if(liquids[i] &gt; 0){</b>
+<b class="nc">&nbsp;                sum += calc.get(content.liquid(i), liquids[i]);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return sum;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void write(Writes write){
+<b class="fc">&nbsp;        int amount = 0;</b>
+<b class="fc">&nbsp;        for(float liquid : liquids){</b>
+<b class="fc">&nbsp;            if(liquid &gt; 0) amount++;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        write.s(amount); //amount of liquids</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; liquids.length; i++){</b>
+<b class="fc">&nbsp;            if(liquids[i] &gt; 0){</b>
+<b class="nc">&nbsp;                write.s(i); //liquid ID</b>
+<b class="nc">&nbsp;                write.f(liquids[i]); //liquid amount</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void read(Reads read, boolean legacy){
+<b class="fc">&nbsp;        Arrays.fill(liquids, 0);</b>
+<b class="fc">&nbsp;        int count = legacy ? read.ub() : read.s();</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int j = 0; j &lt; count; j++){</b>
+<b class="fc">&nbsp;            Liquid liq = content.liquid(legacy ? read.ub() : read.s());</b>
+<b class="fc">&nbsp;            float amount = read.f();</b>
+<b class="fc">&nbsp;            if(liq != null){</b>
+<b class="fc">&nbsp;                int liquidid = liq.id;</b>
+<b class="fc">&nbsp;                liquids[liquidid] = amount;</b>
+<b class="fc">&nbsp;                if(amount &gt; liquids[current.id]){</b>
+<b class="fc">&nbsp;                    current = liq;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface LiquidConsumer{
+&nbsp;        void accept(Liquid liquid, float amount);
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface LiquidCalculator{
+&nbsp;        float get(Liquid liquid, float amount);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

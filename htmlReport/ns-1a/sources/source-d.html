@@ -1,0 +1,287 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Schematic</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.game</a>
+</div>
+
+<h1>Coverage Summary for Class: Schematic (mindustry.game)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Schematic</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.3%
+  </span>
+  <span class="absValue">
+    (1/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.1%
+  </span>
+  <span class="absValue">
+    (6/35)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Schematic$Stile</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (6/15)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    8.7%
+  </span>
+  <span class="absValue">
+    (2/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24%
+  </span>
+  <span class="absValue">
+    (12/50)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.game;
+&nbsp;
+&nbsp;import arc.files.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.mod.Mods.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Schematic implements Publishable, Comparable&lt;Schematic&gt;{
+&nbsp;    public final Seq&lt;Stile&gt; tiles;
+&nbsp;    /** These are used for the schematic tag UI. */
+<b class="fc">&nbsp;    public Seq&lt;String&gt; labels = new Seq&lt;&gt;();</b>
+&nbsp;    /** Internal meta tags. */
+&nbsp;    public StringMap tags;
+&nbsp;    public int width, height;
+&nbsp;    public @Nullable Fi file;
+&nbsp;    /** Associated mod. If null, no mod is associated with this schematic. */
+&nbsp;    public @Nullable LoadedMod mod;
+&nbsp;
+<b class="fc">&nbsp;    public Schematic(Seq&lt;Stile&gt; tiles, StringMap tags, int width, int height){</b>
+<b class="fc">&nbsp;        this.tiles = tiles;</b>
+<b class="fc">&nbsp;        this.tags = tags;</b>
+<b class="fc">&nbsp;        this.width = width;</b>
+<b class="fc">&nbsp;        this.height = height;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float powerProduction(){
+<b class="nc">&nbsp;        return tiles.sumf(s -&gt; s.block instanceof PowerGenerator p ? p.getDisplayedPowerProduction() : 0f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float powerConsumption(){
+<b class="nc">&nbsp;        return tiles.sumf(s -&gt; s.block.consPower != null ? s.block.consPower.usage : 0f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ItemSeq requirements(){
+<b class="nc">&nbsp;        ItemSeq requirements = new ItemSeq();</b>
+&nbsp;
+<b class="nc">&nbsp;        tiles.each(t -&gt; {</b>
+<b class="nc">&nbsp;            for(ItemStack stack : t.block.requirements){</b>
+<b class="nc">&nbsp;                requirements.add(stack.item, stack.amount);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        return requirements;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasCore(){
+<b class="nc">&nbsp;        return tiles.contains(s -&gt; s.block instanceof CoreBlock);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public CoreBlock findCore(){
+<b class="nc">&nbsp;        Stile tile = tiles.find(s -&gt; s.block instanceof CoreBlock);</b>
+<b class="nc">&nbsp;        if(tile == null) throw new IllegalArgumentException(&quot;Schematic is missing a core!&quot;);</b>
+<b class="nc">&nbsp;        return (CoreBlock)tile.block;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String name(){
+<b class="nc">&nbsp;        return tags.get(&quot;name&quot;, &quot;unknown&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String description(){
+<b class="nc">&nbsp;        return tags.get(&quot;description&quot;, &quot;&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void save(){
+<b class="nc">&nbsp;        schematics.saveChanges(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String getSteamID(){
+<b class="nc">&nbsp;        return tags.get(&quot;steamid&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void addSteamID(String id){
+<b class="nc">&nbsp;        tags.put(&quot;steamid&quot;, id);</b>
+<b class="nc">&nbsp;        save();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void removeSteamID(){
+<b class="nc">&nbsp;        tags.remove(&quot;steamid&quot;);</b>
+<b class="nc">&nbsp;        save();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String steamTitle(){
+<b class="nc">&nbsp;        return name();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String steamDescription(){
+<b class="nc">&nbsp;        return description();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String steamTag(){
+<b class="nc">&nbsp;        return &quot;schematic&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Fi createSteamFolder(String id){
+<b class="nc">&nbsp;        Fi directory = tmpDirectory.child(&quot;schematic_&quot; + id).child(&quot;schematic.&quot; + schematicExtension);</b>
+<b class="nc">&nbsp;        file.copyTo(directory);</b>
+<b class="nc">&nbsp;        return directory;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Fi createSteamPreview(String id){
+<b class="nc">&nbsp;        Fi preview = tmpDirectory.child(&quot;schematic_preview_&quot; + id + &quot;.png&quot;);</b>
+<b class="nc">&nbsp;        schematics.savePreview(this, preview);</b>
+<b class="nc">&nbsp;        return preview;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int compareTo(Schematic schematic){
+<b class="nc">&nbsp;        return name().compareTo(schematic.name());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class Stile{
+&nbsp;        public Block block;
+&nbsp;        public short x, y;
+&nbsp;        public Object config;
+&nbsp;        public byte rotation;
+&nbsp;
+<b class="fc">&nbsp;        public Stile(Block block, int x, int y, Object config, byte rotation){</b>
+<b class="fc">&nbsp;            this.block = block;</b>
+<b class="fc">&nbsp;            this.x = (short)x;</b>
+<b class="fc">&nbsp;            this.y = (short)y;</b>
+<b class="fc">&nbsp;            this.config = config;</b>
+<b class="fc">&nbsp;            this.rotation = rotation;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //pooling only
+<b class="nc">&nbsp;        public Stile(){</b>
+<b class="nc">&nbsp;            block = Blocks.air;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Stile set(Stile other){
+<b class="nc">&nbsp;            block = other.block;</b>
+<b class="nc">&nbsp;            x = other.x;</b>
+<b class="nc">&nbsp;            y = other.y;</b>
+<b class="nc">&nbsp;            config = other.config;</b>
+<b class="nc">&nbsp;            rotation = other.rotation;</b>
+<b class="nc">&nbsp;            return this;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Stile copy(){
+<b class="nc">&nbsp;            return new Stile(block, x, y, config, rotation);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

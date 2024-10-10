@@ -1,0 +1,164 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Stype</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.util</a>
+</div>
+
+<h1>Coverage Summary for Class: Stype (mindustry.annotations.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Stype</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.util;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.annotations.*;
+&nbsp;
+&nbsp;import javax.lang.model.element.*;
+&nbsp;import javax.lang.model.type.*;
+&nbsp;
+&nbsp;public class Stype extends Selement&lt;TypeElement&gt;{
+&nbsp;
+&nbsp;    public Stype(TypeElement typeElement){
+<b class="nc">&nbsp;        super(typeElement);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Stype of(TypeMirror mirror){
+<b class="nc">&nbsp;        return new Stype((TypeElement)BaseProcessor.typeu.asElement(mirror));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String fullName(){
+<b class="nc">&nbsp;        return mirror().toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Stype&gt; interfaces(){
+<b class="nc">&nbsp;        return Seq.with(e.getInterfaces()).map(Stype::of);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Stype&gt; allInterfaces(){
+<b class="nc">&nbsp;        return interfaces().flatMap(s -&gt; s.allInterfaces().add(s)).distinct();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Stype&gt; superclasses(){
+<b class="nc">&nbsp;        return Seq.with(BaseProcessor.typeu.directSupertypes(mirror())).map(Stype::of);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Stype&gt; allSuperclasses(){
+<b class="nc">&nbsp;        return superclasses().flatMap(s -&gt; s.allSuperclasses().add(s)).distinct();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Stype superclass(){
+<b class="nc">&nbsp;        return new Stype((TypeElement)BaseProcessor.typeu.asElement(BaseProcessor.typeu.directSupertypes(mirror()).get(0)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Svar&gt; fields(){
+<b class="nc">&nbsp;        return Seq.with(e.getEnclosedElements()).select(e -&gt; e instanceof VariableElement).map(e -&gt; new Svar((VariableElement)e));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Smethod&gt; methods(){
+<b class="nc">&nbsp;        return Seq.with(e.getEnclosedElements()).select(e -&gt; e instanceof ExecutableElement</b>
+<b class="nc">&nbsp;        &amp;&amp; !e.getSimpleName().toString().contains(&quot;&lt;&quot;)).map(e -&gt; new Smethod((ExecutableElement)e));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Smethod&gt; constructors(){
+<b class="nc">&nbsp;        return Seq.with(e.getEnclosedElements()).select(e -&gt; e instanceof ExecutableElement</b>
+<b class="nc">&nbsp;        &amp;&amp; e.getSimpleName().toString().contains(&quot;&lt;&quot;)).map(e -&gt; new Smethod((ExecutableElement)e));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TypeMirror mirror(){
+<b class="nc">&nbsp;        return e.asType();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

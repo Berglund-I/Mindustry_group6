@@ -1,0 +1,139 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawSpikes</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawSpikes (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawSpikes</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (5/15)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;public class DrawSpikes extends DrawBlock{
+<b class="fc">&nbsp;    public Color color = Color.valueOf(&quot;7457ce&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;    public int amount = 10, layers = 1;</b>
+<b class="fc">&nbsp;    public float stroke = 2f, rotateSpeed = 0.8f;</b>
+<b class="fc">&nbsp;    public float radius = 6f, length = 4f, x = 0f, y = 0f, layerSpeed = -1f;</b>
+&nbsp;
+<b class="nc">&nbsp;    public DrawSpikes(Color color){</b>
+<b class="nc">&nbsp;        this.color = color;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public DrawSpikes(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+<b class="nc">&nbsp;        if(build.warmup() &lt;= 0.001f) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(color, build.warmup() * color.a);</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(stroke);</b>
+<b class="nc">&nbsp;        float curSpeed = 1f;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; layers; i++){</b>
+<b class="nc">&nbsp;            Lines.spikes(build.x + x, build.y + y, radius, length, amount, build.totalProgress() * rotateSpeed * curSpeed);</b>
+<b class="nc">&nbsp;            curSpeed *= layerSpeed;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

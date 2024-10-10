@@ -1,0 +1,929 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LogicBlock</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: LogicBlock (mindustry.world.blocks.logic)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LogicBlock</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (6/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.8%
+  </span>
+  <span class="absValue">
+    (35/95)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LogicBlock$LogicBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.5%
+  </span>
+  <span class="absValue">
+    (10/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    49.8%
+  </span>
+  <span class="absValue">
+    (133/267)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">LogicBlock$LogicLink</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (6/9)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    37.8%
+  </span>
+  <span class="absValue">
+    (17/45)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46.9%
+  </span>
+  <span class="absValue">
+    (174/371)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.logic;
+&nbsp;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.Bits;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.io.TypeIO.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.util.zip.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class LogicBlock extends Block{
+&nbsp;    private static final int maxByteLen = 1024 * 100;
+&nbsp;    public static final int maxNameLength = 32;
+&nbsp;
+<b class="fc">&nbsp;    public int maxInstructionScale = 5;</b>
+<b class="fc">&nbsp;    public int instructionsPerTick = 1;</b>
+&nbsp;    //privileged only
+<b class="fc">&nbsp;    public int maxInstructionsPerTick = 40;</b>
+<b class="fc">&nbsp;    public float range = 8 * 10;</b>
+&nbsp;
+&nbsp;    public LogicBlock(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.logic;</b>
+<b class="fc">&nbsp;        schematicPriority = 5;</b>
+<b class="fc">&nbsp;        ignoreResizeConfig = true;</b>
+&nbsp;
+&nbsp;        //universal, no real requirements
+<b class="fc">&nbsp;        envEnabled = Env.any;</b>
+&nbsp;
+<b class="fc">&nbsp;        config(byte[].class, (LogicBuild build, byte[] data) -&gt; {</b>
+<b class="nc">&nbsp;            if(!accessible()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            build.readCompressed(data, true);</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        config(String.class, (LogicBuild build, String data) -&gt; {</b>
+<b class="nc">&nbsp;            if(!accessible() || !privileged) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(data != null &amp;&amp; data.length() &lt; maxNameLength){</b>
+<b class="nc">&nbsp;                build.tag = data;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        config(Character.class, (LogicBuild build, Character data) -&gt; {</b>
+<b class="nc">&nbsp;            if(!accessible() || !privileged) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            build.iconTag = data;</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        config(Integer.class, (LogicBuild entity, Integer pos) -&gt; {</b>
+<b class="nc">&nbsp;            if(!accessible()) return;</b>
+&nbsp;
+&nbsp;            //if there is no valid link in the first place, nobody cares
+<b class="nc">&nbsp;            if(!entity.validLink(world.build(pos))) return;</b>
+<b class="nc">&nbsp;            var lbuild = world.build(pos);</b>
+<b class="nc">&nbsp;            int x = lbuild.tileX(), y = lbuild.tileY();</b>
+&nbsp;
+<b class="nc">&nbsp;            LogicLink link = entity.links.find(l -&gt; l.x == x &amp;&amp; l.y == y);</b>
+<b class="nc">&nbsp;            String bname = getLinkName(lbuild.block);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(link != null){</b>
+<b class="nc">&nbsp;                link.active = !link.active;</b>
+&nbsp;                //find a name when the base name differs (new block type)
+<b class="nc">&nbsp;                if(!link.name.startsWith(bname)){</b>
+<b class="nc">&nbsp;                    link.name = &quot;&quot;;</b>
+<b class="nc">&nbsp;                    link.name = entity.findLinkName(lbuild.block);</b>
+&nbsp;                }
+&nbsp;                //disable when unlinking
+<b class="nc">&nbsp;                if(!link.active &amp;&amp; lbuild.block.autoResetEnabled &amp;&amp; lbuild.lastDisabler == entity){</b>
+<b class="nc">&nbsp;                    lbuild.enabled = true;</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="nc">&nbsp;                entity.links.remove(l -&gt; world.build(l.x, l.y) == lbuild);</b>
+<b class="nc">&nbsp;                entity.links.add(new LogicLink(x, y, entity.findLinkName(lbuild.block), true));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            entity.updateCode(entity.code, true, null);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean checkForceDark(Tile tile){
+<b class="fc">&nbsp;        return !accessible();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean accessible(){
+<b class="fc">&nbsp;        return !privileged || state.rules.editor || state.playtestingMap != null || state.rules.allowEditWorldProcessors;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean canBreak(Tile tile){
+<b class="nc">&nbsp;        return accessible();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String getLinkName(Block block){
+<b class="fc">&nbsp;        String name = block.name;</b>
+<b class="fc">&nbsp;        if(name.contains(&quot;-&quot;)){</b>
+<b class="fc">&nbsp;            String[] split = name.split(&quot;-&quot;);</b>
+&nbsp;            //filter out &#39;large&#39; at the end of block names
+<b class="fc">&nbsp;            if(split.length &gt;= 2 &amp;&amp; (split[split.length - 1].equals(&quot;large&quot;) || Strings.canParseFloat(split[split.length - 1]))){</b>
+<b class="nc">&nbsp;                name = split[split.length - 2];</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                name = split[split.length - 1];</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return name;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static byte[] compress(String code, Seq&lt;LogicLink&gt; links){
+<b class="fc">&nbsp;        return compress(code.getBytes(charset), links);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static byte[] compress(byte[] bytes, Seq&lt;LogicLink&gt; links){
+&nbsp;        try{
+<b class="fc">&nbsp;            var baos = new ByteArrayOutputStream();</b>
+<b class="fc">&nbsp;            var stream = new DataOutputStream(new DeflaterOutputStream(baos));</b>
+&nbsp;
+&nbsp;            //current version of config format
+<b class="fc">&nbsp;            stream.write(1);</b>
+&nbsp;
+&nbsp;            //write string data
+<b class="fc">&nbsp;            stream.writeInt(bytes.length);</b>
+<b class="fc">&nbsp;            stream.write(bytes);</b>
+&nbsp;
+<b class="fc">&nbsp;            int actives = links.count(l -&gt; l.active);</b>
+&nbsp;
+<b class="fc">&nbsp;            stream.writeInt(actives);</b>
+<b class="fc">&nbsp;            for(LogicLink link : links){</b>
+<b class="nc">&nbsp;                if(!link.active) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                stream.writeUTF(link.name);</b>
+<b class="nc">&nbsp;                stream.writeShort(link.x);</b>
+<b class="nc">&nbsp;                stream.writeShort(link.y);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            stream.close();</b>
+&nbsp;
+<b class="fc">&nbsp;            return baos.toByteArray();</b>
+<b class="nc">&nbsp;        }catch(IOException e){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!privileged){</b>
+<b class="nc">&nbsp;            stats.add(Stat.linkRange, range / 8, StatUnit.blocks);</b>
+<b class="nc">&nbsp;            stats.add(Stat.instructions, instructionsPerTick * 60, StatUnit.perSecond);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        if(privileged) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.circles(x*tilesize + offset, y*tilesize + offset, range);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Object pointConfig(Object config, Cons&lt;Point2&gt; transformer){
+<b class="nc">&nbsp;        if(config instanceof byte[] data){</b>
+&nbsp;
+<b class="nc">&nbsp;            try(DataInputStream stream = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(data)))){</b>
+&nbsp;                //discard version for now
+<b class="nc">&nbsp;                stream.read();</b>
+&nbsp;
+<b class="nc">&nbsp;                int bytelen = stream.readInt();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(bytelen &gt; maxByteLen) throw new RuntimeException(&quot;Logic data too long or malformed! Length: &quot; + bytelen);</b>
+&nbsp;
+<b class="nc">&nbsp;                byte[] bytes = new byte[bytelen];</b>
+<b class="nc">&nbsp;                stream.readFully(bytes);</b>
+&nbsp;
+<b class="nc">&nbsp;                int total = stream.readInt();</b>
+&nbsp;
+<b class="nc">&nbsp;                Seq&lt;LogicLink&gt; links = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; total; i++){</b>
+<b class="nc">&nbsp;                    String name = stream.readUTF();</b>
+<b class="nc">&nbsp;                    short x = stream.readShort(), y = stream.readShort();</b>
+&nbsp;
+<b class="nc">&nbsp;                    Tmp.p2.set((int)(offset / (tilesize/2)), (int)(offset / (tilesize/2)));</b>
+<b class="nc">&nbsp;                    transformer.get(Tmp.p1.set(x * 2, y * 2).sub(Tmp.p2));</b>
+<b class="nc">&nbsp;                    Tmp.p1.add(Tmp.p2);</b>
+<b class="nc">&nbsp;                    Tmp.p1.x /= 2;</b>
+<b class="nc">&nbsp;                    Tmp.p1.y /= 2;</b>
+<b class="nc">&nbsp;                    links.add(new LogicLink(Tmp.p1.x, Tmp.p1.y, name, true));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return compress(bytes, links);</b>
+<b class="nc">&nbsp;            }catch(IOException e){</b>
+<b class="nc">&nbsp;                Log.err(e);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return config;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class LogicLink{
+<b class="fc">&nbsp;        public boolean active = true, valid;</b>
+&nbsp;        public int x, y;
+&nbsp;        public String name;
+&nbsp;        public Building lastBuild;
+&nbsp;
+<b class="fc">&nbsp;        public LogicLink(int x, int y, String name, boolean valid){</b>
+<b class="fc">&nbsp;            this.x = x;</b>
+<b class="fc">&nbsp;            this.y = y;</b>
+<b class="fc">&nbsp;            this.name = name;</b>
+<b class="fc">&nbsp;            this.valid = valid;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public LogicLink copy(){
+<b class="nc">&nbsp;            LogicLink out = new LogicLink(x, y, name, valid);</b>
+<b class="nc">&nbsp;            out.active = active;</b>
+<b class="nc">&nbsp;            return out;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class LogicBuild extends Building implements Ranged{</b>
+&nbsp;        /** logic &quot;source code&quot; as list of asm statements */
+<b class="fc">&nbsp;        public String code = &quot;&quot;;</b>
+<b class="fc">&nbsp;        public LExecutor executor = new LExecutor();</b>
+<b class="fc">&nbsp;        public float accumulator = 0;</b>
+<b class="fc">&nbsp;        public Seq&lt;LogicLink&gt; links = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;        public boolean checkedDuplicates = false;</b>
+&nbsp;        //dynamic only for privileged processors
+<b class="fc">&nbsp;        public int ipt = instructionsPerTick;</b>
+&nbsp;        /** Display name, for convenience. This is currently only available for world processors. */
+&nbsp;        public @Nullable String tag;
+&nbsp;        public char iconTag;
+&nbsp;
+&nbsp;        /** Block of code to run after load. */
+&nbsp;        public @Nullable Runnable loadBlock;
+&nbsp;
+&nbsp;        {
+<b class="fc">&nbsp;            executor.privileged = privileged;</b>
+<b class="fc">&nbsp;            executor.build = this;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void readCompressed(byte[] data, boolean relative){
+<b class="fc">&nbsp;            try(DataInputStream stream = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(data)))){</b>
+<b class="fc">&nbsp;                int version = stream.read();</b>
+&nbsp;
+<b class="fc">&nbsp;                int bytelen = stream.readInt();</b>
+<b class="fc">&nbsp;                if(bytelen &gt; maxByteLen) throw new IOException(&quot;Malformed logic data! Length: &quot; + bytelen);</b>
+<b class="fc">&nbsp;                byte[] bytes = new byte[bytelen];</b>
+<b class="fc">&nbsp;                stream.readFully(bytes);</b>
+&nbsp;
+<b class="fc">&nbsp;                links.clear();</b>
+&nbsp;
+<b class="fc">&nbsp;                int total = stream.readInt();</b>
+&nbsp;
+<b class="fc">&nbsp;                if(version == 0){</b>
+&nbsp;                    //old version just had links, ignore those
+&nbsp;
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; total; i++){</b>
+<b class="nc">&nbsp;                        stream.readInt();</b>
+&nbsp;                    }
+&nbsp;                }else{
+<b class="fc">&nbsp;                    for(int i = 0; i &lt; total; i++){</b>
+<b class="fc">&nbsp;                        String name = stream.readUTF();</b>
+<b class="fc">&nbsp;                        short x = stream.readShort(), y = stream.readShort();</b>
+&nbsp;
+<b class="fc">&nbsp;                        if(relative){</b>
+<b class="nc">&nbsp;                            x += tileX();</b>
+<b class="nc">&nbsp;                            y += tileY();</b>
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        Building build = world.build(x, y);</b>
+&nbsp;
+<b class="fc">&nbsp;                        if(build != null){</b>
+<b class="fc">&nbsp;                            String bestName = getLinkName(build.block);</b>
+<b class="fc">&nbsp;                            if(!name.startsWith(bestName)){</b>
+<b class="nc">&nbsp;                                name = findLinkName(build.block);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        links.add(new LogicLink(x, y, name, false));</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                updateCode(new String(bytes, charset));</b>
+<b class="fc">&nbsp;            }catch(Exception ignored){</b>
+&nbsp;                //invalid logic doesn&#39;t matter here
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public String findLinkName(Block block){
+<b class="nc">&nbsp;            String bname = getLinkName(block);</b>
+<b class="nc">&nbsp;            Bits taken = new Bits(links.size);</b>
+<b class="nc">&nbsp;            int max = 1;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(LogicLink others : links){</b>
+<b class="nc">&nbsp;                if(others.name.startsWith(bname)){</b>
+&nbsp;
+<b class="nc">&nbsp;                    String num = others.name.substring(bname.length());</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        int val = Integer.parseInt(num);</b>
+<b class="nc">&nbsp;                        taken.set(val);</b>
+<b class="nc">&nbsp;                        max = Math.max(val, max);</b>
+<b class="nc">&nbsp;                    }catch(NumberFormatException ignored){</b>
+&nbsp;                        //ignore failed parsing, it isn&#39;t relevant
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            int outnum = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 1; i &lt; max + 2; i++){</b>
+<b class="nc">&nbsp;                if(!taken.get(i)){</b>
+<b class="nc">&nbsp;                    outnum = i;</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return bname + outnum;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void updateCode(String str){
+<b class="fc">&nbsp;            updateCode(str, false, null);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void updateCode(String str, boolean keep, Cons&lt;LAssembler&gt; assemble){
+<b class="fc">&nbsp;            if(str != null){</b>
+<b class="fc">&nbsp;                code = str;</b>
+&nbsp;
+&nbsp;                try{
+&nbsp;                    //create assembler to store extra variables
+<b class="fc">&nbsp;                    LAssembler asm = LAssembler.assemble(str, privileged);</b>
+&nbsp;
+&nbsp;                    //store connections
+<b class="fc">&nbsp;                    for(LogicLink link : links){</b>
+<b class="fc">&nbsp;                        if(link.active &amp;&amp; (link.valid = validLink(world.build(link.x, link.y)))){</b>
+<b class="fc">&nbsp;                            asm.putConst(link.name, world.build(link.x, link.y));</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    //store link objects
+<b class="fc">&nbsp;                    executor.links = new Building[links.count(l -&gt; l.valid &amp;&amp; l.active)];</b>
+<b class="fc">&nbsp;                    executor.linkIds.clear();</b>
+&nbsp;
+<b class="fc">&nbsp;                    int index = 0;</b>
+<b class="fc">&nbsp;                    for(LogicLink link : links){</b>
+<b class="fc">&nbsp;                        if(link.active &amp;&amp; link.valid){</b>
+<b class="fc">&nbsp;                            Building build = world.build(link.x, link.y);</b>
+<b class="fc">&nbsp;                            executor.links[index ++] = build;</b>
+<b class="fc">&nbsp;                            if(build != null) executor.linkIds.add(build.id);</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+<b class="fc">&nbsp;                    asm.putConst(&quot;@links&quot;, executor.links.length);</b>
+<b class="fc">&nbsp;                    asm.putConst(&quot;@ipt&quot;, instructionsPerTick);</b>
+&nbsp;
+<b class="fc">&nbsp;                    if(keep){</b>
+&nbsp;                        //store any older variables
+<b class="nc">&nbsp;                        for(LVar var : executor.vars){</b>
+<b class="nc">&nbsp;                            boolean unit = var.name.equals(&quot;@unit&quot;);</b>
+<b class="nc">&nbsp;                            if(!var.constant || unit){</b>
+<b class="nc">&nbsp;                                LVar dest = asm.getVar(var.name);</b>
+<b class="nc">&nbsp;                                if(dest != null &amp;&amp; (!dest.constant || unit)){</b>
+<b class="nc">&nbsp;                                    dest.isobj = var.isobj;</b>
+<b class="nc">&nbsp;                                    dest.objval = var.objval;</b>
+<b class="nc">&nbsp;                                    dest.numval = var.numval;</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //inject any extra variables
+<b class="fc">&nbsp;                    if(assemble != null){</b>
+<b class="fc">&nbsp;                        assemble.get(asm);</b>
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    asm.getVar(&quot;@this&quot;).setconst(this);</b>
+<b class="fc">&nbsp;                    asm.putConst(&quot;@thisx&quot;, World.conv(x));</b>
+<b class="fc">&nbsp;                    asm.putConst(&quot;@thisy&quot;, World.conv(y));</b>
+&nbsp;
+<b class="fc">&nbsp;                    executor.load(asm);</b>
+<b class="nc">&nbsp;                }catch(Exception e){</b>
+&nbsp;                    //handle malformed code and replace it with nothing
+<b class="nc">&nbsp;                    executor.load(LAssembler.assemble(code = &quot;&quot;, privileged));</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //editor-only processors cannot be damaged or destroyed
+&nbsp;        @Override
+&nbsp;        public boolean collide(Bullet other){
+<b class="nc">&nbsp;            return !privileged;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean displayable(){
+<b class="nc">&nbsp;            return accessible();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void damage(float damage){
+<b class="nc">&nbsp;            if(!privileged){</b>
+<b class="nc">&nbsp;                super.damage(damage);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void removeFromProximity(){
+<b class="nc">&nbsp;            super.removeFromProximity();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(var link : executor.links){</b>
+<b class="nc">&nbsp;                if(!link.enabled &amp;&amp; link.lastDisabler == this){</b>
+<b class="nc">&nbsp;                    link.enabled = true;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Cursor getCursor(){
+<b class="nc">&nbsp;            return !accessible() ? SystemCursor.arrow : super.getCursor();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //logic blocks cause write problems when picked up
+&nbsp;        @Override
+&nbsp;        public boolean canPickup(){
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float range(){
+<b class="nc">&nbsp;            return range;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+&nbsp;            //load up code from read()
+<b class="fc">&nbsp;            if(loadBlock != null){</b>
+<b class="fc">&nbsp;                loadBlock.run();</b>
+<b class="fc">&nbsp;                loadBlock = null;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            executor.team = team;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(!checkedDuplicates){</b>
+<b class="fc">&nbsp;                checkedDuplicates = true;</b>
+<b class="fc">&nbsp;                var removal = new IntSet();</b>
+<b class="fc">&nbsp;                var removeLinks = new Seq&lt;LogicLink&gt;();</b>
+<b class="fc">&nbsp;                for(var link : links){</b>
+<b class="nc">&nbsp;                    var build = world.build(link.x, link.y);</b>
+<b class="nc">&nbsp;                    if(build != null){</b>
+<b class="nc">&nbsp;                        if(!removal.add(build.id)){</b>
+<b class="nc">&nbsp;                            removeLinks.add(link);</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="fc">&nbsp;                links.removeAll(removeLinks);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //check for previously invalid links to add after configuration
+<b class="fc">&nbsp;            boolean changed = false, updates = true;</b>
+&nbsp;
+<b class="fc">&nbsp;            while(updates){</b>
+<b class="fc">&nbsp;                updates = false;</b>
+&nbsp;
+<b class="fc">&nbsp;                for(int i = 0; i &lt; links.size; i++){</b>
+<b class="nc">&nbsp;                    LogicLink l = links.get(i);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(!l.active) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    var cur = world.build(l.x, l.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                    boolean valid = validLink(cur);</b>
+<b class="nc">&nbsp;                    if(l.lastBuild == null) l.lastBuild = cur;</b>
+<b class="nc">&nbsp;                    if(valid != l.valid || l.lastBuild != cur){</b>
+<b class="nc">&nbsp;                        l.lastBuild = cur;</b>
+<b class="nc">&nbsp;                        changed = true;</b>
+<b class="nc">&nbsp;                        l.valid = valid;</b>
+<b class="nc">&nbsp;                        if(valid){</b>
+&nbsp;
+&nbsp;                            //this prevents conflicts
+<b class="nc">&nbsp;                            l.name = &quot;&quot;;</b>
+&nbsp;                            //finds a new matching name after toggling
+<b class="nc">&nbsp;                            l.name = findLinkName(cur.block);</b>
+&nbsp;
+&nbsp;                            //remove redundant links
+<b class="nc">&nbsp;                            links.removeAll(o -&gt; world.build(o.x, o.y) == cur &amp;&amp; o != l);</b>
+&nbsp;
+&nbsp;                            //break to prevent concurrent modification
+<b class="nc">&nbsp;                            updates = true;</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(changed){</b>
+<b class="nc">&nbsp;                updateCode(code, true, null);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(!privileged){</b>
+<b class="fc">&nbsp;                ipt = instructionsPerTick;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(state.rules.disableWorldProcessors &amp;&amp; privileged) return;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(enabled &amp;&amp; executor.initialized()){</b>
+<b class="fc">&nbsp;                accumulator += edelta() * ipt;</b>
+&nbsp;
+<b class="fc">&nbsp;                if(accumulator &gt; maxInstructionScale * ipt) accumulator = maxInstructionScale * ipt;</b>
+&nbsp;
+<b class="fc">&nbsp;                for(int i = 0; i &lt; (int)accumulator; i++){</b>
+<b class="fc">&nbsp;                    executor.runOnce();</b>
+<b class="fc">&nbsp;                    accumulator --;</b>
+<b class="fc">&nbsp;                    if(executor.yield){</b>
+<b class="nc">&nbsp;                        executor.yield = false;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte[] config(){
+<b class="nc">&nbsp;            return compress(code, relativeConnections());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Seq&lt;LogicLink&gt; relativeConnections(){
+<b class="nc">&nbsp;            var copy = new Seq&lt;LogicLink&gt;(links.size);</b>
+<b class="nc">&nbsp;            for(var l : links){</b>
+<b class="nc">&nbsp;                var c = l.copy();</b>
+<b class="nc">&nbsp;                c.x -= tileX();</b>
+<b class="nc">&nbsp;                c.y -= tileY();</b>
+<b class="nc">&nbsp;                copy.add(c);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;            return copy;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawConfigure(){
+<b class="nc">&nbsp;            super.drawConfigure();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!privileged){</b>
+<b class="nc">&nbsp;                Drawf.circles(x, y, range);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(LogicLink l : links){</b>
+<b class="nc">&nbsp;                Building build = world.build(l.x, l.y);</b>
+<b class="nc">&nbsp;                if(l.active &amp;&amp; validLink(build)){</b>
+<b class="nc">&nbsp;                    Drawf.square(build.x, build.y, build.block.size * tilesize / 2f + 1f, Pal.place);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            //draw top text on separate layer
+<b class="nc">&nbsp;            for(LogicLink l : links){</b>
+<b class="nc">&nbsp;                Building build = world.build(l.x, l.y);</b>
+<b class="nc">&nbsp;                if(l.active &amp;&amp; validLink(build)){</b>
+<b class="nc">&nbsp;                    build.block.drawPlaceText(l.name, build.tileX(), build.tileY(), true);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawSelect(){
+<b class="nc">&nbsp;            if(!accessible()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            Groups.unit.each(u -&gt; u.controller() instanceof LogicAI ai &amp;&amp; ai.controller == this, unit -&gt; {</b>
+<b class="nc">&nbsp;                Drawf.square(unit.x, unit.y, unit.hitSize, unit.rotation + 45);</b>
+&nbsp;            });
+&nbsp;
+&nbsp;            //draw tag over processor (world processor only)
+<b class="nc">&nbsp;            if(!(renderer.pixelate || !privileged || tag == null || tag.isEmpty())){</b>
+<b class="nc">&nbsp;                Font font = Fonts.outline;</b>
+<b class="nc">&nbsp;                GlyphLayout l = Pools.obtain(GlyphLayout.class, GlyphLayout::new);</b>
+<b class="nc">&nbsp;                boolean ints = font.usesIntegerPositions();</b>
+<b class="nc">&nbsp;                font.getData().setScale(1 / 4f / Scl.scl(1f));</b>
+<b class="nc">&nbsp;                font.setUseIntegerPositions(false);</b>
+&nbsp;
+<b class="nc">&nbsp;                l.setText(font, tag, Color.white, 90f, Align.left, true);</b>
+<b class="nc">&nbsp;                float offset = 1f;</b>
+&nbsp;
+&nbsp;                //Draw.color(0f, 0f, 0f, 0.1f);
+&nbsp;                //Fill.rect(x, y + tilesize/2f - l.height/2f - offset, l.width + offset*2f, l.height + offset*2f);
+<b class="nc">&nbsp;                Draw.color();</b>
+<b class="nc">&nbsp;                font.setColor(1f, 1f, 1f, 0.5f);</b>
+<b class="nc">&nbsp;                font.draw(tag, x - l.width/2f, y + tilesize + 2f - offset, 90f, Align.left, true);</b>
+<b class="nc">&nbsp;                font.setUseIntegerPositions(ints);</b>
+&nbsp;
+<b class="nc">&nbsp;                font.getData().setScale(1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                Pools.free(l);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(iconTag != 0){</b>
+<b class="nc">&nbsp;                TextureRegion icon = Fonts.getLargeIcon(Fonts.unicodeToName(iconTag));</b>
+<b class="nc">&nbsp;                if(icon.found()){</b>
+<b class="nc">&nbsp;                    Draw.alpha(0.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Draw.rect(icon, x, y, tilesize, tilesize / icon.ratio());</b>
+&nbsp;
+<b class="nc">&nbsp;                    Draw.color();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean validLink(Building other){
+<b class="fc">&nbsp;            return other != null &amp;&amp; other.isValid() &amp;&amp; (privileged || (!other.block.privileged &amp;&amp; other.team == team &amp;&amp; other.within(this, range + other.block.size*tilesize/2f))) &amp;&amp; !(other instanceof ConstructBuild);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldShowConfigure(Player player){
+<b class="nc">&nbsp;            return accessible();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            table.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void showEditDialog(){
+<b class="nc">&nbsp;            showEditDialog(false);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void showEditDialog(boolean forceEditor){
+<b class="nc">&nbsp;            ui.logic.show(code, executor, privileged, code -&gt; {</b>
+<b class="nc">&nbsp;                boolean prev = state.rules.editor;</b>
+&nbsp;                //this is a hack to allow configuration to work correctly in the editor for privileged processors
+<b class="nc">&nbsp;                if(forceEditor) state.rules.editor = true;</b>
+<b class="nc">&nbsp;                configure(compress(code, relativeConnections()));</b>
+<b class="nc">&nbsp;                state.rules.editor = prev;</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean onConfigureBuildTapped(Building other){
+<b class="nc">&nbsp;            if(this == other || !accessible()){</b>
+<b class="nc">&nbsp;                deselect();</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(validLink(other)){</b>
+<b class="nc">&nbsp;                configure(other.pos());</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return super.onConfigureBuildTapped(other);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 3;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            byte[] compressed = compress(code, links);</b>
+<b class="fc">&nbsp;            write.i(compressed.length);</b>
+<b class="fc">&nbsp;            write.b(compressed);</b>
+&nbsp;
+&nbsp;            //write only the non-constant variables
+<b class="fc">&nbsp;            int count = Structs.count(executor.vars, v -&gt; (!v.constant || v == executor.unit) &amp;&amp; !(v.isobj &amp;&amp; v.objval == null));</b>
+&nbsp;
+<b class="fc">&nbsp;            write.i(count);</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; executor.vars.length; i++){</b>
+<b class="fc">&nbsp;                LVar v = executor.vars[i];</b>
+&nbsp;
+&nbsp;                //null is the default variable value, so waste no time serializing that
+<b class="fc">&nbsp;                if(v.isobj &amp;&amp; v.objval == null) continue;</b>
+&nbsp;
+&nbsp;                //skip constants
+<b class="fc">&nbsp;                if(v.constant &amp;&amp; v != executor.unit) continue;</b>
+&nbsp;
+&nbsp;                //write the name and the object value
+<b class="fc">&nbsp;                write.str(v.name);</b>
+&nbsp;
+<b class="fc">&nbsp;                Object value = v.isobj ? v.objval : v.numval;</b>
+<b class="fc">&nbsp;                TypeIO.writeObject(write, value);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //no memory
+<b class="fc">&nbsp;            write.i(0);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(privileged){</b>
+<b class="fc">&nbsp;                write.s(Mathf.clamp(ipt, 1, maxInstructionsPerTick));</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            TypeIO.writeString(write, tag);</b>
+<b class="fc">&nbsp;            write.s(iconTag);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                int compl = read.i();</b>
+<b class="fc">&nbsp;                byte[] bytes = new byte[compl];</b>
+<b class="fc">&nbsp;                read.b(bytes);</b>
+<b class="fc">&nbsp;                readCompressed(bytes, false);</b>
+<b class="fc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                code = read.str();</b>
+<b class="nc">&nbsp;                links.clear();</b>
+<b class="nc">&nbsp;                short total = read.s();</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; total; i++){</b>
+<b class="nc">&nbsp;                    read.i();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            int varcount = read.i();</b>
+&nbsp;
+&nbsp;            //variables need to be temporarily stored in an array until they can be used
+<b class="fc">&nbsp;            String[] names = new String[varcount];</b>
+<b class="fc">&nbsp;            Object[] values = new Object[varcount];</b>
+&nbsp;
+<b class="fc">&nbsp;            for(int i = 0; i &lt; varcount; i++){</b>
+<b class="fc">&nbsp;                String name = read.str();</b>
+<b class="fc">&nbsp;                Object value = TypeIO.readObjectBoxed(read, true);</b>
+&nbsp;
+<b class="fc">&nbsp;                names[i] = name;</b>
+<b class="fc">&nbsp;                values[i] = value;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            int memory = read.i();</b>
+&nbsp;            //skip memory, it isn&#39;t used anymore
+<b class="fc">&nbsp;            read.skip(memory * 8);</b>
+&nbsp;
+<b class="fc">&nbsp;            loadBlock = () -&gt; updateCode(code, false, asm -&gt; {</b>
+&nbsp;                //load up the variables that were stored
+<b class="fc">&nbsp;                for(int i = 0; i &lt; varcount; i++){</b>
+<b class="fc">&nbsp;                    LVar var = asm.getVar(names[i]);</b>
+<b class="fc">&nbsp;                    if(var != null &amp;&amp; (!var.constant || var.name.equals(&quot;@unit&quot;))){</b>
+<b class="fc">&nbsp;                        var value = values[i];</b>
+<b class="fc">&nbsp;                        if(value instanceof Boxed&lt;?&gt; boxed) value = boxed.unbox();</b>
+&nbsp;
+<b class="fc">&nbsp;                        if(value instanceof Number num){</b>
+<b class="fc">&nbsp;                            var.numval = num.doubleValue();</b>
+<b class="fc">&nbsp;                            var.isobj = false;</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            var.objval = value;</b>
+<b class="nc">&nbsp;                            var.isobj = true;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="fc">&nbsp;            if(privileged &amp;&amp; revision &gt;= 2){</b>
+<b class="fc">&nbsp;                ipt = Mathf.clamp(read.s(), 1, maxInstructionsPerTick);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(revision &gt;= 3){</b>
+<b class="fc">&nbsp;                tag = TypeIO.readString(read);</b>
+<b class="fc">&nbsp;                iconTag = (char)read.us();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

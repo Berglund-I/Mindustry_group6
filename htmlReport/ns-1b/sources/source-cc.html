@@ -1,0 +1,124 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Hitboxc</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: Hitboxc (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Hitboxc</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.func.Cons;
+&nbsp;import arc.math.geom.QuadTree;
+&nbsp;import arc.math.geom.QuadTree.QuadTreeObject;
+&nbsp;import arc.math.geom.Rect;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.entities.Sized;
+&nbsp;
+&nbsp;/**
+&nbsp; * Interface for {@link mindustry.entities.comp.HitboxComp}
+&nbsp; */
+&nbsp;@Annotations.EntityInterface
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+&nbsp;public interface Hitboxc extends QuadTreeObject, Sized, Entityc, Posc {
+&nbsp;  boolean collides(Hitboxc other);
+&nbsp;
+&nbsp;  float deltaAngle();
+&nbsp;
+&nbsp;  float deltaLen();
+&nbsp;
+&nbsp;  float deltaX();
+&nbsp;
+&nbsp;  float deltaY();
+&nbsp;
+&nbsp;  float hitSize();
+&nbsp;
+&nbsp;  float lastX();
+&nbsp;
+&nbsp;  float lastY();
+&nbsp;
+&nbsp;  void add();
+&nbsp;
+&nbsp;  void afterRead();
+&nbsp;
+&nbsp;  void collision(Hitboxc other, float x, float y);
+&nbsp;
+&nbsp;  void deltaX(float deltaX);
+&nbsp;
+&nbsp;  void deltaY(float deltaY);
+&nbsp;
+&nbsp;  void getCollisions(Cons&lt;QuadTree&gt; consumer);
+&nbsp;
+&nbsp;  void hitSize(float hitSize);
+&nbsp;
+&nbsp;  void hitbox(Rect rect);
+&nbsp;
+&nbsp;  void hitboxTile(Rect rect);
+&nbsp;
+&nbsp;  void lastX(float lastX);
+&nbsp;
+&nbsp;  void lastY(float lastY);
+&nbsp;
+&nbsp;  void update();
+&nbsp;
+&nbsp;  void updateLastPosition();
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

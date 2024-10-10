@@ -1,0 +1,158 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TallBlock</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.environment</a>
+</div>
+
+<h1>Coverage Summary for Class: TallBlock (mindustry.world.blocks.environment)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TallBlock</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (11/22)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.environment;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;//I don&#39;t know what else to call this. It&#39;s not a prop, it&#39;s not a tree.
+&nbsp;public class TallBlock extends Block{
+<b class="fc">&nbsp;    public float shadowOffset = -3f;</b>
+<b class="fc">&nbsp;    public float layer = Layer.power + 1;</b>
+<b class="fc">&nbsp;    public float shadowLayer = Layer.power - 1;</b>
+<b class="fc">&nbsp;    public float rotationRand = 20f;</b>
+<b class="fc">&nbsp;    public float shadowAlpha = 0.6f;</b>
+&nbsp;
+&nbsp;    public TallBlock(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        clipSize = 90;</b>
+<b class="fc">&nbsp;        customShadow = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+<b class="fc">&nbsp;        hasShadow = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawBase(Tile tile){
+<b class="nc">&nbsp;        float rot = Mathf.randomSeedRange(tile.pos() + 1, rotationRand);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(shadowLayer);</b>
+<b class="nc">&nbsp;        Draw.color(0f, 0f, 0f, shadowAlpha);</b>
+<b class="nc">&nbsp;        Draw.rect(variants &gt; 0 ? variantShadowRegions[Mathf.randomSeed(tile.pos(), 0, Math.max(0, variantShadowRegions.length - 1))] : customShadowRegion,</b>
+<b class="nc">&nbsp;            tile.worldx() + shadowOffset, tile.worldy() + shadowOffset, rot);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(layer);</b>
+<b class="nc">&nbsp;        Draw.rect(variants &gt; 0 ? variantRegions[Mathf.randomSeed(tile.pos(), 0, Math.max(0, variantRegions.length - 1))] : region,</b>
+<b class="nc">&nbsp;            tile.worldx(), tile.worldy(), rot);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawShadow(Tile tile){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return variants == 0 ? super.icons() : new TextureRegion[]{Core.atlas.find(name + &quot;1&quot;)};</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

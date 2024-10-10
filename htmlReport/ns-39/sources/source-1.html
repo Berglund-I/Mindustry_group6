@@ -1,0 +1,149 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AirBlock</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.environment</a>
+</div>
+
+<h1>Coverage Summary for Class: AirBlock (mindustry.world.blocks.environment)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AirBlock</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (9/15)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.environment;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;public class AirBlock extends Floor{
+&nbsp;
+&nbsp;    public AirBlock(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        alwaysReplace = true;</b>
+<b class="fc">&nbsp;        hasShadow = false;</b>
+<b class="fc">&nbsp;        useColor = false;</b>
+<b class="fc">&nbsp;        wall = this;</b>
+<b class="fc">&nbsp;        generateIcons = false;</b>
+<b class="fc">&nbsp;        needsSurface = false;</b>
+<b class="fc">&nbsp;        canShadow = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+<b class="nc">&nbsp;    public void drawBase(Tile tile){}</b>
+&nbsp;
+&nbsp;    @OverrideCallSuper
+&nbsp;    @Override
+<b class="nc">&nbsp;    public void load(){}</b>
+&nbsp;
+&nbsp;    @OverrideCallSuper
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        decoration = this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isHidden(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] variantRegions(){
+<b class="nc">&nbsp;        if(variantRegions == null){</b>
+<b class="nc">&nbsp;            variantRegions = new TextureRegion[]{Core.atlas.find(&quot;clear&quot;)};</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return variantRegions;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

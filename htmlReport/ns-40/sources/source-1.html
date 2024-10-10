@@ -1,0 +1,220 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AttributeCrafter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.production</a>
+</div>
+
+<h1>Coverage Summary for Class: AttributeCrafter (mindustry.world.blocks.production)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AttributeCrafter</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (2/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.2%
+  </span>
+  <span class="absValue">
+    (12/23)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AttributeCrafter$AttributeCrafterBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    35.7%
+  </span>
+  <span class="absValue">
+    (5/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.6%
+  </span>
+  <span class="absValue">
+    (16/31)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.production;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;/** A crafter that gains efficiency from attribute tiles. */
+&nbsp;public class AttributeCrafter extends GenericCrafter{
+<b class="fc">&nbsp;    public Attribute attribute = Attribute.heat;</b>
+<b class="fc">&nbsp;    public float baseEfficiency = 1f;</b>
+<b class="fc">&nbsp;    public float boostScale = 1f;</b>
+<b class="fc">&nbsp;    public float maxBoost = 1f;</b>
+<b class="fc">&nbsp;    public float minEfficiency = -1f;</b>
+<b class="fc">&nbsp;    public float displayEfficiencyScale = 1f;</b>
+<b class="fc">&nbsp;    public boolean displayEfficiency = true;</b>
+<b class="fc">&nbsp;    public boolean scaleLiquidConsumption = false;</b>
+&nbsp;
+&nbsp;    public AttributeCrafter(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        super.drawPlace(x, y, rotation, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!displayEfficiency) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        drawPlaceText(Core.bundle.format(&quot;bar.efficiency&quot;,</b>
+<b class="nc">&nbsp;        (int)((baseEfficiency + Math.min(maxBoost, boostScale * sumAttribute(attribute, x, y))) * 100f)), x, y, valid);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(!displayEfficiency) return;</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;efficiency&quot;, (AttributeCrafterBuild entity) -&gt;</b>
+<b class="nc">&nbsp;            new Bar(</b>
+<b class="nc">&nbsp;            () -&gt; Core.bundle.format(&quot;bar.efficiency&quot;, (int)(entity.efficiencyMultiplier() * 100 * displayEfficiencyScale)),</b>
+<b class="nc">&nbsp;            () -&gt; Pal.lightOrange,</b>
+<b class="nc">&nbsp;            entity::efficiencyMultiplier));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean canPlaceOn(Tile tile, Team team, int rotation){
+&nbsp;        //make sure there&#39;s enough efficiency at this location
+<b class="nc">&nbsp;        return baseEfficiency + tile.getLinkedTilesAs(this, tempTiles).sumf(other -&gt; other.floor().attributes.get(attribute)) &gt;= minEfficiency;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(baseEfficiency &lt;= 0.0001f ? Stat.tiles : Stat.affinities, attribute, floating, boostScale * size * size, !displayEfficiency);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class AttributeCrafterBuild extends GenericCrafterBuild{</b>
+&nbsp;        public float attrsum;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float getProgressIncrease(float base){
+<b class="nc">&nbsp;            return super.getProgressIncrease(base) * efficiencyMultiplier();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public float efficiencyMultiplier(){
+<b class="nc">&nbsp;            return baseEfficiency + Math.min(maxBoost, boostScale * attrsum) + attribute.env();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float efficiencyScale(){
+<b class="fc">&nbsp;            return scaleLiquidConsumption ? efficiencyMultiplier() : super.efficiencyScale();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void pickedUp(){
+<b class="nc">&nbsp;            attrsum = 0f;</b>
+<b class="nc">&nbsp;            warmup = 0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityUpdate(){
+<b class="fc">&nbsp;            super.onProximityUpdate();</b>
+&nbsp;
+<b class="fc">&nbsp;            attrsum = sumAttribute(attribute, tile.x, tile.y);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

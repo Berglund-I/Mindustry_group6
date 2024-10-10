@@ -1,0 +1,672 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Weapon</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: Weapon (mindustry.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Weapon</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.7%
+  </span>
+  <span class="absValue">
+    (10/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.4%
+  </span>
+  <span class="absValue">
+    (105/281)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.part.*;
+&nbsp;import mindustry.entities.pattern.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Weapon implements Cloneable{
+&nbsp;    /** displayed weapon region */
+&nbsp;    public String name;
+&nbsp;    /** bullet shot */
+<b class="fc">&nbsp;    public BulletType bullet = Bullets.placeholder;</b>
+&nbsp;    /** shell ejection effect */
+<b class="fc">&nbsp;    public Effect ejectEffect = Fx.none;</b>
+&nbsp;    /** whether weapon should appear in the stats of a unit with this weapon */
+<b class="fc">&nbsp;    public boolean display = true;</b>
+&nbsp;    /** whether to consume ammo when ammo is enabled in rules */
+<b class="fc">&nbsp;    public boolean useAmmo = true;</b>
+&nbsp;    /** whether to create a flipped copy of this weapon upon initialization. default: true */
+<b class="fc">&nbsp;    public boolean mirror = true;</b>
+&nbsp;    /** whether to flip the weapon&#39;s sprite when rendering. internal use only - do not set! */
+<b class="fc">&nbsp;    public boolean flipSprite = false;</b>
+&nbsp;    /** whether to shoot the weapons in different arms one after another, rather than all at once; only valid when mirror = true */
+<b class="fc">&nbsp;    public boolean alternate = true;</b>
+&nbsp;    /** whether to rotate toward the target independently of unit */
+<b class="fc">&nbsp;    public boolean rotate = false;</b>
+&nbsp;    /** Whether to show the sprite of the weapon in the database. */
+<b class="fc">&nbsp;    public boolean showStatSprite = true;</b>
+&nbsp;    /** rotation at which this weapon starts at. TODO buggy!*/
+<b class="fc">&nbsp;    public float baseRotation = 0f;</b>
+&nbsp;    /** whether to draw the outline on top. */
+<b class="fc">&nbsp;    public boolean top = true;</b>
+&nbsp;    /** whether to hold the bullet in place while firing; it will still require reload. */
+&nbsp;    public boolean continuous;
+&nbsp;    /** whether this weapon uses continuous fire without reloading; implies continuous = true */
+&nbsp;    public boolean alwaysContinuous;
+&nbsp;    /** Speed at which the turret can change its bullet &quot;aim&quot; distance. This is only used for point laser bullets. */
+<b class="fc">&nbsp;    public float aimChangeSpeed = Float.POSITIVE_INFINITY;</b>
+&nbsp;    /** whether this weapon can be aimed manually by players */
+<b class="fc">&nbsp;    public boolean controllable = true;</b>
+&nbsp;    /** whether this weapon can be automatically aimed by the unit */
+<b class="fc">&nbsp;    public boolean aiControllable = true;</b>
+&nbsp;    /** whether this weapon is always shooting, regardless of targets ore cone */
+<b class="fc">&nbsp;    public boolean alwaysShooting = false;</b>
+&nbsp;    /** whether to automatically target relevant units in update(); only works when controllable = false. */
+<b class="fc">&nbsp;    public boolean autoTarget = false;</b>
+&nbsp;    /** whether to perform target trajectory prediction */
+<b class="fc">&nbsp;    public boolean predictTarget = true;</b>
+&nbsp;    /** if true, this weapon is used for attack range calculations */
+<b class="fc">&nbsp;    public boolean useAttackRange = true;</b>
+&nbsp;    /** ticks to wait in-between targets */
+<b class="fc">&nbsp;    public float targetInterval = 40f, targetSwitchInterval = 70f;</b>
+&nbsp;    /** rotation speed of weapon when rotation is enabled, in degrees/t*/
+<b class="fc">&nbsp;    public float rotateSpeed = 20f;</b>
+&nbsp;    /** weapon reload in frames */
+<b class="fc">&nbsp;    public float reload = 1;</b>
+&nbsp;    /** inaccuracy of degrees of each shot */
+<b class="fc">&nbsp;    public float inaccuracy = 0f;</b>
+&nbsp;    /** intensity and duration of each shot&#39;s screen shake */
+<b class="fc">&nbsp;    public float shake = 0f;</b>
+&nbsp;    /** visual weapon knockback. */
+<b class="fc">&nbsp;    public float recoil = 1.5f;</b>
+&nbsp;    /** Number of additional counters for recoil. */
+<b class="fc">&nbsp;    public int recoils = -1;</b>
+&nbsp;    /** time taken for weapon to return to starting position in ticks. uses reload time by default */
+<b class="fc">&nbsp;    public float recoilTime = -1f;</b>
+&nbsp;    /** power curve applied to visual recoil */
+<b class="fc">&nbsp;    public float recoilPow = 1.8f;</b>
+&nbsp;    /** ticks to cool down the heat region */
+<b class="fc">&nbsp;    public float cooldownTime = 20f;</b>
+&nbsp;    /** projectile/effect offsets from center of weapon */
+<b class="fc">&nbsp;    public float shootX = 0f, shootY = 3f;</b>
+&nbsp;    /** offsets of weapon position on unit */
+<b class="fc">&nbsp;    public float x = 5f, y = 0f;</b>
+&nbsp;    /** Random spread on the X axis. */
+<b class="fc">&nbsp;    public float xRand = 0f;</b>
+&nbsp;    /** pattern used for bullets */
+<b class="fc">&nbsp;    public ShootPattern shoot = new ShootPattern();</b>
+&nbsp;    /** radius of shadow drawn under the weapon; &lt;0 to disable */
+<b class="fc">&nbsp;    public float shadow = -1f;</b>
+&nbsp;    /** fraction of velocity that is random */
+<b class="fc">&nbsp;    public float velocityRnd = 0f;</b>
+&nbsp;    /** The half-radius of the cone in which shooting will start. */
+<b class="fc">&nbsp;    public float shootCone = 5f;</b>
+&nbsp;    /** Cone in which the weapon can rotate relative to its mount. */
+<b class="fc">&nbsp;    public float rotationLimit = 361f;</b>
+&nbsp;    /** minimum weapon warmup before firing (this is not linear, do NOT use 1!) */
+<b class="fc">&nbsp;    public float minWarmup = 0f;</b>
+&nbsp;    /** lerp speed for shoot warmup, only used for parts */
+<b class="fc">&nbsp;    public float shootWarmupSpeed = 0.1f, smoothReloadSpeed = 0.15f;</b>
+&nbsp;    /** If true, shoot warmup is linear instead of a curve. */
+<b class="fc">&nbsp;    public boolean linearWarmup = false;</b>
+&nbsp;    /** random sound pitch range */
+<b class="fc">&nbsp;    public float soundPitchMin = 0.8f, soundPitchMax = 1f;</b>
+&nbsp;    /** whether shooter rotation is ignored when shooting. */
+<b class="fc">&nbsp;    public boolean ignoreRotation = false;</b>
+&nbsp;    /** If true, this weapon cannot be used to attack targets. */
+<b class="fc">&nbsp;    public boolean noAttack = false;</b>
+&nbsp;    /** min velocity required for this weapon to shoot */
+<b class="fc">&nbsp;    public float minShootVelocity = -1f;</b>
+&nbsp;    /** should the shoot effects follow the unit (effects need followParent set to true for this to work) */
+&nbsp;    public boolean parentizeEffects;
+&nbsp;    /** internal value used for alternation - do not change! */
+<b class="fc">&nbsp;    public int otherSide = -1;</b>
+&nbsp;    /** draw Z offset relative to the default value */
+<b class="fc">&nbsp;    public float layerOffset = 0f;</b>
+&nbsp;    /** sound used for shooting */
+<b class="fc">&nbsp;    public Sound shootSound = Sounds.pew;</b>
+&nbsp;    /** sound used for weapons that have a delay */
+<b class="fc">&nbsp;    public Sound chargeSound = Sounds.none;</b>
+&nbsp;    /** sound played when there is nothing to shoot */
+<b class="fc">&nbsp;    public Sound noAmmoSound = Sounds.noammo;</b>
+&nbsp;    /** displayed region (autoloaded) */
+&nbsp;    public TextureRegion region;
+&nbsp;    /** heat region, must be same size as region (optional) */
+&nbsp;    public TextureRegion heatRegion;
+&nbsp;    /** cell region, must be same size as region (optional) */
+&nbsp;    public TextureRegion cellRegion;
+&nbsp;    /** outline region to display if top is false */
+&nbsp;    public TextureRegion outlineRegion;
+&nbsp;    /** heat region tint */
+<b class="fc">&nbsp;    public Color heatColor = Pal.turretHeat;</b>
+&nbsp;    /** status effect applied when shooting */
+<b class="fc">&nbsp;    public StatusEffect shootStatus = StatusEffects.none;</b>
+&nbsp;    /** type of weapon mount to be used */
+<b class="fc">&nbsp;    public Func&lt;Weapon, WeaponMount&gt; mountType = WeaponMount::new;</b>
+&nbsp;    /** status effect duration when shot */
+<b class="fc">&nbsp;    public float shootStatusDuration = 60f * 5f;</b>
+&nbsp;    /** whether this weapon should fire when its owner dies */
+<b class="fc">&nbsp;    public boolean shootOnDeath = false;</b>
+&nbsp;    /** extra animated parts */
+<b class="fc">&nbsp;    public Seq&lt;DrawPart&gt; parts = new Seq&lt;&gt;(DrawPart.class);</b>
+&nbsp;
+<b class="fc">&nbsp;    public Weapon(String name){</b>
+<b class="fc">&nbsp;        this.name = name;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Weapon(){
+<b class="fc">&nbsp;        this(&quot;&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasStats(UnitType u){
+<b class="nc">&nbsp;        return display;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addStats(UnitType u, Table t){
+<b class="nc">&nbsp;        if(inaccuracy &gt; 0){</b>
+<b class="nc">&nbsp;            t.row();</b>
+<b class="nc">&nbsp;            t.add(&quot;[lightgray]&quot; + Stat.inaccuracy.localized() + &quot;: [white]&quot; + (int)inaccuracy + &quot; &quot; + StatUnit.degrees.localized());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(!alwaysContinuous &amp;&amp; reload &gt; 0){</b>
+<b class="nc">&nbsp;            t.row();</b>
+<b class="nc">&nbsp;            t.add(&quot;[lightgray]&quot; + Stat.reload.localized() + &quot;: &quot; + (mirror ? &quot;2x &quot; : &quot;&quot;) + &quot;[white]&quot; + Strings.autoFixed(60f / reload * shoot.shots, 2) + &quot; &quot; + StatUnit.perSecond.localized());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        StatValues.ammo(ObjectMap.of(u, bullet)).display(t);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float dps(){
+<b class="fc">&nbsp;        return (bullet.estimateDPS() / reload) * shoot.shots * 60f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float shotsPerSec(){
+<b class="nc">&nbsp;        return shoot.shots * 60f / reload;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO copy-pasted code
+&nbsp;    public void drawOutline(Unit unit, WeaponMount mount){
+<b class="nc">&nbsp;        if(!outlineRegion.found()) return;</b>
+&nbsp;
+&nbsp;        float
+<b class="nc">&nbsp;        rotation = unit.rotation - 90,</b>
+<b class="nc">&nbsp;        realRecoil = Mathf.pow(mount.recoil, recoilPow) * recoil,</b>
+<b class="nc">&nbsp;        weaponRotation  = rotation + (rotate ? mount.rotation : baseRotation),</b>
+<b class="nc">&nbsp;        wx = unit.x + Angles.trnsx(rotation, x, y) + Angles.trnsx(weaponRotation, 0, -realRecoil),</b>
+<b class="nc">&nbsp;        wy = unit.y + Angles.trnsy(rotation, x, y) + Angles.trnsy(weaponRotation, 0, -realRecoil);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.xscl = -Mathf.sign(flipSprite);</b>
+<b class="nc">&nbsp;        Draw.rect(outlineRegion, wx, wy, weaponRotation);</b>
+<b class="nc">&nbsp;        Draw.xscl = 1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(Unit unit, WeaponMount mount){
+&nbsp;        //apply layer offset, roll it back at the end
+<b class="nc">&nbsp;        float z = Draw.z();</b>
+<b class="nc">&nbsp;        Draw.z(z + layerOffset);</b>
+&nbsp;
+&nbsp;        float
+<b class="nc">&nbsp;        rotation = unit.rotation - 90,</b>
+<b class="nc">&nbsp;        realRecoil = Mathf.pow(mount.recoil, recoilPow) * recoil,</b>
+<b class="nc">&nbsp;        weaponRotation  = rotation + (rotate ? mount.rotation : baseRotation),</b>
+<b class="nc">&nbsp;        wx = unit.x + Angles.trnsx(rotation, x, y) + Angles.trnsx(weaponRotation, 0, -realRecoil),</b>
+<b class="nc">&nbsp;        wy = unit.y + Angles.trnsy(rotation, x, y) + Angles.trnsy(weaponRotation, 0, -realRecoil);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(shadow &gt; 0){</b>
+<b class="nc">&nbsp;            Drawf.shadow(wx, wy, shadow);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(top){</b>
+<b class="nc">&nbsp;            drawOutline(unit, mount);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(parts.size &gt; 0){</b>
+<b class="nc">&nbsp;            DrawPart.params.set(mount.warmup, mount.reload / reload, mount.smoothReload, mount.heat, mount.recoil, mount.charge, wx, wy, weaponRotation + 90);</b>
+<b class="nc">&nbsp;            DrawPart.params.sideMultiplier = flipSprite ? -1 : 1;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; parts.size; i++){</b>
+<b class="nc">&nbsp;                var part = parts.get(i);</b>
+<b class="nc">&nbsp;                DrawPart.params.setRecoil(part.recoilIndex &gt;= 0 &amp;&amp; mount.recoils != null ? mount.recoils[part.recoilIndex] : mount.recoil);</b>
+<b class="nc">&nbsp;                if(part.under){</b>
+<b class="nc">&nbsp;                    unit.type.applyColor(unit);</b>
+<b class="nc">&nbsp;                    part.draw(DrawPart.params);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.xscl = -Mathf.sign(flipSprite);</b>
+&nbsp;
+&nbsp;        //fix color
+<b class="nc">&nbsp;        unit.type.applyColor(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(region.found()) Draw.rect(region, wx, wy, weaponRotation);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(cellRegion.found()){</b>
+<b class="nc">&nbsp;            Draw.color(unit.type.cellColor(unit));</b>
+<b class="nc">&nbsp;            Draw.rect(cellRegion, wx, wy, weaponRotation);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(heatRegion.found() &amp;&amp; mount.heat &gt; 0){</b>
+<b class="nc">&nbsp;            Draw.color(heatColor, mount.heat);</b>
+<b class="nc">&nbsp;            Draw.blend(Blending.additive);</b>
+<b class="nc">&nbsp;            Draw.rect(heatRegion, wx, wy, weaponRotation);</b>
+<b class="nc">&nbsp;            Draw.blend();</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.xscl = 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(parts.size &gt; 0){</b>
+&nbsp;            //TODO does it need an outline?
+<b class="nc">&nbsp;            for(int i = 0; i &lt; parts.size; i++){</b>
+<b class="nc">&nbsp;                var part = parts.get(i);</b>
+<b class="nc">&nbsp;                DrawPart.params.setRecoil(part.recoilIndex &gt;= 0 &amp;&amp; mount.recoils != null ? mount.recoils[part.recoilIndex] : mount.recoil);</b>
+<b class="nc">&nbsp;                if(!part.under){</b>
+<b class="nc">&nbsp;                    unit.type.applyColor(unit);</b>
+<b class="nc">&nbsp;                    part.draw(DrawPart.params);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.xscl = 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(z);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float range(){
+<b class="fc">&nbsp;        return bullet.range;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(Unit unit, WeaponMount mount){
+<b class="fc">&nbsp;        boolean can = unit.canShoot();</b>
+<b class="fc">&nbsp;        float lastReload = mount.reload;</b>
+<b class="fc">&nbsp;        mount.reload = Math.max(mount.reload - Time.delta * unit.reloadMultiplier, 0);</b>
+<b class="fc">&nbsp;        mount.recoil = Mathf.approachDelta(mount.recoil, 0, unit.reloadMultiplier / recoilTime);</b>
+<b class="fc">&nbsp;        if(recoils &gt; 0){</b>
+<b class="nc">&nbsp;            if(mount.recoils == null) mount.recoils = new float[recoils];</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; recoils; i++){</b>
+<b class="nc">&nbsp;                mount.recoils[i] = Mathf.approachDelta(mount.recoils[i], 0, unit.reloadMultiplier / recoilTime);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        mount.smoothReload = Mathf.lerpDelta(mount.smoothReload, mount.reload / reload, smoothReloadSpeed);</b>
+<b class="fc">&nbsp;        mount.charge = mount.charging &amp;&amp; shoot.firstShotDelay &gt; 0 ? Mathf.approachDelta(mount.charge, 1, 1 / shoot.firstShotDelay) : 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        float warmupTarget = (can &amp;&amp; mount.shoot) || (continuous &amp;&amp; mount.bullet != null) || mount.charging ? 1f : 0f;</b>
+<b class="fc">&nbsp;        if(linearWarmup){</b>
+<b class="nc">&nbsp;            mount.warmup = Mathf.approachDelta(mount.warmup, warmupTarget, shootWarmupSpeed);</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            mount.warmup = Mathf.lerpDelta(mount.warmup, warmupTarget, shootWarmupSpeed);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        float
+<b class="fc">&nbsp;        mountX = unit.x + Angles.trnsx(unit.rotation - 90, x, y),</b>
+<b class="fc">&nbsp;        mountY = unit.y + Angles.trnsy(unit.rotation - 90, x, y);</b>
+&nbsp;
+&nbsp;        //find a new target
+<b class="fc">&nbsp;        if(!controllable &amp;&amp; autoTarget){</b>
+<b class="fc">&nbsp;            if((mount.retarget -= Time.delta) &lt;= 0f){</b>
+<b class="fc">&nbsp;                mount.target = findTarget(unit, mountX, mountY, bullet.range, bullet.collidesAir, bullet.collidesGround);</b>
+<b class="fc">&nbsp;                mount.retarget = mount.target == null ? targetInterval : targetSwitchInterval;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(mount.target != null &amp;&amp; checkTarget(unit, mount.target, mountX, mountY, bullet.range)){</b>
+<b class="nc">&nbsp;                mount.target = null;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            boolean shoot = false;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(mount.target != null){</b>
+<b class="nc">&nbsp;                shoot = mount.target.within(mountX, mountY, bullet.range + Math.abs(shootY) + (mount.target instanceof Sized s ? s.hitSize()/2f : 0f)) &amp;&amp; can;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(predictTarget){</b>
+<b class="nc">&nbsp;                    Vec2 to = Predict.intercept(unit, mount.target, bullet.speed);</b>
+<b class="nc">&nbsp;                    mount.aimX = to.x;</b>
+<b class="nc">&nbsp;                    mount.aimY = to.y;</b>
+<b class="nc">&nbsp;                }else{</b>
+<b class="nc">&nbsp;                    mount.aimX = mount.target.x();</b>
+<b class="nc">&nbsp;                    mount.aimY = mount.target.y();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            mount.shoot = mount.rotate = shoot;</b>
+&nbsp;
+&nbsp;            //note that shooting state is not affected, as these cannot be controlled
+&nbsp;            //logic will return shooting as false even if these return true, which is fine
+&nbsp;        }
+&nbsp;
+&nbsp;        //rotate if applicable
+<b class="fc">&nbsp;        if(rotate &amp;&amp; (mount.rotate || mount.shoot) &amp;&amp; can){</b>
+<b class="nc">&nbsp;            float axisX = unit.x + Angles.trnsx(unit.rotation - 90,  x, y),</b>
+<b class="nc">&nbsp;            axisY = unit.y + Angles.trnsy(unit.rotation - 90,  x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            mount.targetRotation = Angles.angle(axisX, axisY, mount.aimX, mount.aimY) - unit.rotation;</b>
+<b class="nc">&nbsp;            mount.rotation = Angles.moveToward(mount.rotation, mount.targetRotation, rotateSpeed * Time.delta);</b>
+<b class="nc">&nbsp;            if(rotationLimit &lt; 360){</b>
+<b class="nc">&nbsp;                float dst = Angles.angleDist(mount.rotation, baseRotation);</b>
+<b class="nc">&nbsp;                if(dst &gt; rotationLimit/2f){</b>
+<b class="nc">&nbsp;                    mount.rotation = Angles.moveToward(mount.rotation, baseRotation, dst - rotationLimit/2f);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(!rotate){</b>
+<b class="fc">&nbsp;            mount.rotation = baseRotation;</b>
+<b class="fc">&nbsp;            mount.targetRotation = unit.angleTo(mount.aimX, mount.aimY);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        float
+<b class="fc">&nbsp;        weaponRotation = unit.rotation - 90 + (rotate ? mount.rotation : baseRotation),</b>
+<b class="fc">&nbsp;        bulletX = mountX + Angles.trnsx(weaponRotation, this.shootX, this.shootY),</b>
+<b class="fc">&nbsp;        bulletY = mountY + Angles.trnsy(weaponRotation, this.shootX, this.shootY),</b>
+<b class="fc">&nbsp;        shootAngle = bulletRotation(unit, mount, bulletX, bulletY);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(alwaysShooting) mount.shoot = true;</b>
+&nbsp;
+&nbsp;        //update continuous state
+<b class="fc">&nbsp;        if(continuous &amp;&amp; mount.bullet != null){</b>
+<b class="nc">&nbsp;            if(!mount.bullet.isAdded() || mount.bullet.time &gt;= mount.bullet.lifetime || mount.bullet.type != bullet){</b>
+<b class="nc">&nbsp;                mount.bullet = null;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                mount.bullet.rotation(weaponRotation + 90);</b>
+<b class="nc">&nbsp;                mount.bullet.set(bulletX, bulletY);</b>
+<b class="nc">&nbsp;                mount.reload = reload;</b>
+<b class="nc">&nbsp;                mount.recoil = 1f;</b>
+<b class="nc">&nbsp;                unit.vel.add(Tmp.v1.trns(mount.bullet.rotation() + 180f, mount.bullet.type.recoil * Time.delta));</b>
+<b class="nc">&nbsp;                if(shootSound != Sounds.none &amp;&amp; !headless){</b>
+<b class="nc">&nbsp;                    if(mount.sound == null) mount.sound = new SoundLoop(shootSound, 1f);</b>
+<b class="nc">&nbsp;                    mount.sound.update(bulletX, bulletY, true);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //target length of laser
+<b class="nc">&nbsp;                float shootLength = Math.min(Mathf.dst(bulletX, bulletY, mount.aimX, mount.aimY), range());</b>
+&nbsp;                //current length of laser
+<b class="nc">&nbsp;                float curLength = Mathf.dst(bulletX, bulletY, mount.bullet.aimX, mount.bullet.aimY);</b>
+&nbsp;                //resulting length of the bullet (smoothed)
+<b class="nc">&nbsp;                float resultLength = Mathf.approachDelta(curLength, shootLength, aimChangeSpeed);</b>
+&nbsp;                //actual aim end point based on length
+<b class="nc">&nbsp;                Tmp.v1.trns(shootAngle, mount.lastLength = resultLength).add(bulletX, bulletY);</b>
+&nbsp;
+<b class="nc">&nbsp;                mount.bullet.aimX = Tmp.v1.x;</b>
+<b class="nc">&nbsp;                mount.bullet.aimY = Tmp.v1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(alwaysContinuous &amp;&amp; mount.shoot){</b>
+<b class="nc">&nbsp;                    mount.bullet.time = mount.bullet.lifetime * mount.bullet.type.optimalLifeFract * mount.warmup;</b>
+<b class="nc">&nbsp;                    mount.bullet.keepAlive = true;</b>
+&nbsp;
+<b class="nc">&nbsp;                    unit.apply(shootStatus, shootStatusDuration);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }else{
+&nbsp;            //heat decreases when not firing
+<b class="fc">&nbsp;            mount.heat = Math.max(mount.heat - Time.delta * unit.reloadMultiplier / cooldownTime, 0);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(mount.sound != null){</b>
+<b class="nc">&nbsp;                mount.sound.update(bulletX, bulletY, false);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //flip weapon shoot side for alternating weapons
+<b class="fc">&nbsp;        boolean wasFlipped = mount.side;</b>
+<b class="fc">&nbsp;        if(otherSide != -1 &amp;&amp; alternate &amp;&amp; mount.side == flipSprite &amp;&amp; mount.reload &lt;= reload / 2f &amp;&amp; lastReload &gt; reload / 2f){</b>
+<b class="nc">&nbsp;            unit.mounts[otherSide].side = !unit.mounts[otherSide].side;</b>
+<b class="nc">&nbsp;            mount.side = !mount.side;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //shoot if applicable
+<b class="fc">&nbsp;        if(mount.shoot &amp;&amp; //must be shooting</b>
+&nbsp;        can &amp;&amp; //must be able to shoot
+&nbsp;        !(bullet.killShooter &amp;&amp; mount.totalShots &gt; 0) &amp;&amp; //if the bullet kills the shooter, you should only ever be able to shoot once
+<b class="nc">&nbsp;        (!useAmmo || unit.ammo &gt; 0 || !state.rules.unitAmmo || unit.team.rules().infiniteAmmo) &amp;&amp; //check ammo</b>
+&nbsp;        (!alternate || wasFlipped == flipSprite) &amp;&amp;
+&nbsp;        mount.warmup &gt;= minWarmup &amp;&amp; //must be warmed up
+<b class="fc">&nbsp;        unit.vel.len() &gt;= minShootVelocity &amp;&amp; //check velocity requirements</b>
+&nbsp;        (mount.reload &lt;= 0.0001f || (alwaysContinuous &amp;&amp; mount.bullet == null)) &amp;&amp; //reload has to be 0, or it has to be an always-continuous weapon
+<b class="nc">&nbsp;        (alwaysShooting || Angles.within(rotate ? mount.rotation : unit.rotation + baseRotation, mount.targetRotation, shootCone)) //has to be within the cone</b>
+&nbsp;        ){
+<b class="nc">&nbsp;            shoot(unit, mount, bulletX, bulletY, shootAngle);</b>
+&nbsp;
+<b class="nc">&nbsp;            mount.reload = reload;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(useAmmo){</b>
+<b class="nc">&nbsp;                unit.ammo--;</b>
+<b class="nc">&nbsp;                if(unit.ammo &lt; 0) unit.ammo = 0;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Teamc findTarget(Unit unit, float x, float y, float range, boolean air, boolean ground){
+<b class="fc">&nbsp;        return Units.closestTarget(unit.team, x, y, range + Math.abs(shootY), u -&gt; u.checkTarget(air, ground), t -&gt; ground &amp;&amp; (unit.type.targetUnderBlocks || !t.block.underBullets));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean checkTarget(Unit unit, Teamc target, float x, float y, float range){
+<b class="nc">&nbsp;        return Units.invalidateTarget(target, unit.team, x, y, range + Math.abs(shootY));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected float bulletRotation(Unit unit, WeaponMount mount, float bulletX, float bulletY){
+<b class="fc">&nbsp;        return rotate ? unit.rotation + mount.rotation : Angles.angle(bulletX, bulletY, mount.aimX, mount.aimY) + (unit.rotation - unit.angleTo(mount.aimX, mount.aimY)) + baseRotation;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void shoot(Unit unit, WeaponMount mount, float shootX, float shootY, float rotation){
+<b class="nc">&nbsp;        unit.apply(shootStatus, shootStatusDuration);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(shoot.firstShotDelay &gt; 0){</b>
+<b class="nc">&nbsp;            mount.charging = true;</b>
+<b class="nc">&nbsp;            chargeSound.at(shootX, shootY, Mathf.random(soundPitchMin, soundPitchMax));</b>
+<b class="nc">&nbsp;            bullet.chargeEffect.at(shootX, shootY, rotation, bullet.keepVelocity || parentizeEffects ? unit : null);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        shoot.shoot(mount.barrelCounter, (xOffset, yOffset, angle, delay, mover) -&gt; {</b>
+&nbsp;            //this is incremented immediately, as it is used for total bullet creation amount detection
+<b class="nc">&nbsp;            mount.totalShots ++;</b>
+<b class="nc">&nbsp;            int barrel = mount.barrelCounter;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(delay &gt; 0f){</b>
+<b class="nc">&nbsp;                Time.run(delay, () -&gt; {</b>
+&nbsp;                    //hack: make sure the barrel is the same as what it was when the bullet was queued to fire
+<b class="nc">&nbsp;                    int prev = mount.barrelCounter;</b>
+<b class="nc">&nbsp;                    mount.barrelCounter = barrel;</b>
+<b class="nc">&nbsp;                    bullet(unit, mount, xOffset, yOffset, angle, mover);</b>
+<b class="nc">&nbsp;                    mount.barrelCounter = prev;</b>
+&nbsp;                });
+&nbsp;            }else{
+<b class="nc">&nbsp;                bullet(unit, mount, xOffset, yOffset, angle, mover);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }, () -&gt; mount.barrelCounter++);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void bullet(Unit unit, WeaponMount mount, float xOffset, float yOffset, float angleOffset, Mover mover){
+<b class="nc">&nbsp;        if(!unit.isAdded()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        mount.charging = false;</b>
+&nbsp;        float
+<b class="nc">&nbsp;        xSpread = Mathf.range(xRand),</b>
+<b class="nc">&nbsp;        weaponRotation = unit.rotation - 90 + (rotate ? mount.rotation : baseRotation),</b>
+<b class="nc">&nbsp;        mountX = unit.x + Angles.trnsx(unit.rotation - 90, x, y),</b>
+<b class="nc">&nbsp;        mountY = unit.y + Angles.trnsy(unit.rotation - 90, x, y),</b>
+<b class="nc">&nbsp;        bulletX = mountX + Angles.trnsx(weaponRotation, this.shootX + xOffset + xSpread, this.shootY + yOffset),</b>
+<b class="nc">&nbsp;        bulletY = mountY + Angles.trnsy(weaponRotation, this.shootX + xOffset + xSpread, this.shootY + yOffset),</b>
+<b class="nc">&nbsp;        shootAngle = bulletRotation(unit, mount, bulletX, bulletY) + angleOffset,</b>
+<b class="nc">&nbsp;        lifeScl = bullet.scaleLife ? Mathf.clamp(Mathf.dst(bulletX, bulletY, mount.aimX, mount.aimY) / bullet.range) : 1f,</b>
+<b class="nc">&nbsp;        angle = shootAngle + Mathf.range(inaccuracy + bullet.inaccuracy);</b>
+&nbsp;
+<b class="nc">&nbsp;        Entityc shooter = unit.controller() instanceof MissileAI ai ? ai.shooter : unit; //Pass the missile&#39;s shooter down to its bullets</b>
+<b class="nc">&nbsp;        mount.bullet = bullet.create(unit, shooter, unit.team, bulletX, bulletY, angle, -1f, (1f - velocityRnd) + Mathf.random(velocityRnd), lifeScl, null, mover, mount.aimX, mount.aimY, mount.target);</b>
+<b class="nc">&nbsp;        handleBullet(unit, mount, mount.bullet);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!continuous){</b>
+<b class="nc">&nbsp;            shootSound.at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ejectEffect.at(mountX, mountY, angle * Mathf.sign(this.x));</b>
+<b class="nc">&nbsp;        bullet.shootEffect.at(bulletX, bulletY, angle, bullet.hitColor, unit);</b>
+<b class="nc">&nbsp;        bullet.smokeEffect.at(bulletX, bulletY, angle, bullet.hitColor, unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        unit.vel.add(Tmp.v1.trns(shootAngle + 180f, bullet.recoil));</b>
+<b class="nc">&nbsp;        Effect.shake(shake, shake, bulletX, bulletY);</b>
+<b class="nc">&nbsp;        mount.recoil = 1f;</b>
+<b class="nc">&nbsp;        if(recoils &gt; 0){</b>
+<b class="nc">&nbsp;            mount.recoils[mount.barrelCounter % recoils] = 1f;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        mount.heat = 1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //override to do special things to a bullet after spawning
+&nbsp;    protected void handleBullet(Unit unit, WeaponMount mount, Bullet bullet){
+<b class="nc">&nbsp;        if(continuous){</b>
+&nbsp;            float
+<b class="nc">&nbsp;                weaponRotation = unit.rotation - 90 + (rotate ? mount.rotation : baseRotation),</b>
+<b class="nc">&nbsp;                mountX = unit.x + Angles.trnsx(unit.rotation - 90, x, y),</b>
+<b class="nc">&nbsp;                mountY = unit.y + Angles.trnsy(unit.rotation - 90, x, y),</b>
+<b class="nc">&nbsp;                bulletX = mountX + Angles.trnsx(weaponRotation, this.shootX, this.shootY),</b>
+<b class="nc">&nbsp;                bulletY = mountY + Angles.trnsy(weaponRotation, this.shootX, this.shootY);</b>
+&nbsp;            //make sure the length updates to the last set value
+<b class="nc">&nbsp;            Tmp.v1.trns(bulletRotation(unit, mount, bulletX, bulletY), shootY + mount.lastLength).add(bulletX, bulletY);</b>
+<b class="nc">&nbsp;            bullet.aimX = Tmp.v1.x;</b>
+<b class="nc">&nbsp;            bullet.aimY = Tmp.v1.y;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void flip(){
+<b class="fc">&nbsp;        x *= -1;</b>
+<b class="fc">&nbsp;        shootX *= -1;</b>
+<b class="fc">&nbsp;        baseRotation *= -1f;</b>
+<b class="fc">&nbsp;        flipSprite = !flipSprite;</b>
+<b class="fc">&nbsp;        shoot = shoot.copy();</b>
+<b class="fc">&nbsp;        shoot.flip();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Weapon copy(){
+&nbsp;        try{
+<b class="fc">&nbsp;            return (Weapon)clone();</b>
+<b class="nc">&nbsp;        }catch(CloneNotSupportedException suck){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;very good language design&quot;, suck);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @CallSuper
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        if(alwaysContinuous){</b>
+<b class="fc">&nbsp;            continuous = true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        region = Core.atlas.find(name);</b>
+<b class="nc">&nbsp;        heatRegion = Core.atlas.find(name + &quot;-heat&quot;);</b>
+<b class="nc">&nbsp;        cellRegion = Core.atlas.find(name + &quot;-cell&quot;);</b>
+<b class="nc">&nbsp;        outlineRegion = Core.atlas.find(name + &quot;-outline&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var part : parts){</b>
+<b class="nc">&nbsp;            part.turretShading = false;</b>
+<b class="nc">&nbsp;            part.load(name);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return name == null || name.isEmpty() ? &quot;Weapon&quot; : &quot;Weapon: &quot; + name;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

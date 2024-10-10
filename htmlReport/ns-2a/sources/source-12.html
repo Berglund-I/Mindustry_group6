@@ -1,0 +1,1917 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnitType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: UnitType (mindustry.type)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnitType</td>
+<td class="coverageStat">
+  <span class="percent">
+    29%
+  </span>
+  <span class="absValue">
+    (20/69)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.3%
+  </span>
+  <span class="absValue">
+    (271/727)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">UnitType$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UnitType$UnitEngine</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29.2%
+  </span>
+  <span class="absValue">
+    (7/24)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    31.1%
+  </span>
+  <span class="absValue">
+    (23/74)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37%
+  </span>
+  <span class="absValue">
+    (278/752)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.g2d.TextureAtlas.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.Pathfinder.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.part.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.graphics.MultiPacker.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.ammo.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.units.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static arc.graphics.g2d.Draw.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class UnitType extends UnlockableContent implements Senseable{
+&nbsp;    public static final float shadowTX = -12, shadowTY = -13;
+<b class="fc">&nbsp;    private static final Vec2 legOffset = new Vec2();</b>
+&nbsp;
+&nbsp;    /** Environmental flags that are *all* required for this unit to function. 0 = any environment */
+<b class="fc">&nbsp;    public int envRequired = 0;</b>
+&nbsp;    /** The environment flags that this unit can function in. If the env matches any of these, it will be enabled. */
+<b class="fc">&nbsp;    public int envEnabled = Env.terrestrial;</b>
+&nbsp;    /** The environment flags that this unit *cannot* function in. If the env matches any of these, it will explode or be disabled. */
+<b class="fc">&nbsp;    public int envDisabled = Env.scorching;</b>
+&nbsp;
+&nbsp;    /** movement speed (world units/t) */
+<b class="fc">&nbsp;    public float speed = 1.1f,</b>
+&nbsp;    /** multiplier for speed when boosting */
+&nbsp;    boostMultiplier = 1f,
+&nbsp;    /** body rotation speed in degrees/t */
+&nbsp;    rotateSpeed = 5f,
+&nbsp;    /** mech base rotation speed in degrees/t*/
+&nbsp;    baseRotateSpeed = 5f,
+&nbsp;    /** movement drag as fraction */
+&nbsp;    drag = 0.3f,
+&nbsp;    /** acceleration as fraction of speed */
+&nbsp;    accel = 0.5f,
+&nbsp;    /** size of one side of the hitbox square */
+&nbsp;    hitSize = 6f,
+&nbsp;    /** shake on each step for leg/mech units */
+&nbsp;    stepShake = -1f,
+&nbsp;    /** ripple / dust size for legged units */
+&nbsp;    rippleScale = 1f,
+&nbsp;    /** boosting rise speed as fraction */
+&nbsp;    riseSpeed = 0.08f,
+&nbsp;    /** how fast this unit falls when not boosting */
+&nbsp;    fallSpeed = 0.018f,
+&nbsp;    /** how many ticks it takes this missile to accelerate to full speed */
+&nbsp;    missileAccelTime = 0f,
+&nbsp;    /** raw health amount */
+&nbsp;    health = 200f,
+&nbsp;    /** incoming damage is reduced by this amount */
+&nbsp;    armor = 0f,
+&nbsp;    /** minimum range of any weapon; used for approaching targets. can be overridden by setting a value &gt; 0. */
+&nbsp;    range = -1,
+&nbsp;    /** maximum range of any weapon */
+&nbsp;    maxRange = -1f,
+&nbsp;    /** range at which this unit can mine ores */
+&nbsp;    mineRange = 70f,
+&nbsp;    /** range at which this unit can build */
+&nbsp;    buildRange = Vars.buildingRange,
+&nbsp;    /** multiplier for damage this (flying) unit deals when crashing on enemy things */
+&nbsp;    crashDamageMultiplier = 1f,
+&nbsp;    /** a VERY ROUGH estimate of unit DPS; initialized in init() */
+&nbsp;    dpsEstimate = -1,
+&nbsp;    /** graphics clipping size; &lt;0 to calculate automatically */
+&nbsp;    clipSize = -1,
+&nbsp;    /** multiplier for how slowly this unit drowns - higher numbers, slower drowning. */
+&nbsp;    drownTimeMultiplier = 1f,
+&nbsp;    /** fractional movement speed penalty for this unit when it is moving in the opposite direction that it is facing */
+&nbsp;    strafePenalty = 0.5f,
+&nbsp;    /** multiplier for cost of research in tech tree */
+&nbsp;    researchCostMultiplier = 50,
+&nbsp;
+&nbsp;    /** for ground units, the layer upon which this unit is drawn */
+&nbsp;    groundLayer = Layer.groundUnit,
+&nbsp;    /** Payload capacity of this unit in world units^2 */
+&nbsp;    payloadCapacity = 8,
+&nbsp;    /** building speed multiplier; &lt;0 to disable. */
+&nbsp;    buildSpeed = -1f,
+&nbsp;    /** Minimum distance from this unit that weapons can target. Prevents units from firing &quot;inside&quot; the unit. */
+&nbsp;    aimDst = -1f,
+&nbsp;    /** Visual offset of build beam from front. */
+&nbsp;    buildBeamOffset = 3.8f,
+&nbsp;    /** WIP: Units of low priority will always be ignored in favor of those with higher priority, regardless of distance. */
+&nbsp;    targetPriority = 0f,
+&nbsp;    /** Elevation of shadow drawn under this (ground) unit. Visual only. */
+&nbsp;    shadowElevation = -1f,
+&nbsp;    /** Scale for length of shadow drawn under this unit. Does nothing if this unit has no shadow. */
+&nbsp;    shadowElevationScl = 1f,
+&nbsp;    /** backwards engine offset from center of unit */
+&nbsp;    engineOffset = 5f,
+&nbsp;    /** main engine radius */
+&nbsp;    engineSize = 2.5f,
+&nbsp;    /** layer of all engines (&lt;0 for default) */
+&nbsp;    engineLayer = -1f,
+&nbsp;    /** visual backwards offset of items on unit */
+&nbsp;    itemOffsetY = 3f,
+&nbsp;    /** radius of light emitted, &lt;0 for default */
+&nbsp;    lightRadius = -1f,
+&nbsp;    /** light color opacity*/
+&nbsp;    lightOpacity = 0.6f,
+&nbsp;    /** fog view radius in tiles. &lt;0 for automatic radius. */
+&nbsp;    fogRadius = -1f,
+&nbsp;
+&nbsp;    /** horizontal offset of wave trail in naval units */
+&nbsp;    waveTrailX = 4f,
+&nbsp;    /** vertical offset of wave trail in naval units  */
+&nbsp;    waveTrailY = -3f,
+&nbsp;    /** width of all trails (including naval ones) */
+&nbsp;    trailScl = 1f;
+&nbsp;
+&nbsp;    /** if true, this unit counts as an enemy in the wave counter (usually false for support-only units) */
+<b class="fc">&nbsp;    public boolean isEnemy = true,</b>
+&nbsp;    /** if true, the unit is always at elevation 1 */
+&nbsp;    flying = false,
+&nbsp;    /** whether this flying unit should wobble around */
+&nbsp;    wobble = true,
+&nbsp;    /** whether this unit tries to attack air units */
+&nbsp;    targetAir = true,
+&nbsp;    /** whether this unit tries to attack ground units */
+&nbsp;    targetGround = true,
+&nbsp;    /** if true, this unit will attempt to face its target when shooting/aiming at it */
+&nbsp;    faceTarget = true,
+&nbsp;    /** AI flag: if true, this flying unit circles around its target like a bomber */
+&nbsp;    circleTarget = false,
+&nbsp;    /** if true, this unit can boost into the air if a player/processors controls it*/
+&nbsp;    canBoost = false,
+&nbsp;    /** if false, logic processors cannot control this unit */
+&nbsp;    logicControllable = true,
+&nbsp;    /** if false, players cannot control this unit */
+&nbsp;    playerControllable = true,
+&nbsp;    /** if false, this unit cannot be moved into payloads */
+&nbsp;    allowedInPayloads = true,
+&nbsp;    /** if false, this unit cannot be hit by bullets or explosions*/
+&nbsp;    hittable = true,
+&nbsp;    /** if false, this unit does not take damage and cannot be kill() / destroy()-ed. */
+&nbsp;    killable = true,
+&nbsp;    /** if false, this unit is not targeted by anything. */
+&nbsp;    targetable = true,
+&nbsp;    /** if true, this unit can be hit/targeted when it has payloads (assuming hittable/targetable is false) */
+&nbsp;    vulnerableWithPayloads = false,
+&nbsp;    /** if true, this payload unit can pick up units */
+&nbsp;    pickupUnits = true,
+&nbsp;    /** if false, this unit does not physically collide with others. */
+&nbsp;    physics = true,
+&nbsp;    /** if true, this ground unit will drown in deep liquids. */
+&nbsp;    canDrown = true,
+&nbsp;    /** if false, this unit ignores the unit cap and can be spawned infinitely */
+&nbsp;    useUnitCap = true,
+&nbsp;    /** if true, this core unit will &quot;dock&quot; to other units, making it re-appear when &quot;undocking&quot;. */
+&nbsp;    coreUnitDock = false,
+&nbsp;    /** if false, no falling &quot;corpse&quot; is created when this unit dies. */
+&nbsp;    createWreck = true,
+&nbsp;    /** if false, no scorch marks are created when this unit dies */
+&nbsp;    createScorch = true,
+&nbsp;    /** if true, this unit will be drawn under effects/bullets; this is a visual change only. */
+&nbsp;    lowAltitude = false,
+&nbsp;    /** if true, this unit will look at whatever it is building */
+&nbsp;    rotateToBuilding = true,
+&nbsp;    /** if true and this is a legged unit, this unit can walk over blocks. */
+&nbsp;    allowLegStep = false,
+&nbsp;    /** for legged units, setting this to false forces it to be on the ground physics layer. */
+&nbsp;    legPhysicsLayer = true,
+&nbsp;    /** if true, this unit cannot drown, and will not be affected by the floor under it. */
+&nbsp;    hovering = false,
+&nbsp;    /** if true, this unit can move in any direction regardless of rotation. if false, this unit can only move in the direction it is facing. */
+&nbsp;    omniMovement = true,
+&nbsp;    /** if true, the unit faces its moving direction before actually moving. */
+&nbsp;    rotateMoveFirst = false,
+&nbsp;    /** if true, this unit flashes when being healed */
+&nbsp;    healFlash = true,
+&nbsp;    /** whether the unit can heal blocks. Initialized in init() */
+&nbsp;    canHeal = false,
+&nbsp;    /** if true, all weapons will attack the same target. */
+&nbsp;    singleTarget = false,
+&nbsp;    /** if true, this unit will be able to have multiple targets, even if it only has one mirrored weapon. */
+&nbsp;    forceMultiTarget = false,
+&nbsp;    /** if false, this unit has no weapons that can attack. */
+&nbsp;    canAttack = true,
+&nbsp;    /** if true, this unit won&#39;t show up in the database or various other UIs. */
+&nbsp;    hidden = false,
+&nbsp;    /** if true, this unit is for internal use only and does not have a sprite generated. */
+&nbsp;    internal = false,
+&nbsp;    /** If false, this unit is not pushed away from map edges. */
+&nbsp;    bounded = true,
+&nbsp;    /** if true, this unit is detected as naval - do NOT assign this manually! Initialized in init() */
+&nbsp;    naval = false,
+&nbsp;    /** if false, RTS AI controlled units do not automatically attack things while moving. This is automatically assigned. */
+&nbsp;    autoFindTarget = true,
+&nbsp;    /** If false, &#39;under&#39; blocks like conveyors are not targeted. */
+&nbsp;    targetUnderBlocks = true,
+&nbsp;    /** if true, this unit will always shoot while moving regardless of slowdown */
+&nbsp;    alwaysShootWhenMoving = false,
+&nbsp;
+&nbsp;    /** whether this unit has a hover tooltip */
+&nbsp;    hoverable = true,
+&nbsp;    /** if true, this modded unit always has a -outline region generated for its base. Normally, outlines are ignored if there are no top = false weapons. */
+&nbsp;    alwaysCreateOutline = false,
+&nbsp;    /** if true, this unit has a square shadow. */
+&nbsp;    squareShape = false,
+&nbsp;    /** if true, this unit will draw its building beam towards blocks. */
+&nbsp;    drawBuildBeam = true,
+&nbsp;    /** if false, the team indicator/cell is not drawn. */
+&nbsp;    drawCell = true,
+&nbsp;    /** if false, carried items are not drawn. */
+&nbsp;    drawItems = true,
+&nbsp;    /** if false, the unit shield (usually seen in waves) is not drawn. */
+&nbsp;    drawShields = true,
+&nbsp;    /** if false, the unit body is not drawn. */
+&nbsp;    drawBody = true,
+&nbsp;    /** if false, the unit is not drawn on the minimap. */
+&nbsp;    drawMinimap = true;
+&nbsp;
+&nbsp;    /** The default AI controller to assign on creation. */
+<b class="fc">&nbsp;    public Prov&lt;? extends UnitController&gt; aiController = () -&gt; !flying ? new GroundAI() : new FlyingAI();</b>
+&nbsp;    /** Function that chooses AI controller based on unit entity. */
+<b class="fc">&nbsp;    public Func&lt;Unit, ? extends UnitController&gt; controller = u -&gt; !playerControllable || (u.team.isAI() &amp;&amp; !u.team.rules().rtsAi) ? aiController.get() : new CommandAI();</b>
+&nbsp;    /** Creates a new instance of this unit class. */
+&nbsp;    public Prov&lt;? extends Unit&gt; constructor;
+&nbsp;
+&nbsp;    /** list of &quot;abilities&quot;, which are various behaviors that update each frame */
+<b class="fc">&nbsp;    public Seq&lt;Ability&gt; abilities = new Seq&lt;&gt;();</b>
+&nbsp;    /** All weapons that this unit will shoot with. */
+<b class="fc">&nbsp;    public Seq&lt;Weapon&gt; weapons = new Seq&lt;&gt;();</b>
+&nbsp;    /** None of the status effects in this set can be applied to this unit. */
+<b class="fc">&nbsp;    public ObjectSet&lt;StatusEffect&gt; immunities = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+&nbsp;    /** color that this unit flashes when getting healed (if healFlash is true) */
+<b class="fc">&nbsp;    public Color healColor = Pal.heal;</b>
+&nbsp;    /** Color of light that this unit produces when lighting is enabled in the map. */
+<b class="fc">&nbsp;    public Color lightColor = Pal.powerLight;</b>
+&nbsp;    /** override for unit shield colour. */
+&nbsp;    public @Nullable Color shieldColor;
+&nbsp;    /** sound played when this unit explodes (*not* when it is shot down) */
+<b class="fc">&nbsp;    public Sound deathSound = Sounds.bang;</b>
+&nbsp;    /** sound played on loop when this unit is around. */
+<b class="fc">&nbsp;    public Sound loopSound = Sounds.none;</b>
+&nbsp;    /** volume of loop sound */
+<b class="fc">&nbsp;    public float loopSoundVolume = 0.5f;</b>
+&nbsp;    /** effect that this unit emits when falling */
+<b class="fc">&nbsp;    public Effect fallEffect = Fx.fallSmoke;</b>
+&nbsp;    /** effect created at engine when unit falls. */
+<b class="fc">&nbsp;    public Effect fallEngineEffect = Fx.fallSmoke;</b>
+&nbsp;    /** effect created when this unit dies */
+<b class="fc">&nbsp;    public Effect deathExplosionEffect = Fx.dynamicExplosion;</b>
+&nbsp;    /** optional effect created when this tank moves */
+&nbsp;    public @Nullable Effect treadEffect;
+&nbsp;    /** extra (usually animated) visual parts */
+<b class="fc">&nbsp;    public Seq&lt;DrawPart&gt; parts = new Seq&lt;&gt;(DrawPart.class);</b>
+&nbsp;    /** list of engines, or &quot;thrusters&quot; */
+<b class="fc">&nbsp;    public Seq&lt;UnitEngine&gt; engines = new Seq&lt;&gt;();</b>
+&nbsp;    /** if false, the thruster is always displayed at its normal size regardless of elevation */
+<b class="fc">&nbsp;    public boolean useEngineElevation = true;</b>
+&nbsp;    /** override for all engine colors */
+<b class="fc">&nbsp;    public @Nullable Color engineColor = null;</b>
+&nbsp;    /** color for inner portions of engines */
+<b class="fc">&nbsp;    public Color engineColorInner = Color.white;</b>
+&nbsp;    /** length of engine trail (if flying) or wave trail (if naval) */
+<b class="fc">&nbsp;    public int trailLength = 0;</b>
+&nbsp;    /** override for engine trail color */
+&nbsp;    public @Nullable Color trailColor;
+&nbsp;
+&nbsp;    /** Function used for calculating cost of moving with ControlPathfinder. Does not affect &quot;normal&quot; flow field pathfinding. */
+&nbsp;    public @Nullable PathCost pathCost;
+&nbsp;    /** ID for path cost, to be used in the control path finder. This is the value that actually matters; do not assign manually. Set in init(). */
+&nbsp;    public int pathCostId;
+&nbsp;    /** A sample of the unit that this type creates. Do not modify! */
+&nbsp;    public @Nullable Unit sample;
+&nbsp;
+&nbsp;    /** Flags to target based on priority. Null indicates that the closest target should be found. The closest enemy core is used as a fallback. */
+<b class="fc">&nbsp;    public BlockFlag[] targetFlags = {null};</b>
+&nbsp;
+&nbsp;    /** Commands available to this unit through RTS controls. An empty array means commands will be assigned based on unit capabilities in init(). */
+<b class="fc">&nbsp;    public UnitCommand[] commands = {};</b>
+&nbsp;    /** Command to assign to this unit upon creation. Null indicates the first command in the array. */
+&nbsp;    public @Nullable UnitCommand defaultCommand;
+&nbsp;    /** Stances this unit can have.  An empty array means stances will be assigned based on unit capabilities in init(). */
+<b class="fc">&nbsp;    public UnitStance[] stances = {};</b>
+&nbsp;
+&nbsp;    /** color for outline generated around sprites */
+<b class="fc">&nbsp;    public Color outlineColor = Pal.darkerMetal;</b>
+&nbsp;    /** thickness for sprite outline  */
+<b class="fc">&nbsp;    public int outlineRadius = 3;</b>
+&nbsp;    /** if false, no sprite outlines are generated */
+<b class="fc">&nbsp;    public boolean outlines = true;</b>
+&nbsp;
+&nbsp;    /** amount of items this unit can carry; &lt;0 to determine based on hitSize. */
+<b class="fc">&nbsp;    public int itemCapacity = -1;</b>
+&nbsp;    /** amount of ammo this unit can hold (if the rule is enabled); &lt;0 to determine based on weapon fire rate. */
+<b class="fc">&nbsp;    public int ammoCapacity = -1;</b>
+&nbsp;    /** ammo this unit uses, if that system is enabled. */
+<b class="fc">&nbsp;    public AmmoType ammoType = new ItemAmmoType(Items.copper);</b>
+&nbsp;
+&nbsp;    /** max hardness of ore that this unit can mine (&lt;0 to disable) */
+<b class="fc">&nbsp;    public int mineTier = -1;</b>
+&nbsp;    /** mining speed in weird arbitrary units */
+<b class="fc">&nbsp;    public float mineSpeed = 1f;</b>
+&nbsp;    /** whether this unit can mine ores from floors/walls, respectively */
+<b class="fc">&nbsp;    public boolean mineWalls = false, mineFloor = true;</b>
+&nbsp;    /** if true, harder materials will take longer to mine */
+<b class="fc">&nbsp;    public boolean mineHardnessScaling = true;</b>
+&nbsp;    /** continuous sound emitted when mining. */
+<b class="fc">&nbsp;    public Sound mineSound = Sounds.minebeam;</b>
+&nbsp;    /** volume of mining sound. */
+<b class="fc">&nbsp;    public float mineSoundVolume = 0.6f;</b>
+&nbsp;    /** Target items to mine. Used in MinerAI */
+<b class="fc">&nbsp;    public Seq&lt;Item&gt; mineItems = Seq.with(Items.copper, Items.lead, Items.titanium, Items.thorium);</b>
+&nbsp;
+&nbsp;    //LEG UNITS
+&nbsp;
+&nbsp;    /** number of legs this unit has (must have the correct type to function!) */
+<b class="fc">&nbsp;    public int legCount = 4;</b>
+&nbsp;    /** size of groups in which legs move. for example, insects (6 legs) usually move legs in groups of 3. */
+<b class="fc">&nbsp;    public int legGroupSize = 2;</b>
+&nbsp;
+&nbsp;    /** total length of a leg (both segments) */
+<b class="fc">&nbsp;    public float legLength = 10f,</b>
+&nbsp;    /** how fast individual legs move towards their destination (non-linear) */
+&nbsp;    legSpeed = 0.1f,
+&nbsp;    /** scale for how far in front (relative to unit velocity) legs try to place themselves; if legs lag behind a unit, increase this number */
+&nbsp;    legForwardScl = 1f,
+&nbsp;    /** leg offset from the center of the unit */
+&nbsp;    legBaseOffset = 0f,
+&nbsp;    /** scaling for space between leg movements */
+&nbsp;    legMoveSpace = 1f,
+&nbsp;    /** for legs without &quot;joints&quot;, this is how much the second leg sprite is moved &quot;back&quot; by, so it covers the joint region (it&#39;s hard to explain without an image) */
+&nbsp;    legExtension = 0,
+&nbsp;    /** Higher values of this field make groups of legs move less in-sync with each other. */
+&nbsp;    legPairOffset = 0,
+&nbsp;    /** scaling for how far away legs *try* to be from the body (not their actual length); e.g. if set to 0.5, legs will appear somewhat folded */
+&nbsp;    legLengthScl = 1f,
+&nbsp;    /** if legStraightness &gt; 0, this is the scale for how far away legs are from the body horizontally */
+&nbsp;    legStraightLength = 1f,
+&nbsp;    /** maximum length of an individual leg as fraction of real length */
+&nbsp;    legMaxLength = 1.75f,
+&nbsp;    /** minimum length of an individual leg as fraction of real length */
+&nbsp;    legMinLength = 0f,
+&nbsp;    /** splash damage dealt when a leg touches the ground */
+&nbsp;    legSplashDamage = 0f,
+&nbsp;    /** splash damage radius of legs */
+&nbsp;    legSplashRange = 5,
+&nbsp;    /** how straight the leg base/origin is (0 = circular, 1 = line) */
+&nbsp;    baseLegStraightness = 0f,
+&nbsp;    /** how straight the leg outward angles are (0 = circular, 1 = horizontal line) */
+&nbsp;    legStraightness = 0f;
+&nbsp;
+&nbsp;    /** If true, legs are locked to the base of the unit instead of being on an implicit rotating &quot;mount&quot;. */
+<b class="fc">&nbsp;    public boolean lockLegBase = false;</b>
+&nbsp;    /** If true, legs always try to move around even when the unit is not moving (leads to more natural behavior) */
+&nbsp;    public boolean legContinuousMove;
+&nbsp;    /** TODO neither of these appear to do much */
+<b class="fc">&nbsp;    public boolean flipBackLegs = true, flipLegSide = false;</b>
+&nbsp;
+&nbsp;    //MECH UNITS
+&nbsp;
+&nbsp;    /** screen shake amount for when this mech lands after boosting */
+<b class="fc">&nbsp;    public float mechLandShake = 0f;</b>
+&nbsp;    /** parameters for mech swaying animation */
+<b class="fc">&nbsp;    public float mechSideSway = 0.54f, mechFrontSway = 0.1f, mechStride = -1f;</b>
+&nbsp;    /** whether particles are created when this mech takes a step */
+<b class="fc">&nbsp;    public boolean mechStepParticles = false;</b>
+&nbsp;    /** color that legs change to when moving, to simulate depth */
+<b class="fc">&nbsp;    public Color mechLegColor = Pal.darkMetal;</b>
+&nbsp;
+&nbsp;    //TANK UNITS
+&nbsp;
+&nbsp;    /** list of treads as rectangles in IMAGE COORDINATES, relative to the center. these are mirrored. */
+<b class="fc">&nbsp;    public Rect[] treadRects = {};</b>
+&nbsp;    /** number of frames of movement in a tread */
+<b class="fc">&nbsp;    public int treadFrames = 18;</b>
+&nbsp;    /** how much of a top part of a tread sprite is &quot;cut off&quot; relative to the pattern; this is corrected for */
+<b class="fc">&nbsp;    public int treadPullOffset = 0;</b>
+&nbsp;
+&nbsp;    //SEGMENTED / CRAWL UNITS (this is WIP content!)
+&nbsp;
+&nbsp;    /** number of independent segments */
+<b class="fc">&nbsp;    public int segments = 0;</b>
+&nbsp;    /** magnitude of sine offset between segments */
+<b class="fc">&nbsp;    public float segmentMag = 2f,</b>
+&nbsp;    /** scale of sine offset between segments */
+&nbsp;    segmentScl = 4f,
+&nbsp;    /** index multiplier of sine offset between segments */
+&nbsp;    segmentPhase = 5f,
+&nbsp;    /** how fast each segment moves towards the next one */
+&nbsp;    segmentRotSpeed = 1f,
+&nbsp;    /** maximum difference between segment angles */
+&nbsp;    segmentMaxRot = 30f,
+&nbsp;    /** speed multiplier this unit will have when crawlSlowdownFrac is met. */
+&nbsp;    crawlSlowdown = 0.5f,
+&nbsp;    /** damage dealt to blocks under this tank/crawler every frame. */
+&nbsp;    crushDamage = 0f,
+&nbsp;    /** the fraction of solids under this block necessary for it to reach crawlSlowdown. */
+&nbsp;    crawlSlowdownFrac = 0.55f;
+&nbsp;
+&nbsp;    //MISSILE UNITS
+&nbsp;
+&nbsp;    /** lifetime of this missile. */
+<b class="fc">&nbsp;    public float lifetime = 60f * 5f;</b>
+&nbsp;    /** ticks that must pass before this missile starts homing. */
+<b class="fc">&nbsp;    public float homingDelay = 10f;</b>
+&nbsp;
+&nbsp;    //REGIONS
+&nbsp;
+&nbsp;    //(undocumented, you shouldn&#39;t need to use these, and if you do just check how they&#39;re drawn and copy that)
+&nbsp;    public TextureRegion baseRegion, legRegion, region, previewRegion, shadowRegion, cellRegion, itemCircleRegion,
+&nbsp;        softShadowRegion, jointRegion, footRegion, legBaseRegion, baseJointRegion, outlineRegion, treadRegion,
+&nbsp;        mineLaserRegion, mineLaserEndRegion;
+&nbsp;    public TextureRegion[] wreckRegions, segmentRegions, segmentOutlineRegions;
+&nbsp;    public TextureRegion[][] treadRegions;
+&nbsp;
+&nbsp;    //INTERNAL REQUIREMENTS
+&nbsp;
+<b class="fc">&nbsp;    protected float buildTime = -1f;</b>
+&nbsp;    protected @Nullable ItemStack[] totalRequirements, cachedRequirements, firstRequirements;
+&nbsp;
+&nbsp;    public UnitType(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        constructor = EntityMapping.map(this.name);</b>
+<b class="fc">&nbsp;        selectionSize = 30f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public UnitController createController(Unit unit){
+<b class="fc">&nbsp;        return controller.get(unit);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Unit create(Team team){
+<b class="fc">&nbsp;        Unit unit = constructor.get();</b>
+<b class="fc">&nbsp;        unit.team = team;</b>
+<b class="fc">&nbsp;        unit.setType(this);</b>
+<b class="fc">&nbsp;        if(controller instanceof CommandAI command &amp;&amp; defaultCommand != null){</b>
+<b class="nc">&nbsp;            command.command = defaultCommand;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        unit.ammo = ammoCapacity; //fill up on ammo upon creation</b>
+<b class="fc">&nbsp;        unit.elevation = flying ? 1f : 0;</b>
+<b class="fc">&nbsp;        unit.heal();</b>
+<b class="fc">&nbsp;        if(unit instanceof TimedKillc u){</b>
+<b class="nc">&nbsp;            u.lifetime(lifetime);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return unit;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Unit spawn(Team team, float x, float y){
+<b class="fc">&nbsp;        Unit out = create(team);</b>
+<b class="fc">&nbsp;        out.set(x, y);</b>
+<b class="fc">&nbsp;        out.add();</b>
+<b class="fc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Unit spawn(float x, float y){
+<b class="fc">&nbsp;        return spawn(state.rules.defaultTeam, x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Unit spawn(Team team, Position pos){
+<b class="nc">&nbsp;        return spawn(team, pos.getX(), pos.getY());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Unit spawn(Position pos){
+<b class="nc">&nbsp;        return spawn(state.rules.defaultTeam, pos);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Unit spawn(Position pos, Team team){
+<b class="nc">&nbsp;        return spawn(team, pos);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasWeapons(){
+<b class="fc">&nbsp;        return weapons.size &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean targetable(Unit unit, Team targeter){
+<b class="nc">&nbsp;        return targetable || (vulnerableWithPayloads &amp;&amp; unit instanceof Payloadc p &amp;&amp; p.hasPayload());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hittable(Unit unit){
+<b class="fc">&nbsp;        return hittable || (vulnerableWithPayloads &amp;&amp; unit instanceof Payloadc p &amp;&amp; p.hasPayload());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(Unit unit){
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void updatePayload(Unit unit, @Nullable Unit unitHolder, @Nullable Building buildingHolder){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void killed(Unit unit){}</b>
+&nbsp;
+<b class="nc">&nbsp;    public void landed(Unit unit){}</b>
+&nbsp;
+&nbsp;    public void display(Unit unit, Table table){
+<b class="nc">&nbsp;        table.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.left();</b>
+<b class="nc">&nbsp;            t.add(new Image(uiIcon)).size(iconMed).scaling(Scaling.fit);</b>
+<b class="nc">&nbsp;            t.labelWrap(unit.isPlayer() ? unit.getPlayer().coloredName() + &quot;\n[lightgray]&quot; + localizedName : localizedName).left().width(190f).padLeft(5);</b>
+<b class="nc">&nbsp;        }).growX().left();</b>
+<b class="nc">&nbsp;        table.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        table.table(bars -&gt; {</b>
+<b class="nc">&nbsp;            bars.defaults().growX().height(20f).pad(4);</b>
+&nbsp;
+&nbsp;            //TODO overlay shields
+<b class="nc">&nbsp;            bars.add(new Bar(&quot;stat.health&quot;, Pal.health, unit::healthf).blink(Color.white));</b>
+<b class="nc">&nbsp;            bars.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(state.rules.unitAmmo){</b>
+<b class="nc">&nbsp;                bars.add(new Bar(ammoType.icon() + &quot; &quot; + Core.bundle.get(&quot;stat.ammo&quot;), ammoType.barColor(), () -&gt; unit.ammo / ammoCapacity));</b>
+<b class="nc">&nbsp;                bars.row();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(Ability ability : unit.abilities){</b>
+<b class="nc">&nbsp;                ability.displayBars(unit, bars);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(payloadCapacity &gt; 0 &amp;&amp; unit instanceof Payloadc payload){</b>
+<b class="nc">&nbsp;                bars.add(new Bar(&quot;stat.payloadcapacity&quot;, Pal.items, () -&gt; payload.payloadUsed() / unit.type().payloadCapacity));</b>
+<b class="nc">&nbsp;                bars.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                var count = new float[]{-1};</b>
+<b class="nc">&nbsp;                bars.table().update(t -&gt; {</b>
+<b class="nc">&nbsp;                    if(count[0] != payload.payloadUsed()){</b>
+<b class="nc">&nbsp;                        payload.contentInfo(t, 8 * 2, 270);</b>
+<b class="nc">&nbsp;                        count[0] = payload.payloadUsed();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }).growX().left().height(0f).pad(0f);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit.controller() instanceof LogicAI ai){</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.add(Blocks.microProcessor.emoji() + &quot; &quot; + Core.bundle.get(&quot;units.processorcontrol&quot;)).growX().wrap().left();</b>
+<b class="nc">&nbsp;            if(ai.controller != null &amp;&amp; (Core.settings.getBool(&quot;mouseposition&quot;) || Core.settings.getBool(&quot;position&quot;))){</b>
+<b class="nc">&nbsp;                table.row();</b>
+<b class="nc">&nbsp;                table.add(&quot;[lightgray](&quot; + ai.controller.tileX() + &quot;, &quot; + ai.controller.tileY() + &quot;)&quot;).growX().wrap().left();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.label(() -&gt; Iconc.settings + &quot; &quot; + (long)unit.flag + &quot;&quot;).color(Color.lightGray).growX().wrap().left();</b>
+<b class="nc">&nbsp;            if(net.active() &amp;&amp; ai.controller != null &amp;&amp; ai.controller.lastAccessed != null){</b>
+<b class="nc">&nbsp;                table.row();</b>
+<b class="nc">&nbsp;                table.add(Core.bundle.format(&quot;lastaccessed&quot;, ai.controller.lastAccessed)).growX().wrap().left();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(net.active() &amp;&amp; unit.lastCommanded != null){</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.add(Core.bundle.format(&quot;lastcommanded&quot;, unit.lastCommanded)).growX().wrap().left();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        table.row();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this block supports a specific environment. */
+&nbsp;    public boolean supportsEnv(int env){
+<b class="fc">&nbsp;        return (envEnabled &amp; env) != 0 &amp;&amp; (envDisabled &amp; env) == 0 &amp;&amp; (envRequired == 0 || (envRequired &amp; env) == envRequired);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isBanned(){
+<b class="fc">&nbsp;        return state.rules.isBanned(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void getDependencies(Cons&lt;UnlockableContent&gt; cons){
+&nbsp;        //units require reconstructors being researched
+<b class="fc">&nbsp;        for(Block block : content.blocks()){</b>
+<b class="fc">&nbsp;            if(block instanceof Reconstructor r){</b>
+<b class="fc">&nbsp;                for(UnitType[] recipe : r.upgrades){</b>
+&nbsp;                    //result of reconstruction is this, so it must be a dependency
+<b class="fc">&nbsp;                    if(recipe[1] == this){</b>
+<b class="fc">&nbsp;                        cons.get(block);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        for(ItemStack stack : researchRequirements()){</b>
+<b class="fc">&nbsp;            cons.get(stack.item);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isHidden(){
+<b class="fc">&nbsp;        return hidden;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        stats.add(Stat.health, health);</b>
+<b class="nc">&nbsp;        stats.add(Stat.armor, armor);</b>
+<b class="nc">&nbsp;        stats.add(Stat.speed, speed * 60f / tilesize, StatUnit.tilesSecond);</b>
+<b class="nc">&nbsp;        stats.add(Stat.size, StatValues.squared(hitSize / tilesize, StatUnit.blocks));</b>
+<b class="nc">&nbsp;        stats.add(Stat.itemCapacity, itemCapacity);</b>
+<b class="nc">&nbsp;        stats.add(Stat.range, (int)(maxRange / tilesize), StatUnit.blocks);</b>
+<b class="nc">&nbsp;        stats.add(Stat.targetsAir, targetAir);</b>
+<b class="nc">&nbsp;        stats.add(Stat.targetsGround, targetGround);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(abilities.any()){</b>
+<b class="nc">&nbsp;            stats.add(Stat.abilities, StatValues.abilities(abilities));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.flying, flying);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!flying){</b>
+<b class="nc">&nbsp;            stats.add(Stat.canBoost, canBoost);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(mineTier &gt;= 1){</b>
+<b class="nc">&nbsp;            stats.addPercent(Stat.mineSpeed, mineSpeed);</b>
+<b class="nc">&nbsp;            stats.add(Stat.mineTier, StatValues.drillables(mineSpeed, 1f, 1, null, b -&gt;</b>
+&nbsp;                b.itemDrop != null &amp;&amp;
+<b class="nc">&nbsp;                (b instanceof Floor f &amp;&amp; (((f.wallOre &amp;&amp; mineWalls) || (!f.wallOre &amp;&amp; mineFloor))) ||</b>
+&nbsp;                (!(b instanceof Floor) &amp;&amp; mineWalls)) &amp;&amp;
+<b class="nc">&nbsp;                b.itemDrop.hardness &lt;= mineTier &amp;&amp; (!b.playerUnmineable || Core.settings.getBool(&quot;doubletapmine&quot;))));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(buildSpeed &gt; 0){</b>
+<b class="nc">&nbsp;            stats.addPercent(Stat.buildSpeed, buildSpeed);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(sample instanceof Payloadc){</b>
+<b class="nc">&nbsp;            stats.add(Stat.payloadCapacity, StatValues.squared(Mathf.sqrt(payloadCapacity / (tilesize * tilesize)), StatUnit.blocks));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var reqs = getFirstRequirements();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(reqs != null){</b>
+<b class="nc">&nbsp;            stats.add(Stat.buildCost, StatValues.items(reqs));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(weapons.any()){</b>
+<b class="nc">&nbsp;            stats.add(Stat.weapons, StatValues.weapons(this, weapons));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(immunities.size &gt; 0){</b>
+<b class="nc">&nbsp;            var imm = immunities.toSeq().sort();</b>
+&nbsp;            //it&#39;s redundant to list wet for naval units
+<b class="nc">&nbsp;            if(naval){</b>
+<b class="nc">&nbsp;                imm.remove(StatusEffects.wet);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            stats.add(Stat.immunities, StatValues.statusEffects(imm));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //never actually called; it turns out certain mods have custom weapons that do not need bullets.
+&nbsp;    protected void validateWeapons(){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; weapons.size; i++){</b>
+<b class="nc">&nbsp;            var wep = weapons.get(i);</b>
+<b class="nc">&nbsp;            if(wep.bullet == Bullets.placeholder || wep.bullet == null){</b>
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;Unit: &quot; + name + &quot;: weapon #&quot; + i + &quot; (&#39;&quot; + wep.name + &quot;&#39;) does not have a bullet defined. Make sure you have a bullet: (JSON) or `bullet = ` field in your unit definition.&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @CallSuper
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(constructor == null) throw new IllegalArgumentException(&quot;no constructor set up for unit &#39;&quot; + name + &quot;&#39;&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        Unit example = constructor.get();</b>
+&nbsp;
+<b class="fc">&nbsp;        allowLegStep = example instanceof Legsc;</b>
+&nbsp;
+&nbsp;        //water preset
+<b class="fc">&nbsp;        if(example instanceof WaterMovec){</b>
+<b class="fc">&nbsp;            naval = true;</b>
+<b class="fc">&nbsp;            canDrown = false;</b>
+<b class="fc">&nbsp;            omniMovement = false;</b>
+<b class="fc">&nbsp;            immunities.add(StatusEffects.wet);</b>
+<b class="fc">&nbsp;            if(shadowElevation &lt; 0f){</b>
+<b class="fc">&nbsp;                shadowElevation = 0.11f;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(pathCost == null){</b>
+<b class="fc">&nbsp;            pathCost =</b>
+<b class="fc">&nbsp;                naval ? ControlPathfinder.costNaval :</b>
+<b class="fc">&nbsp;                allowLegStep || example instanceof Crawlc ? ControlPathfinder.costLegs :</b>
+<b class="fc">&nbsp;                hovering ? ControlPathfinder.costHover :</b>
+<b class="fc">&nbsp;                ControlPathfinder.costGround;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        pathCostId = ControlPathfinder.costTypes.indexOf(pathCost);</b>
+<b class="fc">&nbsp;        if(pathCostId == -1) pathCostId = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(flying){</b>
+<b class="fc">&nbsp;            envEnabled |= Env.space;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(lightRadius == -1){</b>
+<b class="fc">&nbsp;            lightRadius = Math.max(60f, hitSize * 2.3f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //if a status effects slows a unit when firing, don&#39;t shoot while moving.
+<b class="fc">&nbsp;        if(autoFindTarget){</b>
+<b class="fc">&nbsp;            autoFindTarget = !weapons.contains(w -&gt; w.shootStatus.speedMultiplier &lt; 0.99f) || alwaysShootWhenMoving;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        clipSize = Math.max(clipSize, lightRadius * 1.1f);</b>
+<b class="fc">&nbsp;        singleTarget = weapons.size &lt;= 1 &amp;&amp; !forceMultiTarget;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(itemCapacity &lt; 0){</b>
+<b class="fc">&nbsp;            itemCapacity = Math.max(Mathf.round((int)(hitSize * 4f), 10), 10);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //assume slight range margin
+<b class="fc">&nbsp;        float margin = 4f;</b>
+&nbsp;
+<b class="fc">&nbsp;        boolean skipWeapons = !weapons.contains(w -&gt; !w.useAttackRange);</b>
+&nbsp;
+&nbsp;        //set up default range
+<b class="fc">&nbsp;        if(range &lt; 0){</b>
+<b class="fc">&nbsp;            range = Float.MAX_VALUE;</b>
+<b class="fc">&nbsp;            for(Weapon weapon : weapons){</b>
+<b class="fc">&nbsp;                if(!weapon.useAttackRange &amp;&amp; skipWeapons) continue;</b>
+&nbsp;
+<b class="fc">&nbsp;                range = Math.min(range, weapon.range() - margin);</b>
+<b class="fc">&nbsp;                maxRange = Math.max(maxRange, weapon.range() - margin);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(maxRange &lt; 0){</b>
+<b class="fc">&nbsp;            maxRange = Math.max(0f, range);</b>
+&nbsp;
+<b class="fc">&nbsp;            for(Weapon weapon : weapons){</b>
+<b class="fc">&nbsp;                if(!weapon.useAttackRange &amp;&amp; skipWeapons) continue;</b>
+&nbsp;
+<b class="fc">&nbsp;                maxRange = Math.max(maxRange, weapon.range() - margin);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(fogRadius &lt; 0){</b>
+&nbsp;            //TODO depend on range?
+<b class="fc">&nbsp;            fogRadius = Math.max(58f * 3f, hitSize * 2f) / 8f;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(weapons.isEmpty()){</b>
+<b class="fc">&nbsp;            range = maxRange = mineRange;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(mechStride &lt; 0){</b>
+<b class="fc">&nbsp;            mechStride = 4f + (hitSize -8f)/2.1f;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(aimDst &lt; 0){</b>
+<b class="fc">&nbsp;            aimDst = weapons.contains(w -&gt; !w.rotate) ? hitSize * 2f : hitSize / 2f;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(stepShake &lt; 0){</b>
+<b class="fc">&nbsp;            stepShake = Mathf.round((hitSize - 11f) / 9f);</b>
+<b class="fc">&nbsp;            mechStepParticles = hitSize &gt; 15f;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(engineSize &gt; 0){</b>
+<b class="fc">&nbsp;            engines.add(new UnitEngine(0f, -engineOffset, engineSize, -90f));</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(treadEffect == null){</b>
+<b class="fc">&nbsp;            treadEffect = new Effect(50, e -&gt; {</b>
+<b class="nc">&nbsp;                color(Tmp.c1.set(e.color).mul(1.5f));</b>
+<b class="nc">&nbsp;                Fx.rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; 3; i++){</b>
+<b class="nc">&nbsp;                    Fx.v.trns(e.rotation + Fx.rand.range(40f), Fx.rand.random(6f * e.finpow()));</b>
+<b class="nc">&nbsp;                    Fill.circle(e.x + Fx.v.x + Fx.rand.range(4f), e.y + Fx.v.y + Fx.rand.range(4f), Math.min(e.fout(), e.fin() * e.lifetime / 8f) * hitSize / 28f * 3f * Fx.rand.random(0.8f, 1.1f) + 0.3f);</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }).layer(Layer.debris);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        for(Ability ab : abilities){</b>
+<b class="fc">&nbsp;            ab.init(this);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //add mirrored weapon variants
+<b class="fc">&nbsp;        Seq&lt;Weapon&gt; mapped = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;        for(Weapon w : weapons){</b>
+<b class="fc">&nbsp;            if(w.recoilTime &lt; 0) w.recoilTime = w.reload;</b>
+<b class="fc">&nbsp;            mapped.add(w);</b>
+&nbsp;
+&nbsp;            //mirrors are copies with X values negated
+<b class="fc">&nbsp;            if(w.mirror){</b>
+<b class="fc">&nbsp;                Weapon copy = w.copy();</b>
+<b class="fc">&nbsp;                copy.flip();</b>
+<b class="fc">&nbsp;                mapped.add(copy);</b>
+&nbsp;
+&nbsp;                //since there are now two weapons, the reload and recoil time must be doubled
+<b class="fc">&nbsp;                w.recoilTime *= 2f;</b>
+<b class="fc">&nbsp;                copy.recoilTime *= 2f;</b>
+<b class="fc">&nbsp;                w.reload *= 2f;</b>
+<b class="fc">&nbsp;                copy.reload *= 2f;</b>
+&nbsp;
+<b class="fc">&nbsp;                w.otherSide = mapped.size - 1;</b>
+<b class="fc">&nbsp;                copy.otherSide = mapped.size - 2;</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;        this.weapons = mapped;</b>
+&nbsp;
+<b class="fc">&nbsp;        weapons.each(Weapon::init);</b>
+&nbsp;
+<b class="fc">&nbsp;        canHeal = weapons.contains(w -&gt; w.bullet.heals());</b>
+&nbsp;
+<b class="fc">&nbsp;        canAttack = weapons.contains(w -&gt; !w.noAttack);</b>
+&nbsp;
+&nbsp;        //assign default commands.
+<b class="fc">&nbsp;        if(commands.length == 0){</b>
+<b class="fc">&nbsp;            Seq&lt;UnitCommand&gt; cmds = new Seq&lt;&gt;(UnitCommand.class);</b>
+&nbsp;
+<b class="fc">&nbsp;            cmds.add(UnitCommand.moveCommand, UnitCommand.enterPayloadCommand);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(canBoost){</b>
+<b class="fc">&nbsp;                cmds.add(UnitCommand.boostCommand);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(buildSpeed &gt; 0f){</b>
+<b class="fc">&nbsp;                    cmds.add(UnitCommand.rebuildCommand, UnitCommand.assistCommand);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //healing, mining and building is only supported for flying units; pathfinding to ambiguously reachable locations is hard.
+<b class="fc">&nbsp;            if(flying){</b>
+<b class="fc">&nbsp;                if(canHeal){</b>
+<b class="fc">&nbsp;                    cmds.add(UnitCommand.repairCommand);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(buildSpeed &gt; 0){</b>
+<b class="fc">&nbsp;                    cmds.add(UnitCommand.rebuildCommand, UnitCommand.assistCommand);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(mineTier &gt; 0){</b>
+<b class="fc">&nbsp;                    cmds.add(UnitCommand.mineCommand);</b>
+&nbsp;                }
+<b class="fc">&nbsp;                if(example instanceof Payloadc){</b>
+<b class="fc">&nbsp;                    cmds.addAll(UnitCommand.loadUnitsCommand, UnitCommand.loadBlocksCommand, UnitCommand.unloadPayloadCommand, UnitCommand.loopPayloadCommand);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            commands = cmds.toArray();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(stances.length == 0){</b>
+<b class="fc">&nbsp;            if(canAttack){</b>
+<b class="fc">&nbsp;                Seq&lt;UnitStance&gt; seq = Seq.with(UnitStance.stop, UnitStance.shoot, UnitStance.holdFire, UnitStance.pursueTarget, UnitStance.patrol);</b>
+<b class="fc">&nbsp;                if(!flying){</b>
+<b class="fc">&nbsp;                    seq.add(UnitStance.ram);</b>
+&nbsp;                }
+<b class="fc">&nbsp;                stances = seq.toArray(UnitStance.class);</b>
+<b class="fc">&nbsp;            }else{</b>
+<b class="fc">&nbsp;                stances = new UnitStance[]{UnitStance.stop, UnitStance.patrol};</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //dynamically create ammo capacity based on firing rate
+<b class="fc">&nbsp;        if(ammoCapacity &lt; 0){</b>
+<b class="fc">&nbsp;            float shotsPerSecond = weapons.sumf(w -&gt; w.useAmmo ? 60f / w.reload : 0f);</b>
+&nbsp;            //duration of continuous fire without reload
+<b class="fc">&nbsp;            float targetSeconds = 35;</b>
+&nbsp;
+<b class="fc">&nbsp;            ammoCapacity = Math.max(1, (int)(shotsPerSecond * targetSeconds));</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        estimateDps();</b>
+&nbsp;
+&nbsp;        //only do this after everything else was initialized
+<b class="fc">&nbsp;        sample = constructor.get();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float estimateDps(){
+&nbsp;        //calculate estimated DPS for one target based on weapons
+<b class="fc">&nbsp;        if(dpsEstimate &lt; 0){</b>
+<b class="fc">&nbsp;            dpsEstimate = weapons.sumf(Weapon::dps);</b>
+&nbsp;
+&nbsp;            //suicide enemy
+<b class="fc">&nbsp;            if(weapons.contains(w -&gt; w.bullet.killShooter)){</b>
+&nbsp;                //scale down DPS to be insignificant
+<b class="fc">&nbsp;                dpsEstimate /= 15f;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return dpsEstimate;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @CallSuper
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var part : parts){</b>
+<b class="nc">&nbsp;            part.load(name);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        weapons.each(Weapon::load);</b>
+<b class="nc">&nbsp;        region = Core.atlas.find(name);</b>
+<b class="nc">&nbsp;        previewRegion = Core.atlas.find(name + &quot;-preview&quot;, name);</b>
+<b class="nc">&nbsp;        legRegion = Core.atlas.find(name + &quot;-leg&quot;);</b>
+<b class="nc">&nbsp;        jointRegion = Core.atlas.find(name + &quot;-joint&quot;);</b>
+<b class="nc">&nbsp;        baseJointRegion = Core.atlas.find(name + &quot;-joint-base&quot;);</b>
+<b class="nc">&nbsp;        footRegion = Core.atlas.find(name + &quot;-foot&quot;);</b>
+<b class="nc">&nbsp;        treadRegion = Core.atlas.find(name + &quot;-treads&quot;);</b>
+<b class="nc">&nbsp;        itemCircleRegion = Core.atlas.find(&quot;ring-item&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(treadRegion.found()){</b>
+<b class="nc">&nbsp;            treadRegions = new TextureRegion[treadRects.length][treadFrames];</b>
+<b class="nc">&nbsp;            for(int r = 0; r &lt; treadRects.length; r++){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; treadFrames; i++){</b>
+<b class="nc">&nbsp;                    treadRegions[r][i] = Core.atlas.find(name + &quot;-treads&quot; + r + &quot;-&quot; + i);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        legBaseRegion = Core.atlas.find(name + &quot;-leg-base&quot;, name + &quot;-leg&quot;);</b>
+<b class="nc">&nbsp;        baseRegion = Core.atlas.find(name + &quot;-base&quot;);</b>
+<b class="nc">&nbsp;        cellRegion = Core.atlas.find(name + &quot;-cell&quot;, Core.atlas.find(&quot;power-cell&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;        mineLaserRegion = Core.atlas.find(&quot;minelaser&quot;);</b>
+<b class="nc">&nbsp;        mineLaserEndRegion = Core.atlas.find(&quot;minelaser-end&quot;);</b>
+&nbsp;        //when linear filtering is on, it&#39;s acceptable to use the relatively low-res &#39;particle&#39; region
+<b class="nc">&nbsp;        softShadowRegion =</b>
+<b class="nc">&nbsp;            squareShape ? Core.atlas.find(&quot;square-shadow&quot;) :</b>
+<b class="nc">&nbsp;            hitSize &lt;= 10f || (Core.settings != null &amp;&amp; Core.settings.getBool(&quot;linear&quot;, true)) ?</b>
+<b class="nc">&nbsp;                Core.atlas.find(&quot;particle&quot;) :</b>
+<b class="nc">&nbsp;                Core.atlas.find(&quot;circle-shadow&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        outlineRegion = Core.atlas.find(name + &quot;-outline&quot;);</b>
+<b class="nc">&nbsp;        shadowRegion = fullIcon;</b>
+&nbsp;
+<b class="nc">&nbsp;        wreckRegions = new TextureRegion[3];</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; wreckRegions.length; i++){</b>
+<b class="nc">&nbsp;            wreckRegions[i] = Core.atlas.find(name + &quot;-wreck&quot; + i);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        segmentRegions = new TextureRegion[segments];</b>
+<b class="nc">&nbsp;        segmentOutlineRegions = new TextureRegion[segments];</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; segments; i++){</b>
+<b class="nc">&nbsp;            segmentRegions[i] = Core.atlas.find(name + &quot;-segment&quot; + i);</b>
+<b class="nc">&nbsp;            segmentOutlineRegions[i] = Core.atlas.find(name + &quot;-segment-outline&quot; + i);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        clipSize = Math.max(region.width * 2f, clipSize);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void getRegionsToOutline(Seq&lt;TextureRegion&gt; out){
+<b class="nc">&nbsp;        for(Weapon weapon : weapons){</b>
+<b class="nc">&nbsp;            for(var part : weapon.parts){</b>
+<b class="nc">&nbsp;                part.getOutlines(out);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        for(var part : parts){</b>
+<b class="nc">&nbsp;            part.getOutlines(out);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean needsBodyOutline(){
+<b class="nc">&nbsp;        return alwaysCreateOutline;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void createIcons(MultiPacker packer){
+<b class="nc">&nbsp;        super.createIcons(packer);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(constructor == null) throw new IllegalArgumentException(&quot;No constructor set up for unit &#39;&quot; + name + &quot;&#39;, add this argument to your units field: `constructor = UnitEntity::create`&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        sample = constructor.get();</b>
+&nbsp;
+<b class="nc">&nbsp;        var toOutline = new Seq&lt;TextureRegion&gt;();</b>
+<b class="nc">&nbsp;        getRegionsToOutline(toOutline);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var region : toOutline){</b>
+<b class="nc">&nbsp;            if(region instanceof AtlasRegion atlas &amp;&amp; !Core.atlas.has(atlas.name + &quot;-outline&quot;)){</b>
+<b class="nc">&nbsp;                String regionName = atlas.name;</b>
+<b class="nc">&nbsp;                Pixmap outlined = Pixmaps.outline(Core.atlas.getPixmap(region), outlineColor, outlineRadius);</b>
+&nbsp;
+<b class="nc">&nbsp;                Drawf.checkBleed(outlined);</b>
+&nbsp;
+<b class="nc">&nbsp;                packer.add(PageType.main, regionName + &quot;-outline&quot;, outlined);</b>
+<b class="nc">&nbsp;                outlined.dispose();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(outlines){</b>
+<b class="nc">&nbsp;            Seq&lt;TextureRegion&gt; outlineSeq = Seq.with(region, jointRegion, footRegion, baseJointRegion, legRegion, treadRegion);</b>
+<b class="nc">&nbsp;            if(Core.atlas.has(name + &quot;-leg-base&quot;)){</b>
+<b class="nc">&nbsp;                outlineSeq.add(legBaseRegion);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //note that mods with these regions already outlined will have *two* outlines made, which is... undesirable
+<b class="nc">&nbsp;            for(var outlineTarget : outlineSeq){</b>
+<b class="nc">&nbsp;                if(!outlineTarget.found()) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                makeOutline(PageType.main, packer, outlineTarget, alwaysCreateOutline &amp;&amp; region == outlineTarget, outlineColor, outlineRadius);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if(sample instanceof Crawlc){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; segments; i++){</b>
+<b class="nc">&nbsp;                    makeOutline(packer, segmentRegions[i], name + &quot;-segment-outline&quot; + i, outlineColor, outlineRadius);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(Weapon weapon : weapons){</b>
+<b class="nc">&nbsp;                if(!weapon.name.isEmpty() &amp;&amp; (minfo.mod == null || weapon.name.startsWith(minfo.mod.name)) &amp;&amp; (weapon.top || !packer.isOutlined(weapon.name) || weapon.parts.contains(p -&gt; p.under))){</b>
+<b class="nc">&nbsp;                    makeOutline(PageType.main, packer, weapon.region, !weapon.top || weapon.parts.contains(p -&gt; p.under), outlineColor, outlineRadius);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(sample instanceof Tankc){</b>
+<b class="nc">&nbsp;            PixmapRegion pix = Core.atlas.getPixmap(treadRegion);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int r = 0; r &lt; treadRects.length; r++){</b>
+<b class="nc">&nbsp;                Rect treadRect = treadRects[r];</b>
+&nbsp;                //slice is always 1 pixel wide
+<b class="nc">&nbsp;                Pixmap slice = pix.crop((int)(treadRect.x + pix.width/2f), (int)(treadRect.y + pix.height/2f), 1, (int)treadRect.height);</b>
+<b class="nc">&nbsp;                int frames = treadFrames;</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; frames; i++){</b>
+<b class="nc">&nbsp;                    int pullOffset = treadPullOffset;</b>
+<b class="nc">&nbsp;                    Pixmap frame = new Pixmap(slice.width, slice.height);</b>
+<b class="nc">&nbsp;                    for(int y = 0; y &lt; slice.height; y++){</b>
+<b class="nc">&nbsp;                        int idx = y + i;</b>
+<b class="nc">&nbsp;                        if(idx &gt;= slice.height){</b>
+<b class="nc">&nbsp;                            idx -= slice.height;</b>
+<b class="nc">&nbsp;                            idx += pullOffset;</b>
+<b class="nc">&nbsp;                            idx = Mathf.mod(idx, slice.height);</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        frame.setRaw(0, y, slice.getRaw(0, idx));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    packer.add(PageType.main, name + &quot;-treads&quot; + r + &quot;-&quot; + i, frame);</b>
+<b class="nc">&nbsp;                    frame.dispose();</b>
+&nbsp;                }
+<b class="nc">&nbsp;                slice.dispose();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the time required to build this unit, as a value that takes into account reconstructors */
+&nbsp;    public float getBuildTime(){
+<b class="nc">&nbsp;        getTotalRequirements();</b>
+<b class="nc">&nbsp;        return buildTime;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return all items needed to build this unit, including reconstructor steps. */
+&nbsp;    public ItemStack[] getTotalRequirements(){
+<b class="fc">&nbsp;        if(totalRequirements == null){</b>
+<b class="fc">&nbsp;            UnitType[] ret = {null};</b>
+<b class="fc">&nbsp;            float[] timeret = {0f};</b>
+<b class="fc">&nbsp;            ItemStack[] result = getRequirements(ret, timeret);</b>
+&nbsp;
+&nbsp;            //prevents stack overflow if requirements are circular and result != null
+<b class="fc">&nbsp;            totalRequirements = ItemStack.empty;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(result != null){</b>
+<b class="fc">&nbsp;                ItemSeq total = new ItemSeq();</b>
+&nbsp;
+<b class="fc">&nbsp;                total.add(result);</b>
+<b class="fc">&nbsp;                if(ret[0] != null){</b>
+<b class="fc">&nbsp;                    total.add(ret[0].getTotalRequirements());</b>
+&nbsp;                }
+<b class="fc">&nbsp;                totalRequirements = total.toArray();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            for(var stack : totalRequirements){</b>
+<b class="fc">&nbsp;                buildTime += stack.item.cost * stack.amount;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return totalRequirements;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return item requirements based on reconstructors or factories found; returns previous unit in array if provided */
+&nbsp;    public @Nullable ItemStack[] getRequirements(@Nullable UnitType[] prevReturn, @Nullable float[] timeReturn){
+&nbsp;        //find reconstructor
+<b class="fc">&nbsp;        var rec = (Reconstructor)content.blocks().find(b -&gt; b instanceof Reconstructor re &amp;&amp; re.upgrades.contains(u -&gt; u[1] == this));</b>
+&nbsp;
+<b class="fc">&nbsp;        if(rec != null &amp;&amp; rec.findConsumer(i -&gt; i instanceof ConsumeItems) instanceof ConsumeItems ci){</b>
+<b class="fc">&nbsp;            if(prevReturn != null){</b>
+<b class="fc">&nbsp;                prevReturn[0] = rec.upgrades.find(u -&gt; u[1] == this)[0];</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if(timeReturn != null){</b>
+<b class="fc">&nbsp;                timeReturn[0] = rec.constructTime;</b>
+&nbsp;            }
+<b class="fc">&nbsp;            return ci.items;</b>
+&nbsp;        }else{
+&nbsp;            //find a factory
+<b class="fc">&nbsp;            var factory = (UnitFactory)content.blocks().find(u -&gt; u instanceof UnitFactory uf &amp;&amp; uf.plans.contains(p -&gt; p.unit == this));</b>
+<b class="fc">&nbsp;            if(factory != null){</b>
+&nbsp;
+<b class="fc">&nbsp;                var plan = factory.plans.find(p -&gt; p.unit == this);</b>
+<b class="fc">&nbsp;                if(timeReturn != null){</b>
+<b class="fc">&nbsp;                    timeReturn[0] = plan.time;</b>
+&nbsp;                }
+<b class="fc">&nbsp;                return plan.requirements;</b>
+&nbsp;            }else{
+&nbsp;                //find an assembler
+<b class="fc">&nbsp;                var assembler = (UnitAssembler)content.blocks().find(u -&gt; u instanceof UnitAssembler a &amp;&amp; a.plans.contains(p -&gt; p.unit == this));</b>
+<b class="fc">&nbsp;                if(assembler != null){</b>
+<b class="fc">&nbsp;                    var plan = assembler.plans.find(p -&gt; p.unit == this);</b>
+&nbsp;
+<b class="fc">&nbsp;                    if(timeReturn != null){</b>
+<b class="fc">&nbsp;                        timeReturn[0] = plan.time;</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                    ItemSeq reqs = new ItemSeq();</b>
+<b class="fc">&nbsp;                    for(var bstack : plan.requirements){</b>
+<b class="fc">&nbsp;                        if(bstack.item instanceof Block block){</b>
+<b class="fc">&nbsp;                            for(var stack : block.requirements){</b>
+<b class="fc">&nbsp;                                reqs.add(stack.item, stack.amount * bstack.amount);</b>
+&nbsp;                            }
+<b class="fc">&nbsp;                        }else if(bstack.item instanceof UnitType unit){</b>
+<b class="fc">&nbsp;                            for(var stack : unit.getTotalRequirements()){</b>
+<b class="fc">&nbsp;                                reqs.add(stack.item, stack.amount * bstack.amount);</b>
+&nbsp;                            }
+&nbsp;                        }
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                    return reqs.toArray();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable ItemStack[] getFirstRequirements(){
+<b class="nc">&nbsp;        if(firstRequirements == null){</b>
+<b class="nc">&nbsp;            firstRequirements = getRequirements(null, null);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return firstRequirements;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ItemStack[] researchRequirements(){
+<b class="fc">&nbsp;        if(cachedRequirements != null){</b>
+<b class="fc">&nbsp;            return cachedRequirements;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        ItemStack[] stacks = getRequirements(null, null);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(stacks != null){</b>
+<b class="fc">&nbsp;            ItemStack[] out = new ItemStack[stacks.length];</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; out.length; i++){</b>
+<b class="fc">&nbsp;                out[i] = new ItemStack(stacks[i].item, UI.roundAmount((int)(Math.pow(stacks[i].amount, 1.1) * researchCostMultiplier)));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //remove zero-requirements for automatic unlocks
+<b class="fc">&nbsp;            out = Structs.filter(ItemStack.class, out, stack -&gt; stack.amount &gt; 0);</b>
+&nbsp;
+<b class="fc">&nbsp;            cachedRequirements = out;</b>
+&nbsp;
+<b class="fc">&nbsp;            return out;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return super.researchRequirements();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public double sense(LAccess sensor){
+<b class="nc">&nbsp;        return switch(sensor){</b>
+<b class="nc">&nbsp;            case health, maxHealth -&gt; health;</b>
+<b class="nc">&nbsp;            case size -&gt; hitSize / tilesize;</b>
+<b class="nc">&nbsp;            case itemCapacity -&gt; itemCapacity;</b>
+<b class="nc">&nbsp;            case speed -&gt; speed * 60f / tilesize;</b>
+<b class="nc">&nbsp;            case id -&gt; getLogicId();</b>
+<b class="nc">&nbsp;            default -&gt; Double.NaN;</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Object senseObject(LAccess sensor){
+<b class="nc">&nbsp;        if(sensor == LAccess.name) return name;</b>
+<b class="nc">&nbsp;        return noSensed;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ContentType getContentType(){
+<b class="fc">&nbsp;        return ContentType.unit;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Sets up engines, mirroring the contents of the specified array. */
+&nbsp;    public void setEnginesMirror(UnitEngine... array){
+<b class="fc">&nbsp;        for(var base : array){</b>
+<b class="fc">&nbsp;            engines.add(base);</b>
+&nbsp;
+<b class="fc">&nbsp;            var engine = base.copy();</b>
+<b class="fc">&nbsp;            engine.x *= -1;</b>
+<b class="fc">&nbsp;            engine.rotation = 180f - engine.rotation;</b>
+<b class="fc">&nbsp;            if(engine.rotation &lt; 0) engine.rotation += 360f;</b>
+<b class="fc">&nbsp;            engines.add(engine);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //region drawing
+&nbsp;
+&nbsp;    public void draw(Unit unit){
+<b class="nc">&nbsp;        if(unit.inFogTo(Vars.player.team())) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        unit.drawBuilding();</b>
+&nbsp;
+<b class="nc">&nbsp;        drawMining(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean isPayload = !unit.isAdded();</b>
+&nbsp;
+<b class="nc">&nbsp;        Mechc mech = unit instanceof Mechc ? (Mechc)unit : null;</b>
+<b class="nc">&nbsp;        float z = isPayload ? Draw.z() : unit.elevation &gt; 0.5f ? (lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit) : groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit.controller().isBeingControlled(player.unit())){</b>
+<b class="nc">&nbsp;            drawControl(unit);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!isPayload &amp;&amp; (unit.isFlying() || shadowElevation &gt; 0)){</b>
+<b class="nc">&nbsp;            Draw.z(Math.min(Layer.darkness, z - 1f));</b>
+<b class="nc">&nbsp;            drawShadow(unit);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(z - 0.02f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(mech != null){</b>
+<b class="nc">&nbsp;            drawMech(mech);</b>
+&nbsp;
+&nbsp;            //side
+<b class="nc">&nbsp;            legOffset.trns(mech.baseRotation(), 0f, Mathf.lerp(Mathf.sin(mech.walkExtend(true), 2f/Mathf.PI, 1) * mechSideSway, 0f, unit.elevation));</b>
+&nbsp;
+&nbsp;            //front
+<b class="nc">&nbsp;            legOffset.add(Tmp.v1.trns(mech.baseRotation() + 90, 0f, Mathf.lerp(Mathf.sin(mech.walkExtend(true), 1f/Mathf.PI, 1) * mechFrontSway, 0f, unit.elevation)));</b>
+&nbsp;
+<b class="nc">&nbsp;            unit.trns(legOffset.x, legOffset.y);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(unit instanceof Tankc){</b>
+<b class="nc">&nbsp;            drawTank((Unit &amp; Tankc)unit);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(unit instanceof Legsc &amp;&amp; !isPayload){</b>
+<b class="nc">&nbsp;            drawLegs((Unit &amp; Legsc)unit);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(Math.min(z - 0.01f, Layer.bullet - 1f));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit instanceof Payloadc){</b>
+<b class="nc">&nbsp;            drawPayload((Unit &amp; Payloadc)unit);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        drawSoftShadow(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(z);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit instanceof Crawlc c){</b>
+<b class="nc">&nbsp;            drawCrawl(c);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(drawBody) drawOutline(unit);</b>
+<b class="nc">&nbsp;        drawWeaponOutlines(unit);</b>
+<b class="nc">&nbsp;        if(engineLayer &gt; 0) Draw.z(engineLayer);</b>
+<b class="nc">&nbsp;        if(trailLength &gt; 0 &amp;&amp; !naval &amp;&amp; (unit.isFlying() || !useEngineElevation)){</b>
+<b class="nc">&nbsp;            drawTrail(unit);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(engines.size &gt; 0) drawEngines(unit);</b>
+<b class="nc">&nbsp;        Draw.z(z);</b>
+<b class="nc">&nbsp;        if(drawBody) drawBody(unit);</b>
+<b class="nc">&nbsp;        if(drawCell) drawCell(unit);</b>
+<b class="nc">&nbsp;        drawWeapons(unit);</b>
+<b class="nc">&nbsp;        if(drawItems) drawItems(unit);</b>
+<b class="nc">&nbsp;        if(!isPayload){</b>
+<b class="nc">&nbsp;            drawLight(unit);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(unit.shieldAlpha &gt; 0 &amp;&amp; drawShields){</b>
+<b class="nc">&nbsp;            drawShield(unit);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //TODO how/where do I draw under?
+<b class="nc">&nbsp;        if(parts.size &gt; 0){</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; parts.size; i++){</b>
+<b class="nc">&nbsp;                var part = parts.get(i);</b>
+&nbsp;
+<b class="nc">&nbsp;                WeaponMount mount = unit.mounts.length &gt; part.weaponIndex ? unit.mounts[part.weaponIndex] : null;</b>
+<b class="nc">&nbsp;                if(mount != null){</b>
+<b class="nc">&nbsp;                    DrawPart.params.set(mount.warmup, mount.reload / mount.weapon.reload, mount.smoothReload, mount.heat, mount.recoil, mount.charge, unit.x, unit.y, unit.rotation);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    DrawPart.params.set(0f, 0f, 0f, 0f, 0f, 0f, unit.x, unit.y, unit.rotation);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(unit instanceof Scaled s){</b>
+<b class="nc">&nbsp;                    DrawPart.params.life = s.fin();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                applyColor(unit);</b>
+<b class="nc">&nbsp;                part.draw(DrawPart.params);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!isPayload){</b>
+<b class="nc">&nbsp;            for(Ability a : unit.abilities){</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+<b class="nc">&nbsp;                a.draw(unit);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(mech != null){</b>
+<b class="nc">&nbsp;            unit.trns(-legOffset.x, -legOffset.y);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //...where do I put this
+&nbsp;    public Color shieldColor(Unit unit){
+<b class="nc">&nbsp;        return shieldColor == null ? unit.team.color : shieldColor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public void drawMining(Unit unit){
+<b class="nc">&nbsp;        if(!unit.mining()) return;</b>
+<b class="nc">&nbsp;        float focusLen = unit.hitSize / 2f + Mathf.absin(Time.time, 1.1f, 0.5f);</b>
+<b class="nc">&nbsp;        float swingScl = 12f, swingMag = tilesize / 8f;</b>
+<b class="nc">&nbsp;        float flashScl = 0.3f;</b>
+&nbsp;
+<b class="nc">&nbsp;        float px = unit.x + Angles.trnsx(unit.rotation, focusLen);</b>
+<b class="nc">&nbsp;        float py = unit.y + Angles.trnsy(unit.rotation, focusLen);</b>
+&nbsp;
+<b class="nc">&nbsp;        float ex = unit.mineTile.worldx() + Mathf.sin(Time.time + 48, swingScl, swingMag);</b>
+<b class="nc">&nbsp;        float ey = unit.mineTile.worldy() + Mathf.sin(Time.time + 48, swingScl + 2f, swingMag);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(Layer.flyingUnit + 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Color.lightGray, Color.white, 1f - flashScl + Mathf.absin(Time.time, 0.5f, flashScl));</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.laser(mineLaserRegion, mineLaserEndRegion, px, py, ex, ey, 0.75f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit.isLocal()){</b>
+<b class="nc">&nbsp;            Lines.stroke(1f, Pal.accent);</b>
+<b class="nc">&nbsp;            Lines.poly(unit.mineTile.worldx(), unit.mineTile.worldy(), 4, tilesize / 2f * Mathf.sqrt2, Time.time);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T extends Unit &amp; Payloadc&gt; void drawPayload(T unit){
+<b class="nc">&nbsp;        if(unit.hasPayload()){</b>
+<b class="nc">&nbsp;            Payload pay = unit.payloads().first();</b>
+<b class="nc">&nbsp;            pay.set(unit.x, unit.y, unit.rotation);</b>
+<b class="nc">&nbsp;            pay.draw();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawShield(Unit unit){
+<b class="nc">&nbsp;        float alpha = unit.shieldAlpha();</b>
+<b class="nc">&nbsp;        float radius = unit.hitSize() * 1.3f;</b>
+<b class="nc">&nbsp;        Fill.light(unit.x, unit.y, Lines.circleVertices(radius), radius,</b>
+&nbsp;            Color.clear,
+<b class="nc">&nbsp;            Tmp.c2.set(unit.type.shieldColor(unit)).lerp(Color.white, Mathf.clamp(unit.hitTime() / 2f)).a(0.7f * alpha)</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawControl(Unit unit){
+<b class="nc">&nbsp;        Draw.z(unit.isFlying() ? Layer.flyingUnitLow : Layer.groundUnit - 2);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Pal.accent, Color.white, Mathf.absin(4f, 0.3f));</b>
+<b class="nc">&nbsp;        Lines.poly(unit.x, unit.y, 4, unit.hitSize + 1.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawShadow(Unit unit){
+<b class="nc">&nbsp;        float e = Mathf.clamp(unit.elevation, shadowElevation, 1f) * shadowElevationScl * (1f - unit.drownTime);</b>
+<b class="nc">&nbsp;        float x = unit.x + shadowTX * e, y = unit.y + shadowTY * e;</b>
+<b class="nc">&nbsp;        Floor floor = world.floorWorld(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        float dest = floor.canShadow ? 1f : 0f;</b>
+&nbsp;        //yes, this updates state in draw()... which isn&#39;t a problem, because I don&#39;t want it to be obvious anyway
+<b class="nc">&nbsp;        unit.shadowAlpha = unit.shadowAlpha &lt; 0 ? dest : Mathf.approachDelta(unit.shadowAlpha, dest, 0.11f);</b>
+<b class="nc">&nbsp;        Draw.color(Pal.shadow, Pal.shadow.a * unit.shadowAlpha);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.rect(shadowRegion, unit.x + shadowTX * e, unit.y + shadowTY * e, unit.rotation - 90);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawSoftShadow(Unit unit){
+<b class="nc">&nbsp;        drawSoftShadow(unit, 1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawSoftShadow(Unit unit, float alpha){
+<b class="nc">&nbsp;        drawSoftShadow(unit.x, unit.y, unit.rotation, alpha);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawSoftShadow(float x, float y, float rotation, float alpha){
+<b class="nc">&nbsp;        Draw.color(0, 0, 0, 0.4f * alpha);</b>
+<b class="nc">&nbsp;        float rad = 1.6f;</b>
+<b class="nc">&nbsp;        float size = Math.max(region.width, region.height) * region.scl();</b>
+<b class="nc">&nbsp;        Draw.rect(softShadowRegion, x, y, size * rad * Draw.xscl, size * rad * Draw.yscl, rotation - 90);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawItems(Unit unit){
+<b class="nc">&nbsp;        applyColor(unit);</b>
+&nbsp;
+&nbsp;        //draw back items
+<b class="nc">&nbsp;        if(unit.item() != null &amp;&amp; unit.itemTime &gt; 0.01f){</b>
+<b class="nc">&nbsp;            float sin = Mathf.absin(Time.time, 5f, 1f);</b>
+<b class="nc">&nbsp;            float size = (itemSize + sin) * unit.itemTime;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.mixcol(Pal.accent, sin * 0.1f);</b>
+<b class="nc">&nbsp;            Draw.rect(unit.item().fullIcon,</b>
+<b class="nc">&nbsp;            unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),</b>
+<b class="nc">&nbsp;            unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY),</b>
+&nbsp;            size, size, unit.rotation);
+<b class="nc">&nbsp;            Draw.mixcol();</b>
+&nbsp;
+<b class="nc">&nbsp;            size = ((3f + sin) * unit.itemTime + 0.5f) * 2;</b>
+<b class="nc">&nbsp;            Draw.color(Pal.accent);</b>
+<b class="nc">&nbsp;            Draw.rect(itemCircleRegion,</b>
+<b class="nc">&nbsp;            unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),</b>
+<b class="nc">&nbsp;            unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY),</b>
+&nbsp;            size, size);
+&nbsp;
+<b class="nc">&nbsp;            if(unit.isLocal() &amp;&amp; !renderer.pixelate){</b>
+<b class="nc">&nbsp;                Fonts.outline.draw(unit.stack.amount + &quot;&quot;,</b>
+<b class="nc">&nbsp;                unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),</b>
+<b class="nc">&nbsp;                unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY) - 3,</b>
+<b class="nc">&nbsp;                Pal.accent, 0.25f * unit.itemTime / Scl.scl(1f), false, Align.center</b>
+&nbsp;                );
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawTrail(Unit unit){
+<b class="nc">&nbsp;        if(unit.trail == null){</b>
+<b class="nc">&nbsp;            unit.trail = new Trail(trailLength);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Trail trail = unit.trail;</b>
+<b class="nc">&nbsp;        trail.draw(trailColor == null ? unit.team.color : trailColor, (engineSize + Mathf.absin(Time.time, 2f, engineSize / 4f) * (useEngineElevation ? unit.elevation : 1f)) * trailScl);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawEngines(Unit unit){
+<b class="nc">&nbsp;        if((useEngineElevation ? unit.elevation : 1f) &lt;= 0.0001f) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var engine : engines){</b>
+<b class="nc">&nbsp;            engine.draw(unit);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawWeapons(Unit unit){
+<b class="nc">&nbsp;        applyColor(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(WeaponMount mount : unit.mounts){</b>
+<b class="nc">&nbsp;            mount.weapon.draw(unit, mount);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawWeaponOutlines(Unit unit){
+<b class="nc">&nbsp;        applyColor(unit);</b>
+<b class="nc">&nbsp;        applyOutlineColor(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(WeaponMount mount : unit.mounts){</b>
+<b class="nc">&nbsp;            if(!mount.weapon.top){</b>
+&nbsp;                //apply layer offset, roll it back at the end
+<b class="nc">&nbsp;                float z = Draw.z();</b>
+<b class="nc">&nbsp;                Draw.z(z + mount.weapon.layerOffset);</b>
+&nbsp;
+<b class="nc">&nbsp;                mount.weapon.drawOutline(unit, mount);</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.z(z);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawOutline(Unit unit){
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.atlas.isFound(outlineRegion)){</b>
+<b class="nc">&nbsp;            applyColor(unit);</b>
+<b class="nc">&nbsp;            applyOutlineColor(unit);</b>
+<b class="nc">&nbsp;            Draw.rect(outlineRegion, unit.x, unit.y, unit.rotation - 90);</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBody(Unit unit){
+<b class="nc">&nbsp;        applyColor(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.rect(region, unit.x, unit.y, unit.rotation - 90);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawCell(Unit unit){
+<b class="nc">&nbsp;        applyColor(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(cellColor(unit));</b>
+<b class="nc">&nbsp;        Draw.rect(cellRegion, unit.x, unit.y, unit.rotation - 90);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Color cellColor(Unit unit){
+<b class="nc">&nbsp;        float f = Mathf.clamp(unit.healthf());</b>
+<b class="nc">&nbsp;        return Tmp.c1.set(Color.black).lerp(unit.team.color, f + Mathf.absin(Time.time, Math.max(f * 5f, 1f), 1f - f));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawLight(Unit unit){
+<b class="nc">&nbsp;        if(lightRadius &gt; 0){</b>
+<b class="nc">&nbsp;            Drawf.light(unit.x, unit.y, lightRadius, lightColor, lightOpacity);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T extends Unit &amp; Tankc&gt; void drawTank(T unit){
+<b class="nc">&nbsp;        applyColor(unit);</b>
+<b class="nc">&nbsp;        Draw.rect(treadRegion, unit.x, unit.y, unit.rotation - 90);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(treadRegion.found()){</b>
+<b class="nc">&nbsp;            int frame = (int)(unit.treadTime()) % treadFrames;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; treadRects.length; i ++){</b>
+<b class="nc">&nbsp;                var region = treadRegions[i][frame];</b>
+<b class="nc">&nbsp;                var treadRect = treadRects[i];</b>
+<b class="nc">&nbsp;                float xOffset = -(treadRect.x + treadRect.width/2f);</b>
+<b class="nc">&nbsp;                float yOffset = -(treadRect.y + treadRect.height/2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int side : Mathf.signs){</b>
+<b class="nc">&nbsp;                    Tmp.v1.set(xOffset * side, yOffset).rotate(unit.rotation - 90);</b>
+<b class="nc">&nbsp;                    Draw.rect(region, unit.x + Tmp.v1.x / 4f, unit.y + Tmp.v1.y / 4f, treadRect.width / 4f, region.height * region.scale / 4f, unit.rotation - 90);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T extends Unit &amp; Legsc&gt; void drawLegs(T unit){
+<b class="nc">&nbsp;        applyColor(unit);</b>
+<b class="nc">&nbsp;        Tmp.c3.set(Draw.getMixColor());</b>
+&nbsp;
+<b class="nc">&nbsp;        Leg[] legs = unit.legs();</b>
+&nbsp;
+<b class="nc">&nbsp;        float ssize = footRegion.width * footRegion.scl() * 1.5f;</b>
+<b class="nc">&nbsp;        float rotation = unit.baseRotation();</b>
+<b class="nc">&nbsp;        float invDrown = 1f - unit.drownTime;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(footRegion.found()){</b>
+<b class="nc">&nbsp;            for(Leg leg : legs){</b>
+<b class="nc">&nbsp;                Drawf.shadow(leg.base.x, leg.base.y, ssize, invDrown);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //legs are drawn front first
+<b class="nc">&nbsp;        for(int j = legs.length - 1; j &gt;= 0; j--){</b>
+<b class="nc">&nbsp;            int i = (j % 2 == 0 ? j/2 : legs.length - 1 - j/2);</b>
+<b class="nc">&nbsp;            Leg leg = legs[i];</b>
+<b class="nc">&nbsp;            boolean flip = i &gt;= legs.length/2f;</b>
+<b class="nc">&nbsp;            int flips = Mathf.sign(flip);</b>
+&nbsp;
+<b class="nc">&nbsp;            Vec2 position = unit.legOffset(legOffset, i).add(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;            Tmp.v1.set(leg.base).sub(leg.joint).inv().setLength(legExtension);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(footRegion.found() &amp;&amp; leg.moving &amp;&amp; shadowElevation &gt; 0){</b>
+<b class="nc">&nbsp;                float scl = shadowElevation * invDrown;</b>
+<b class="nc">&nbsp;                float elev = Mathf.slope(1f - leg.stage) * scl;</b>
+<b class="nc">&nbsp;                Draw.color(Pal.shadow);</b>
+<b class="nc">&nbsp;                Draw.rect(footRegion, leg.base.x + shadowTX * elev, leg.base.y + shadowTY * elev, position.angleTo(leg.base));</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.mixcol(Tmp.c3, Tmp.c3.a);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(footRegion.found()){</b>
+<b class="nc">&nbsp;                Draw.rect(footRegion, leg.base.x, leg.base.y, position.angleTo(leg.base));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Lines.stroke(legRegion.height * legRegion.scl() * flips);</b>
+<b class="nc">&nbsp;            Lines.line(legRegion, position.x, position.y, leg.joint.x, leg.joint.y, false);</b>
+&nbsp;
+<b class="nc">&nbsp;            Lines.stroke(legBaseRegion.height * legRegion.scl() * flips);</b>
+<b class="nc">&nbsp;            Lines.line(legBaseRegion, leg.joint.x + Tmp.v1.x, leg.joint.y + Tmp.v1.y, leg.base.x, leg.base.y, false);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(jointRegion.found()){</b>
+<b class="nc">&nbsp;                Draw.rect(jointRegion, leg.joint.x, leg.joint.y);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //base joints are drawn after everything else
+<b class="nc">&nbsp;        if(baseJointRegion.found()){</b>
+<b class="nc">&nbsp;            for(int j = legs.length - 1; j &gt;= 0; j--){</b>
+&nbsp;                //TODO does the index / draw order really matter?
+<b class="nc">&nbsp;                Vec2 position = unit.legOffset(legOffset, (j % 2 == 0 ? j/2 : legs.length - 1 - j/2)).add(unit);</b>
+<b class="nc">&nbsp;                Draw.rect(baseJointRegion, position.x, position.y, rotation);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(baseRegion.found()){</b>
+<b class="nc">&nbsp;            Draw.rect(baseRegion, unit.x, unit.y, rotation - 90);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO
+&nbsp;    public void drawCrawl(Crawlc crawl){
+<b class="nc">&nbsp;        Unit unit = (Unit)crawl;</b>
+<b class="nc">&nbsp;        applyColor(unit);</b>
+&nbsp;
+&nbsp;        //change to 2 TODO
+<b class="nc">&nbsp;        for(int p = 0; p &lt; 2; p++){</b>
+<b class="nc">&nbsp;            TextureRegion[] regions = p == 0 ? segmentOutlineRegions : segmentRegions;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; segments; i++){</b>
+<b class="nc">&nbsp;                float trns = Mathf.sin(crawl.crawlTime() + i * segmentPhase, segmentScl, segmentMag);</b>
+&nbsp;
+&nbsp;                //at segment 0, rotation = segmentRot, but at the last segment it is rotation
+<b class="nc">&nbsp;                float rot = Mathf.slerp(crawl.segmentRot(), unit.rotation, i / (float)(segments - 1));</b>
+<b class="nc">&nbsp;                float tx = Angles.trnsx(rot, trns), ty = Angles.trnsy(rot, trns);</b>
+&nbsp;
+&nbsp;                //shadow
+<b class="nc">&nbsp;                Draw.color(0f, 0f, 0f, 0.2f);</b>
+&nbsp;                //Draw.rect(regions[i], unit.x + tx + 2f, unit.y + ty - 2f, rot - 90);
+&nbsp;
+<b class="nc">&nbsp;                applyColor(unit);</b>
+&nbsp;
+&nbsp;                //TODO merge outlines?
+<b class="nc">&nbsp;                Draw.rect(regions[i], unit.x + tx, unit.y + ty, rot - 90);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawMech(Mechc mech){
+<b class="nc">&nbsp;        Unit unit = (Unit)mech;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        float e = unit.elevation;</b>
+&nbsp;
+<b class="nc">&nbsp;        float sin = Mathf.lerp(Mathf.sin(mech.walkExtend(true), 2f / Mathf.PI, 1f), 0f, e);</b>
+<b class="nc">&nbsp;        float extension = Mathf.lerp(mech.walkExtend(false), 0, e);</b>
+<b class="nc">&nbsp;        float boostTrns = e * 2f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Floor floor = unit.isFlying() ? Blocks.air.asFloor() : unit.floorOn();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(floor.isLiquid){</b>
+<b class="nc">&nbsp;            Draw.color(Color.white, floor.mapColor, 0.5f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;            Draw.mixcol(Tmp.c1.set(mechLegColor).lerp(Color.white, Mathf.clamp(unit.hitTime)), Math.max(Math.max(0, i * extension / mechStride), unit.hitTime));</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(legRegion,</b>
+<b class="nc">&nbsp;            unit.x + Angles.trnsx(mech.baseRotation(), extension * i - boostTrns, -boostTrns*i),</b>
+<b class="nc">&nbsp;            unit.y + Angles.trnsy(mech.baseRotation(), extension * i - boostTrns, -boostTrns*i),</b>
+<b class="nc">&nbsp;            legRegion.width * legRegion.scl() * i,</b>
+<b class="nc">&nbsp;            legRegion.height * legRegion.scl() * (1 - Math.max(-sin * i, 0) * 0.5f),</b>
+<b class="nc">&nbsp;            mech.baseRotation() - 90 + 35f*i*e);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.mixcol(Color.white, unit.hitTime);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit.lastDrownFloor != null){</b>
+<b class="nc">&nbsp;            Draw.color(Color.white, Tmp.c1.set(unit.lastDrownFloor.mapColor).mul(0.83f), unit.drownTime * 0.9f);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Draw.color(Color.white);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.rect(baseRegion, unit, mech.baseRotation() - 90);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.mixcol();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void applyOutlineColor(Unit unit){
+<b class="nc">&nbsp;        if(unit.drownTime &gt; 0 &amp;&amp; unit.lastDrownFloor != null){</b>
+<b class="nc">&nbsp;            Draw.color(Color.white, Tmp.c1.set(unit.lastDrownFloor.mapColor).mul(0.8f), unit.drownTime * 0.9f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void applyColor(Unit unit){
+<b class="nc">&nbsp;        Draw.color();</b>
+<b class="nc">&nbsp;        if(healFlash){</b>
+<b class="nc">&nbsp;            Tmp.c1.set(Color.white).lerp(healColor, Mathf.clamp(unit.healTime - unit.hitTime));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Draw.mixcol(Tmp.c1, Math.max(unit.hitTime, !healFlash ? 0f : Mathf.clamp(unit.healTime)));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit.drownTime &gt; 0 &amp;&amp; unit.lastDrownFloor != null){</b>
+<b class="nc">&nbsp;            Draw.mixcol(Tmp.c1.set(unit.lastDrownFloor.mapColor).mul(0.83f), unit.drownTime * 0.9f);</b>
+&nbsp;        }
+&nbsp;        //this is horribly scuffed.
+<b class="nc">&nbsp;        if(renderer != null &amp;&amp; renderer.overlays != null){</b>
+<b class="nc">&nbsp;            renderer.overlays.checkApplySelection(unit);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;
+&nbsp;    public static class UnitEngine implements Cloneable{
+&nbsp;        public float x, y, radius, rotation;
+&nbsp;
+<b class="fc">&nbsp;        public UnitEngine(float x, float y, float radius, float rotation){</b>
+<b class="fc">&nbsp;            this.x = x;</b>
+<b class="fc">&nbsp;            this.y = y;</b>
+<b class="fc">&nbsp;            this.radius = radius;</b>
+<b class="fc">&nbsp;            this.rotation = rotation;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        public UnitEngine(){</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void draw(Unit unit){
+<b class="nc">&nbsp;            UnitType type = unit.type;</b>
+<b class="nc">&nbsp;            float scale = type.useEngineElevation ? unit.elevation : 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(scale &lt;= 0.0001f) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            float rot = unit.rotation - 90;</b>
+<b class="nc">&nbsp;            Color color = type.engineColor == null ? unit.team.color : type.engineColor;</b>
+&nbsp;
+<b class="nc">&nbsp;            Tmp.v1.set(x, y).rotate(rot);</b>
+<b class="nc">&nbsp;            float ex = Tmp.v1.x, ey = Tmp.v1.y;</b>
+&nbsp;
+&nbsp;            //engine outlines (cursed?)
+&nbsp;            /*float z = Draw.z();
+&nbsp;            Draw.z(z - 0.0001f);
+&nbsp;            Draw.color(type.outlineColor);
+&nbsp;            Fill.circle(
+&nbsp;            unit.x + ex,
+&nbsp;            unit.y + ey,
+&nbsp;            (type.outlineRadius * Draw.scl + radius + Mathf.absin(Time.time, 2f, radius / 4f)) * scale
+&nbsp;            );
+&nbsp;            Draw.z(z);*/
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(color);</b>
+<b class="nc">&nbsp;            Fill.circle(</b>
+&nbsp;            unit.x + ex,
+&nbsp;            unit.y + ey,
+<b class="nc">&nbsp;            (radius + Mathf.absin(Time.time, 2f, radius / 4f)) * scale</b>
+&nbsp;            );
+<b class="nc">&nbsp;            Draw.color(type.engineColorInner);</b>
+<b class="nc">&nbsp;            Fill.circle(</b>
+<b class="nc">&nbsp;            unit.x + ex - Angles.trnsx(rot + rotation, 1f),</b>
+<b class="nc">&nbsp;            unit.y + ey - Angles.trnsy(rot + rotation, 1f),</b>
+<b class="nc">&nbsp;            (radius + Mathf.absin(Time.time, 2f, radius / 4f)) / 2f  * scale</b>
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+&nbsp;        public UnitEngine copy(){
+&nbsp;            try{
+<b class="fc">&nbsp;                return (UnitEngine)clone();</b>
+<b class="nc">&nbsp;            }catch(CloneNotSupportedException awful){</b>
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;fantastic&quot;, awful);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

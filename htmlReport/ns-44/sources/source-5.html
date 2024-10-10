@@ -1,0 +1,165 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ConsumeItemExplode</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.consumers</a>
+</div>
+
+<h1>Coverage Summary for Class: ConsumeItemExplode (mindustry.world.consumers)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConsumeItemExplode</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (9/18)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.consumers;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Causes a block to explode when explosive items are moved into it. */
+&nbsp;public class ConsumeItemExplode extends ConsumeItemFilter{
+<b class="fc">&nbsp;    public float damage = 4f;</b>
+<b class="fc">&nbsp;    public float threshold, baseChance = 0.06f;</b>
+<b class="fc">&nbsp;    public Effect explodeEffect = Fx.generatespark;</b>
+&nbsp;
+<b class="fc">&nbsp;    public ConsumeItemExplode(float threshold){</b>
+<b class="fc">&nbsp;        this.filter = item -&gt; item.explosiveness &gt;= this.threshold;</b>
+<b class="fc">&nbsp;        this.threshold = threshold;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConsumeItemExplode(){
+<b class="fc">&nbsp;        this(0.5f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(Building build){
+<b class="nc">&nbsp;        var item = getConsumed(build);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(item != null){</b>
+<b class="nc">&nbsp;            if(Vars.state.rules.reactorExplosions &amp;&amp; Mathf.chance(build.delta() * baseChance * Mathf.clamp(item.explosiveness - threshold))){</b>
+<b class="nc">&nbsp;                build.damage(damage);</b>
+<b class="nc">&nbsp;                explodeEffect.at(build.x + Mathf.range(build.block.size * tilesize / 2f), build.y + Mathf.range(build.block.size * tilesize / 2f));</b>
+<b class="nc">&nbsp;                Events.fire(Trigger.blastGenerator);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //as this consumer doesn&#39;t actually consume anything, all methods below are empty
+&nbsp;
+&nbsp;    @Override
+<b class="nc">&nbsp;    public void build(Building build, Table table){}</b>
+&nbsp;
+&nbsp;    @Override
+<b class="nc">&nbsp;    public void trigger(Building build){}</b>
+&nbsp;
+&nbsp;    @Override
+<b class="nc">&nbsp;    public void display(Stats stats){}</b>
+&nbsp;
+&nbsp;    @Override
+<b class="fc">&nbsp;    public void apply(Block block){}</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float efficiency(Building build){
+<b class="fc">&nbsp;        return 1f;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

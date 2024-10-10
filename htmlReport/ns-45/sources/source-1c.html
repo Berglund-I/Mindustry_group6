@@ -1,0 +1,169 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawRegion</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawRegion (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawRegion</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (3/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48%
+  </span>
+  <span class="absValue">
+    (12/25)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;public class DrawRegion extends DrawBlock{
+&nbsp;    public TextureRegion region;
+<b class="fc">&nbsp;    public String suffix = &quot;&quot;;</b>
+<b class="fc">&nbsp;    public boolean spinSprite = false;</b>
+<b class="fc">&nbsp;    public boolean drawPlan = true;</b>
+<b class="fc">&nbsp;    public boolean buildingRotate = false;</b>
+&nbsp;    public float rotateSpeed, x, y, rotation;
+&nbsp;    /** Any number &lt;=0 disables layer changes. */
+<b class="fc">&nbsp;    public float layer = -1;</b>
+&nbsp;
+<b class="fc">&nbsp;    public DrawRegion(String suffix){</b>
+<b class="fc">&nbsp;        this.suffix = suffix;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public DrawRegion(String suffix, float rotateSpeed){</b>
+<b class="nc">&nbsp;        this.suffix = suffix;</b>
+<b class="nc">&nbsp;        this.rotateSpeed = rotateSpeed;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public DrawRegion(String suffix, float rotateSpeed, boolean spinSprite){</b>
+<b class="fc">&nbsp;        this.suffix = suffix;</b>
+<b class="fc">&nbsp;        this.spinSprite = spinSprite;</b>
+<b class="fc">&nbsp;        this.rotateSpeed = rotateSpeed;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public DrawRegion(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+<b class="nc">&nbsp;        float z = Draw.z();</b>
+<b class="nc">&nbsp;        if(layer &gt; 0) Draw.z(layer);</b>
+<b class="nc">&nbsp;        if(spinSprite){</b>
+<b class="nc">&nbsp;            Drawf.spinSprite(region, build.x + x, build.y + y, build.totalProgress() * rotateSpeed + rotation + (buildingRotate ? build.rotdeg() : 0));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Draw.rect(region, build.x + x, build.y + y, build.totalProgress() * rotateSpeed + rotation + (buildingRotate ? build.rotdeg() : 0));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Draw.z(z);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlan(Block block, BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        if(!drawPlan) return;</b>
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy(), (buildingRotate ? plan.rotation * 90f : 0));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(Block block){
+<b class="nc">&nbsp;        return new TextureRegion[]{region};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(Block block){
+<b class="nc">&nbsp;        region = Core.atlas.find(block.name + suffix);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

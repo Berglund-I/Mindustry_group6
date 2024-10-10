@@ -1,0 +1,179 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BaseDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: BaseDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BaseDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/27)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.core.GameState.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class BaseDialog extends Dialog{
+&nbsp;    protected boolean wasPaused;
+&nbsp;    /** If true, this dialog will pause the game while open. */
+&nbsp;    protected boolean shouldPause;
+&nbsp;
+&nbsp;    public BaseDialog(String title, DialogStyle style){
+<b class="nc">&nbsp;        super(title, style);</b>
+<b class="nc">&nbsp;        setFillParent(true);</b>
+<b class="nc">&nbsp;        this.title.setAlignment(Align.center);</b>
+<b class="nc">&nbsp;        titleTable.row();</b>
+<b class="nc">&nbsp;        titleTable.image(Tex.whiteui, Pal.accent).growX().height(3f).pad(4f);</b>
+&nbsp;
+<b class="nc">&nbsp;        hidden(() -&gt; {</b>
+<b class="nc">&nbsp;            if(shouldPause &amp;&amp; state.isGame() &amp;&amp; !net.active() &amp;&amp; !wasPaused){</b>
+<b class="nc">&nbsp;                state.set(State.playing);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Sounds.back.play();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        shown(() -&gt; {</b>
+<b class="nc">&nbsp;            if(shouldPause &amp;&amp; state.isGame() &amp;&amp; !net.active()){</b>
+<b class="nc">&nbsp;                wasPaused = state.is(State.paused);</b>
+<b class="nc">&nbsp;                state.set(State.paused);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public BaseDialog(String title){
+<b class="nc">&nbsp;        this(title, Core.scene.getStyle(DialogStyle.class));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Places the buttons as an overlay on top of the content. Used when the content can be scrolled through.*/
+&nbsp;    protected void makeButtonOverlay(){
+<b class="nc">&nbsp;        clearChildren();</b>
+<b class="nc">&nbsp;        add(titleTable).growX().row();</b>
+<b class="nc">&nbsp;        stack(cont, buttons).grow();</b>
+<b class="nc">&nbsp;        buttons.bottom();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void onResize(Runnable run){
+<b class="nc">&nbsp;        Events.on(ResizeEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            if(isShown() &amp;&amp; Core.scene.getDialog() == this){</b>
+<b class="nc">&nbsp;                run.run();</b>
+<b class="nc">&nbsp;                updateScrollFocus();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addCloseListener(){
+<b class="nc">&nbsp;       closeOnBack();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addCloseButton(float width){
+<b class="nc">&nbsp;        buttons.defaults().size(width, 64f);</b>
+<b class="nc">&nbsp;        buttons.button(&quot;@back&quot;, Icon.left, this::hide).size(width, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseListener();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void addCloseButton(){
+<b class="nc">&nbsp;        addCloseButton(210f);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

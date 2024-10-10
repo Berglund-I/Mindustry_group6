@@ -1,0 +1,488 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ItemModule</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.modules</a>
+</div>
+
+<h1>Coverage Summary for Class: ItemModule (mindustry.world.modules)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ItemModule</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.2%
+  </span>
+  <span class="absValue">
+    (19/45)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    32.5%
+  </span>
+  <span class="absValue">
+    (49/151)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ItemModule$ItemCalculator</td>
+  </tr>
+  <tr>
+    <td class="name">ItemModule$ItemConsumer</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    42.2%
+  </span>
+  <span class="absValue">
+    (19/45)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    32.5%
+  </span>
+  <span class="absValue">
+    (49/151)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.modules;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class ItemModule extends BlockModule{</b>
+<b class="fc">&nbsp;    public static final ItemModule empty = new ItemModule();</b>
+&nbsp;
+&nbsp;    private static final int windowSize = 6;
+&nbsp;    private static WindowedMean[] cacheFlow;
+&nbsp;    private static float[] cacheSums;
+&nbsp;    private static float[] displayFlow;
+<b class="fc">&nbsp;    private static final Bits cacheBits = new Bits();</b>
+<b class="fc">&nbsp;    private static final Interval flowTimer = new Interval(2);</b>
+&nbsp;    private static final float pollScl = 20f;
+&nbsp;
+<b class="fc">&nbsp;    protected int[] items = new int[content.items().size];</b>
+&nbsp;    protected int total;
+&nbsp;    protected int takeRotation;
+&nbsp;
+&nbsp;    private @Nullable WindowedMean[] flow;
+&nbsp;
+&nbsp;    public ItemModule copy(){
+<b class="nc">&nbsp;        ItemModule out = new ItemModule();</b>
+<b class="nc">&nbsp;        out.set(this);</b>
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void set(ItemModule other){
+<b class="nc">&nbsp;        total = other.total;</b>
+<b class="nc">&nbsp;        takeRotation = other.takeRotation;</b>
+<b class="nc">&nbsp;        System.arraycopy(other.items, 0, items, 0, items.length);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateFlow(){
+&nbsp;        //update the flow at N fps at most
+<b class="nc">&nbsp;        if(flowTimer.get(1, pollScl)){</b>
+&nbsp;
+<b class="nc">&nbsp;            if(flow == null){</b>
+<b class="nc">&nbsp;                if(cacheFlow == null || cacheFlow.length != items.length){</b>
+<b class="nc">&nbsp;                    cacheFlow = new WindowedMean[items.length];</b>
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; items.length; i++){</b>
+<b class="nc">&nbsp;                        cacheFlow[i] = new WindowedMean(windowSize);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    cacheSums = new float[items.length];</b>
+<b class="nc">&nbsp;                    displayFlow = new float[items.length];</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; items.length; i++){</b>
+<b class="nc">&nbsp;                        cacheFlow[i].reset();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    Arrays.fill(cacheSums, 0);</b>
+<b class="nc">&nbsp;                    cacheBits.clear();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Arrays.fill(displayFlow, -1);</b>
+&nbsp;
+<b class="nc">&nbsp;                flow = cacheFlow;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            boolean updateFlow = flowTimer.get(30);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; items.length; i++){</b>
+<b class="nc">&nbsp;                flow[i].add(cacheSums[i]);</b>
+<b class="nc">&nbsp;                if(cacheSums[i] &gt; 0){</b>
+<b class="nc">&nbsp;                    cacheBits.set(i);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                cacheSums[i] = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(updateFlow){</b>
+<b class="nc">&nbsp;                    displayFlow[i] = flow[i].hasEnoughData() ? flow[i].mean() / pollScl : -1;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void stopFlow(){
+<b class="nc">&nbsp;        flow = null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int length(){
+<b class="nc">&nbsp;        return items.length;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return a specific item&#39;s flow rate in items/s; any value &lt; 0 means not ready.*/
+&nbsp;    public float getFlowRate(Item item){
+<b class="nc">&nbsp;        return flow == null ? -1f : displayFlow[item.id] * 60;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasFlowItem(Item item){
+<b class="nc">&nbsp;        return flow != null &amp;&amp; cacheBits.get(item.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void each(ItemConsumer cons){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; items.length; i++){</b>
+<b class="nc">&nbsp;            if(items[i] != 0){</b>
+<b class="nc">&nbsp;                cons.accept(content.item(i), items[i]);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public float sum(ItemCalculator calc){
+<b class="nc">&nbsp;        float sum = 0f;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; items.length; i++){</b>
+<b class="nc">&nbsp;            if(items[i] &gt; 0){</b>
+<b class="nc">&nbsp;                sum += calc.get(content.item(i), items[i]);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return sum;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(int id){
+<b class="nc">&nbsp;        return items[id] &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(Item item){
+<b class="fc">&nbsp;        return get(item) &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(Item item, int amount){
+<b class="fc">&nbsp;        return get(item) &gt;= amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(ItemStack[] stacks){
+<b class="nc">&nbsp;        for(ItemStack stack : stacks){</b>
+<b class="nc">&nbsp;            if(!has(stack.item, stack.amount)) return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(ItemSeq items){
+<b class="nc">&nbsp;        for(Item item : content.items()){</b>
+<b class="nc">&nbsp;            if(!has(item, items.get(item))){</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(Iterable&lt;ItemStack&gt; stacks){
+<b class="nc">&nbsp;        for(ItemStack stack : stacks){</b>
+<b class="nc">&nbsp;            if(!has(stack.item, stack.amount)) return false;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(ItemStack[] stacks, float multiplier){
+<b class="fc">&nbsp;        for(ItemStack stack : stacks){</b>
+<b class="fc">&nbsp;            if(!has(stack.item, Math.round(stack.amount * multiplier))) return false;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Returns true if this entity has at least one of each item in each stack.
+&nbsp;     */
+&nbsp;    public boolean hasOne(ItemStack[] stacks){
+<b class="nc">&nbsp;        for(ItemStack stack : stacks){</b>
+<b class="nc">&nbsp;            if(!has(stack.item, 1)) return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean empty(){
+<b class="fc">&nbsp;        return total == 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int total(){
+<b class="fc">&nbsp;        return total;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean any(){
+<b class="fc">&nbsp;        return total &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Item first(){
+<b class="fc">&nbsp;        for(int i = 0; i &lt; items.length; i++){</b>
+<b class="fc">&nbsp;            if(items[i] &gt; 0){</b>
+<b class="fc">&nbsp;                return content.item(i);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Item take(){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; items.length; i++){</b>
+<b class="nc">&nbsp;            int index = (i + takeRotation);</b>
+<b class="nc">&nbsp;            if(index &gt;= items.length) index -= items.length;</b>
+<b class="nc">&nbsp;            if(items[index] &gt; 0){</b>
+<b class="nc">&nbsp;                items[index] --;</b>
+<b class="nc">&nbsp;                total --;</b>
+<b class="nc">&nbsp;                takeRotation = index + 1;</b>
+<b class="nc">&nbsp;                return content.item(index);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Begins a speculative take operation. This returns the item that would be returned by #take(), but does not change state. */
+&nbsp;    @Nullable
+&nbsp;    public Item takeIndex(int takeRotation){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; items.length; i++){</b>
+<b class="nc">&nbsp;            int index = (i + takeRotation);</b>
+<b class="nc">&nbsp;            if(index &gt;= items.length) index -= items.length;</b>
+<b class="nc">&nbsp;            if(items[index] &gt; 0){</b>
+<b class="nc">&nbsp;                return content.item(index);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int nextIndex(int takeRotation){
+<b class="nc">&nbsp;        for(int i = 1; i &lt; items.length; i++){</b>
+<b class="nc">&nbsp;            int index = (i + takeRotation);</b>
+<b class="nc">&nbsp;            if(index &gt;= items.length) index -= items.length;</b>
+<b class="nc">&nbsp;            if(items[index] &gt; 0){</b>
+<b class="nc">&nbsp;                return (takeRotation + i) % items.length;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return takeRotation;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int get(int id){
+<b class="nc">&nbsp;        return items[id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int get(Item item){
+<b class="fc">&nbsp;        return items[item.id];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void set(Item item, int amount){
+<b class="fc">&nbsp;        total += (amount - items[item.id]);</b>
+<b class="fc">&nbsp;        items[item.id] = amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(Iterable&lt;ItemStack&gt; stacks){
+<b class="fc">&nbsp;        for(ItemStack stack : stacks){</b>
+<b class="fc">&nbsp;            add(stack.item, stack.amount);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(ItemSeq stacks){
+<b class="fc">&nbsp;        stacks.each(this::add);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(ItemModule items){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; items.items.length; i++){</b>
+<b class="nc">&nbsp;            add(i, items.items[i]);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(Item item, int amount){
+<b class="fc">&nbsp;        add(item.id, amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void add(int item, int amount){
+<b class="fc">&nbsp;        items[item] += amount;</b>
+<b class="fc">&nbsp;        total += amount;</b>
+<b class="fc">&nbsp;        if(flow != null){</b>
+<b class="nc">&nbsp;            cacheSums[item] += amount;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handleFlow(Item item, int amount){
+<b class="nc">&nbsp;        if(flow != null){</b>
+<b class="nc">&nbsp;            cacheSums[item.id] += amount;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void undoFlow(Item item){
+<b class="nc">&nbsp;        if(flow != null){</b>
+<b class="nc">&nbsp;            cacheSums[item.id] -= 1;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(Item item, int amount){
+<b class="fc">&nbsp;        amount = Math.min(amount, items[item.id]);</b>
+&nbsp;
+<b class="fc">&nbsp;        items[item.id] -= amount;</b>
+<b class="fc">&nbsp;        total -= amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(ItemStack[] stacks){
+<b class="nc">&nbsp;        for(ItemStack stack : stacks) remove(stack.item, stack.amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(ItemSeq stacks){
+<b class="nc">&nbsp;        stacks.each(this::remove);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(Iterable&lt;ItemStack&gt; stacks){
+<b class="nc">&nbsp;        for(ItemStack stack : stacks) remove(stack.item, stack.amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(ItemStack stack){
+<b class="nc">&nbsp;        remove(stack.item, stack.amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clear(){
+<b class="fc">&nbsp;        Arrays.fill(items, 0);</b>
+<b class="fc">&nbsp;        total = 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void write(Writes write){
+<b class="fc">&nbsp;        int amount = 0;</b>
+<b class="fc">&nbsp;        for(int item : items){</b>
+<b class="fc">&nbsp;            if(item &gt; 0) amount++;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        write.s(amount);</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; items.length; i++){</b>
+<b class="fc">&nbsp;            if(items[i] &gt; 0){</b>
+<b class="nc">&nbsp;                write.s(i); //item ID</b>
+<b class="nc">&nbsp;                write.i(items[i]); //item amount</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void read(Reads read, boolean legacy){
+&nbsp;        //just in case, reset items
+<b class="fc">&nbsp;        Arrays.fill(items, 0);</b>
+<b class="fc">&nbsp;        int count = legacy ? read.ub() : read.s();</b>
+<b class="fc">&nbsp;        total = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int j = 0; j &lt; count; j++){</b>
+<b class="fc">&nbsp;            int itemid = legacy ? read.ub() : read.s();</b>
+<b class="fc">&nbsp;            int itemamount = read.i();</b>
+<b class="fc">&nbsp;            Item item = content.item(itemid);</b>
+<b class="fc">&nbsp;            if(item != null){</b>
+<b class="fc">&nbsp;                items[item.id] = itemamount;</b>
+<b class="fc">&nbsp;                total += itemamount;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface ItemConsumer{
+&nbsp;        void accept(Item item, int amount);
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface ItemCalculator{
+&nbsp;        float get(Item item, int amount);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        var res = new StringBuilder();</b>
+<b class="nc">&nbsp;        res.append(&quot;ItemModule{&quot;);</b>
+<b class="nc">&nbsp;        boolean any = false;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; items.length; i++){</b>
+<b class="nc">&nbsp;            if(items[i] != 0){</b>
+<b class="nc">&nbsp;                res.append(content.items().get(i).name).append(&quot;:&quot;).append(items[i]).append(&quot;,&quot;);</b>
+<b class="nc">&nbsp;                any = true;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        if(any){</b>
+<b class="nc">&nbsp;            res.setLength(res.length() - 1);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        res.append(&quot;}&quot;);</b>
+<b class="nc">&nbsp;        return res.toString();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

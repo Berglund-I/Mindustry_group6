@@ -1,0 +1,622 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > CommandAI</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai.types</a>
+</div>
+
+<h1>Coverage Summary for Class: CommandAI (mindustry.ai.types)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CommandAI</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.9%
+  </span>
+  <span class="absValue">
+    (14/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24.3%
+  </span>
+  <span class="absValue">
+    (54/222)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai.types;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class CommandAI extends AIController{</b>
+&nbsp;    protected static final int maxCommandQueueSize = 50, avoidInterval = 10;
+<b class="fc">&nbsp;    protected static final Vec2 vecOut = new Vec2(), vecMovePos = new Vec2();</b>
+<b class="fc">&nbsp;    protected static final boolean[] noFound = {false};</b>
+<b class="fc">&nbsp;    protected static final UnitPayload tmpPayload = new UnitPayload(null);</b>
+&nbsp;    protected static final int transferStateNone = 0, transferStateLoad = 1, transferStateUnload = 2;
+&nbsp;
+<b class="fc">&nbsp;    public Seq&lt;Position&gt; commandQueue = new Seq&lt;&gt;(5);</b>
+&nbsp;    public @Nullable Vec2 targetPos;
+&nbsp;    public @Nullable Teamc attackTarget;
+&nbsp;    /** Group of units that were all commanded to reach the same point. */
+&nbsp;    public @Nullable UnitGroup group;
+<b class="fc">&nbsp;    public int groupIndex = 0;</b>
+&nbsp;    /** All encountered unreachable buildings of this AI. Why a sequence? Because contains() is very rarely called on it. */
+<b class="fc">&nbsp;    public IntSeq unreachableBuildings = new IntSeq(8);</b>
+&nbsp;    /** ID of unit read as target. This is set up after reading. Do not access! */
+<b class="fc">&nbsp;    public int readAttackTarget = -1;</b>
+&nbsp;
+&nbsp;    protected boolean stopAtTarget, stopWhenInRange;
+&nbsp;    protected Vec2 lastTargetPos;
+&nbsp;    protected boolean blockingUnit;
+&nbsp;    protected float timeSpentBlocked;
+&nbsp;    protected float payloadPickupCooldown;
+<b class="fc">&nbsp;    protected int transferState = transferStateNone;</b>
+&nbsp;
+&nbsp;    /** Stance, usually related to firing mode. */
+<b class="fc">&nbsp;    public UnitStance stance = UnitStance.shoot;</b>
+&nbsp;    /** Current command this unit is following. */
+<b class="fc">&nbsp;    public UnitCommand command = UnitCommand.moveCommand;</b>
+&nbsp;    /** Current controller instance based on command. */
+&nbsp;    protected @Nullable AIController commandController;
+&nbsp;    /** Last command type assigned. Used for detecting command changes. */
+&nbsp;    protected @Nullable UnitCommand lastCommand;
+&nbsp;
+&nbsp;    public UnitCommand currentCommand(){
+<b class="nc">&nbsp;        return command == null ? UnitCommand.moveCommand : command;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Attempts to assign a command to this unit. If not supported by the unit type, does nothing. */
+&nbsp;    public void command(UnitCommand command){
+<b class="nc">&nbsp;        if(Structs.contains(unit.type.commands, command)){</b>
+&nbsp;            //clear old state.
+<b class="nc">&nbsp;            unit.mineTile = null;</b>
+<b class="nc">&nbsp;            unit.clearBuilding();</b>
+<b class="nc">&nbsp;            this.command = command;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isLogicControllable(){
+<b class="nc">&nbsp;        return !hasCommand();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAttacking(){
+<b class="nc">&nbsp;        return target != null &amp;&amp; unit.within(target, unit.range() + 10f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateUnit(){
+&nbsp;        //this should not be possible
+<b class="fc">&nbsp;        if(stance == UnitStance.stop) stance = UnitStance.shoot;</b>
+&nbsp;
+&nbsp;        //pursue the target if relevant
+<b class="fc">&nbsp;        if(stance == UnitStance.pursueTarget &amp;&amp; target != null &amp;&amp; attackTarget == null &amp;&amp; targetPos == null){</b>
+<b class="nc">&nbsp;            commandTarget(target, false);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //remove invalid targets
+<b class="fc">&nbsp;        if(commandQueue.any()){</b>
+<b class="nc">&nbsp;            commandQueue.removeAll(e -&gt; e instanceof Healthc h &amp;&amp; !h.isValid());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //assign defaults
+<b class="fc">&nbsp;        if(command == null &amp;&amp; unit.type.commands.length &gt; 0){</b>
+<b class="nc">&nbsp;            command = unit.type.defaultCommand == null ? unit.type.commands[0] : unit.type.defaultCommand;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //update command controller based on index.
+<b class="fc">&nbsp;        var curCommand = command;</b>
+<b class="fc">&nbsp;        if(lastCommand != curCommand){</b>
+<b class="fc">&nbsp;            lastCommand = curCommand;</b>
+<b class="fc">&nbsp;            commandController = (curCommand == null ? null : curCommand.controller.get(unit));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //use the command controller if it is provided, and bail out.
+<b class="fc">&nbsp;        if(commandController != null){</b>
+<b class="nc">&nbsp;            if(commandController.unit() != unit) commandController.unit(unit);</b>
+<b class="nc">&nbsp;            commandController.updateUnit();</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            defaultBehavior();</b>
+&nbsp;            //boosting control is not supported, so just don&#39;t.
+<b class="fc">&nbsp;            unit.updateBoosting(false);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clearCommands(){
+<b class="fc">&nbsp;        commandQueue.clear();</b>
+<b class="fc">&nbsp;        targetPos = null;</b>
+<b class="fc">&nbsp;        attackTarget = null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void tryPickupUnit(Payloadc pay){
+<b class="nc">&nbsp;        Unit target = Units.closest(unit.team, unit.x, unit.y, unit.type.hitSize * 2f, u -&gt; u.isAI() &amp;&amp; u != unit &amp;&amp; u.isGrounded() &amp;&amp; pay.canPickup(u) &amp;&amp; u.within(unit, u.hitSize + unit.hitSize));</b>
+<b class="nc">&nbsp;        if(target != null){</b>
+<b class="nc">&nbsp;            Call.pickedUnitPayload(unit, target);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void defaultBehavior(){
+&nbsp;
+<b class="fc">&nbsp;        if(!net.client() &amp;&amp; unit instanceof Payloadc pay){</b>
+<b class="nc">&nbsp;            payloadPickupCooldown -= Time.delta;</b>
+&nbsp;
+&nbsp;            //auto-drop everything
+<b class="nc">&nbsp;            if(command == UnitCommand.unloadPayloadCommand &amp;&amp; pay.hasPayload()){</b>
+<b class="nc">&nbsp;                Call.payloadDropped(unit, unit.x, unit.y);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //try to pick up what&#39;s under it
+<b class="nc">&nbsp;            if(command == UnitCommand.loadUnitsCommand){</b>
+<b class="nc">&nbsp;                tryPickupUnit(pay);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //try to pick up a block
+<b class="nc">&nbsp;            if(command == UnitCommand.loadBlocksCommand &amp;&amp; (targetPos == null || unit.within(targetPos, 1f))){</b>
+<b class="nc">&nbsp;                Building build = world.buildWorld(unit.x, unit.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(build != null &amp;&amp; state.teams.canInteract(unit.team, build.team)){</b>
+&nbsp;                    //pick up block&#39;s payload
+<b class="nc">&nbsp;                    Payload current = build.getPayload();</b>
+<b class="nc">&nbsp;                    if(current != null &amp;&amp; pay.canPickupPayload(current)){</b>
+<b class="nc">&nbsp;                        Call.pickedBuildPayload(unit, build, false);</b>
+&nbsp;                        //pick up whole building directly
+<b class="nc">&nbsp;                    }else if(build.block.buildVisibility != BuildVisibility.hidden &amp;&amp; build.canPickup() &amp;&amp; pay.canPickup(build)){</b>
+<b class="nc">&nbsp;                        Call.pickedBuildPayload(unit, build, true);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(!net.client() &amp;&amp; command == UnitCommand.enterPayloadCommand &amp;&amp; unit.buildOn() != null &amp;&amp; (targetPos == null || (world.buildWorld(targetPos.x, targetPos.y) != null &amp;&amp; world.buildWorld(targetPos.x, targetPos.y) == unit.buildOn()))){</b>
+<b class="nc">&nbsp;            var build = unit.buildOn();</b>
+<b class="nc">&nbsp;            tmpPayload.unit = unit;</b>
+<b class="nc">&nbsp;            if(build.team == unit.team &amp;&amp; build.acceptPayload(build, tmpPayload)){</b>
+<b class="nc">&nbsp;                Call.unitEnteredPayload(unit, build);</b>
+&nbsp;                return; //no use updating after this, the unit is gone!
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //acquiring naval targets isn&#39;t supported yet, so use the fallback dumb AI
+<b class="fc">&nbsp;        if(unit.team.isAI() &amp;&amp; unit.team.rules().rtsAi &amp;&amp; unit.type.naval){</b>
+<b class="nc">&nbsp;            if(fallback == null) fallback = new GroundAI();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(fallback.unit() != unit) fallback.unit(unit);</b>
+<b class="nc">&nbsp;            fallback.updateUnit();</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        updateVisuals();</b>
+&nbsp;        //only autotarget if the unit supports it
+<b class="fc">&nbsp;        if((targetPos == null || nearAttackTarget(unit.x, unit.y, unit.range())) || unit.type.autoFindTarget){</b>
+<b class="fc">&nbsp;            updateTargeting();</b>
+<b class="nc">&nbsp;        }else if(attackTarget == null){</b>
+&nbsp;            //if the unit does not have an attack target, is currently moving, and does not have autotargeting, stop attacking stuff
+<b class="nc">&nbsp;            target = null;</b>
+<b class="nc">&nbsp;            for(var mount : unit.mounts){</b>
+<b class="nc">&nbsp;                if(mount.weapon.controllable){</b>
+<b class="nc">&nbsp;                    mount.target = null;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(attackTarget != null &amp;&amp; invalid(attackTarget)){</b>
+<b class="nc">&nbsp;            attackTarget = null;</b>
+<b class="nc">&nbsp;            targetPos = null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //move on to the next target
+<b class="fc">&nbsp;        if(attackTarget == null &amp;&amp; targetPos == null){</b>
+<b class="fc">&nbsp;            finishPath();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(attackTarget != null){</b>
+<b class="nc">&nbsp;            if(targetPos == null){</b>
+<b class="nc">&nbsp;                targetPos = new Vec2();</b>
+<b class="nc">&nbsp;                lastTargetPos = targetPos;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            targetPos.set(attackTarget);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(unit.isGrounded() &amp;&amp; attackTarget instanceof Building build &amp;&amp; build.tile.solid() &amp;&amp; unit.pathType() != Pathfinder.costLegs &amp;&amp; stance != UnitStance.ram){</b>
+<b class="nc">&nbsp;                Tile best = build.findClosestEdge(unit, Tile::solid);</b>
+<b class="nc">&nbsp;                if(best != null){</b>
+<b class="nc">&nbsp;                    targetPos.set(best);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        boolean alwaysArrive = false;</b>
+&nbsp;
+<b class="fc">&nbsp;        float engageRange = unit.type.range - 10f;</b>
+<b class="fc">&nbsp;        boolean withinAttackRange = attackTarget != null &amp;&amp; unit.within(attackTarget, engageRange) &amp;&amp; stance != UnitStance.ram;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(targetPos != null){</b>
+<b class="nc">&nbsp;            boolean move = true, isFinalPoint = commandQueue.size == 0;</b>
+<b class="nc">&nbsp;            vecOut.set(targetPos);</b>
+<b class="nc">&nbsp;            vecMovePos.set(targetPos);</b>
+&nbsp;
+&nbsp;            //the enter payload command requires an exact position
+<b class="nc">&nbsp;            if(group != null &amp;&amp; group.valid &amp;&amp; groupIndex &lt; group.units.size &amp;&amp; command != UnitCommand.enterPayloadCommand){</b>
+<b class="nc">&nbsp;                vecMovePos.add(group.positions[groupIndex * 2], group.positions[groupIndex * 2 + 1]);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Building targetBuild = world.buildWorld(targetPos.x, targetPos.y);</b>
+&nbsp;
+&nbsp;            //TODO: should the unit stop when it finds a target?
+<b class="nc">&nbsp;            if(</b>
+<b class="nc">&nbsp;                (stance == UnitStance.patrol &amp;&amp; target != null &amp;&amp; unit.within(target, unit.type.range - 2f) &amp;&amp; !unit.type.circleTarget) ||</b>
+<b class="nc">&nbsp;                (command == UnitCommand.enterPayloadCommand &amp;&amp; unit.within(targetPos, 4f) || (targetBuild != null &amp;&amp; unit.within(targetBuild, targetBuild.block.size * tilesize/2f * 0.9f))) ||</b>
+<b class="nc">&nbsp;                (command == UnitCommand.loopPayloadCommand &amp;&amp; unit.within(targetPos, 10f))</b>
+&nbsp;            ){
+<b class="nc">&nbsp;                move = false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(unit.isGrounded() &amp;&amp; stance != UnitStance.ram){</b>
+&nbsp;                //TODO: blocking enable or disable?
+<b class="nc">&nbsp;                if(timer.get(timerTarget3, avoidInterval)){</b>
+<b class="nc">&nbsp;                    Vec2 dstPos = Tmp.v1.trns(unit.rotation, unit.hitSize/2f);</b>
+<b class="nc">&nbsp;                    float max = unit.hitSize/2f;</b>
+<b class="nc">&nbsp;                    float radius = Math.max(7f, max);</b>
+<b class="nc">&nbsp;                    float margin = 4f;</b>
+<b class="nc">&nbsp;                    blockingUnit = Units.nearbyCheck(unit.x + dstPos.x - radius/2f, unit.y + dstPos.y - radius/2f, radius, radius,</b>
+<b class="nc">&nbsp;                        u -&gt; u != unit &amp;&amp; u.within(unit, u.hitSize/2f + unit.hitSize/2f + margin) &amp;&amp; u.controller() instanceof CommandAI ai &amp;&amp; ai.targetPos != null &amp;&amp;</b>
+&nbsp;                        //stop for other unit only if it&#39;s closer to the target
+<b class="nc">&nbsp;                        (ai.targetPos.equals(targetPos) &amp;&amp; u.dst2(targetPos) &lt; unit.dst2(targetPos)) &amp;&amp;</b>
+&nbsp;                        //don&#39;t stop if they&#39;re facing the same way
+<b class="nc">&nbsp;                        !Angles.within(unit.rotation, u.rotation, 15f) &amp;&amp;</b>
+&nbsp;                        //must be near an obstacle, stopping in open ground is pointless
+<b class="nc">&nbsp;                        ControlPathfinder.isNearObstacle(unit, unit.tileX(), unit.tileY(), u.tileX(), u.tileY()));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                float maxBlockTime = 60f * 5f;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(blockingUnit){</b>
+<b class="nc">&nbsp;                    timeSpentBlocked += Time.delta;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(timeSpentBlocked &gt;= maxBlockTime*2f){</b>
+<b class="nc">&nbsp;                        timeSpentBlocked = 0f;</b>
+&nbsp;                    }
+&nbsp;                }else{
+<b class="nc">&nbsp;                    timeSpentBlocked = 0f;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //if the unit is next to the target, stop asking the pathfinder how to get there, it&#39;s a waste of CPU
+&nbsp;                //TODO maybe stop moving too?
+<b class="nc">&nbsp;                if(withinAttackRange){</b>
+<b class="nc">&nbsp;                    move = true;</b>
+<b class="nc">&nbsp;                    noFound[0] = false;</b>
+<b class="nc">&nbsp;                    vecOut.set(vecMovePos);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    move = controlPath.getPathPosition(unit, vecMovePos, targetPos, vecOut, noFound) &amp;&amp; (!blockingUnit || timeSpentBlocked &gt; maxBlockTime);</b>
+&nbsp;
+&nbsp;                    //TODO: what to do when there&#39;s a target and it can&#39;t be reached?
+&nbsp;                    /*
+&nbsp;                    if(noFound[0] &amp;&amp; attackTarget != null &amp;&amp; attackTarget.within(unit, unit.type.range * 2f)){
+&nbsp;                        move = true;
+&nbsp;                        vecOut.set(targetPos);
+&nbsp;                    }*/
+&nbsp;                }
+&nbsp;
+&nbsp;                //rare case where unit must be perfectly aligned (happens with 1-tile gaps)
+<b class="nc">&nbsp;                alwaysArrive = vecOut.epsilonEquals(unit.tileX() * tilesize, unit.tileY() * tilesize);</b>
+&nbsp;                //we&#39;ve reached the final point if the returned coordinate is equal to the supplied input
+<b class="nc">&nbsp;                isFinalPoint &amp;= vecMovePos.epsilonEquals(vecOut, 4.1f);</b>
+&nbsp;
+&nbsp;                //if the path is invalid, stop trying and record the end as unreachable
+<b class="nc">&nbsp;                if(unit.team.isAI() &amp;&amp; (noFound[0] || unit.isPathImpassable(World.toTile(vecMovePos.x), World.toTile(vecMovePos.y)))){</b>
+<b class="nc">&nbsp;                    if(attackTarget instanceof Building build){</b>
+<b class="nc">&nbsp;                        unreachableBuildings.addUnique(build.pos());</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    attackTarget = null;</b>
+<b class="nc">&nbsp;                    finishPath();</b>
+&nbsp;                    return;
+&nbsp;                }
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                vecOut.set(vecMovePos);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(move){</b>
+<b class="nc">&nbsp;                if(unit.type.circleTarget &amp;&amp; attackTarget != null){</b>
+<b class="nc">&nbsp;                    target = attackTarget;</b>
+<b class="nc">&nbsp;                    circleAttack(80f);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    moveTo(vecOut,</b>
+<b class="nc">&nbsp;                    withinAttackRange ? engageRange :</b>
+<b class="nc">&nbsp;                    unit.isGrounded() ? 0f :</b>
+<b class="nc">&nbsp;                    attackTarget != null &amp;&amp; stance != UnitStance.ram ? engageRange : 0f,</b>
+<b class="nc">&nbsp;                    unit.isFlying() ? 40f : 100f, false, null, isFinalPoint || alwaysArrive);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //if stopAtTarget is set, stop trying to move to the target once it is reached - used for defending
+<b class="nc">&nbsp;            if(attackTarget != null &amp;&amp; stopAtTarget &amp;&amp; unit.within(attackTarget, engageRange - 1f)){</b>
+<b class="nc">&nbsp;                attackTarget = null;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(unit.isFlying() &amp;&amp; move &amp;&amp; (attackTarget == null || !unit.within(attackTarget, unit.type.range))){</b>
+<b class="nc">&nbsp;                unit.lookAt(vecMovePos);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                faceTarget();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //reached destination, end pathfinding
+<b class="nc">&nbsp;            if(attackTarget == null &amp;&amp; unit.within(vecMovePos, command.exactArrival &amp;&amp; commandQueue.size == 0 ? 1f : Math.max(5f, unit.hitSize / 2f))){</b>
+<b class="nc">&nbsp;                finishPath();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(stopWhenInRange &amp;&amp; targetPos != null &amp;&amp; unit.within(vecMovePos, engageRange * 0.9f)){</b>
+<b class="nc">&nbsp;                finishPath();</b>
+<b class="nc">&nbsp;                stopWhenInRange = false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        }else if(target != null){</b>
+<b class="nc">&nbsp;            faceTarget();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void finishPath(){
+&nbsp;        //the enter payload command never finishes until they are actually accepted
+<b class="fc">&nbsp;        if(command == UnitCommand.enterPayloadCommand &amp;&amp; commandQueue.size == 0 &amp;&amp; targetPos != null &amp;&amp; world.buildWorld(targetPos.x, targetPos.y) != null &amp;&amp; world.buildWorld(targetPos.x, targetPos.y).block.acceptsUnitPayloads){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(!net.client() &amp;&amp; command == UnitCommand.loopPayloadCommand &amp;&amp; unit instanceof Payloadc pay){</b>
+&nbsp;
+<b class="nc">&nbsp;            if(transferState == transferStateNone){</b>
+<b class="nc">&nbsp;                transferState = pay.hasPayload() ? transferStateUnload : transferStateLoad;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(payloadPickupCooldown &gt; 0f) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(transferState == transferStateUnload){</b>
+&nbsp;                //drop until there&#39;s a failure
+<b class="nc">&nbsp;                int prev = -1;</b>
+<b class="nc">&nbsp;                while(pay.hasPayload() &amp;&amp; prev != pay.payloads().size){</b>
+<b class="nc">&nbsp;                    prev = pay.payloads().size;</b>
+<b class="nc">&nbsp;                    Call.payloadDropped(unit, unit.x, unit.y);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //wait for everything to unload before running code below
+<b class="nc">&nbsp;                if(pay.hasPayload()){</b>
+&nbsp;                    return;
+&nbsp;                }
+<b class="nc">&nbsp;                payloadPickupCooldown = 60f;</b>
+<b class="nc">&nbsp;            }else if(transferState == transferStateLoad){</b>
+&nbsp;                //pick up units until there&#39;s a failure
+<b class="nc">&nbsp;                int prev = -1;</b>
+<b class="nc">&nbsp;                while(prev != pay.payloads().size){</b>
+<b class="nc">&nbsp;                    prev = pay.payloads().size;</b>
+<b class="nc">&nbsp;                    tryPickupUnit(pay);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //wait to load things before running code below
+<b class="nc">&nbsp;                if(!pay.hasPayload()){</b>
+&nbsp;                    return;
+&nbsp;                }
+<b class="nc">&nbsp;                payloadPickupCooldown = 60f;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //it will never finish
+<b class="nc">&nbsp;            if(commandQueue.size == 0){</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        transferState = transferStateNone;</b>
+&nbsp;
+<b class="fc">&nbsp;        Vec2 prev = targetPos;</b>
+<b class="fc">&nbsp;        targetPos = null;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(commandQueue.size &gt; 0){</b>
+<b class="nc">&nbsp;            var next = commandQueue.remove(0);</b>
+<b class="nc">&nbsp;            if(next instanceof Teamc target){</b>
+<b class="nc">&nbsp;                commandTarget(target, this.stopAtTarget);</b>
+<b class="nc">&nbsp;            }else if(next instanceof Vec2 position){</b>
+<b class="nc">&nbsp;                commandPosition(position);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(prev != null &amp;&amp; (stance == UnitStance.patrol || command == UnitCommand.loopPayloadCommand)){</b>
+<b class="nc">&nbsp;                commandQueue.add(prev.cpy());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //make sure spot in formation is reachable
+<b class="nc">&nbsp;            if(group != null){</b>
+<b class="nc">&nbsp;                group.updateRaycast(groupIndex, next instanceof Vec2 position ? position : Tmp.v3.set(next));</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+<b class="fc">&nbsp;            if(group != null){</b>
+<b class="nc">&nbsp;                group = null;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void removed(Unit unit){
+<b class="fc">&nbsp;        clearCommands();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void commandQueue(Position location){
+<b class="nc">&nbsp;        if(targetPos == null &amp;&amp; attackTarget == null){</b>
+<b class="nc">&nbsp;            if(location instanceof Teamc t){</b>
+<b class="nc">&nbsp;                commandTarget(t, this.stopAtTarget);</b>
+<b class="nc">&nbsp;            }else if(location instanceof Vec2 position){</b>
+<b class="nc">&nbsp;                commandPosition(position);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(commandQueue.size &lt; maxCommandQueueSize &amp;&amp; !commandQueue.contains(location)){</b>
+<b class="nc">&nbsp;            commandQueue.add(location);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void afterRead(Unit unit){
+<b class="fc">&nbsp;        if(readAttackTarget != -1){</b>
+<b class="nc">&nbsp;            attackTarget = Groups.unit.getByID(readAttackTarget);</b>
+<b class="nc">&nbsp;            readAttackTarget = -1;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean shouldFire(){
+<b class="fc">&nbsp;        return stance != UnitStance.holdFire;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void hit(Bullet bullet){
+<b class="nc">&nbsp;        if(unit.team.isAI() &amp;&amp; bullet.owner instanceof Teamc teamc &amp;&amp; teamc.team() != unit.team &amp;&amp; attackTarget == null &amp;&amp;</b>
+&nbsp;            //can only counter-attack every few seconds to prevent rapidly changing targets
+<b class="nc">&nbsp;            !(teamc instanceof Unit u &amp;&amp; !u.checkTarget(unit.type.targetAir, unit.type.targetGround)) &amp;&amp; timer.get(timerTarget4, 60f * 10f)){</b>
+<b class="nc">&nbsp;            commandTarget(teamc, true);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean keepState(){
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Teamc findTarget(float x, float y, float range, boolean air, boolean ground){
+<b class="fc">&nbsp;        return !nearAttackTarget(x, y, range) ? super.findTarget(x, y, range, air, ground) : Units.isHittable(attackTarget, air, ground) ? attackTarget : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean nearAttackTarget(float x, float y, float range){
+<b class="fc">&nbsp;        return attackTarget != null &amp;&amp; attackTarget.within(x, y, range + 3f + (attackTarget instanceof Sized s ? s.hitSize()/2f : 0f));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean retarget(){
+&nbsp;        //retarget faster when there is an explicit target
+<b class="fc">&nbsp;        return attackTarget != null ? timer.get(timerTarget, 10) : timer.get(timerTarget, 20);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasCommand(){
+<b class="nc">&nbsp;        return targetPos != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setupLastPos(){
+<b class="fc">&nbsp;        lastTargetPos = targetPos;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void commandPosition(Vec2 pos){
+<b class="nc">&nbsp;        if(pos == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        commandPosition(pos, false);</b>
+<b class="nc">&nbsp;        if(commandController != null){</b>
+<b class="nc">&nbsp;            commandController.commandPosition(pos);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void commandPosition(Vec2 pos, boolean stopWhenInRange){
+<b class="nc">&nbsp;        if(pos == null) return;</b>
+&nbsp;
+&nbsp;        //this is an allocation, but it&#39;s relatively rarely called anyway, and outside mutations must be prevented
+<b class="nc">&nbsp;        targetPos = lastTargetPos = pos.cpy();</b>
+<b class="nc">&nbsp;        attackTarget = null;</b>
+<b class="nc">&nbsp;        this.stopWhenInRange = stopWhenInRange;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void commandTarget(Teamc moveTo){
+<b class="nc">&nbsp;        commandTarget(moveTo, false);</b>
+<b class="nc">&nbsp;        if(commandController != null){</b>
+<b class="nc">&nbsp;            commandController.commandTarget(moveTo);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void commandTarget(Teamc moveTo, boolean stopAtTarget){
+<b class="nc">&nbsp;        attackTarget = moveTo;</b>
+<b class="nc">&nbsp;        this.stopAtTarget = stopAtTarget;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

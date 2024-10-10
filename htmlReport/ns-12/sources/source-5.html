@@ -1,0 +1,185 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Fires</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities</a>
+</div>
+
+<h1>Coverage Summary for Class: Fires (mindustry.entities)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Fires</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Fires{</b>
+&nbsp;    private static final float baseLifetime = 1000f;
+&nbsp;
+&nbsp;    /** Start a fire on the tile. If there already is a fire there, refreshes its lifetime. */
+&nbsp;    public static void create(Tile tile){
+<b class="nc">&nbsp;        if(net.client() || tile == null || !state.rules.fire || !state.rules.hasEnv(Env.oxygen)) return; //not clientside.</b>
+&nbsp;
+<b class="nc">&nbsp;        Fire fire = get(tile);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(fire == null){</b>
+<b class="nc">&nbsp;            fire = Fire.create();</b>
+<b class="nc">&nbsp;            fire.tile = tile;</b>
+<b class="nc">&nbsp;            fire.lifetime = baseLifetime;</b>
+<b class="nc">&nbsp;            fire.set(tile.worldx(), tile.worldy());</b>
+<b class="nc">&nbsp;            fire.add();</b>
+<b class="nc">&nbsp;            set(tile, fire);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            fire.lifetime = baseLifetime;</b>
+<b class="nc">&nbsp;            fire.time = 0f;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static @Nullable Fire get(Tile tile){
+<b class="nc">&nbsp;        return tile == null ? null : world.tiles.getFire(tile.array());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static @Nullable Fire get(int x, int y){
+<b class="nc">&nbsp;        return Structs.inBounds(x, y, world.width(), world.height()) ? world.tiles.getFire(world.packArray(x, y)) : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void set(Tile tile, Fire fire){
+<b class="nc">&nbsp;        world.tiles.setFire(tile.array(), fire);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean has(int x, int y){
+<b class="nc">&nbsp;        if(!Structs.inBounds(x, y, world.width(), world.height())){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Fire fire = get(x, y);</b>
+<b class="nc">&nbsp;        return fire != null &amp;&amp; fire.isAdded() &amp;&amp; fire.fin() &lt; 1f &amp;&amp; fire.tile != null &amp;&amp; fire.tile.x == x &amp;&amp; fire.tile.y == y;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Attempts to extinguish a fire by shortening its life. If there is no fire here, does nothing.
+&nbsp;     */
+&nbsp;    public static void extinguish(Tile tile, float intensity){
+<b class="nc">&nbsp;        if(tile != null){</b>
+<b class="nc">&nbsp;            Fire fire = get(tile);</b>
+<b class="nc">&nbsp;            if(fire != null){</b>
+<b class="nc">&nbsp;                fire.time(fire.time + intensity * Time.delta);</b>
+<b class="nc">&nbsp;                Fx.steam.at(fire);</b>
+<b class="nc">&nbsp;                if(fire.time &gt;= fire.lifetime){</b>
+<b class="nc">&nbsp;                    Events.fire(Trigger.fireExtinguish);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void remove(Tile tile){
+<b class="nc">&nbsp;        if(tile != null){</b>
+<b class="nc">&nbsp;            set(tile, null);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void register(Fire fire){
+<b class="nc">&nbsp;        if(fire.tile != null){</b>
+<b class="nc">&nbsp;            set(fire.tile, fire);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,236 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawTurret</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawTurret (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawTurret</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (3/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (7/56)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.part.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.defense.turrets.*;
+&nbsp;import mindustry.world.blocks.defense.turrets.Turret.*;
+&nbsp;
+&nbsp;/** Extend to implement custom drawing behavior for a turret. */
+&nbsp;public class DrawTurret extends DrawBlock{
+<b class="fc">&nbsp;    protected static final Rand rand = new Rand();</b>
+&nbsp;
+<b class="fc">&nbsp;    public Seq&lt;DrawPart&gt; parts = new Seq&lt;&gt;();</b>
+&nbsp;    /** Prefix to use when loading base region. */
+<b class="fc">&nbsp;    public String basePrefix = &quot;&quot;;</b>
+&nbsp;    /** Overrides the liquid to draw in the liquid region. */
+&nbsp;    public @Nullable Liquid liquidDraw;
+<b class="fc">&nbsp;    public float turretLayer = Layer.turret, shadowLayer = Layer.turret - 0.5f, heatLayer = Layer.turretHeat;</b>
+&nbsp;    public TextureRegion base, liquid, top, heat, preview, outline;
+&nbsp;
+<b class="fc">&nbsp;    public DrawTurret(String basePrefix){</b>
+<b class="fc">&nbsp;        this.basePrefix = basePrefix;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public DrawTurret(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void getRegionsToOutline(Block block, Seq&lt;TextureRegion&gt; out){
+<b class="nc">&nbsp;        for(var part : parts){</b>
+<b class="nc">&nbsp;            part.getOutlines(out);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(block.region.found() &amp;&amp; !(block.outlinedIcon &gt; 0 &amp;&amp; block.outlinedIcon &lt; block.getGeneratedIcons().length &amp;&amp; block.getGeneratedIcons()[block.outlinedIcon].equals(block.region))){</b>
+<b class="nc">&nbsp;            out.add(block.region);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        block.resetGeneratedIcons();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+<b class="nc">&nbsp;        Turret turret = (Turret)build.block;</b>
+<b class="nc">&nbsp;        TurretBuild tb = (TurretBuild)build;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.rect(base, build.x, build.y);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(shadowLayer);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.shadow(preview, build.x + tb.recoilOffset.x - turret.elevation, build.y + tb.recoilOffset.y - turret.elevation, tb.drawrot());</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(turretLayer);</b>
+&nbsp;
+<b class="nc">&nbsp;        drawTurret(turret, tb);</b>
+<b class="nc">&nbsp;        drawHeat(turret, tb);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(parts.size &gt; 0){</b>
+<b class="nc">&nbsp;            if(outline.found()){</b>
+&nbsp;                //draw outline under everything when parts are involved
+<b class="nc">&nbsp;                Draw.z(turretLayer - 0.01f);</b>
+<b class="nc">&nbsp;                Draw.rect(outline, build.x + tb.recoilOffset.x, build.y + tb.recoilOffset.y, tb.drawrot());</b>
+<b class="nc">&nbsp;                Draw.z(turretLayer);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float progress = tb.progress();</b>
+&nbsp;
+&nbsp;            //TODO no smooth reload
+<b class="nc">&nbsp;            var params = DrawPart.params.set(build.warmup(), 1f - progress, 1f - progress, tb.heat, tb.curRecoil, tb.charge, tb.x + tb.recoilOffset.x, tb.y + tb.recoilOffset.y, tb.rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(var part : parts){</b>
+<b class="nc">&nbsp;                params.setRecoil(part.recoilIndex &gt;= 0 &amp;&amp; tb.curRecoils != null ? tb.curRecoils[part.recoilIndex] : tb.curRecoil);</b>
+<b class="nc">&nbsp;                part.draw(params);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawTurret(Turret block, TurretBuild build){
+<b class="nc">&nbsp;        if(block.region.found()){</b>
+<b class="nc">&nbsp;            Draw.rect(block.region, build.x + build.recoilOffset.x, build.y + build.recoilOffset.y, build.drawrot());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(liquid.found()){</b>
+<b class="nc">&nbsp;            Liquid toDraw = liquidDraw == null ? build.liquids.current() : liquidDraw;</b>
+<b class="nc">&nbsp;            Drawf.liquid(liquid, build.x + build.recoilOffset.x, build.y + build.recoilOffset.y, build.liquids.get(toDraw) / block.liquidCapacity, toDraw.color.write(Tmp.c1).a(1f), build.drawrot());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(top.found()){</b>
+<b class="nc">&nbsp;            Draw.rect(top, build.x + build.recoilOffset.x, build.y + build.recoilOffset.y, build.drawrot());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawHeat(Turret block, TurretBuild build){
+<b class="nc">&nbsp;        if(build.heat &lt;= 0.00001f || !heat.found()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.additive(heat, block.heatColor.write(Tmp.c1).a(build.heat), build.x + build.recoilOffset.x, build.y + build.recoilOffset.y, build.drawrot(), heatLayer);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Load any relevant texture regions. */
+&nbsp;    @Override
+&nbsp;    public void load(Block block){
+<b class="nc">&nbsp;        if(!(block instanceof Turret)) throw new ClassCastException(&quot;This drawer can only be used on turrets.&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        preview = Core.atlas.find(block.name + &quot;-preview&quot;, block.region);</b>
+<b class="nc">&nbsp;        outline = Core.atlas.find(block.name + &quot;-outline&quot;);</b>
+<b class="nc">&nbsp;        liquid = Core.atlas.find(block.name + &quot;-liquid&quot;);</b>
+<b class="nc">&nbsp;        top = Core.atlas.find(block.name + &quot;-top&quot;);</b>
+<b class="nc">&nbsp;        heat = Core.atlas.find(block.name + &quot;-heat&quot;);</b>
+<b class="nc">&nbsp;        base = Core.atlas.find(block.name + &quot;-base&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var part : parts){</b>
+<b class="nc">&nbsp;            part.turretShading = true;</b>
+<b class="nc">&nbsp;            part.load(block.name);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //TODO test this for mods, e.g. exotic
+<b class="nc">&nbsp;        if(!base.found() &amp;&amp; block.minfo.mod != null) base = Core.atlas.find(block.minfo.mod.name + &quot;-&quot; + basePrefix + &quot;block-&quot; + block.size);</b>
+<b class="nc">&nbsp;        if(!base.found()) base = Core.atlas.find(basePrefix + &quot;block-&quot; + block.size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the generated icons to be used for this block. */
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(Block block){
+<b class="nc">&nbsp;        return top.found() ? new TextureRegion[]{base, preview, top} : new TextureRegion[]{base, preview};</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

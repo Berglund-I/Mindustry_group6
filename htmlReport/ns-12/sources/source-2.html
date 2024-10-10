@@ -1,0 +1,434 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Effect</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities</a>
+</div>
+
+<h1>Coverage Summary for Class: Effect (mindustry.entities)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Effect</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.2%
+  </span>
+  <span class="absValue">
+    (16/37)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.4%
+  </span>
+  <span class="absValue">
+    (32/102)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Effect$EffectContainer</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (1/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (1/16)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    39.5%
+  </span>
+  <span class="absValue">
+    (17/43)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28%
+  </span>
+  <span class="absValue">
+    (33/118)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.effect.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Effect{
+&nbsp;    private static final float shakeFalloff = 10000f;
+<b class="fc">&nbsp;    private static final EffectContainer container = new EffectContainer();</b>
+&nbsp;
+<b class="fc">&nbsp;    public static final Seq&lt;Effect&gt; all = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    private boolean initialized;
+&nbsp;
+&nbsp;    public final int id;
+&nbsp;
+<b class="fc">&nbsp;    public Cons&lt;EffectContainer&gt; renderer = e -&gt; {};</b>
+<b class="fc">&nbsp;    public float lifetime = 50f;</b>
+&nbsp;    /** Clip size. */
+&nbsp;    public float clip;
+&nbsp;    /** Time delay before the effect starts */
+&nbsp;    public float startDelay;
+&nbsp;    /** Amount added to rotation */
+&nbsp;    public float baseRotation;
+&nbsp;    /** If true, parent unit is data are followed. */
+<b class="fc">&nbsp;    public boolean followParent = true;</b>
+&nbsp;    /** If this and followParent are true, the effect will offset and rotate with the parent&#39;s rotation. */
+&nbsp;    public boolean rotWithParent;
+&nbsp;
+<b class="fc">&nbsp;    public float layer = Layer.effect;</b>
+&nbsp;    public float layerDuration;
+&nbsp;
+<b class="fc">&nbsp;    public Effect(float life, float clipsize, Cons&lt;EffectContainer&gt; renderer){</b>
+<b class="fc">&nbsp;        this.id = all.size;</b>
+<b class="fc">&nbsp;        this.lifetime = life;</b>
+<b class="fc">&nbsp;        this.renderer = renderer;</b>
+<b class="fc">&nbsp;        this.clip = clipsize;</b>
+<b class="fc">&nbsp;        all.add(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Effect(float life, Cons&lt;EffectContainer&gt; renderer){
+<b class="fc">&nbsp;        this(life, 50f, renderer);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //for custom implementations
+<b class="fc">&nbsp;    public Effect(){</b>
+<b class="fc">&nbsp;        this.id = all.size;</b>
+<b class="fc">&nbsp;        all.add(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Effect startDelay(float d){
+<b class="fc">&nbsp;        startDelay = d;</b>
+<b class="fc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void init(){}</b>
+&nbsp;
+&nbsp;    public Effect followParent(boolean follow){
+<b class="fc">&nbsp;        followParent = follow;</b>
+<b class="fc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Effect rotWithParent(boolean follow){
+<b class="fc">&nbsp;        rotWithParent = follow;</b>
+<b class="fc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Effect layer(float l){
+<b class="fc">&nbsp;        layer = l;</b>
+<b class="fc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Effect baseRotation(float d){
+<b class="nc">&nbsp;        baseRotation = d;</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Effect layer(float l, float duration){
+<b class="nc">&nbsp;        layer = l;</b>
+<b class="nc">&nbsp;        this.layerDuration = duration;</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public WrapEffect wrap(Color color){
+<b class="nc">&nbsp;        return new WrapEffect(this, color);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public WrapEffect wrap(Color color, float rotation){
+<b class="fc">&nbsp;        return new WrapEffect(this, color, rotation);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void at(Position pos){
+<b class="nc">&nbsp;        create(pos.getX(), pos.getY(), 0, Color.white, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void at(Position pos, boolean parentize){
+<b class="nc">&nbsp;        create(pos.getX(), pos.getY(), 0, Color.white, parentize ? pos : null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void at(Position pos, float rotation){
+<b class="nc">&nbsp;        create(pos.getX(), pos.getY(), rotation, Color.white, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void at(float x, float y){
+<b class="fc">&nbsp;        create(x, y, 0, Color.white, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void at(float x, float y, float rotation){
+<b class="fc">&nbsp;        create(x, y, rotation, Color.white, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void at(float x, float y, float rotation, Color color){
+<b class="fc">&nbsp;        create(x, y, rotation, color, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void at(float x, float y, Color color){
+<b class="nc">&nbsp;        create(x, y, 0, color, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void at(float x, float y, float rotation, Color color, Object data){
+<b class="fc">&nbsp;        create(x, y, rotation, color, data);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void at(float x, float y, float rotation, Object data){
+<b class="fc">&nbsp;        create(x, y, rotation, Color.white, data);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean shouldCreate(){
+<b class="fc">&nbsp;        return !headless &amp;&amp; this != Fx.none &amp;&amp; Vars.renderer.enableEffects;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void create(float x, float y, float rotation, Color color, Object data){
+<b class="fc">&nbsp;        if(!shouldCreate()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.camera.bounds(Tmp.r1).overlaps(Tmp.r2.setCentered(x, y, clip))){</b>
+<b class="nc">&nbsp;            if(!initialized){</b>
+<b class="nc">&nbsp;                initialized = true;</b>
+<b class="nc">&nbsp;                init();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(startDelay &lt;= 0f){</b>
+<b class="nc">&nbsp;                add(x, y, rotation, color, data);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Time.run(startDelay, () -&gt; add(x, y, rotation, color, data));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void add(float x, float y, float rotation, Color color, Object data){
+<b class="nc">&nbsp;        var entity = EffectState.create();</b>
+<b class="nc">&nbsp;        entity.effect = this;</b>
+<b class="nc">&nbsp;        entity.rotation = baseRotation + rotation;</b>
+<b class="nc">&nbsp;        entity.data = data;</b>
+<b class="nc">&nbsp;        entity.lifetime = lifetime;</b>
+<b class="nc">&nbsp;        entity.set(x, y);</b>
+<b class="nc">&nbsp;        entity.color.set(color);</b>
+<b class="nc">&nbsp;        if(followParent &amp;&amp; data instanceof Posc p){</b>
+<b class="nc">&nbsp;            entity.parent = p;</b>
+<b class="nc">&nbsp;            entity.rotWithParent = rotWithParent;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        entity.add();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float render(int id, Color color, float life, float lifetime, float rotation, float x, float y, Object data){
+<b class="nc">&nbsp;        container.set(id, color, life, lifetime, rotation, x, y, data);</b>
+<b class="nc">&nbsp;        Draw.z(layer);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        render(container);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        return container.lifetime;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void render(EffectContainer e){
+<b class="nc">&nbsp;        renderer.get(e);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static @Nullable Effect get(int id){
+<b class="nc">&nbsp;        return id &gt;= all.size || id &lt; 0 ? null : all.get(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void shake(float intensity, float duration){
+<b class="nc">&nbsp;        if(!headless){</b>
+<b class="nc">&nbsp;            Vars.renderer.shake(intensity, duration);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void shake(float intensity, float duration, float x, float y){
+<b class="nc">&nbsp;        if(Core.camera == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float distance = Core.camera.position.dst(x, y);</b>
+<b class="nc">&nbsp;        if(distance &lt; 1) distance = 1;</b>
+&nbsp;
+<b class="nc">&nbsp;        shake(Mathf.clamp(1f / (distance * distance / shakeFalloff)) * intensity, duration);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void shake(float intensity, float duration, Position loc){
+<b class="nc">&nbsp;        shake(intensity, duration, loc.getX(), loc.getY());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void floorDust(float x, float y, float size){
+<b class="nc">&nbsp;        Tile tile = world.tileWorld(x, y);</b>
+<b class="nc">&nbsp;        if(tile != null){</b>
+<b class="nc">&nbsp;            Color color = tile.floor().mapColor;</b>
+<b class="nc">&nbsp;            Fx.unitLand.at(x, y, size, color);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void floorDustAngle(Effect effect, float x, float y, float angle){
+<b class="nc">&nbsp;        Tile tile = world.tileWorld(x, y);</b>
+<b class="nc">&nbsp;        if(tile != null){</b>
+<b class="nc">&nbsp;            Color color = tile.floor().mapColor;</b>
+<b class="nc">&nbsp;            effect.at(x, y, angle, color);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void decal(TextureRegion region, float x, float y, float rotation){
+<b class="nc">&nbsp;        decal(region, x, y, rotation, 3600f, Pal.rubble);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void decal(TextureRegion region, float x, float y, float rotation, float lifetime, Color color){
+<b class="nc">&nbsp;        if(headless || region == null || !Core.atlas.isFound(region)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = world.tileWorld(x, y);</b>
+<b class="nc">&nbsp;        if(tile == null || !tile.floor().hasSurface()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Decal decal = Decal.create();</b>
+<b class="nc">&nbsp;        decal.set(x, y);</b>
+<b class="nc">&nbsp;        decal.rotation(rotation);</b>
+<b class="nc">&nbsp;        decal.lifetime(lifetime);</b>
+<b class="nc">&nbsp;        decal.color().set(color);</b>
+<b class="nc">&nbsp;        decal.region(region);</b>
+<b class="nc">&nbsp;        decal.add();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void scorch(float x, float y, int size){
+<b class="nc">&nbsp;        if(headless) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        size = Mathf.clamp(size, 0, 9);</b>
+&nbsp;
+<b class="nc">&nbsp;        TextureRegion region = Core.atlas.find(&quot;scorch-&quot; + size + &quot;-&quot; + Mathf.random(2));</b>
+<b class="nc">&nbsp;        decal(region, x, y, Mathf.random(4) * 90, 3600, Pal.rubble);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void rubble(float x, float y, int blockSize){
+<b class="nc">&nbsp;        if(headless) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        TextureRegion region = Core.atlas.find(&quot;rubble-&quot; + blockSize + &quot;-&quot; + (Core.atlas.has(&quot;rubble-&quot; + blockSize + &quot;-1&quot;) ? Mathf.random(0, 1) : &quot;0&quot;));</b>
+<b class="nc">&nbsp;        decal(region, x, y, Mathf.random(4) * 90, 3600, Pal.rubble);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static class EffectContainer implements Scaled{</b>
+&nbsp;        public float x, y, time, lifetime, rotation;
+&nbsp;        public Color color;
+&nbsp;        public int id;
+&nbsp;        public Object data;
+&nbsp;        private EffectContainer innerContainer;
+&nbsp;
+&nbsp;        public void set(int id, Color color, float life, float lifetime, float rotation, float x, float y, Object data){
+<b class="nc">&nbsp;            this.x = x;</b>
+<b class="nc">&nbsp;            this.y = y;</b>
+<b class="nc">&nbsp;            this.color = color;</b>
+<b class="nc">&nbsp;            this.time = life;</b>
+<b class="nc">&nbsp;            this.lifetime = lifetime;</b>
+<b class="nc">&nbsp;            this.id = id;</b>
+<b class="nc">&nbsp;            this.rotation = rotation;</b>
+<b class="nc">&nbsp;            this.data = data;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public &lt;T&gt; T data(){
+<b class="nc">&nbsp;            return (T)data;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public EffectContainer inner(){
+<b class="nc">&nbsp;            return innerContainer == null ? (innerContainer = new EffectContainer()) : innerContainer;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void scaled(float lifetime, Cons&lt;EffectContainer&gt; cons){
+<b class="nc">&nbsp;            if(innerContainer == null) innerContainer = new EffectContainer();</b>
+<b class="nc">&nbsp;            if(time &lt;= lifetime){</b>
+<b class="nc">&nbsp;                innerContainer.set(id, color, time, lifetime, rotation, x, y, data);</b>
+<b class="nc">&nbsp;                cons.get(innerContainer);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float fin(){
+<b class="nc">&nbsp;            return time / lifetime;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

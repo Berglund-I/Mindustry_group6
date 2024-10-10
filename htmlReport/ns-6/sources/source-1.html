@@ -1,0 +1,312 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AssetsProcess</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.impl</a>
+</div>
+
+<h1>Coverage Summary for Class: AssetsProcess (mindustry.annotations.impl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AssetsProcess</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/117)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.impl;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import com.squareup.javapoet.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.annotations.*;
+&nbsp;
+&nbsp;import javax.annotation.processing.*;
+&nbsp;import javax.lang.model.*;
+&nbsp;import javax.lang.model.element.*;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;@SupportedAnnotationTypes(&quot;mindustry.annotations.Annotations.StyleDefaults&quot;)
+<b class="nc">&nbsp;public class AssetsProcess extends BaseProcessor{</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void process(RoundEnvironment env) throws Exception{
+<b class="nc">&nbsp;        processSounds(&quot;Sounds&quot;, rootDirectory + &quot;/core/assets/sounds&quot;, &quot;arc.audio.Sound&quot;, true);</b>
+<b class="nc">&nbsp;        processSounds(&quot;Musics&quot;, rootDirectory + &quot;/core/assets/music&quot;, &quot;arc.audio.Music&quot;, false);</b>
+<b class="nc">&nbsp;        processUI(env.getElementsAnnotatedWith(StyleDefaults.class));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void processUI(Set&lt;? extends Element&gt; elements) throws Exception{
+<b class="nc">&nbsp;        TypeSpec.Builder type = TypeSpec.classBuilder(&quot;Tex&quot;).addModifiers(Modifier.PUBLIC);</b>
+<b class="nc">&nbsp;        TypeSpec.Builder ictype = TypeSpec.classBuilder(&quot;Icon&quot;).addModifiers(Modifier.PUBLIC);</b>
+<b class="nc">&nbsp;        TypeSpec.Builder ichtype = TypeSpec.classBuilder(&quot;Iconc&quot;).addModifiers(Modifier.PUBLIC);</b>
+<b class="nc">&nbsp;        MethodSpec.Builder load = MethodSpec.methodBuilder(&quot;load&quot;).addModifiers(Modifier.PUBLIC, Modifier.STATIC);</b>
+<b class="nc">&nbsp;        MethodSpec.Builder loadStyles = MethodSpec.methodBuilder(&quot;loadStyles&quot;).addModifiers(Modifier.PUBLIC, Modifier.STATIC);</b>
+<b class="nc">&nbsp;        MethodSpec.Builder icload = MethodSpec.methodBuilder(&quot;load&quot;).addModifiers(Modifier.PUBLIC, Modifier.STATIC);</b>
+<b class="nc">&nbsp;        CodeBlock.Builder ichinit = CodeBlock.builder();</b>
+<b class="nc">&nbsp;        String resources = rootDirectory + &quot;/core/assets-raw/sprites/ui&quot;;</b>
+<b class="nc">&nbsp;        Jval icons = Jval.read(Fi.get(rootDirectory + &quot;/core/assets-raw/fontgen/config.json&quot;).readString());</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectMap&lt;String, String&gt; texIcons = new OrderedMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        PropertiesUtils.load(texIcons, Fi.get(rootDirectory + &quot;/core/assets/icons/icons.properties&quot;).reader());</b>
+&nbsp;
+<b class="nc">&nbsp;        StringBuilder iconcAll = new StringBuilder();</b>
+&nbsp;
+<b class="nc">&nbsp;        texIcons.each((key, val) -&gt; {</b>
+<b class="nc">&nbsp;            String[] split = val.split(&quot;\\|&quot;);</b>
+<b class="nc">&nbsp;            String name = Strings.kebabToCamel(split[1]).replace(&quot;Medium&quot;, &quot;&quot;).replace(&quot;Icon&quot;, &quot;&quot;).replace(&quot;Ui&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;            if(SourceVersion.isKeyword(name) || name.equals(&quot;char&quot;)) name += &quot;i&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;            ichtype.addField(FieldSpec.builder(char.class, name, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).addJavadoc(String.format(&quot;\\u%04x&quot;, Integer.parseInt(key))).initializer(&quot;&#39;&quot; + ((char)Integer.parseInt(key)) + &quot;&#39;&quot;).build());</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        ictype.addField(FieldSpec.builder(ParameterizedTypeName.get(ObjectMap.class, String.class, TextureRegionDrawable.class),</b>
+<b class="nc">&nbsp;                &quot;icons&quot;, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(&quot;new ObjectMap&lt;&gt;()&quot;).build());</b>
+&nbsp;
+<b class="nc">&nbsp;        ichtype.addField(FieldSpec.builder(ParameterizedTypeName.get(ObjectIntMap.class, String.class),</b>
+<b class="nc">&nbsp;            &quot;codes&quot;, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(&quot;new ObjectIntMap&lt;&gt;()&quot;).build());</b>
+&nbsp;
+<b class="nc">&nbsp;        ichtype.addField(FieldSpec.builder(ParameterizedTypeName.get(IntMap.class, String.class),</b>
+<b class="nc">&nbsp;            &quot;codeToName&quot;, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(&quot;new IntMap&lt;&gt;()&quot;).build());</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectSet&lt;String&gt; used = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Jval val : icons.get(&quot;glyphs&quot;).asArray()){</b>
+<b class="nc">&nbsp;            String name = capitalize(val.getString(&quot;css&quot;, &quot;&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!val.getBool(&quot;selected&quot;, true) || !used.add(name)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            int code = val.getInt(&quot;code&quot;, 0);</b>
+<b class="nc">&nbsp;            iconcAll.append((char)code);</b>
+<b class="nc">&nbsp;            ichtype.addField(FieldSpec.builder(char.class, name, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).addJavadoc(String.format(&quot;\\u%04x&quot;, code)).initializer(&quot;&#39;&quot; + ((char)code) + &quot;&#39;&quot;).build());</b>
+&nbsp;
+<b class="nc">&nbsp;            ichinit.addStatement(&quot;codes.put($S, $L)&quot;, name, code);</b>
+<b class="nc">&nbsp;            ichinit.addStatement(&quot;codeToName.put($L, $S)&quot;, code, name);</b>
+&nbsp;
+<b class="nc">&nbsp;            ictype.addField(TextureRegionDrawable.class, name + &quot;Small&quot;, Modifier.PUBLIC, Modifier.STATIC);</b>
+<b class="nc">&nbsp;            icload.addStatement(name + &quot;Small = mindustry.ui.Fonts.getGlyph(mindustry.ui.Fonts.def, (char)&quot; + code + &quot;)&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            ictype.addField(TextureRegionDrawable.class, name, Modifier.PUBLIC, Modifier.STATIC);</b>
+<b class="nc">&nbsp;            icload.addStatement(name + &quot; = mindustry.ui.Fonts.getGlyph(mindustry.ui.Fonts.icon, (char)&quot; + code + &quot;)&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            icload.addStatement(&quot;icons.put($S, &quot; + name + &quot;)&quot;, name);</b>
+<b class="nc">&nbsp;            icload.addStatement(&quot;icons.put($S, &quot; + name + &quot;Small)&quot;, name + &quot;Small&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        ichtype.addField(FieldSpec.builder(String.class, &quot;all&quot;, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(&quot;$S&quot;, iconcAll.toString()).build());</b>
+<b class="nc">&nbsp;        ichtype.addStaticBlock(ichinit.build());</b>
+&nbsp;
+<b class="nc">&nbsp;        Fi.get(resources).walk(p -&gt; {</b>
+<b class="nc">&nbsp;            if(!p.extEquals(&quot;png&quot;)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            String filename = p.name();</b>
+<b class="nc">&nbsp;            filename = filename.substring(0, filename.indexOf(&quot;.&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;            String sfilen = filename;</b>
+<b class="nc">&nbsp;            String dtype = &quot;arc.scene.style.Drawable&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;            String varname = capitalize(sfilen);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(SourceVersion.isKeyword(varname)) varname += &quot;s&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;            type.addField(ClassName.bestGuess(dtype), varname, Modifier.STATIC, Modifier.PUBLIC);</b>
+<b class="nc">&nbsp;            load.addStatement(varname + &quot; = arc.Core.atlas.drawable($S)&quot;, sfilen);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        for(Element elem : elements){</b>
+<b class="nc">&nbsp;            Seq.with(elem.getEnclosedElements()).each(e -&gt; e.getKind() == ElementKind.FIELD, field -&gt; {</b>
+<b class="nc">&nbsp;                String fname = field.getSimpleName().toString();</b>
+<b class="nc">&nbsp;                if(fname.startsWith(&quot;default&quot;)){</b>
+<b class="nc">&nbsp;                    loadStyles.addStatement(&quot;arc.Core.scene.addStyle(&quot; + field.asType().toString() + &quot;.class, mindustry.ui.Styles.&quot; + fname + &quot;)&quot;);</b>
+&nbsp;                }
+&nbsp;            });
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        ictype.addMethod(icload.build());</b>
+<b class="nc">&nbsp;        JavaFile.builder(packageName, ichtype.build()).build().writeTo(BaseProcessor.filer);</b>
+<b class="nc">&nbsp;        JavaFile.builder(packageName, ictype.build()).build().writeTo(BaseProcessor.filer);</b>
+&nbsp;
+<b class="nc">&nbsp;        type.addMethod(load.build());</b>
+<b class="nc">&nbsp;        type.addMethod(loadStyles.build());</b>
+<b class="nc">&nbsp;        JavaFile.builder(packageName, type.build()).build().writeTo(BaseProcessor.filer);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void processSounds(String classname, String path, String rtype, boolean genid) throws Exception{
+<b class="nc">&nbsp;        TypeSpec.Builder type = TypeSpec.classBuilder(classname).addModifiers(Modifier.PUBLIC);</b>
+<b class="nc">&nbsp;        MethodSpec.Builder loadBegin = MethodSpec.methodBuilder(&quot;load&quot;).addModifiers(Modifier.PUBLIC, Modifier.STATIC);</b>
+<b class="nc">&nbsp;        CodeBlock.Builder staticb = CodeBlock.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(genid){</b>
+<b class="nc">&nbsp;            type.addField(FieldSpec.builder(IntMap.class, &quot;idToSound&quot;, Modifier.STATIC, Modifier.PRIVATE).initializer(&quot;new IntMap()&quot;).build());</b>
+<b class="nc">&nbsp;            type.addField(FieldSpec.builder(ObjectIntMap.class, &quot;soundToId&quot;, Modifier.STATIC, Modifier.PRIVATE).initializer(&quot;new ObjectIntMap()&quot;).build());</b>
+&nbsp;
+<b class="nc">&nbsp;            type.addMethod(MethodSpec.methodBuilder(&quot;getSoundId&quot;)</b>
+<b class="nc">&nbsp;            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)</b>
+<b class="nc">&nbsp;            .addParameter(Sound.class, &quot;sound&quot;)</b>
+<b class="nc">&nbsp;            .returns(int.class)</b>
+<b class="nc">&nbsp;            .addStatement(&quot;return soundToId.get(sound, -1)&quot;).build());</b>
+&nbsp;
+<b class="nc">&nbsp;            type.addMethod(MethodSpec.methodBuilder(&quot;getSound&quot;)</b>
+<b class="nc">&nbsp;            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)</b>
+<b class="nc">&nbsp;            .addParameter(int.class, &quot;id&quot;)</b>
+<b class="nc">&nbsp;            .returns(Sound.class)</b>
+<b class="nc">&nbsp;            .addStatement(&quot;return (Sound)idToSound.get(id, () -&gt; Sounds.none)&quot;).build());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        HashSet&lt;String&gt; names = new HashSet&lt;&gt;();</b>
+<b class="nc">&nbsp;        Seq&lt;Fi&gt; files = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        Fi.get(path).walk(files::add);</b>
+&nbsp;
+<b class="nc">&nbsp;        files.sortComparing(Fi::name);</b>
+<b class="nc">&nbsp;        int id = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Fi p : files){</b>
+<b class="nc">&nbsp;            String name = p.nameWithoutExtension();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(names.contains(name)){</b>
+<b class="nc">&nbsp;                BaseProcessor.err(&quot;Duplicate file name: &quot; + p + &quot;!&quot;);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                names.add(name);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(SourceVersion.isKeyword(name)) name += &quot;s&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;            String filepath =  path.substring(path.lastIndexOf(&quot;/&quot;) + 1) + p.path().substring(p.path().lastIndexOf(path) + path.length());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(genid){</b>
+<b class="nc">&nbsp;                staticb.addStatement(&quot;soundToId.put($L, $L)&quot;, name, id);</b>
+&nbsp;
+<b class="nc">&nbsp;                loadBegin.addStatement(&quot;$T.assets.load($S, $L.class).loaded = a -&gt; { $L = ($L)a; soundToId.put(a, $L); idToSound.put($L, a); }&quot;,</b>
+<b class="nc">&nbsp;                Core.class, filepath, rtype, name, rtype, id, id);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                loadBegin.addStatement(&quot;$T.assets.load($S, $L.class).loaded = a -&gt; { $L = ($L)a; }&quot;, Core.class, filepath, rtype, name, rtype);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            type.addField(FieldSpec.builder(ClassName.bestGuess(rtype), name, Modifier.STATIC, Modifier.PUBLIC).initializer(&quot;new &quot; + rtype + &quot;()&quot;).build());</b>
+&nbsp;
+<b class="nc">&nbsp;            id ++;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(genid){</b>
+<b class="nc">&nbsp;            type.addStaticBlock(staticb.build());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(classname.equals(&quot;Sounds&quot;)){</b>
+<b class="nc">&nbsp;            type.addField(FieldSpec.builder(ClassName.bestGuess(rtype), &quot;none&quot;, Modifier.STATIC, Modifier.PUBLIC).initializer(&quot;new &quot; + rtype + &quot;()&quot;).build());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        type.addMethod(loadBegin.build());</b>
+<b class="nc">&nbsp;        JavaFile.builder(packageName, type.build()).build().writeTo(BaseProcessor.filer);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static String capitalize(String s){
+<b class="nc">&nbsp;        StringBuilder result = new StringBuilder(s.length());</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; s.length(); i++){</b>
+<b class="nc">&nbsp;            char c = s.charAt(i);</b>
+<b class="nc">&nbsp;            if(c != &#39;_&#39; &amp;&amp; c != &#39;-&#39;){</b>
+<b class="nc">&nbsp;                if(i &gt; 0 &amp;&amp; (s.charAt(i - 1) == &#39;_&#39; || s.charAt(i - 1) == &#39;-&#39;)){</b>
+<b class="nc">&nbsp;                    result.append(Character.toUpperCase(c));</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    result.append(c);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return result.toString();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,223 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Junction</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: Junction (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Junction</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (11/11)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Junction$JunctionBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.7%
+  </span>
+  <span class="absValue">
+    (6/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.3%
+  </span>
+  <span class="absValue">
+    (24/26)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    88.9%
+  </span>
+  <span class="absValue">
+    (8/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    94.6%
+  </span>
+  <span class="absValue">
+    (35/37)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Junction extends Block{
+<b class="fc">&nbsp;    public float speed = 26; //frames taken to go through this junction</b>
+<b class="fc">&nbsp;    public int capacity = 6;</b>
+&nbsp;
+&nbsp;    public Junction(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = false;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.transportation;</b>
+<b class="fc">&nbsp;        unloadable = false;</b>
+<b class="fc">&nbsp;        floating = true;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class JunctionBuild extends Building{</b>
+<b class="fc">&nbsp;        public DirectionalItemBuffer buffer = new DirectionalItemBuffer(capacity);</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int acceptStack(Item item, int amount, Teamc source){
+<b class="nc">&nbsp;            return 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+&nbsp;
+<b class="fc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="fc">&nbsp;                if(buffer.indexes[i] &gt; 0){</b>
+<b class="fc">&nbsp;                    if(buffer.indexes[i] &gt; capacity) buffer.indexes[i] = capacity;</b>
+<b class="fc">&nbsp;                    long l = buffer.buffers[i][0];</b>
+<b class="fc">&nbsp;                    float time = BufferItem.time(l);</b>
+&nbsp;
+<b class="fc">&nbsp;                    if(Time.time &gt;= time + speed / timeScale || Time.time &lt; time){</b>
+&nbsp;
+<b class="fc">&nbsp;                        Item item = content.item(BufferItem.item(l));</b>
+<b class="fc">&nbsp;                        Building dest = nearby(i);</b>
+&nbsp;
+&nbsp;                        //skip blocks that don&#39;t want the item, keep waiting until they do
+<b class="fc">&nbsp;                        if(item == null || dest == null || !dest.acceptItem(this, item) || dest.team != team){</b>
+<b class="nc">&nbsp;                            continue;</b>
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        dest.handleItem(this, item);</b>
+<b class="fc">&nbsp;                        System.arraycopy(buffer.buffers[i], 1, buffer.buffers[i], 0, buffer.indexes[i] - 1);</b>
+<b class="fc">&nbsp;                        buffer.indexes[i] --;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleItem(Building source, Item item){
+<b class="fc">&nbsp;            int relative = source.relativeTo(tile);</b>
+<b class="fc">&nbsp;            buffer.accept(relative, item);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="fc">&nbsp;            int relative = source.relativeTo(tile);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(relative == -1 || !buffer.accepts(relative)) return false;</b>
+<b class="fc">&nbsp;            Building to = nearby(relative);</b>
+<b class="fc">&nbsp;            return to != null &amp;&amp; to.team == team;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            buffer.write(write);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            buffer.read(read);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

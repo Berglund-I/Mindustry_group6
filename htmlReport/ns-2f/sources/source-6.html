@@ -1,0 +1,141 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > GridImage</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui</a>
+</div>
+
+<h1>Coverage Summary for Class: GridImage (mindustry.ui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GridImage</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.scene.*;
+&nbsp;
+&nbsp;public class GridImage extends Element{
+&nbsp;    private int imageWidth, imageHeight;
+&nbsp;
+<b class="nc">&nbsp;    public GridImage(int w, int h){</b>
+<b class="nc">&nbsp;        this.imageWidth = w;</b>
+<b class="nc">&nbsp;        this.imageHeight = h;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        float xspace = (getWidth() / imageWidth);</b>
+<b class="nc">&nbsp;        float yspace = (getHeight() / imageHeight);</b>
+<b class="nc">&nbsp;        float s = 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;        int minspace = 10;</b>
+&nbsp;
+<b class="nc">&nbsp;        int jumpx = (int)(Math.max(minspace, xspace) / xspace);</b>
+<b class="nc">&nbsp;        int jumpy = (int)(Math.max(minspace, yspace) / yspace);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = 0; x &lt;= imageWidth; x += jumpx){</b>
+<b class="nc">&nbsp;            Fill.crect((int)(this.x + xspace * x - s), y - s, 2, getHeight() + (x == imageWidth ? 1 : 0));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(int y = 0; y &lt;= imageHeight; y += jumpy){</b>
+<b class="nc">&nbsp;            Fill.crect(x - s, (int)(this.y + y * yspace - s), getWidth(), 2);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setImageSize(int w, int h){
+<b class="nc">&nbsp;        this.imageWidth = w;</b>
+<b class="nc">&nbsp;        this.imageHeight = h;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

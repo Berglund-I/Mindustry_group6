@@ -1,0 +1,359 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LegsComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: LegsComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LegsComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/105)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class LegsComp implements Posc, Rotc, Hitboxc, Flyingc, Unitc{</b>
+<b class="nc">&nbsp;    private static final Vec2 straightVec = new Vec2();</b>
+&nbsp;
+&nbsp;    @Import float x, y, rotation, speedMultiplier;
+&nbsp;    @Import UnitType type;
+&nbsp;    @Import Team team;
+&nbsp;    @Import boolean disarmed;
+&nbsp;
+<b class="nc">&nbsp;    transient Leg[] legs = {};</b>
+&nbsp;    transient float totalLength;
+&nbsp;    transient float moveSpace;
+&nbsp;    transient float baseRotation;
+&nbsp;    transient Floor lastDeepFloor;
+<b class="nc">&nbsp;    transient Vec2 curMoveOffset = new Vec2();</b>
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public SolidPred solidity(){
+<b class="nc">&nbsp;        return type.allowLegStep ? EntityCollisions::legsSolid : EntityCollisions::solid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public int pathType(){
+<b class="nc">&nbsp;        return type.allowLegStep ? Pathfinder.costLegs : Pathfinder.costGround;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public Floor drownFloor(){
+<b class="nc">&nbsp;        return lastDeepFloor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void add(){
+<b class="nc">&nbsp;        resetLegs();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void unloaded(){
+<b class="nc">&nbsp;        resetLegs(1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @MethodPriority(-1)
+&nbsp;    @Override
+&nbsp;    public void destroy(){
+<b class="nc">&nbsp;        if(!isAdded() || Vars.headless) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float legExplodeRad = type.legRegion.height  / 4f / 1.45f;</b>
+&nbsp;
+&nbsp;        //create effects for legs being destroyed
+<b class="nc">&nbsp;        for(int i = 0; i &lt; legs.length; i++){</b>
+<b class="nc">&nbsp;            Leg l = legs[i];</b>
+&nbsp;
+<b class="nc">&nbsp;            Vec2 base = legOffset(Tmp.v1, i).add(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            Tmp.v2.set(l.base).sub(l.joint).inv().setLength(type.legExtension);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Vec2 vec : new Vec2[]{base, l.joint, l.base}){</b>
+<b class="nc">&nbsp;                Damage.dynamicExplosion(vec.x, vec.y, 0f, 0f, 0f, legExplodeRad, state.rules.damageExplosions, false, team, type.deathExplosionEffect);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Fx.legDestroy.at(base.x, base.y, 0f, new LegDestroyData(base.cpy(), l.joint, type.legRegion));</b>
+<b class="nc">&nbsp;            Fx.legDestroy.at(l.joint.x, l.joint.y, 0f, new LegDestroyData(l.joint.cpy().add(Tmp.v2), l.base, type.legBaseRegion));</b>
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resetLegs(){
+<b class="nc">&nbsp;        resetLegs(type.legLength);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resetLegs(float legLength){
+<b class="nc">&nbsp;        int count = type.legCount;</b>
+&nbsp;
+<b class="nc">&nbsp;        this.legs = new Leg[count];</b>
+&nbsp;
+<b class="nc">&nbsp;        if(type.lockLegBase){</b>
+<b class="nc">&nbsp;            baseRotation = rotation;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; legs.length; i++){</b>
+<b class="nc">&nbsp;            Leg l = new Leg();</b>
+&nbsp;
+<b class="nc">&nbsp;            float dstRot = legAngle(i);</b>
+<b class="nc">&nbsp;            Vec2 baseOffset = legOffset(Tmp.v5, i).add(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            l.joint.trns(dstRot, legLength/2f).add(baseOffset);</b>
+<b class="nc">&nbsp;            l.base.trns(dstRot, legLength).add(baseOffset);</b>
+&nbsp;
+<b class="nc">&nbsp;            legs[i] = l;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        if(Mathf.dst(deltaX(), deltaY()) &gt; 0.001f){</b>
+<b class="nc">&nbsp;            baseRotation = Angles.moveToward(baseRotation, Mathf.angle(deltaX(), deltaY()), type.rotateSpeed);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(type.lockLegBase){</b>
+<b class="nc">&nbsp;            baseRotation = rotation;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float legLength = type.legLength;</b>
+&nbsp;
+&nbsp;        //set up initial leg positions
+<b class="nc">&nbsp;        if(legs.length != type.legCount){</b>
+<b class="nc">&nbsp;            resetLegs();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float moveSpeed = type.legSpeed;</b>
+<b class="nc">&nbsp;        int div = Math.max(legs.length / type.legGroupSize, 2);</b>
+<b class="nc">&nbsp;        moveSpace = legLength / 1.6f / (div / 2f) * type.legMoveSpace;</b>
+&nbsp;        //TODO should move legs even when still, based on speed. also, to prevent &quot;slipping&quot;, make sure legs move when they are too far from their destination
+<b class="nc">&nbsp;        totalLength += type.legContinuousMove ? type.speed * speedMultiplier * Time.delta : Mathf.dst(deltaX(), deltaY());</b>
+&nbsp;
+<b class="nc">&nbsp;        float trns = moveSpace * 0.85f * type.legForwardScl;</b>
+&nbsp;
+&nbsp;        //rotation + offset vector
+<b class="nc">&nbsp;        boolean moving = moving();</b>
+<b class="nc">&nbsp;        Vec2 moveOffset = !moving ? Tmp.v4.setZero() : Tmp.v4.trns(Angles.angle(deltaX(), deltaY()), trns);</b>
+&nbsp;        //make it smooth, not jumpy
+<b class="nc">&nbsp;        moveOffset = curMoveOffset.lerpDelta(moveOffset, 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        lastDeepFloor = null;</b>
+<b class="nc">&nbsp;        int deeps = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; legs.length; i++){</b>
+<b class="nc">&nbsp;            float dstRot = legAngle(i);</b>
+<b class="nc">&nbsp;            Vec2 baseOffset = legOffset(Tmp.v5, i).add(x, y);</b>
+<b class="nc">&nbsp;            Leg l = legs[i];</b>
+&nbsp;
+&nbsp;            //TODO is limiting twice necessary?
+<b class="nc">&nbsp;            l.joint.sub(baseOffset).clampLength(type.legMinLength * legLength/2f, type.legMaxLength * legLength/2f).add(baseOffset);</b>
+<b class="nc">&nbsp;            l.base.sub(baseOffset).clampLength(type.legMinLength * legLength, type.legMaxLength * legLength).add(baseOffset);</b>
+&nbsp;
+<b class="nc">&nbsp;            float stageF = (totalLength + i*type.legPairOffset) / moveSpace;</b>
+<b class="nc">&nbsp;            int stage = (int)stageF;</b>
+<b class="nc">&nbsp;            int group = stage % div;</b>
+<b class="nc">&nbsp;            boolean move = i % div == group;</b>
+<b class="nc">&nbsp;            boolean side = i &lt; legs.length/2;</b>
+&nbsp;            //back legs have reversed directions
+<b class="nc">&nbsp;            boolean backLeg = Math.abs((i + 0.5f) - legs.length/2f) &lt;= 0.501f;</b>
+<b class="nc">&nbsp;            if(backLeg &amp;&amp; type.flipBackLegs) side = !side;</b>
+<b class="nc">&nbsp;            if(type.flipLegSide) side = !side;</b>
+&nbsp;
+<b class="nc">&nbsp;            l.moving = move;</b>
+<b class="nc">&nbsp;            l.stage = moving ? stageF % 1f : Mathf.lerpDelta(l.stage, 0f, 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Floor floor = Vars.world.floorWorld(l.base.x, l.base.y);</b>
+<b class="nc">&nbsp;            if(floor.isDeep()){</b>
+<b class="nc">&nbsp;                deeps ++;</b>
+<b class="nc">&nbsp;                lastDeepFloor = floor;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(l.group != group){</b>
+&nbsp;
+&nbsp;                //create effect when transitioning to a group it can&#39;t move in
+<b class="nc">&nbsp;                if(!move &amp;&amp; (moving || !type.legContinuousMove) &amp;&amp; i % div == l.group){</b>
+<b class="nc">&nbsp;                    if(!headless &amp;&amp; !inFogTo(player.team())){</b>
+<b class="nc">&nbsp;                        if(floor.isLiquid){</b>
+<b class="nc">&nbsp;                            floor.walkEffect.at(l.base.x, l.base.y, type.rippleScale, floor.mapColor);</b>
+<b class="nc">&nbsp;                            floor.walkSound.at(x, y, 1f, floor.walkSoundVolume);</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            Fx.unitLandSmall.at(l.base.x, l.base.y, type.rippleScale, floor.mapColor);</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        //shake when legs contact ground
+<b class="nc">&nbsp;                        if(type.stepShake &gt; 0){</b>
+<b class="nc">&nbsp;                            Effect.shake(type.stepShake, type.stepShake, l.base);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(type.legSplashDamage &gt; 0 &amp;&amp; !disarmed){</b>
+<b class="nc">&nbsp;                        Damage.damage(team, l.base.x, l.base.y, type.legSplashRange, type.legSplashDamage * state.rules.unitDamage(team), false, true);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                l.group = group;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //leg destination
+<b class="nc">&nbsp;            Vec2 legDest = Tmp.v1.trns(dstRot, legLength * type.legLengthScl).add(baseOffset).add(moveOffset);</b>
+&nbsp;            //join destination
+<b class="nc">&nbsp;            Vec2 jointDest = Tmp.v2;</b>
+<b class="nc">&nbsp;            InverseKinematics.solve(legLength/2f, legLength/2f, Tmp.v6.set(l.base).sub(baseOffset), side, jointDest);</b>
+<b class="nc">&nbsp;            jointDest.add(baseOffset);</b>
+<b class="nc">&nbsp;            Tmp.v6.set(baseOffset).lerp(l.base, 0.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(move){</b>
+<b class="nc">&nbsp;                float moveFract = stageF % 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;                l.base.lerpDelta(legDest, moveFract);</b>
+<b class="nc">&nbsp;                l.joint.lerpDelta(jointDest, moveFract / 2f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            l.joint.lerpDelta(jointDest, moveSpeed / 4f);</b>
+&nbsp;
+&nbsp;            //limit again after updating
+<b class="nc">&nbsp;            l.joint.sub(baseOffset).clampLength(type.legMinLength * legLength/2f, type.legMaxLength * legLength/2f).add(baseOffset);</b>
+<b class="nc">&nbsp;            l.base.sub(baseOffset).clampLength(type.legMinLength * legLength, type.legMaxLength * legLength).add(baseOffset);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //when at least 1 leg is touching land, it can&#39;t drown
+<b class="nc">&nbsp;        if(deeps != legs.length || !floorOn().isDeep()){</b>
+<b class="nc">&nbsp;            lastDeepFloor = null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    Vec2 legOffset(Vec2 out, int index){
+<b class="nc">&nbsp;        out.trns(defaultLegAngle(index), type.legBaseOffset);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(type.legStraightness &gt; 0){</b>
+<b class="nc">&nbsp;            straightVec.trns(defaultLegAngle(index) - baseRotation, type.legBaseOffset);</b>
+<b class="nc">&nbsp;            straightVec.y = Mathf.sign(straightVec.y) * type.legBaseOffset * type.legStraightLength;</b>
+<b class="nc">&nbsp;            straightVec.rotate(baseRotation);</b>
+<b class="nc">&nbsp;            out.lerp(straightVec, type.baseLegStraightness);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return outwards facing angle of leg at the specified index. */
+&nbsp;    float legAngle(int index){
+<b class="nc">&nbsp;        if(type.legStraightness &gt; 0){</b>
+<b class="nc">&nbsp;            return Mathf.slerp(defaultLegAngle(index), (index &gt;= legs.length/2 ? -90 : 90f) + baseRotation, type.legStraightness);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return defaultLegAngle(index);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    float defaultLegAngle(int index){
+<b class="nc">&nbsp;        return baseRotation + 360f / legs.length * index + (360f / legs.length / 2f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

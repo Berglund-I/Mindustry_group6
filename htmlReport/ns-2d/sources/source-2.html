@@ -1,0 +1,173 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PointDefenseWeapon</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type.weapons</a>
+</div>
+
+<h1>Coverage Summary for Class: PointDefenseWeapon (mindustry.type.weapons)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PointDefenseWeapon</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.8%
+  </span>
+  <span class="absValue">
+    (11/24)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type.weapons;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Note that this requires several things:
+&nbsp; * - A bullet with positive maxRange
+&nbsp; * - A bullet with positive damage
+&nbsp; * - Rotation
+&nbsp; * */
+&nbsp;public class PointDefenseWeapon extends Weapon{
+<b class="fc">&nbsp;    public Color color = Color.white;</b>
+<b class="fc">&nbsp;    public Effect beamEffect = Fx.pointBeam;</b>
+&nbsp;
+&nbsp;    public PointDefenseWeapon(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public PointDefenseWeapon(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    {
+<b class="fc">&nbsp;        predictTarget = false;</b>
+<b class="fc">&nbsp;        autoTarget = true;</b>
+<b class="fc">&nbsp;        controllable = false;</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        useAmmo = false;</b>
+<b class="fc">&nbsp;        useAttackRange = false;</b>
+<b class="fc">&nbsp;        targetInterval = 10f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected Teamc findTarget(Unit unit, float x, float y, float range, boolean air, boolean ground){
+<b class="nc">&nbsp;        return Groups.bullet.intersect(x - range, y - range, range*2, range*2).min(b -&gt; b.team != unit.team &amp;&amp; b.type().hittable, b -&gt; b.dst2(x, y));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected boolean checkTarget(Unit unit, Teamc target, float x, float y, float range){
+<b class="nc">&nbsp;        return !(target.within(unit, range) &amp;&amp; target.team() != unit.team &amp;&amp; target instanceof Bullet bullet &amp;&amp; bullet.type != null &amp;&amp; bullet.type.hittable);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected void shoot(Unit unit, WeaponMount mount, float shootX, float shootY, float rotation){
+<b class="nc">&nbsp;        if(!(mount.target instanceof Bullet target)) return;</b>
+&nbsp;
+&nbsp;        // not sure whether it should multiply by the damageMultiplier of the unit
+<b class="nc">&nbsp;        float bulletDamage = bullet.damage * unit.damageMultiplier() * state.rules.unitDamage(unit.team);</b>
+<b class="nc">&nbsp;        if(target.damage() &gt; bulletDamage){</b>
+<b class="nc">&nbsp;            target.damage(target.damage() - bulletDamage);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            target.remove();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        beamEffect.at(shootX, shootY, rotation, color, new Vec2().set(target));</b>
+<b class="nc">&nbsp;        bullet.shootEffect.at(shootX, shootY, rotation, color);</b>
+<b class="nc">&nbsp;        bullet.hitEffect.at(target.x, target.y, color);</b>
+<b class="nc">&nbsp;        shootSound.at(shootX, shootY, Mathf.random(0.9f, 1.1f));</b>
+<b class="nc">&nbsp;        mount.recoil = 1f;</b>
+<b class="nc">&nbsp;        mount.heat = 1f;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

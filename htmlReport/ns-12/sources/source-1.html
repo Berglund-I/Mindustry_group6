@@ -1,0 +1,788 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Damage</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities</a>
+</div>
+
+<h1>Coverage Summary for Class: Damage (mindustry.entities)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Damage</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.8%
+  </span>
+  <span class="absValue">
+    (5/51)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.4%
+  </span>
+  <span class="absValue">
+    (25/297)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Damage$Collided</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    9.3%
+  </span>
+  <span class="absValue">
+    (5/54)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.3%
+  </span>
+  <span class="absValue">
+    (25/303)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Utility class for damaging in an area. */
+<b class="nc">&nbsp;public class Damage{</b>
+<b class="fc">&nbsp;    private static final UnitDamageEvent bulletDamageEvent = new UnitDamageEvent();</b>
+<b class="fc">&nbsp;    private static final Rect rect = new Rect();</b>
+<b class="fc">&nbsp;    private static final Rect hitrect = new Rect();</b>
+<b class="fc">&nbsp;    private static final Vec2 vec = new Vec2(), seg1 = new Vec2(), seg2 = new Vec2();</b>
+<b class="fc">&nbsp;    private static final IntSet collidedBlocks = new IntSet();</b>
+<b class="fc">&nbsp;    private static final IntFloatMap damages = new IntFloatMap();</b>
+<b class="fc">&nbsp;    private static final Seq&lt;Collided&gt; collided = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private static final Pool&lt;Collided&gt; collidePool = Pools.get(Collided.class, Collided::new);</b>
+<b class="fc">&nbsp;    private static final Seq&lt;Building&gt; builds = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private static final FloatSeq distances = new FloatSeq();</b>
+&nbsp;
+&nbsp;    private static Tile furthest;
+<b class="fc">&nbsp;    private static float maxDst = 0f;</b>
+&nbsp;    private static Building tmpBuilding;
+&nbsp;    private static Unit tmpUnit;
+&nbsp;
+&nbsp;    public static void applySuppression(Team team, float x, float y, float range, float reload, float maxDelay, float applyParticleChance, @Nullable Position source){
+<b class="nc">&nbsp;        applySuppression(team, x, y, range, reload, maxDelay, applyParticleChance, source, Pal.sapBullet);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void applySuppression(Team team, float x, float y, float range, float reload, float maxDelay, float applyParticleChance, @Nullable Position source, Color effectColor){
+<b class="nc">&nbsp;        builds.clear();</b>
+<b class="nc">&nbsp;        indexer.eachBlock(null, x, y, range, build -&gt; build.team != team, build -&gt; {</b>
+<b class="nc">&nbsp;            float prev = build.healSuppressionTime;</b>
+<b class="nc">&nbsp;            build.applyHealSuppression(reload + 1f, effectColor);</b>
+&nbsp;
+&nbsp;            //TODO maybe should be block field instead of instanceof check
+<b class="nc">&nbsp;            if(build.wasRecentlyHealed(60f * 12f) || build.block.suppressable){</b>
+&nbsp;
+&nbsp;                //add prev check so ability spam doesn&#39;t lead to particle spam (essentially, recently suppressed blocks don&#39;t get new particles)
+<b class="nc">&nbsp;                if(!headless &amp;&amp; prev - Time.time &lt;= reload/2f){</b>
+<b class="nc">&nbsp;                    builds.add(build);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;        //to prevent particle spam, the amount of particles is to remain constant (scales with number of buildings)
+<b class="nc">&nbsp;        float scaledChance = applyParticleChance / builds.size;</b>
+<b class="nc">&nbsp;        for(var build : builds){</b>
+<b class="nc">&nbsp;            if(Mathf.chance(scaledChance)){</b>
+<b class="nc">&nbsp;                Time.run(Mathf.random(maxDelay), () -&gt; {</b>
+<b class="nc">&nbsp;                    Fx.regenSuppressSeek.at(build.x + Mathf.range(build.block.size * tilesize / 2f), build.y + Mathf.range(build.block.size * tilesize / 2f), 0f, effectColor, source);</b>
+&nbsp;                });
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Creates a dynamic explosion based on specified parameters. */
+&nbsp;    public static void dynamicExplosion(float x, float y, float flammability, float explosiveness, float power, float radius, boolean damage){
+<b class="nc">&nbsp;        dynamicExplosion(x, y, flammability, explosiveness, power, radius, damage, true, null, Fx.dynamicExplosion);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Creates a dynamic explosion based on specified parameters. */
+&nbsp;    public static void dynamicExplosion(float x, float y, float flammability, float explosiveness, float power, float radius, boolean damage, Effect explosionFx){
+<b class="nc">&nbsp;        dynamicExplosion(x, y, flammability, explosiveness, power, radius, damage, true, null, explosionFx);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Creates a dynamic explosion based on specified parameters. */
+&nbsp;    public static void dynamicExplosion(float x, float y, float flammability, float explosiveness, float power, float radius, boolean damage, boolean fire, @Nullable Team ignoreTeam){
+<b class="nc">&nbsp;        dynamicExplosion(x, y, flammability, explosiveness, power, radius, damage, fire, ignoreTeam, Fx.dynamicExplosion);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Creates a dynamic explosion based on specified parameters. */
+&nbsp;    public static void dynamicExplosion(float x, float y, float flammability, float explosiveness, float power, float radius, boolean damage, boolean fire, @Nullable Team ignoreTeam, Effect explosionFx){
+<b class="nc">&nbsp;        if(damage){</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; Mathf.clamp(power / 700, 0, 8); i++){</b>
+<b class="nc">&nbsp;                int length = 5 + Mathf.clamp((int)(Mathf.pow(power, 0.98f) / 500), 1, 18);</b>
+<b class="nc">&nbsp;                Time.run(i * 0.8f + Mathf.random(4f), () -&gt; Lightning.create(Team.derelict, Pal.power, 3 + Mathf.pow(power, 0.35f), x, y, Mathf.random(360f), length + Mathf.range(2)));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(fire){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; Mathf.clamp(flammability / 4, 0, 30); i++){</b>
+<b class="nc">&nbsp;                    Time.run(i / 2f, () -&gt; Call.createBullet(Bullets.fireball, Team.derelict, x, y, Mathf.random(360f), Bullets.fireball.damage, 1, 1));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            int waves = explosiveness &lt;= 2 ? 0 : Mathf.clamp((int)(explosiveness / 11), 1, 25);</b>
+<b class="nc">&nbsp;            float damagePerWave = explosiveness / 2f;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; waves; i++){</b>
+<b class="nc">&nbsp;                var shields = ignoreTeam == null ? null : indexer.getEnemy(ignoreTeam, BlockFlag.shield);</b>
+<b class="nc">&nbsp;                int f = i;</b>
+<b class="nc">&nbsp;                Time.run(i * 2f, () -&gt; {</b>
+<b class="nc">&nbsp;                    if(shields == null || shields.isEmpty() || !shields.contains(b -&gt; b instanceof ExplosionShield s &amp;&amp; s.absorbExplosion(x, y, damagePerWave))){</b>
+<b class="nc">&nbsp;                        damage(ignoreTeam, x, y, Mathf.clamp(radius + explosiveness, 0, 50f) * ((f + 1f) / waves), damagePerWave, false);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Fx.blockExplosionSmoke.at(x + Mathf.range(radius), y + Mathf.range(radius));</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(explosiveness &gt; 15f){</b>
+<b class="nc">&nbsp;            Fx.shockwave.at(x, y);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(explosiveness &gt; 30f){</b>
+<b class="nc">&nbsp;            Fx.bigShockwave.at(x, y);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float shake = Math.min(explosiveness / 4f + 3f, 9f);</b>
+<b class="nc">&nbsp;        Effect.shake(shake, shake, x, y);</b>
+<b class="nc">&nbsp;        explosionFx.at(x, y, radius / 8f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void createIncend(float x, float y, float range, int amount){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; amount; i++){</b>
+<b class="nc">&nbsp;            float cx = x + Mathf.range(range);</b>
+<b class="nc">&nbsp;            float cy = y + Mathf.range(range);</b>
+<b class="nc">&nbsp;            Tile tile = world.tileWorld(cx, cy);</b>
+<b class="nc">&nbsp;            if(tile != null){</b>
+<b class="nc">&nbsp;                Fires.create(tile);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static @Nullable Building findAbsorber(Team team, float x1, float y1, float x2, float y2){
+<b class="nc">&nbsp;        tmpBuilding = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean found = World.raycast(World.toTile(x1), World.toTile(y1), World.toTile(x2), World.toTile(y2),</b>
+<b class="nc">&nbsp;        (x, y) -&gt; (tmpBuilding = world.build(x, y)) != null &amp;&amp; tmpBuilding.team != team &amp;&amp; tmpBuilding.block.absorbLasers);</b>
+&nbsp;
+<b class="nc">&nbsp;        return found ? tmpBuilding : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static float findLength(Bullet b, float length, boolean laser, int pierceCap){
+<b class="nc">&nbsp;        if(pierceCap &gt; 0){</b>
+<b class="nc">&nbsp;            length = findPierceLength(b, pierceCap, laser, length);</b>
+<b class="nc">&nbsp;        }else if(laser){</b>
+<b class="nc">&nbsp;            length = findLaserLength(b, length);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return length;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static float findLaserLength(Bullet b, float length){
+<b class="nc">&nbsp;        vec.trnsExact(b.rotation(), length);</b>
+&nbsp;
+<b class="nc">&nbsp;        furthest = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean found = World.raycast(b.tileX(), b.tileY(), World.toTile(b.x + vec.x), World.toTile(b.y + vec.y),</b>
+<b class="nc">&nbsp;        (x, y) -&gt; (furthest = world.tile(x, y)) != null &amp;&amp; furthest.team() != b.team &amp;&amp; (furthest.build != null &amp;&amp; furthest.build.absorbLasers()));</b>
+&nbsp;
+<b class="nc">&nbsp;        return found &amp;&amp; furthest != null ? Math.max(6f, b.dst(furthest.worldx(), furthest.worldy())) : length;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static float findPierceLength(Bullet b, int pierceCap, float length){
+<b class="nc">&nbsp;        return findPierceLength(b, pierceCap, b.type.laserAbsorb, length);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static float findPierceLength(Bullet b, int pierceCap, boolean laser, float length){
+<b class="nc">&nbsp;        vec.trnsExact(b.rotation(), length);</b>
+<b class="nc">&nbsp;        rect.setPosition(b.x, b.y).setSize(vec.x, vec.y).normalize().grow(3f);</b>
+&nbsp;
+<b class="nc">&nbsp;        maxDst = Float.POSITIVE_INFINITY;</b>
+&nbsp;
+<b class="nc">&nbsp;        distances.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(b.type.collidesGround &amp;&amp; b.type.collidesTiles){</b>
+<b class="nc">&nbsp;            World.raycast(b.tileX(), b.tileY(), World.toTile(b.x + vec.x), World.toTile(b.y + vec.y), (x, y) -&gt; {</b>
+&nbsp;                //add distance to list so it can be processed
+<b class="nc">&nbsp;                var build = world.build(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(build != null &amp;&amp; build.team != b.team &amp;&amp; build.collide(b) &amp;&amp; b.checkUnderBuild(build, x * tilesize, y * tilesize)){</b>
+<b class="nc">&nbsp;                    distances.add(b.dst(build));</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(laser &amp;&amp; build.absorbLasers()){</b>
+<b class="nc">&nbsp;                        maxDst = Math.min(maxDst, b.dst(build));</b>
+<b class="nc">&nbsp;                        return true;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Units.nearbyEnemies(b.team, rect, u -&gt; {</b>
+<b class="nc">&nbsp;            u.hitbox(hitrect);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(u.checkTarget(b.type.collidesAir, b.type.collidesGround) &amp;&amp; u.hittable() &amp;&amp; Intersector.intersectSegmentRectangle(b.x, b.y, b.x + vec.x, b.y + vec.y, hitrect)){</b>
+<b class="nc">&nbsp;                distances.add(u.dst(b));</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        distances.sort();</b>
+&nbsp;
+&nbsp;        //return either the length when not enough things were pierced,
+&nbsp;        //or the last pierced object if there were enough blockages
+<b class="nc">&nbsp;        return Math.min(distances.size &lt; pierceCap || pierceCap &lt; 0 ? length : Math.max(6f, distances.get(pierceCap - 1)), maxDst);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Collides a bullet with blocks in a laser, taking into account absorption blocks. Resulting length is stored in the bullet&#39;s fdata. */
+&nbsp;    public static float collideLaser(Bullet b, float length, boolean large, boolean laser, int pierceCap){
+<b class="nc">&nbsp;        float resultLength = findPierceLength(b, pierceCap, laser, length);</b>
+&nbsp;
+<b class="nc">&nbsp;        collideLine(b, b.team, b.type.hitEffect, b.x, b.y, b.rotation(), resultLength, large, laser, pierceCap);</b>
+&nbsp;
+<b class="nc">&nbsp;        b.fdata = resultLength;</b>
+&nbsp;
+<b class="nc">&nbsp;        return resultLength;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void collideLine(Bullet hitter, Team team, Effect effect, float x, float y, float angle, float length){
+<b class="nc">&nbsp;        collideLine(hitter, team, effect, x, y, angle, length, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Damages entities in a line.
+&nbsp;     * Only enemies of the specified team are damaged.
+&nbsp;     */
+&nbsp;    public static void collideLine(Bullet hitter, Team team, Effect effect, float x, float y, float angle, float length, boolean large){
+<b class="nc">&nbsp;        collideLine(hitter, team, effect, x, y, angle, length, large, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Damages entities in a line.
+&nbsp;     * Only enemies of the specified team are damaged.
+&nbsp;     */
+&nbsp;    public static void collideLine(Bullet hitter, Team team, Effect effect, float x, float y, float angle, float length, boolean large, boolean laser){
+<b class="nc">&nbsp;        collideLine(hitter, team, effect, x, y, angle, length, large, laser, -1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Damages entities in a line.
+&nbsp;     * Only enemies of the specified team are damaged.
+&nbsp;     */
+&nbsp;    public static void collideLine(Bullet hitter, Team team, Effect effect, float x, float y, float angle, float length, boolean large, boolean laser, int pierceCap){
+<b class="nc">&nbsp;        length = findLength(hitter, length, laser, pierceCap);</b>
+<b class="nc">&nbsp;        hitter.fdata = length;</b>
+&nbsp;
+<b class="nc">&nbsp;        collidedBlocks.clear();</b>
+<b class="nc">&nbsp;        vec.trnsExact(angle, length);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(hitter.type.collidesGround &amp;&amp; hitter.type.collidesTiles){</b>
+<b class="nc">&nbsp;            seg1.set(x, y);</b>
+<b class="nc">&nbsp;            seg2.set(seg1).add(vec);</b>
+<b class="nc">&nbsp;            World.raycastEachWorld(x, y, seg2.x, seg2.y, (cx, cy) -&gt; {</b>
+<b class="nc">&nbsp;                Building tile = world.build(cx, cy);</b>
+<b class="nc">&nbsp;                boolean collide = tile != null &amp;&amp; tile.collide(hitter) &amp;&amp; hitter.checkUnderBuild(tile, cx * tilesize, cy * tilesize)</b>
+<b class="nc">&nbsp;                    &amp;&amp; ((tile.team != team &amp;&amp; tile.collide(hitter)) || hitter.type.testCollision(hitter, tile)) &amp;&amp; collidedBlocks.add(tile.pos());</b>
+<b class="nc">&nbsp;                if(collide){</b>
+<b class="nc">&nbsp;                    collided.add(collidePool.obtain().set(cx * tilesize, cy * tilesize, tile));</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(Point2 p : Geometry.d4){</b>
+<b class="nc">&nbsp;                        Tile other = world.tile(p.x + cx, p.y + cy);</b>
+<b class="nc">&nbsp;                        if(other != null &amp;&amp; (large || Intersector.intersectSegmentRectangle(seg1, seg2, other.getBounds(Tmp.r1)))){</b>
+<b class="nc">&nbsp;                            Building build = other.build;</b>
+<b class="nc">&nbsp;                            if(build != null &amp;&amp; hitter.checkUnderBuild(build, cx * tilesize, cy * tilesize) &amp;&amp; collidedBlocks.add(build.pos())){</b>
+<b class="nc">&nbsp;                                collided.add(collidePool.obtain().set((p.x + cx * tilesize), (p.y + cy) * tilesize, build));</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float expand = 3f;</b>
+&nbsp;
+<b class="nc">&nbsp;        rect.setPosition(x, y).setSize(vec.x, vec.y).normalize().grow(expand * 2f);</b>
+<b class="nc">&nbsp;        float x2 = vec.x + x, y2 = vec.y + y;</b>
+&nbsp;
+<b class="nc">&nbsp;        Units.nearbyEnemies(team, rect, u -&gt; {</b>
+<b class="nc">&nbsp;            if(u.checkTarget(hitter.type.collidesAir, hitter.type.collidesGround) &amp;&amp; u.hittable()){</b>
+<b class="nc">&nbsp;                u.hitbox(hitrect);</b>
+&nbsp;
+<b class="nc">&nbsp;                Vec2 vec = Geometry.raycastRect(x, y, x2, y2, hitrect.grow(expand * 2));</b>
+&nbsp;
+<b class="nc">&nbsp;                if(vec != null){</b>
+<b class="nc">&nbsp;                    collided.add(collidePool.obtain().set(vec.x, vec.y, u));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        int[] collideCount = {0};</b>
+<b class="nc">&nbsp;        collided.sort(c -&gt; hitter.dst2(c.x, c.y));</b>
+<b class="nc">&nbsp;        collided.each(c -&gt; {</b>
+<b class="nc">&nbsp;            if(hitter.damage &gt; 0 &amp;&amp; (pierceCap &lt;= 0 || collideCount[0] &lt; pierceCap)){</b>
+<b class="nc">&nbsp;                if(c.target instanceof Unit u){</b>
+<b class="nc">&nbsp;                    u.collision(hitter, c.x, c.y);</b>
+<b class="nc">&nbsp;                    hitter.collision(u, c.x, c.y);</b>
+<b class="nc">&nbsp;                    collideCount[0]++;</b>
+<b class="nc">&nbsp;                }else if(c.target instanceof Building tile){</b>
+<b class="nc">&nbsp;                    float health = tile.health;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(tile.team != team &amp;&amp; tile.collide(hitter)){</b>
+<b class="nc">&nbsp;                        tile.collision(hitter);</b>
+<b class="nc">&nbsp;                        hitter.type.hit(hitter, c.x, c.y);</b>
+<b class="nc">&nbsp;                        collideCount[0]++;</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //try to heal the tile
+<b class="nc">&nbsp;                    if(hitter.type.testCollision(hitter, tile)){</b>
+<b class="nc">&nbsp;                        hitter.type.hitTile(hitter, tile, c.x, c.y, health, false);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        collidePool.freeAll(collided);</b>
+<b class="nc">&nbsp;        collided.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Damages entities on a point.
+&nbsp;     * Only enemies of the specified team are damaged.
+&nbsp;     */
+&nbsp;    public static void collidePoint(Bullet hitter, Team team, Effect effect, float x, float y){
+&nbsp;
+<b class="nc">&nbsp;        if(hitter.type.collidesGround){</b>
+<b class="nc">&nbsp;            Building build = world.build(World.toTile(x), World.toTile(y));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(build != null &amp;&amp; hitter.damage &gt; 0){</b>
+<b class="nc">&nbsp;                float health = build.health;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(build.team != team &amp;&amp; build.collide(hitter)){</b>
+<b class="nc">&nbsp;                    build.collision(hitter);</b>
+<b class="nc">&nbsp;                    hitter.type.hit(hitter, x, y);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //try to heal the tile
+<b class="nc">&nbsp;                if(hitter.type.testCollision(hitter, build)){</b>
+<b class="nc">&nbsp;                    hitter.type.hitTile(hitter, build, x, y, health, false);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Units.nearbyEnemies(team, rect.setCentered(x, y, 1f), u -&gt; {</b>
+<b class="nc">&nbsp;            if(u.checkTarget(hitter.type.collidesAir, hitter.type.collidesGround) &amp;&amp; u.hittable()){</b>
+<b class="nc">&nbsp;                u.collision(hitter, x, y);</b>
+<b class="nc">&nbsp;                hitter.collision(u, x, y);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Casts forward in a line.
+&nbsp;     * @return the first encountered object.
+&nbsp;     */
+&nbsp;    public static Healthc linecast(Bullet hitter, float x, float y, float angle, float length){
+<b class="nc">&nbsp;        vec.trns(angle, length);</b>
+&nbsp;
+<b class="nc">&nbsp;        tmpBuilding = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(hitter.type.collidesGround){</b>
+<b class="nc">&nbsp;            World.raycastEachWorld(x, y, x + vec.x, y + vec.y, (cx, cy) -&gt; {</b>
+<b class="nc">&nbsp;                Building tile = world.build(cx, cy);</b>
+<b class="nc">&nbsp;                if(tile != null &amp;&amp; tile.team != hitter.team){</b>
+<b class="nc">&nbsp;                    tmpBuilding = tile;</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        rect.setPosition(x, y).setSize(vec.x, vec.y);</b>
+<b class="nc">&nbsp;        float x2 = vec.x + x, y2 = vec.y + y;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(rect.width &lt; 0){</b>
+<b class="nc">&nbsp;            rect.x += rect.width;</b>
+<b class="nc">&nbsp;            rect.width *= -1;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(rect.height &lt; 0){</b>
+<b class="nc">&nbsp;            rect.y += rect.height;</b>
+<b class="nc">&nbsp;            rect.height *= -1;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float expand = 3f;</b>
+&nbsp;
+<b class="nc">&nbsp;        rect.y -= expand;</b>
+<b class="nc">&nbsp;        rect.x -= expand;</b>
+<b class="nc">&nbsp;        rect.width += expand * 2;</b>
+<b class="nc">&nbsp;        rect.height += expand * 2;</b>
+&nbsp;
+<b class="nc">&nbsp;        tmpUnit = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        Units.nearbyEnemies(hitter.team, rect, e -&gt; {</b>
+<b class="nc">&nbsp;            if((tmpUnit != null &amp;&amp; e.dst2(x, y) &gt; tmpUnit.dst2(x, y)) || !e.checkTarget(hitter.type.collidesAir, hitter.type.collidesGround) || !e.targetable(hitter.team)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            e.hitbox(hitrect);</b>
+<b class="nc">&nbsp;            Rect other = hitrect;</b>
+<b class="nc">&nbsp;            other.y -= expand;</b>
+<b class="nc">&nbsp;            other.x -= expand;</b>
+<b class="nc">&nbsp;            other.width += expand * 2;</b>
+<b class="nc">&nbsp;            other.height += expand * 2;</b>
+&nbsp;
+<b class="nc">&nbsp;            Vec2 vec = Geometry.raycastRect(x, y, x2, y2, other);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(vec != null){</b>
+<b class="nc">&nbsp;                tmpUnit = e;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        if(tmpBuilding != null &amp;&amp; tmpUnit != null){</b>
+<b class="nc">&nbsp;            if(Mathf.dst2(x, y, tmpBuilding.getX(), tmpBuilding.getY()) &lt;= Mathf.dst2(x, y, tmpUnit.getX(), tmpUnit.getY())){</b>
+<b class="nc">&nbsp;                return tmpBuilding;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(tmpBuilding != null){</b>
+<b class="nc">&nbsp;            return tmpBuilding;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return tmpUnit;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Damages all entities and blocks in a radius that are enemies of the team. */
+&nbsp;    public static void damageUnits(Team team, float x, float y, float size, float damage, Boolf&lt;Unit&gt; predicate, Cons&lt;Unit&gt; acceptor){
+<b class="nc">&nbsp;        Cons&lt;Unit&gt; cons = entity -&gt; {</b>
+<b class="nc">&nbsp;            if(!predicate.get(entity) || !entity.hittable()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            entity.hitbox(hitrect);</b>
+<b class="nc">&nbsp;            if(!hitrect.overlaps(rect)){</b>
+&nbsp;                return;
+&nbsp;            }
+<b class="nc">&nbsp;            entity.damage(damage);</b>
+<b class="nc">&nbsp;            acceptor.get(entity);</b>
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        rect.setSize(size * 2).setCenter(x, y);</b>
+<b class="nc">&nbsp;        if(team != null){</b>
+<b class="nc">&nbsp;            Units.nearbyEnemies(team, rect, cons);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Units.nearby(rect, cons);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Damages everything in a radius. */
+&nbsp;    public static void damage(float x, float y, float radius, float damage){
+<b class="nc">&nbsp;        damage(null, x, y, radius, damage, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Damages all entities and blocks in a radius that are enemies of the team. */
+&nbsp;    public static void damage(Team team, float x, float y, float radius, float damage){
+<b class="nc">&nbsp;        damage(team, x, y, radius, damage, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Damages all entities and blocks in a radius that are enemies of the team. */
+&nbsp;    public static void damage(Team team, float x, float y, float radius, float damage, boolean air, boolean ground){
+<b class="nc">&nbsp;        damage(team, x, y, radius, damage, false, air, ground);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Applies a status effect to all enemy units in a range. */
+&nbsp;    public static void status(Team team, float x, float y, float radius, StatusEffect effect, float duration, boolean air, boolean ground){
+<b class="nc">&nbsp;        Cons&lt;Unit&gt; cons = entity -&gt; {</b>
+<b class="nc">&nbsp;            if(entity.team == team || !entity.checkTarget(air, ground) || !entity.hittable() || !entity.within(x, y, radius)){</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            entity.apply(effect, duration);</b>
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        rect.setSize(radius * 2).setCenter(x, y);</b>
+<b class="nc">&nbsp;        if(team != null){</b>
+<b class="nc">&nbsp;            Units.nearbyEnemies(team, rect, cons);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Units.nearby(rect, cons);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Damages all entities and blocks in a radius that are enemies of the team. */
+&nbsp;    public static void damage(Team team, float x, float y, float radius, float damage, boolean complete){
+<b class="fc">&nbsp;        damage(team, x, y, radius, damage, complete, true, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Damages all entities and blocks in a radius that are enemies of the team. */
+&nbsp;    public static void damage(Team team, float x, float y, float radius, float damage, boolean complete, boolean air, boolean ground){
+<b class="fc">&nbsp;        damage(team, x, y, radius, damage, complete, air, ground, false, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Damages all entities and blocks in a radius that are enemies of the team. */
+&nbsp;    public static void damage(Team team, float x, float y, float radius, float damage, boolean complete, boolean air, boolean ground, boolean scaled, @Nullable Bullet source){
+<b class="fc">&nbsp;        Cons&lt;Unit&gt; cons = unit -&gt; {</b>
+<b class="nc">&nbsp;            if(unit.team == team  || !unit.checkTarget(air, ground) || !unit.hittable() || !unit.within(x, y, radius + (scaled ? unit.hitSize / 2f : 0f))){</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            boolean dead = unit.dead;</b>
+&nbsp;
+<b class="nc">&nbsp;            float amount = calculateDamage(scaled ? Math.max(0, unit.dst(x, y) - unit.type.hitSize/2) : unit.dst(x, y), radius, damage);</b>
+<b class="nc">&nbsp;            unit.damage(amount);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(source != null){</b>
+<b class="nc">&nbsp;                Events.fire(bulletDamageEvent.set(unit, source));</b>
+<b class="nc">&nbsp;                unit.controller().hit(source);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!dead &amp;&amp; unit.dead){</b>
+<b class="nc">&nbsp;                    Events.fire(new UnitBulletDestroyEvent(unit, source));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;            //TODO better velocity displacement
+<b class="nc">&nbsp;            float dst = vec.set(unit.x - x, unit.y - y).len();</b>
+<b class="nc">&nbsp;            unit.vel.add(vec.setLength((1f - dst / radius) * 2f / unit.mass()));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(complete &amp;&amp; damage &gt;= 9999999f &amp;&amp; unit.isPlayer()){</b>
+<b class="nc">&nbsp;                Events.fire(Trigger.exclusionDeath);</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;
+<b class="fc">&nbsp;        rect.setSize(radius * 2).setCenter(x, y);</b>
+<b class="fc">&nbsp;        if(team != null){</b>
+<b class="fc">&nbsp;            Units.nearbyEnemies(team, rect, cons);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Units.nearby(rect, cons);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(ground){</b>
+<b class="fc">&nbsp;            if(!complete){</b>
+<b class="nc">&nbsp;                tileDamage(team, World.toTile(x), World.toTile(y), radius / tilesize, damage * (source == null ? 1f : source.type.buildingDamageMultiplier), source);</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                completeDamage(team, x, y, radius, damage);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void tileDamage(Team team, int x, int y, float baseRadius, float damage){
+<b class="nc">&nbsp;        tileDamage(team, x, y, baseRadius, damage, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void tileDamage(Team team, int x, int y, float baseRadius, float damage, @Nullable Bullet source){
+<b class="nc">&nbsp;        Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;            var in = world.build(x, y);</b>
+&nbsp;            //spawned inside a multiblock. this means that damage needs to be dealt directly.
+&nbsp;            //why? because otherwise the building would absorb everything in one cell, which means much less damage than a nearby explosion.
+&nbsp;            //this needs to be compensated
+<b class="nc">&nbsp;            if(in != null &amp;&amp; in.team != team &amp;&amp; in.block.size &gt; 1 &amp;&amp; in.health &gt; damage){</b>
+&nbsp;                //deal the damage of an entire side, to be equivalent with maximum &#39;standard&#39; damage
+<b class="nc">&nbsp;                in.damage(team, damage * Math.min((in.block.size), baseRadius * 0.4f));</b>
+&nbsp;                //no need to continue with the explosion
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+&nbsp;            //cap radius to prevent lag
+<b class="nc">&nbsp;            float radius = Math.min(baseRadius, 100), rad2 = radius * radius;</b>
+<b class="nc">&nbsp;            int rays = Mathf.ceil(radius * 2 * Mathf.pi);</b>
+<b class="nc">&nbsp;            double spacing = Math.PI * 2.0 / rays;</b>
+<b class="nc">&nbsp;            damages.clear();</b>
+&nbsp;
+&nbsp;            //raycast from each angle
+<b class="nc">&nbsp;            for(int i = 0; i &lt;= rays; i++){</b>
+<b class="nc">&nbsp;                float dealt = 0f;</b>
+<b class="nc">&nbsp;                int startX = x;</b>
+<b class="nc">&nbsp;                int startY = y;</b>
+<b class="nc">&nbsp;                int endX = x + (int)(Math.cos(spacing * i) * radius), endY = y + (int)(Math.sin(spacing * i) * radius);</b>
+&nbsp;
+<b class="nc">&nbsp;                int xDist = Math.abs(endX - startX);</b>
+<b class="nc">&nbsp;                int yDist = -Math.abs(endY - startY);</b>
+<b class="nc">&nbsp;                int xStep = (startX &lt; endX ? +1 : -1);</b>
+<b class="nc">&nbsp;                int yStep = (startY &lt; endY ? +1 : -1);</b>
+<b class="nc">&nbsp;                int error = xDist + yDist;</b>
+&nbsp;
+<b class="nc">&nbsp;                while(startX != endX || startY != endY){</b>
+<b class="nc">&nbsp;                    var build = world.build(startX, startY);</b>
+<b class="nc">&nbsp;                    if(build != null &amp;&amp; build.team != team){</b>
+&nbsp;                        //damage dealt at circle edge
+<b class="nc">&nbsp;                        float edgeScale = 0.6f;</b>
+<b class="nc">&nbsp;                        float mult = (1f-(Mathf.dst2(startX, startY, x, y) / rad2) + edgeScale) / (1f + edgeScale);</b>
+<b class="nc">&nbsp;                        float next = damage * mult - dealt;</b>
+&nbsp;                        //register damage dealt
+<b class="nc">&nbsp;                        int p = Point2.pack(startX, startY);</b>
+<b class="nc">&nbsp;                        damages.put(p, Math.max(damages.get(p), next));</b>
+&nbsp;                        //register as hit
+<b class="nc">&nbsp;                        dealt += build.health;</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(next - dealt &lt;= 0){</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(2 * error - yDist &gt; xDist - 2 * error){</b>
+<b class="nc">&nbsp;                        error += yDist;</b>
+<b class="nc">&nbsp;                        startX += xStep;</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        error += xDist;</b>
+<b class="nc">&nbsp;                        startY += yStep;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //apply damage
+<b class="nc">&nbsp;            for(var e : damages){</b>
+<b class="nc">&nbsp;                int cx = Point2.x(e.key), cy = Point2.y(e.key);</b>
+<b class="nc">&nbsp;                var build = world.build(cx, cy);</b>
+<b class="nc">&nbsp;                if(build != null){</b>
+<b class="nc">&nbsp;                    if(source != null){</b>
+<b class="nc">&nbsp;                        build.damage(source, team, e.value);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        build.damage(team, e.value);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void completeDamage(Team team, float x, float y, float radius, float damage){
+&nbsp;
+<b class="fc">&nbsp;        int trad = (int)(radius / tilesize);</b>
+<b class="fc">&nbsp;        for(int dx = -trad; dx &lt;= trad; dx++){</b>
+<b class="fc">&nbsp;            for(int dy = -trad; dy &lt;= trad; dy++){</b>
+<b class="fc">&nbsp;                Tile tile = world.tile(Math.round(x / tilesize) + dx, Math.round(y / tilesize) + dy);</b>
+<b class="fc">&nbsp;                if(tile != null &amp;&amp; tile.build != null &amp;&amp; (team == null || team != tile.team()) &amp;&amp; dx*dx + dy*dy &lt;= trad*trad){</b>
+<b class="nc">&nbsp;                    tile.build.damage(team, damage);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static float calculateDamage(float dist, float radius, float damage){
+<b class="nc">&nbsp;        float falloff = 0.4f;</b>
+<b class="nc">&nbsp;        float scaled = Mathf.lerp(1f - dist / radius, 1f, falloff);</b>
+<b class="nc">&nbsp;        return damage * scaled;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return resulting armor calculated based off of damage */
+&nbsp;    public static float applyArmor(float damage, float armor){
+<b class="nc">&nbsp;        return Math.max(damage - armor, minArmorDamage * damage);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static class Collided implements Pool.Poolable{</b>
+&nbsp;        public float x, y;
+&nbsp;        public Teamc target;
+&nbsp;
+&nbsp;        public Collided set(float x, float y, Teamc target){
+<b class="nc">&nbsp;            this.x = x;</b>
+<b class="nc">&nbsp;            this.y = y;</b>
+<b class="nc">&nbsp;            this.target = target;</b>
+<b class="nc">&nbsp;            return this;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void reset(){
+<b class="nc">&nbsp;            target = null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

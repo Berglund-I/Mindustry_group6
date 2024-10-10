@@ -1,0 +1,181 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Version</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.core</a>
+</div>
+
+<h1>Coverage Summary for Class: Version (mindustry.core)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Version</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.1%
+  </span>
+  <span class="absValue">
+    (16/34)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.core;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Files.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;
+<b class="nc">&nbsp;public class Version{</b>
+&nbsp;    /** Build type. &#39;official&#39; for official releases; &#39;custom&#39; or &#39;bleeding edge&#39; are also used. */
+<b class="fc">&nbsp;    public static String type = &quot;unknown&quot;;</b>
+&nbsp;    /** Build modifier, e.g. &#39;alpha&#39; or &#39;release&#39; */
+<b class="fc">&nbsp;    public static String modifier = &quot;unknown&quot;;</b>
+&nbsp;    /** Number specifying the major version, e.g. &#39;4&#39; */
+&nbsp;    public static int number;
+&nbsp;    /** Build number, e.g. &#39;43&#39;. set to &#39;-1&#39; for custom builds. */
+<b class="fc">&nbsp;    public static int build = 0;</b>
+&nbsp;    /** Revision number. Used for hotfixes. Does not affect server compatibility. */
+<b class="fc">&nbsp;    public static int revision = 0;</b>
+&nbsp;    /** Whether version loading is enabled. */
+<b class="fc">&nbsp;    public static boolean enabled = true;</b>
+&nbsp;
+&nbsp;    public static void init(){
+<b class="fc">&nbsp;        if(!enabled) return;</b>
+&nbsp;
+<b class="fc">&nbsp;        Fi file = OS.isAndroid || OS.isIos ? Core.files.internal(&quot;version.properties&quot;) : new Fi(&quot;version.properties&quot;, FileType.internal);</b>
+&nbsp;
+<b class="fc">&nbsp;        ObjectMap&lt;String, String&gt; map = new ObjectMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        PropertiesUtils.load(map, file.reader());</b>
+&nbsp;
+<b class="fc">&nbsp;        type = map.get(&quot;type&quot;);</b>
+<b class="fc">&nbsp;        number = Integer.parseInt(map.get(&quot;number&quot;, &quot;4&quot;));</b>
+<b class="fc">&nbsp;        modifier = map.get(&quot;modifier&quot;);</b>
+<b class="fc">&nbsp;        if(map.get(&quot;build&quot;).contains(&quot;.&quot;)){</b>
+<b class="nc">&nbsp;            String[] split = map.get(&quot;build&quot;).split(&quot;\\.&quot;);</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                build = Integer.parseInt(split[0]);</b>
+<b class="nc">&nbsp;                revision = Integer.parseInt(split[1]);</b>
+<b class="nc">&nbsp;            }catch(Throwable e){</b>
+<b class="nc">&nbsp;                e.printStackTrace();</b>
+<b class="nc">&nbsp;                build = -1;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }else{</b>
+<b class="fc">&nbsp;            build = Strings.canParseInt(map.get(&quot;build&quot;)) ? Integer.parseInt(map.get(&quot;build&quot;)) : -1;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether the current game version is greater than the specified version string, e.g. &quot;120.1&quot;*/
+&nbsp;    public static boolean isAtLeast(String str){
+<b class="fc">&nbsp;        return isAtLeast(build, revision, str);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether the version numbers are greater than the specified version string, e.g. &quot;120.1&quot;*/
+&nbsp;    public static boolean isAtLeast(int build, int revision, String str){
+<b class="fc">&nbsp;        if(build &lt;= 0 || str == null || str.isEmpty()) return true;</b>
+&nbsp;
+<b class="nc">&nbsp;        int dot = str.indexOf(&#39;.&#39;);</b>
+<b class="nc">&nbsp;        if(dot != -1){</b>
+<b class="nc">&nbsp;            int major = Strings.parseInt(str.substring(0, dot), 0), minor = Strings.parseInt(str.substring(dot + 1), 0);</b>
+<b class="nc">&nbsp;            return build &gt; major || (build == major &amp;&amp; revision &gt;= minor);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return build &gt;= Strings.parseInt(str, 0);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String buildString(){
+<b class="nc">&nbsp;        return build &lt; 0 ? &quot;custom&quot; : build + (revision == 0 ? &quot;&quot; : &quot;.&quot; + revision);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** get menu version without colors */
+&nbsp;    public static String combined(){
+<b class="nc">&nbsp;        if(build == -1){</b>
+<b class="nc">&nbsp;            return &quot;custom build&quot;;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return (type.equals(&quot;official&quot;) ? modifier : type) + &quot; build &quot; + build + (revision == 0 ? &quot;&quot; : &quot;.&quot; + revision);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

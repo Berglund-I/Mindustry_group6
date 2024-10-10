@@ -1,0 +1,175 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Fracker</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.production</a>
+</div>
+
+<h1>Coverage Summary for Class: Fracker (mindustry.world.blocks.production)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Fracker</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (6/9)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Fracker$FrackerBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (5/10)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.9%
+  </span>
+  <span class="absValue">
+    (11/19)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.production;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class Fracker extends SolidPump{
+<b class="fc">&nbsp;    public float itemUseTime = 100f;</b>
+&nbsp;
+&nbsp;    public Fracker(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        ambientSound = Sounds.drill;</b>
+<b class="fc">&nbsp;        ambientSoundVolume = 0.03f;</b>
+<b class="fc">&nbsp;        envRequired |= Env.groundOil;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        stats.timePeriod = itemUseTime;</b>
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.productionTime, itemUseTime / 60f, StatUnit.seconds);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class FrackerBuild extends SolidPumpBuild{</b>
+&nbsp;        public float accumulator;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(efficiency &gt; 0){</b>
+<b class="nc">&nbsp;                if(accumulator &gt;= itemUseTime){</b>
+<b class="nc">&nbsp;                    consume();</b>
+<b class="nc">&nbsp;                    accumulator -= itemUseTime;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                super.updateTile();</b>
+<b class="nc">&nbsp;                accumulator += delta() * efficiency;</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                warmup = Mathf.lerpDelta(warmup, 0f, 0.02f);</b>
+<b class="fc">&nbsp;                lastPump = 0f;</b>
+<b class="fc">&nbsp;                dumpLiquid(result);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

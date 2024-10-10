@@ -1,0 +1,324 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TechTree</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.content</a>
+</div>
+
+<h1>Coverage Summary for Class: TechTree (mindustry.content)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TechTree</td>
+<td class="coverageStat">
+  <span class="percent">
+    91.7%
+  </span>
+  <span class="absValue">
+    (11/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96%
+  </span>
+  <span class="absValue">
+    (24/25)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TechTree$TechNode</td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (7/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    81.8%
+  </span>
+  <span class="absValue">
+    (36/44)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    78.3%
+  </span>
+  <span class="absValue">
+    (18/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87%
+  </span>
+  <span class="absValue">
+    (60/69)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.content;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.Objectives.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;/** Class for storing a list of TechNodes with some utility tree builder methods; context dependent. See {@link SerpuloTechTree#load} source for example usage. */
+<b class="nc">&nbsp;public class TechTree{</b>
+<b class="fc">&nbsp;    private static TechNode context = null;</b>
+&nbsp;
+<b class="fc">&nbsp;    public static Seq&lt;TechNode&gt; all = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    public static Seq&lt;TechNode&gt; roots = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public static TechNode nodeRoot(String name, UnlockableContent content, Runnable children){
+<b class="fc">&nbsp;        return nodeRoot(name, content, false, children);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static TechNode nodeRoot(String name, UnlockableContent content, boolean requireUnlock, Runnable children){
+<b class="fc">&nbsp;        var root = node(content, content.researchRequirements(), children);</b>
+<b class="fc">&nbsp;        root.name = name;</b>
+<b class="fc">&nbsp;        root.requiresUnlock = requireUnlock;</b>
+<b class="fc">&nbsp;        roots.add(root);</b>
+<b class="fc">&nbsp;        return root;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static TechNode node(UnlockableContent content, Runnable children){
+<b class="fc">&nbsp;        return node(content, content.researchRequirements(), children);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static TechNode node(UnlockableContent content, ItemStack[] requirements, Runnable children){
+<b class="fc">&nbsp;        return node(content, requirements, null, children);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static TechNode node(UnlockableContent content, ItemStack[] requirements, Seq&lt;Objective&gt; objectives, Runnable children){
+<b class="fc">&nbsp;        TechNode node = new TechNode(context, content, requirements);</b>
+<b class="fc">&nbsp;        if(objectives != null){</b>
+<b class="fc">&nbsp;            node.objectives.addAll(objectives);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        TechNode prev = context;</b>
+<b class="fc">&nbsp;        context = node;</b>
+<b class="fc">&nbsp;        children.run();</b>
+<b class="fc">&nbsp;        context = prev;</b>
+&nbsp;
+<b class="fc">&nbsp;        return node;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static TechNode node(UnlockableContent content, Seq&lt;Objective&gt; objectives, Runnable children){
+<b class="fc">&nbsp;        return node(content, content.researchRequirements(), objectives, children);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static TechNode node(UnlockableContent block){
+<b class="fc">&nbsp;        return node(block, () -&gt; {});</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static TechNode nodeProduce(UnlockableContent content, Seq&lt;Objective&gt; objectives, Runnable children){
+<b class="fc">&nbsp;        return node(content, content.researchRequirements(), objectives.add(new Produce(content)), children);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static TechNode nodeProduce(UnlockableContent content, Runnable children){
+<b class="fc">&nbsp;        return nodeProduce(content, new Seq&lt;&gt;(), children);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static @Nullable TechNode context(){
+<b class="fc">&nbsp;        return context;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class TechNode{
+&nbsp;        /** Depth in tech tree. */
+&nbsp;        public int depth;
+&nbsp;        /** Icon displayed in tech tree selector. */
+&nbsp;        public @Nullable Drawable icon;
+&nbsp;        /** Name for root node - used in tech tree selector. */
+&nbsp;        public @Nullable String name;
+&nbsp;        /** For roots only. If true, this needs to be unlocked before it is selectable in the research dialog. Does not apply when you are on the planet itself. */
+<b class="fc">&nbsp;        public boolean requiresUnlock = false;</b>
+&nbsp;        /** Requirement node. */
+&nbsp;        public @Nullable TechNode parent;
+&nbsp;        /** Multipliers for research costs on a per-item basis. Inherits from parent. */
+&nbsp;        public @Nullable ObjectFloatMap&lt;Item&gt; researchCostMultipliers;
+&nbsp;        /** Content to be researched. */
+&nbsp;        public UnlockableContent content;
+&nbsp;        /** Item requirements for this content. */
+&nbsp;        public ItemStack[] requirements;
+&nbsp;        /** Requirements that have been fulfilled. Always the same length as the requirement array. */
+&nbsp;        public ItemStack[] finishedRequirements;
+&nbsp;        /** Extra objectives needed to research this. */
+<b class="fc">&nbsp;        public Seq&lt;Objective&gt; objectives = new Seq&lt;&gt;();</b>
+&nbsp;        /** Nodes that depend on this node. */
+<b class="fc">&nbsp;        public final Seq&lt;TechNode&gt; children = new Seq&lt;&gt;();</b>
+&nbsp;        /** Planet associated with this tech node. Null to auto-detect, or use Serpulo if no associated planet is found. */
+&nbsp;        public @Nullable Planet planet;
+&nbsp;
+<b class="fc">&nbsp;        public TechNode(@Nullable TechNode parent, UnlockableContent content, ItemStack[] requirements){</b>
+<b class="fc">&nbsp;            if(parent != null){</b>
+<b class="fc">&nbsp;                parent.children.add(this);</b>
+<b class="fc">&nbsp;                researchCostMultipliers = parent.researchCostMultipliers;</b>
+<b class="fc">&nbsp;            }else if(researchCostMultipliers == null){</b>
+<b class="fc">&nbsp;                researchCostMultipliers = new ObjectFloatMap&lt;&gt;();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            this.parent = parent;</b>
+<b class="fc">&nbsp;            this.content = content;</b>
+<b class="fc">&nbsp;            this.depth = parent == null ? 0 : parent.depth + 1;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(researchCostMultipliers.size &gt; 0){</b>
+<b class="fc">&nbsp;                requirements = ItemStack.copy(requirements);</b>
+<b class="fc">&nbsp;                for(ItemStack requirement : requirements){</b>
+<b class="fc">&nbsp;                    requirement.amount = (int)(requirement.amount * researchCostMultipliers.get(requirement.item, 1));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            setupRequirements(requirements);</b>
+&nbsp;
+<b class="fc">&nbsp;            var used = new ObjectSet&lt;Content&gt;();</b>
+&nbsp;
+&nbsp;            //add dependencies as objectives.
+<b class="fc">&nbsp;            content.getDependencies(d -&gt; {</b>
+<b class="fc">&nbsp;                if(used.add(d)){</b>
+<b class="fc">&nbsp;                    objectives.add(new Research(d));</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="fc">&nbsp;            content.techNode = this;</b>
+<b class="fc">&nbsp;            content.techNodes.add(this);</b>
+<b class="fc">&nbsp;            all.add(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Recursively iterates through everything that is a child of this node. Includes itself. */
+&nbsp;        public void each(Cons&lt;TechNode&gt; consumer){
+<b class="fc">&nbsp;            consumer.get(this);</b>
+<b class="fc">&nbsp;            for(var child : children){</b>
+<b class="fc">&nbsp;                child.each(consumer);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Adds the specified database tab to all the content in this tree. */
+&nbsp;        public void addDatabaseTab(UnlockableContent tab){
+<b class="fc">&nbsp;            each(node -&gt; node.content.databaseTabs.add(tab));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Adds the specified planet to the shownPlanets of all the content in this tree. */
+&nbsp;        public void addPlanet(Planet planet){
+<b class="fc">&nbsp;            each(node -&gt; node.content.shownPlanets.add(planet));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Drawable icon(){
+<b class="nc">&nbsp;            return icon == null ? new TextureRegionDrawable(content.uiIcon) : icon;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public String localizedName(){
+<b class="nc">&nbsp;            return Core.bundle.get(&quot;techtree.&quot; + name, name);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void setupRequirements(ItemStack[] requirements){
+<b class="fc">&nbsp;            this.requirements = requirements;</b>
+<b class="fc">&nbsp;            this.finishedRequirements = new ItemStack[requirements.length];</b>
+&nbsp;
+&nbsp;            //load up the requirements that have been finished if settings are available
+<b class="fc">&nbsp;            for(int i = 0; i &lt; requirements.length; i++){</b>
+<b class="fc">&nbsp;                finishedRequirements[i] = new ItemStack(requirements[i].item, Core.settings == null ? 0 : Core.settings.getInt(&quot;req-&quot; + content.name + &quot;-&quot; + requirements[i].item.name));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Resets finished requirements and saves. */
+&nbsp;        public void reset(){
+<b class="nc">&nbsp;            for(ItemStack stack : finishedRequirements){</b>
+<b class="nc">&nbsp;                stack.amount = 0;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            save();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Removes this node from the tech tree. */
+&nbsp;        public void remove(){
+<b class="nc">&nbsp;            all.remove(this);</b>
+<b class="nc">&nbsp;            if(parent != null){</b>
+<b class="nc">&nbsp;                parent.children.remove(this);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Flushes research progress to settings. */
+&nbsp;        public void save(){
+&nbsp;
+&nbsp;            //save finished requirements by item type
+<b class="fc">&nbsp;            for(ItemStack stack : finishedRequirements){</b>
+<b class="fc">&nbsp;                Core.settings.put(&quot;req-&quot; + content.name + &quot;-&quot; + stack.item.name, stack.amount);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

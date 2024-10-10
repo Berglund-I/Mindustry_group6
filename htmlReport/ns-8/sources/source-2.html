@@ -1,0 +1,156 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MethodEntry</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.remote</a>
+</div>
+
+<h1>Coverage Summary for Class: MethodEntry (mindustry.annotations.remote)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MethodEntry</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.remote;
+&nbsp;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.annotations.util.*;
+&nbsp;
+&nbsp;/** Class that repesents a remote method to be constructed and put into a class. */
+&nbsp;public class MethodEntry{
+&nbsp;    /** Simple target class name. */
+&nbsp;    public final String className;
+&nbsp;    /** Fully qualified target method to call. */
+&nbsp;    public final String targetMethod;
+&nbsp;    /** Simple name of the generated packet class. */
+&nbsp;    public final String packetClassName;
+&nbsp;    /** Whether this method can be called on a client/server. */
+&nbsp;    public final Loc where;
+&nbsp;    /**
+&nbsp;     * Whether an additional &#39;one&#39; and &#39;all&#39; method variant is generated. At least one of these must be true.
+&nbsp;     * Only applicable to client (server-invoked) methods.
+&nbsp;     */
+&nbsp;    public final Variant target;
+&nbsp;    /** Whether this method is called locally as well as remotely. */
+&nbsp;    public final Loc local;
+&nbsp;    /** Whether this method is unreliable and uses UDP. */
+&nbsp;    public final boolean unreliable;
+&nbsp;    /** Whether to forward this method call to all other clients when a client invokes it. Server only. */
+&nbsp;    public final boolean forward;
+&nbsp;    /** Unique method ID. */
+&nbsp;    public final int id;
+&nbsp;    /** The element method associated with this entry. */
+&nbsp;    public final Smethod element;
+&nbsp;    /** The assigned packet priority. Only used in clients. */
+&nbsp;    public final PacketPriority priority;
+&nbsp;
+&nbsp;    public MethodEntry(String className, String targetMethod, String packetClassName, Loc where, Variant target,
+<b class="nc">&nbsp;                       Loc local, boolean unreliable, boolean forward, int id, Smethod element, PacketPriority priority){</b>
+<b class="nc">&nbsp;        this.packetClassName = packetClassName;</b>
+<b class="nc">&nbsp;        this.className = className;</b>
+<b class="nc">&nbsp;        this.forward = forward;</b>
+<b class="nc">&nbsp;        this.targetMethod = targetMethod;</b>
+<b class="nc">&nbsp;        this.where = where;</b>
+<b class="nc">&nbsp;        this.target = target;</b>
+<b class="nc">&nbsp;        this.local = local;</b>
+<b class="nc">&nbsp;        this.id = id;</b>
+<b class="nc">&nbsp;        this.element = element;</b>
+<b class="nc">&nbsp;        this.unreliable = unreliable;</b>
+<b class="nc">&nbsp;        this.priority = priority;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int hashCode(){
+<b class="nc">&nbsp;        return targetMethod.hashCode();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

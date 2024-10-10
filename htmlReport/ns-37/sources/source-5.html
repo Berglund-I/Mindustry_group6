@@ -1,0 +1,283 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LaserTurret</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense.turrets</a>
+</div>
+
+<h1>Coverage Summary for Class: LaserTurret (mindustry.world.blocks.defense.turrets)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LaserTurret</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (6/10)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LaserTurret$LaserTurretBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.7%
+  </span>
+  <span class="absValue">
+    (5/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    19.6%
+  </span>
+  <span class="absValue">
+    (9/46)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    46.7%
+  </span>
+  <span class="absValue">
+    (7/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.8%
+  </span>
+  <span class="absValue">
+    (15/56)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense.turrets;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** A turret that fires a continuous beam with a delay between shots. Liquid coolant is required. Yes, this class name is awful. */
+&nbsp;public class LaserTurret extends PowerTurret{
+<b class="fc">&nbsp;    public float firingMoveFract = 0.25f;</b>
+<b class="fc">&nbsp;    public float shootDuration = 100f;</b>
+&nbsp;
+&nbsp;    public LaserTurret(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        coolantMultiplier = 1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.remove(Stat.booster);</b>
+<b class="nc">&nbsp;        stats.add(Stat.input, StatValues.boosters(reload, coolant.amount, coolantMultiplier, false, this::consumesLiquid));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(coolant == null){</b>
+<b class="nc">&nbsp;            coolant = findConsumer(c -&gt; c instanceof ConsumeLiquidBase);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class LaserTurretBuild extends PowerTurretBuild{</b>
+<b class="fc">&nbsp;        public Seq&lt;BulletEntry&gt; bullets = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void updateCooling(){
+&nbsp;            //do nothing, cooling is irrelevant here
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+&nbsp;            //still consumes power when bullet is around
+<b class="fc">&nbsp;            return bullets.any() || isActive() || isShooting();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void placed(){
+<b class="nc">&nbsp;            super.placed();</b>
+&nbsp;
+<b class="nc">&nbsp;            reloadCounter = reload;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            super.updateTile();</b>
+&nbsp;
+<b class="fc">&nbsp;            bullets.removeAll(b -&gt; !b.bullet.isAdded() || b.bullet.type == null || b.life &lt;= 0f || b.bullet.owner != this);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(bullets.any()){</b>
+&nbsp;
+<b class="nc">&nbsp;                for(var entry : bullets){</b>
+&nbsp;                    float
+<b class="nc">&nbsp;                    bulletX = x + Angles.trnsx(rotation - 90, shootX + entry.x, shootY + entry.y),</b>
+<b class="nc">&nbsp;                    bulletY = y + Angles.trnsy(rotation - 90, shootX + entry.x, shootY + entry.y),</b>
+<b class="nc">&nbsp;                    angle = rotation + entry.rotation;</b>
+&nbsp;
+<b class="nc">&nbsp;                    entry.bullet.rotation(angle);</b>
+<b class="nc">&nbsp;                    entry.bullet.set(bulletX, bulletY);</b>
+<b class="nc">&nbsp;                    entry.bullet.time = entry.bullet.type.lifetime * entry.bullet.type.optimalLifeFract;</b>
+<b class="nc">&nbsp;                    entry.bullet.keepAlive = true;</b>
+<b class="nc">&nbsp;                    entry.life -= Time.delta * timeScale / Math.max(efficiency, 0.00001f);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                wasShooting = true;</b>
+<b class="nc">&nbsp;                heat = 1f;</b>
+<b class="nc">&nbsp;                curRecoil = 1f;</b>
+<b class="fc">&nbsp;            }else if(reloadCounter &gt; 0){</b>
+<b class="nc">&nbsp;                wasShooting = true;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(coolant != null){</b>
+&nbsp;                    //TODO does not handle multi liquid req?
+<b class="nc">&nbsp;                    Liquid liquid = liquids.current();</b>
+<b class="nc">&nbsp;                    float maxUsed = coolant.amount;</b>
+<b class="nc">&nbsp;                    float used = (cheating() ? maxUsed : Math.min(liquids.get(liquid), maxUsed)) * delta();</b>
+<b class="nc">&nbsp;                    reloadCounter -= used * liquid.heatCapacity * coolantMultiplier;</b>
+<b class="nc">&nbsp;                    liquids.remove(liquid, used);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(Mathf.chance(0.06 * used)){</b>
+<b class="nc">&nbsp;                        coolEffect.at(x + Mathf.range(size * tilesize / 2f), y + Mathf.range(size * tilesize / 2f));</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }else{</b>
+<b class="nc">&nbsp;                    reloadCounter -= edelta();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float progress(){
+<b class="nc">&nbsp;            return 1f - Mathf.clamp(reloadCounter / reload);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void updateReload(){
+&nbsp;            //updated in updateTile() depending on coolant
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void updateShooting(){
+<b class="nc">&nbsp;            if(bullets.any()){</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(reloadCounter &lt;= 0 &amp;&amp; efficiency &gt; 0 &amp;&amp; !charging() &amp;&amp; shootWarmup &gt;= minWarmup){</b>
+<b class="nc">&nbsp;                BulletType type = peekAmmo();</b>
+&nbsp;
+<b class="nc">&nbsp;                shoot(type);</b>
+&nbsp;
+<b class="nc">&nbsp;                reloadCounter = reload;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void turnToTarget(float targetRot){
+<b class="nc">&nbsp;            rotation = Angles.moveToward(rotation, targetRot, efficiency * rotateSpeed * delta() * (bullets.any() ? firingMoveFract : 1f));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void handleBullet(@Nullable Bullet bullet, float offsetX, float offsetY, float angleOffset){
+<b class="nc">&nbsp;            if(bullet != null){</b>
+<b class="nc">&nbsp;                bullets.add(new BulletEntry(bullet, offsetX, offsetY, angleOffset, shootDuration));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float activeSoundVolume(){
+<b class="nc">&nbsp;            return 1f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldActiveSound(){
+<b class="nc">&nbsp;            return bullets.any();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,202 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > FlyingAI</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai.types</a>
+</div>
+
+<h1>Coverage Summary for Class: FlyingAI (mindustry.ai.types)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FlyingAI</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/47)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai.types;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.world.meta.BlockFlag.*;
+&nbsp;
+<b class="nc">&nbsp;public class FlyingAI extends AIController{</b>
+<b class="nc">&nbsp;    final static Rand rand = new Rand();</b>
+<b class="nc">&nbsp;    final static BlockFlag[] randomTargets = {core, storage, generator, launchPad, factory, repair, battery, reactor, drill};</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateMovement(){
+<b class="nc">&nbsp;        unloadPayloads();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(target != null &amp;&amp; unit.hasWeapons()){</b>
+<b class="nc">&nbsp;            if(unit.type.circleTarget){</b>
+<b class="nc">&nbsp;                circleAttack(120f);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                moveTo(target, unit.type.range * 0.8f);</b>
+<b class="nc">&nbsp;                unit.lookAt(target);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(target == null &amp;&amp; state.rules.waves &amp;&amp; unit.team == state.rules.defaultTeam){</b>
+<b class="nc">&nbsp;            moveTo(getClosestSpawner(), state.rules.dropZoneRadius + 130f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Teamc targetFlag(float x, float y, BlockFlag flag, boolean enemy){
+<b class="nc">&nbsp;        if(state.rules.randomWaveAI){</b>
+<b class="nc">&nbsp;            if(unit.team == Team.derelict) return null;</b>
+<b class="nc">&nbsp;            var list = enemy ? indexer.getEnemy(unit.team, flag) : indexer.getFlagged(unit.team, flag);</b>
+<b class="nc">&nbsp;            if(list.isEmpty()) return null;</b>
+&nbsp;
+<b class="nc">&nbsp;            Building closest = null;</b>
+<b class="nc">&nbsp;            float cdist = 0f;</b>
+<b class="nc">&nbsp;            for(Building t : list){</b>
+<b class="nc">&nbsp;                if((t.items != null &amp;&amp; t.items.any()) || t.status() != BlockStatus.noInput){</b>
+<b class="nc">&nbsp;                    float dst = t.dst2(x, y);</b>
+<b class="nc">&nbsp;                    if(closest == null || dst &lt; cdist){</b>
+<b class="nc">&nbsp;                        closest = t;</b>
+<b class="nc">&nbsp;                        cdist = dst;</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;            return closest;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return super.targetFlag(x, y, flag, enemy);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Teamc findTarget(float x, float y, float range, boolean air, boolean ground){
+<b class="nc">&nbsp;        var result = findMainTarget(x, y, range, air, ground);</b>
+&nbsp;
+&nbsp;        //if the main target is in range, use it, otherwise target whatever is closest
+<b class="nc">&nbsp;        return checkTarget(result, x, y, range) ? target(x, y, range, air, ground) : result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Teamc findMainTarget(float x, float y, float range, boolean air, boolean ground){
+<b class="nc">&nbsp;        var core = targetFlag(x, y, BlockFlag.core, true);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(core != null &amp;&amp; Mathf.within(x, y, core.getX(), core.getY(), range)){</b>
+<b class="nc">&nbsp;            return core;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.randomWaveAI){</b>
+&nbsp;            //when there are no waves, it&#39;s just random based on the unit
+<b class="nc">&nbsp;            rand.setSeed(unit.type.id + (state.rules.waves ? state.wave : unit.id));</b>
+&nbsp;            //try a few random flags first
+<b class="nc">&nbsp;            for(int attempt = 0; attempt &lt; 5; attempt++){</b>
+<b class="nc">&nbsp;                Teamc result = targetFlag(x, y, randomTargets[rand.random(randomTargets.length - 1)], true);</b>
+<b class="nc">&nbsp;                if(result != null) return result;</b>
+&nbsp;            }
+&nbsp;            //try the closest target
+<b class="nc">&nbsp;            Teamc result = target(x, y, range, air, ground);</b>
+<b class="nc">&nbsp;            if(result != null) return result;</b>
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            for(var flag : unit.type.targetFlags){</b>
+<b class="nc">&nbsp;                if(flag == null){</b>
+<b class="nc">&nbsp;                    Teamc result = target(x, y, range, air, ground);</b>
+<b class="nc">&nbsp;                    if(result != null) return result;</b>
+<b class="nc">&nbsp;                }else if(ground){</b>
+<b class="nc">&nbsp;                    Teamc result = targetFlag(x, y, flag, true);</b>
+<b class="nc">&nbsp;                    if(result != null) return result;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return core;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

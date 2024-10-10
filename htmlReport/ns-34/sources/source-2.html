@@ -1,0 +1,378 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Autotiler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks</a>
+</div>
+
+<h1>Coverage Summary for Class: Autotiler (mindustry.world.blocks)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Autotiler</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (7/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    61.8%
+  </span>
+  <span class="absValue">
+    (47/76)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Autotiler$AutotilerHolder</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Autotiler$SliceMode</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (8/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    59%
+  </span>
+  <span class="absValue">
+    (49/83)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;public interface Autotiler{
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Holds some static temporary variables, required due to some RoboVM bugs
+&nbsp;     */
+<b class="nc">&nbsp;    class AutotilerHolder{</b>
+<b class="fc">&nbsp;        static final int[] blendresult = new int[5];</b>
+<b class="fc">&nbsp;        static final BuildPlan[] directionals = new BuildPlan[4];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * The mode to slice a texture at.
+&nbsp;     */
+<b class="nc">&nbsp;    enum SliceMode{</b>
+<b class="nc">&nbsp;        none,</b>
+<b class="nc">&nbsp;        bottom,</b>
+<b class="nc">&nbsp;        top</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * @param input The TextureRegion to be sliced
+&nbsp;     * @param mode The SliceMode to be applied
+&nbsp;     * @return The sliced texture
+&nbsp;     */
+&nbsp;    default TextureRegion sliced(TextureRegion input, SliceMode mode){
+<b class="nc">&nbsp;        return mode == SliceMode.none ? input : mode == SliceMode.bottom ? botHalf(input) : topHalf(input);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return The top half of the input */
+&nbsp;    default TextureRegion topHalf(TextureRegion input){
+<b class="nc">&nbsp;        TextureRegion region = Tmp.tr1;</b>
+<b class="nc">&nbsp;        region.set(input);</b>
+<b class="nc">&nbsp;        region.setWidth(region.width / 2);</b>
+<b class="nc">&nbsp;        return region;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return The bottom half of the input */
+&nbsp;    default TextureRegion botHalf(TextureRegion input){
+<b class="nc">&nbsp;        TextureRegion region = Tmp.tr1;</b>
+<b class="nc">&nbsp;        region.set(input);</b>
+<b class="nc">&nbsp;        int width = region.width;</b>
+<b class="nc">&nbsp;        region.setWidth(width / 2);</b>
+<b class="nc">&nbsp;        region.setX(region.getX() + width);</b>
+<b class="nc">&nbsp;        return region;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    default @Nullable int[] getTiling(BuildPlan req, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        if(req.tile() == null) return null;</b>
+<b class="nc">&nbsp;        BuildPlan[] directionals = AutotilerHolder.directionals;</b>
+&nbsp;
+<b class="nc">&nbsp;        Arrays.fill(directionals, null);</b>
+&nbsp;        //TODO this is O(n^2), very slow, should use quadtree or intmap or something instead
+<b class="nc">&nbsp;        list.each(other -&gt; {</b>
+<b class="nc">&nbsp;            if(other.breaking || other == req) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            int i = 0;</b>
+<b class="nc">&nbsp;            for(Point2 point : Geometry.d4){</b>
+<b class="nc">&nbsp;                int x = req.x + point.x, y = req.y + point.y;</b>
+<b class="nc">&nbsp;                if(x &gt;= other.x -(other.block.size - 1) / 2 &amp;&amp; x &lt;= other.x + (other.block.size / 2) &amp;&amp; y &gt;= other.y -(other.block.size - 1) / 2 &amp;&amp; y &lt;= other.y + (other.block.size / 2)){</b>
+<b class="nc">&nbsp;                    directionals[i] = other;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                i++;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        return buildBlending(req.tile(), req.rotation, directionals, req.worldContext);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * @return an array of blending values:
+&nbsp;     * [0]: the type of connection:
+&nbsp;     *   - 0: straight
+&nbsp;     *   - 1: curve (top)
+&nbsp;     *   - 2: straight (bottom)
+&nbsp;     *   - 3: all sides
+&nbsp;     *   - 4: straight (top)
+&nbsp;     * [1]: X scale
+&nbsp;     * [2]: Y scale
+&nbsp;     * [3]: a 4-bit mask with bits 0-3 indicating blend state in that direction (0 being 0 degrees, 1 being 90, etc)
+&nbsp;     * [4]: same as [3] but only blends with non-square sprites
+&nbsp;     * */
+&nbsp;    default int[] buildBlending(Tile tile, int rotation, BuildPlan[] directional, boolean world){
+<b class="fc">&nbsp;        int[] blendresult = AutotilerHolder.blendresult;</b>
+<b class="fc">&nbsp;        blendresult[0] = 0;</b>
+<b class="fc">&nbsp;        blendresult[1] = blendresult[2] = 1;</b>
+&nbsp;
+&nbsp;        int num =
+<b class="fc">&nbsp;        (blends(tile, rotation, directional, 2, world) &amp;&amp; blends(tile, rotation, directional, 1, world) &amp;&amp; blends(tile, rotation, directional, 3, world)) ? 0 :</b>
+<b class="fc">&nbsp;        (blends(tile, rotation, directional, 1, world) &amp;&amp; blends(tile, rotation, directional, 3, world)) ? 1 :</b>
+<b class="fc">&nbsp;        (blends(tile, rotation, directional, 1, world) &amp;&amp; blends(tile, rotation, directional, 2, world)) ? 2 :</b>
+<b class="fc">&nbsp;        (blends(tile, rotation, directional, 3, world) &amp;&amp; blends(tile, rotation, directional, 2, world)) ? 3 :</b>
+<b class="fc">&nbsp;        blends(tile, rotation, directional, 1, world) ? 4 :</b>
+<b class="fc">&nbsp;        blends(tile, rotation, directional, 3, world) ? 5 :</b>
+<b class="fc">&nbsp;        -1;</b>
+<b class="fc">&nbsp;        transformCase(num, blendresult);</b>
+&nbsp;
+&nbsp;        // Calculate bitmask for direction.
+&nbsp;
+<b class="fc">&nbsp;        blendresult[3] = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="fc">&nbsp;            if(blends(tile, rotation, directional, i, world)){</b>
+<b class="fc">&nbsp;                blendresult[3] |= (1 &lt;&lt; i);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        // Calculate direction for non-square sprites.
+&nbsp;
+<b class="fc">&nbsp;        blendresult[4] = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="fc">&nbsp;            int realDir = Mathf.mod(rotation - i, 4);</b>
+<b class="fc">&nbsp;            if(blends(tile, rotation, directional, i, world) &amp;&amp; (tile != null &amp;&amp; tile.nearbyBuild(realDir) != null &amp;&amp; !tile.nearbyBuild(realDir).block.squareSprite)){</b>
+<b class="nc">&nbsp;                blendresult[4] |= (1 &lt;&lt; i);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return blendresult;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Transforms the autotiler setting the connection and the y-scale
+&nbsp;     *
+&nbsp;     * @param num The number to use to transform the array
+&nbsp;     * @param bits The blending value array
+&nbsp;     */
+&nbsp;    default void transformCase(int num, int[] bits){
+<b class="fc">&nbsp;        switch(num){</b>
+<b class="fc">&nbsp;            case 0 -&gt; bits[0] = 3;</b>
+<b class="fc">&nbsp;            case 1 -&gt; bits[0] = 4;</b>
+<b class="fc">&nbsp;            case 2 -&gt; bits[0] = 2;</b>
+&nbsp;            case 3 -&gt; {
+<b class="fc">&nbsp;                bits[0] = 2;</b>
+<b class="fc">&nbsp;                bits[2] = -1;</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;            case 4 -&gt; {
+<b class="fc">&nbsp;                bits[0] = 1;</b>
+<b class="fc">&nbsp;                bits[2] = -1;</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;            case 5 -&gt; bits[0] = 1;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Check if a position is facing the secondary position at a rotation
+&nbsp;     *
+&nbsp;     * @param x The x coordinate of position 1
+&nbsp;     * @param y The y coordinate of position 1
+&nbsp;     * @param rotation The rotation of the tile on (x, y)
+&nbsp;     *
+&nbsp;     * @param x2 The x coordinate of position 2
+&nbsp;     * @param y2 The y coordinate of position 2
+&nbsp;     *
+&nbsp;     * @return If position 1 is facing position 2 at a certain angle
+&nbsp;     */
+&nbsp;    default boolean facing(int x, int y, int rotation, int x2, int y2){
+<b class="nc">&nbsp;        return Point2.equals(x + Geometry.d4(rotation).x,y + Geometry.d4(rotation).y, x2, y2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean blends(Tile tile, int rotation, @Nullable BuildPlan[] directional, int direction, boolean checkWorld){
+<b class="fc">&nbsp;        int realDir = Mathf.mod(rotation - direction, 4);</b>
+<b class="fc">&nbsp;        if(directional != null &amp;&amp; directional[realDir] != null){</b>
+<b class="nc">&nbsp;            BuildPlan req = directional[realDir];</b>
+<b class="nc">&nbsp;            if(blends(tile, rotation, req.x, req.y, req.rotation, req.block)){</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return checkWorld &amp;&amp; blends(tile, rotation, direction);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // TODO docs -- use for direction?
+&nbsp;    default boolean blends(Tile tile, int rotation, int direction){
+<b class="fc">&nbsp;        Building other = tile.nearbyBuild(Mathf.mod(rotation - direction, 4));</b>
+<b class="fc">&nbsp;        return other != null &amp;&amp; other.team == tile.team() &amp;&amp; blends(tile, rotation, other.tileX(), other.tileY(), other.rotation, other.block);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean blendsArmored(Tile tile, int rotation, int otherx, int othery, int otherrot, Block otherblock){
+<b class="fc">&nbsp;        return Point2.equals(tile.x + Geometry.d4(rotation).x, tile.y + Geometry.d4(rotation).y, otherx, othery)</b>
+<b class="fc">&nbsp;                || ((!otherblock.rotatedOutput(otherx, othery) &amp;&amp; Edges.getFacingEdge(otherblock, otherx, othery, tile) != null &amp;&amp;</b>
+<b class="fc">&nbsp;                Edges.getFacingEdge(otherblock, otherx, othery, tile).relativeTo(tile) == rotation) ||</b>
+<b class="fc">&nbsp;                (otherblock.rotatedOutput(otherx, othery) &amp;&amp; Point2.equals(otherx + Geometry.d4(otherrot).x, othery + Geometry.d4(otherrot).y, tile.x, tile.y)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this other block is *not* looking at this one. */
+&nbsp;    default boolean notLookingAt(Tile tile, int rotation, int otherx, int othery, int otherrot, Block otherblock){
+<b class="nc">&nbsp;        return !(otherblock.rotatedOutput(otherx, othery) &amp;&amp; Point2.equals(otherx + Geometry.d4(otherrot).x, othery + Geometry.d4(otherrot).y, tile.x, tile.y));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this tile is looking at the other tile, or the other tile is looking at this one.
+&nbsp;     * If the other tile does not rotate, it is always considered to be facing this one. */
+&nbsp;    default boolean lookingAtEither(Tile tile, int rotation, int otherx, int othery, int otherrot, Block otherblock){
+<b class="fc">&nbsp;        return</b>
+&nbsp;            //block is facing the other
+<b class="fc">&nbsp;            Point2.equals(tile.x + Geometry.d4(rotation).x, tile.y + Geometry.d4(rotation).y, otherx, othery) ||</b>
+&nbsp;            //does not output to rotated direction
+<b class="fc">&nbsp;            !otherblock.rotatedOutput(otherx, othery, tile) ||</b>
+&nbsp;            //other block is facing this one
+<b class="fc">&nbsp;            Point2.equals(otherx + Geometry.d4(otherrot).x, othery + Geometry.d4(otherrot).y, tile.x, tile.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Check if a position is facing the secondary position at a rotation
+&nbsp;     *
+&nbsp;     * @param tile The origin tile that is or is not facing the `otherblock`
+&nbsp;     * @param rotation The rotation of the tile on (x, y)
+&nbsp;     * @param otherx The x coordinate of position 2
+&nbsp;     * @param othery The y coordinate of position 2
+&nbsp;     * @return whether this tile is looking at the other tile.
+&nbsp;     */
+&nbsp;    default boolean lookingAt(Tile tile, int rotation, int otherx, int othery, Block otherblock){
+<b class="fc">&nbsp;        Tile facing = Edges.getFacingEdge(otherblock, otherx, othery, tile);</b>
+<b class="fc">&nbsp;        return facing != null &amp;&amp;</b>
+<b class="fc">&nbsp;            Point2.equals(tile.x + Geometry.d4(rotation).x, tile.y + Geometry.d4(rotation).y, facing.x, facing.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean blends(Tile tile, int rotation, int otherx, int othery, int otherrot, Block otherblock);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,2403 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Call</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: Call (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Call</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.8%
+  </span>
+  <span class="absValue">
+    (7/184)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10.7%
+  </span>
+  <span class="absValue">
+    (147/1378)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.audio.Sound;
+&nbsp;import arc.graphics.Color;
+&nbsp;import arc.math.geom.Vec2;
+&nbsp;import arc.struct.IntSeq;
+&nbsp;import arc.struct.Queue;
+&nbsp;import java.lang.Object;
+&nbsp;import java.lang.String;
+&nbsp;import mindustry.ai.UnitCommand;
+&nbsp;import mindustry.ai.UnitStance;
+&nbsp;import mindustry.ctype.Content;
+&nbsp;import mindustry.entities.Effect;
+&nbsp;import mindustry.entities.bullet.BulletType;
+&nbsp;import mindustry.entities.units.BuildPlan;
+&nbsp;import mindustry.game.MapObjectives;
+&nbsp;import mindustry.game.Rules;
+&nbsp;import mindustry.game.Team;
+&nbsp;import mindustry.logic.LMarkerControl;
+&nbsp;import mindustry.net.Administration;
+&nbsp;import mindustry.net.NetConnection;
+&nbsp;import mindustry.net.Packets;
+&nbsp;import mindustry.type.Item;
+&nbsp;import mindustry.type.UnitType;
+&nbsp;import mindustry.type.Weather;
+&nbsp;import mindustry.world.Block;
+&nbsp;import mindustry.world.Tile;
+&nbsp;
+<b class="nc">&nbsp;public class Call {</b>
+&nbsp;  public static void adminRequest(Player other, Packets.AdminAction action, Object params) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetServer.adminRequest(mindustry.Vars.player, other, action, params);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      AdminRequestCallPacket packet = new AdminRequestCallPacket();</b>
+<b class="nc">&nbsp;      packet.other = other;</b>
+<b class="nc">&nbsp;      packet.action = action;</b>
+<b class="nc">&nbsp;      packet.params = params;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void announce(String message) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      AnnounceCallPacket packet = new AnnounceCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void announce(NetConnection playerConnection, String message) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      AnnounceCallPacket packet = new AnnounceCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void assemblerDroneSpawned(Tile tile, int id) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.blocks.units.UnitAssembler.assemblerDroneSpawned(tile, id);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      AssemblerDroneSpawnedCallPacket packet = new AssemblerDroneSpawnedCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void assemblerUnitSpawned(Tile tile) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.blocks.units.UnitAssembler.assemblerUnitSpawned(tile);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      AssemblerUnitSpawnedCallPacket packet = new AssemblerUnitSpawnedCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void autoDoorToggle(Tile tile, boolean open) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.blocks.defense.AutoDoor.autoDoorToggle(tile, open);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      AutoDoorToggleCallPacket packet = new AutoDoorToggleCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      packet.open = open;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void beginBreak(Unit unit, Team team, int x, int y) {
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="fc">&nbsp;      mindustry.world.Build.beginBreak(unit, team, x, y);</b>
+&nbsp;    }
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      BeginBreakCallPacket packet = new BeginBreakCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      packet.team = team;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void beginPlace(Unit unit, Block result, Team team, int x, int y, int rotation) {
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="fc">&nbsp;      mindustry.world.Build.beginPlace(unit, result, team, x, y, rotation);</b>
+&nbsp;    }
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      BeginPlaceCallPacket packet = new BeginPlaceCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      packet.result = result;</b>
+<b class="nc">&nbsp;      packet.team = team;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void blockSnapshot(short amount, byte[] data) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      BlockSnapshotCallPacket packet = new BlockSnapshotCallPacket();</b>
+<b class="nc">&nbsp;      packet.amount = amount;</b>
+<b class="nc">&nbsp;      packet.data = data;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void blockSnapshot(NetConnection playerConnection, short amount, byte[] data) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      BlockSnapshotCallPacket packet = new BlockSnapshotCallPacket();</b>
+<b class="nc">&nbsp;      packet.amount = amount;</b>
+<b class="nc">&nbsp;      packet.data = data;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void buildDestroyed(Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.Tile.buildDestroyed(build);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      BuildDestroyedCallPacket packet = new BuildDestroyedCallPacket();</b>
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void buildHealthUpdate(IntSeq buildings) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      BuildHealthUpdateCallPacket packet = new BuildHealthUpdateCallPacket();</b>
+<b class="nc">&nbsp;      packet.buildings = buildings;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void buildingControlSelect(Player player, Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.buildingControlSelect(player, build);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      BuildingControlSelectCallPacket packet = new BuildingControlSelectCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void buildingControlSelect__forward(NetConnection exceptConnection, Player player,
+&nbsp;      Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      BuildingControlSelectCallPacket packet = new BuildingControlSelectCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void clearItems(Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.clearItems(build);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      ClearItemsCallPacket packet = new ClearItemsCallPacket();</b>
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void clearObjectives() {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.clearObjectives();</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      ClearObjectivesCallPacket packet = new ClearObjectivesCallPacket();</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void clearObjectives(NetConnection playerConnection) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.clearObjectives();</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      ClearObjectivesCallPacket packet = new ClearObjectivesCallPacket();</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void clientLogicDataReliable(String channel, Object value) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      ClientLogicDataReliableCallPacket packet = new ClientLogicDataReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.channel = channel;</b>
+<b class="nc">&nbsp;      packet.value = value;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void clientLogicDataUnreliable(String channel, Object value) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      ClientLogicDataUnreliableCallPacket packet = new ClientLogicDataUnreliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.channel = channel;</b>
+<b class="nc">&nbsp;      packet.value = value;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void clientPacketReliable(String type, String contents) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      ClientPacketReliableCallPacket packet = new ClientPacketReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.type = type;</b>
+<b class="nc">&nbsp;      packet.contents = contents;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void clientPacketReliable(NetConnection playerConnection, String type,
+&nbsp;      String contents) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      ClientPacketReliableCallPacket packet = new ClientPacketReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.type = type;</b>
+<b class="nc">&nbsp;      packet.contents = contents;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void clientPacketUnreliable(String type, String contents) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      ClientPacketUnreliableCallPacket packet = new ClientPacketUnreliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.type = type;</b>
+<b class="nc">&nbsp;      packet.contents = contents;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void clientPacketUnreliable(NetConnection playerConnection, String type,
+&nbsp;      String contents) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      ClientPacketUnreliableCallPacket packet = new ClientPacketUnreliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.type = type;</b>
+<b class="nc">&nbsp;      packet.contents = contents;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void clientSnapshot(int snapshotID, int unitID, boolean dead, float x, float y,
+&nbsp;      float pointerX, float pointerY, float rotation, float baseRotation, float xVelocity,
+&nbsp;      float yVelocity, Tile mining, boolean boosting, boolean shooting, boolean chatting,
+&nbsp;      boolean building, Queue&lt;BuildPlan&gt; plans, float viewX, float viewY, float viewWidth,
+&nbsp;      float viewHeight) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      ClientSnapshotCallPacket packet = new ClientSnapshotCallPacket();</b>
+<b class="nc">&nbsp;      packet.snapshotID = snapshotID;</b>
+<b class="nc">&nbsp;      packet.unitID = unitID;</b>
+<b class="nc">&nbsp;      packet.dead = dead;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.pointerX = pointerX;</b>
+<b class="nc">&nbsp;      packet.pointerY = pointerY;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      packet.baseRotation = baseRotation;</b>
+<b class="nc">&nbsp;      packet.xVelocity = xVelocity;</b>
+<b class="nc">&nbsp;      packet.yVelocity = yVelocity;</b>
+<b class="nc">&nbsp;      packet.mining = mining;</b>
+<b class="nc">&nbsp;      packet.boosting = boosting;</b>
+<b class="nc">&nbsp;      packet.shooting = shooting;</b>
+<b class="nc">&nbsp;      packet.chatting = chatting;</b>
+<b class="nc">&nbsp;      packet.building = building;</b>
+<b class="nc">&nbsp;      packet.plans = plans;</b>
+<b class="nc">&nbsp;      packet.viewX = viewX;</b>
+<b class="nc">&nbsp;      packet.viewY = viewY;</b>
+<b class="nc">&nbsp;      packet.viewWidth = viewWidth;</b>
+<b class="nc">&nbsp;      packet.viewHeight = viewHeight;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void commandBuilding(Player player, int[] buildings, Vec2 target) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.commandBuilding(player, buildings, target);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      CommandBuildingCallPacket packet = new CommandBuildingCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.buildings = buildings;</b>
+<b class="nc">&nbsp;      packet.target = target;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void commandBuilding__forward(NetConnection exceptConnection, Player player,
+&nbsp;      int[] buildings, Vec2 target) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      CommandBuildingCallPacket packet = new CommandBuildingCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.buildings = buildings;</b>
+<b class="nc">&nbsp;      packet.target = target;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void commandUnits(Player player, int[] unitIds, Building buildTarget,
+&nbsp;      Unit unitTarget, Vec2 posTarget, boolean queueCommand, boolean finalBatch) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.commandUnits(player, unitIds, buildTarget, unitTarget, posTarget, queueCommand, finalBatch);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      CommandUnitsCallPacket packet = new CommandUnitsCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.unitIds = unitIds;</b>
+<b class="nc">&nbsp;      packet.buildTarget = buildTarget;</b>
+<b class="nc">&nbsp;      packet.unitTarget = unitTarget;</b>
+<b class="nc">&nbsp;      packet.posTarget = posTarget;</b>
+<b class="nc">&nbsp;      packet.queueCommand = queueCommand;</b>
+<b class="nc">&nbsp;      packet.finalBatch = finalBatch;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void commandUnits__forward(NetConnection exceptConnection, Player player, int[] unitIds,
+&nbsp;      Building buildTarget, Unit unitTarget, Vec2 posTarget, boolean queueCommand,
+&nbsp;      boolean finalBatch) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      CommandUnitsCallPacket packet = new CommandUnitsCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.unitIds = unitIds;</b>
+<b class="nc">&nbsp;      packet.buildTarget = buildTarget;</b>
+<b class="nc">&nbsp;      packet.unitTarget = unitTarget;</b>
+<b class="nc">&nbsp;      packet.posTarget = posTarget;</b>
+<b class="nc">&nbsp;      packet.queueCommand = queueCommand;</b>
+<b class="nc">&nbsp;      packet.finalBatch = finalBatch;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void completeObjective(int index) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.completeObjective(index);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      CompleteObjectiveCallPacket packet = new CompleteObjectiveCallPacket();</b>
+<b class="nc">&nbsp;      packet.index = index;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void completeObjective(NetConnection playerConnection, int index) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.completeObjective(index);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      CompleteObjectiveCallPacket packet = new CompleteObjectiveCallPacket();</b>
+<b class="nc">&nbsp;      packet.index = index;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void connect(NetConnection playerConnection, String ip, int port) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.connect(ip, port);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      ConnectCallPacket packet = new ConnectCallPacket();</b>
+<b class="nc">&nbsp;      packet.ip = ip;</b>
+<b class="nc">&nbsp;      packet.port = port;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void connectConfirm() {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      ConnectConfirmCallPacket packet = new ConnectConfirmCallPacket();</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void constructFinish(Tile tile, Block block, Unit builder, byte rotation, Team team,
+&nbsp;      Object config) {
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="fc">&nbsp;      mindustry.world.blocks.ConstructBlock.constructFinish(tile, block, builder, rotation, team, config);</b>
+&nbsp;    }
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      ConstructFinishCallPacket packet = new ConstructFinishCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      packet.block = block;</b>
+<b class="nc">&nbsp;      packet.builder = builder;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      packet.team = team;</b>
+<b class="nc">&nbsp;      packet.config = config;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void createBullet(BulletType type, Team team, float x, float y, float angle,
+&nbsp;      float damage, float velocityScl, float lifetimeScl) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.entities.bullet.BulletType.createBullet(type, team, x, y, angle, damage, velocityScl, lifetimeScl);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      CreateBulletCallPacket packet = new CreateBulletCallPacket();</b>
+<b class="nc">&nbsp;      packet.type = type;</b>
+<b class="nc">&nbsp;      packet.team = team;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.angle = angle;</b>
+<b class="nc">&nbsp;      packet.damage = damage;</b>
+<b class="nc">&nbsp;      packet.velocityScl = velocityScl;</b>
+<b class="nc">&nbsp;      packet.lifetimeScl = lifetimeScl;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void createMarker(int id, MapObjectives.ObjectiveMarker marker) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.createMarker(id, marker);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      CreateMarkerCallPacket packet = new CreateMarkerCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      packet.marker = marker;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void createMarker(NetConnection playerConnection, int id,
+&nbsp;      MapObjectives.ObjectiveMarker marker) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.createMarker(id, marker);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      CreateMarkerCallPacket packet = new CreateMarkerCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      packet.marker = marker;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void createWeather(Weather weather, float intensity, float duration, float windX,
+&nbsp;      float windY) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.type.Weather.createWeather(weather, intensity, duration, windX, windY);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      CreateWeatherCallPacket packet = new CreateWeatherCallPacket();</b>
+<b class="nc">&nbsp;      packet.weather = weather;</b>
+<b class="nc">&nbsp;      packet.intensity = intensity;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      packet.windX = windX;</b>
+<b class="nc">&nbsp;      packet.windY = windY;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void debugStatusClient(int value, int lastClientSnapshot, int snapshotsSent) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      DebugStatusClientCallPacket packet = new DebugStatusClientCallPacket();</b>
+<b class="nc">&nbsp;      packet.value = value;</b>
+<b class="nc">&nbsp;      packet.lastClientSnapshot = lastClientSnapshot;</b>
+<b class="nc">&nbsp;      packet.snapshotsSent = snapshotsSent;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void debugStatusClient(NetConnection playerConnection, int value,
+&nbsp;      int lastClientSnapshot, int snapshotsSent) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      DebugStatusClientCallPacket packet = new DebugStatusClientCallPacket();</b>
+<b class="nc">&nbsp;      packet.value = value;</b>
+<b class="nc">&nbsp;      packet.lastClientSnapshot = lastClientSnapshot;</b>
+<b class="nc">&nbsp;      packet.snapshotsSent = snapshotsSent;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void debugStatusClientUnreliable(int value, int lastClientSnapshot,
+&nbsp;      int snapshotsSent) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      DebugStatusClientUnreliableCallPacket packet = new DebugStatusClientUnreliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.value = value;</b>
+<b class="nc">&nbsp;      packet.lastClientSnapshot = lastClientSnapshot;</b>
+<b class="nc">&nbsp;      packet.snapshotsSent = snapshotsSent;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void debugStatusClientUnreliable(NetConnection playerConnection, int value,
+&nbsp;      int lastClientSnapshot, int snapshotsSent) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      DebugStatusClientUnreliableCallPacket packet = new DebugStatusClientUnreliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.value = value;</b>
+<b class="nc">&nbsp;      packet.lastClientSnapshot = lastClientSnapshot;</b>
+<b class="nc">&nbsp;      packet.snapshotsSent = snapshotsSent;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void deconstructFinish(Tile tile, Block block, Unit builder) {
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="fc">&nbsp;      mindustry.world.blocks.ConstructBlock.deconstructFinish(tile, block, builder);</b>
+&nbsp;    }
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      DeconstructFinishCallPacket packet = new DeconstructFinishCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      packet.block = block;</b>
+<b class="nc">&nbsp;      packet.builder = builder;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void deletePlans(Player player, int[] positions) {
+<b class="nc">&nbsp;    mindustry.input.InputHandler.deletePlans(player, positions);</b>
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      DeletePlansCallPacket packet = new DeletePlansCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.positions = positions;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void deletePlans__forward(NetConnection exceptConnection, Player player, int[] positions) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      DeletePlansCallPacket packet = new DeletePlansCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.positions = positions;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.sendExcept(exceptConnection, packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void destroyPayload(Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.game.Teams.destroyPayload(build);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      DestroyPayloadCallPacket packet = new DestroyPayloadCallPacket();</b>
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void dropItem(float angle) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.dropItem(mindustry.Vars.player, angle);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      DropItemCallPacket packet = new DropItemCallPacket();</b>
+<b class="nc">&nbsp;      packet.angle = angle;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void effect(Effect effect, float x, float y, float rotation, Color color) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      EffectCallPacket packet = new EffectCallPacket();</b>
+<b class="nc">&nbsp;      packet.effect = effect;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      packet.color = color;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void effect(NetConnection playerConnection, Effect effect, float x, float y,
+&nbsp;      float rotation, Color color) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      EffectCallPacket packet = new EffectCallPacket();</b>
+<b class="nc">&nbsp;      packet.effect = effect;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      packet.color = color;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void effect(Effect effect, float x, float y, float rotation, Color color,
+&nbsp;      Object data) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      EffectCallPacket2 packet = new EffectCallPacket2();</b>
+<b class="nc">&nbsp;      packet.effect = effect;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      packet.color = color;</b>
+<b class="nc">&nbsp;      packet.data = data;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void effect(NetConnection playerConnection, Effect effect, float x, float y,
+&nbsp;      float rotation, Color color, Object data) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      EffectCallPacket2 packet = new EffectCallPacket2();</b>
+<b class="nc">&nbsp;      packet.effect = effect;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      packet.color = color;</b>
+<b class="nc">&nbsp;      packet.data = data;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void effectReliable(Effect effect, float x, float y, float rotation, Color color) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      EffectReliableCallPacket packet = new EffectReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.effect = effect;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      packet.color = color;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void effectReliable(NetConnection playerConnection, Effect effect, float x, float y,
+&nbsp;      float rotation, Color color) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      EffectReliableCallPacket packet = new EffectReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.effect = effect;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      packet.color = color;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void entitySnapshot(NetConnection playerConnection, short amount, byte[] data) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      EntitySnapshotCallPacket packet = new EntitySnapshotCallPacket();</b>
+<b class="nc">&nbsp;      packet.amount = amount;</b>
+<b class="nc">&nbsp;      packet.data = data;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void followUpMenu(int menuId, String title, String message, String[][] options) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      FollowUpMenuCallPacket packet = new FollowUpMenuCallPacket();</b>
+<b class="nc">&nbsp;      packet.menuId = menuId;</b>
+<b class="nc">&nbsp;      packet.title = title;</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.options = options;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void followUpMenu(NetConnection playerConnection, int menuId, String title,
+&nbsp;      String message, String[][] options) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      FollowUpMenuCallPacket packet = new FollowUpMenuCallPacket();</b>
+<b class="nc">&nbsp;      packet.menuId = menuId;</b>
+<b class="nc">&nbsp;      packet.title = title;</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.options = options;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void gameOver(Team winner) {
+<b class="nc">&nbsp;    mindustry.core.Logic.gameOver(winner);</b>
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      GameOverCallPacket packet = new GameOverCallPacket();</b>
+<b class="nc">&nbsp;      packet.winner = winner;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void hiddenSnapshot(NetConnection playerConnection, IntSeq ids) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      HiddenSnapshotCallPacket packet = new HiddenSnapshotCallPacket();</b>
+<b class="nc">&nbsp;      packet.ids = ids;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void hideFollowUpMenu(int menuId) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      HideFollowUpMenuCallPacket packet = new HideFollowUpMenuCallPacket();</b>
+<b class="nc">&nbsp;      packet.menuId = menuId;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void hideFollowUpMenu(NetConnection playerConnection, int menuId) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      HideFollowUpMenuCallPacket packet = new HideFollowUpMenuCallPacket();</b>
+<b class="nc">&nbsp;      packet.menuId = menuId;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void hideHudText() {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      HideHudTextCallPacket packet = new HideHudTextCallPacket();</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void hideHudText(NetConnection playerConnection) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      HideHudTextCallPacket packet = new HideHudTextCallPacket();</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void infoMessage(String message) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      InfoMessageCallPacket packet = new InfoMessageCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void infoMessage(NetConnection playerConnection, String message) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      InfoMessageCallPacket packet = new InfoMessageCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void infoPopup(String message, float duration, int align, int top, int left,
+&nbsp;      int bottom, int right) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      InfoPopupCallPacket packet = new InfoPopupCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      packet.align = align;</b>
+<b class="nc">&nbsp;      packet.top = top;</b>
+<b class="nc">&nbsp;      packet.left = left;</b>
+<b class="nc">&nbsp;      packet.bottom = bottom;</b>
+<b class="nc">&nbsp;      packet.right = right;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void infoPopup(NetConnection playerConnection, String message, float duration,
+&nbsp;      int align, int top, int left, int bottom, int right) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      InfoPopupCallPacket packet = new InfoPopupCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      packet.align = align;</b>
+<b class="nc">&nbsp;      packet.top = top;</b>
+<b class="nc">&nbsp;      packet.left = left;</b>
+<b class="nc">&nbsp;      packet.bottom = bottom;</b>
+<b class="nc">&nbsp;      packet.right = right;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void infoPopupReliable(String message, float duration, int align, int top, int left,
+&nbsp;      int bottom, int right) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      InfoPopupReliableCallPacket packet = new InfoPopupReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      packet.align = align;</b>
+<b class="nc">&nbsp;      packet.top = top;</b>
+<b class="nc">&nbsp;      packet.left = left;</b>
+<b class="nc">&nbsp;      packet.bottom = bottom;</b>
+<b class="nc">&nbsp;      packet.right = right;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void infoPopupReliable(NetConnection playerConnection, String message,
+&nbsp;      float duration, int align, int top, int left, int bottom, int right) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      InfoPopupReliableCallPacket packet = new InfoPopupReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      packet.align = align;</b>
+<b class="nc">&nbsp;      packet.top = top;</b>
+<b class="nc">&nbsp;      packet.left = left;</b>
+<b class="nc">&nbsp;      packet.bottom = bottom;</b>
+<b class="nc">&nbsp;      packet.right = right;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void infoToast(String message, float duration) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      InfoToastCallPacket packet = new InfoToastCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void infoToast(NetConnection playerConnection, String message, float duration) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      InfoToastCallPacket packet = new InfoToastCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void kick(NetConnection playerConnection, String reason) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      KickCallPacket packet = new KickCallPacket();</b>
+<b class="nc">&nbsp;      packet.reason = reason;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void kick(NetConnection playerConnection, Packets.KickReason reason) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      KickCallPacket2 packet = new KickCallPacket2();</b>
+<b class="nc">&nbsp;      packet.reason = reason;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void label(String message, float duration, float worldx, float worldy) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      LabelCallPacket packet = new LabelCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      packet.worldx = worldx;</b>
+<b class="nc">&nbsp;      packet.worldy = worldy;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void label(NetConnection playerConnection, String message, float duration,
+&nbsp;      float worldx, float worldy) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      LabelCallPacket packet = new LabelCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      packet.worldx = worldx;</b>
+<b class="nc">&nbsp;      packet.worldy = worldy;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void labelReliable(String message, float duration, float worldx, float worldy) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      LabelReliableCallPacket packet = new LabelReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      packet.worldx = worldx;</b>
+<b class="nc">&nbsp;      packet.worldy = worldy;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void labelReliable(NetConnection playerConnection, String message, float duration,
+&nbsp;      float worldx, float worldy) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      LabelReliableCallPacket packet = new LabelReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.duration = duration;</b>
+<b class="nc">&nbsp;      packet.worldx = worldx;</b>
+<b class="nc">&nbsp;      packet.worldy = worldy;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void logicExplosion(Team team, float x, float y, float radius, float damage,
+&nbsp;      boolean air, boolean ground, boolean pierce, boolean effect) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.logicExplosion(team, x, y, radius, damage, air, ground, pierce, effect);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      LogicExplosionCallPacket packet = new LogicExplosionCallPacket();</b>
+<b class="nc">&nbsp;      packet.team = team;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.radius = radius;</b>
+<b class="nc">&nbsp;      packet.damage = damage;</b>
+<b class="nc">&nbsp;      packet.air = air;</b>
+<b class="nc">&nbsp;      packet.ground = ground;</b>
+<b class="nc">&nbsp;      packet.pierce = pierce;</b>
+<b class="nc">&nbsp;      packet.effect = effect;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void menu(int menuId, String title, String message, String[][] options) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      MenuCallPacket packet = new MenuCallPacket();</b>
+<b class="nc">&nbsp;      packet.menuId = menuId;</b>
+<b class="nc">&nbsp;      packet.title = title;</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.options = options;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void menu(NetConnection playerConnection, int menuId, String title, String message,
+&nbsp;      String[][] options) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      MenuCallPacket packet = new MenuCallPacket();</b>
+<b class="nc">&nbsp;      packet.menuId = menuId;</b>
+<b class="nc">&nbsp;      packet.title = title;</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.options = options;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void menuChoose(Player player, int menuId, int option) {
+<b class="nc">&nbsp;    mindustry.ui.Menus.menuChoose(player, menuId, option);</b>
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      MenuChooseCallPacket packet = new MenuChooseCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.menuId = menuId;</b>
+<b class="nc">&nbsp;      packet.option = option;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void openURI(String uri) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      OpenURICallPacket packet = new OpenURICallPacket();</b>
+<b class="nc">&nbsp;      packet.uri = uri;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void openURI(NetConnection playerConnection, String uri) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      OpenURICallPacket packet = new OpenURICallPacket();</b>
+<b class="nc">&nbsp;      packet.uri = uri;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void payloadDropped(Unit unit, float x, float y) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.payloadDropped(unit, x, y);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      PayloadDroppedCallPacket packet = new PayloadDroppedCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void pickedBuildPayload(Unit unit, Building build, boolean onGround) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.pickedBuildPayload(unit, build, onGround);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      PickedBuildPayloadCallPacket packet = new PickedBuildPayloadCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      packet.onGround = onGround;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void pickedUnitPayload(Unit unit, Unit target) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.pickedUnitPayload(unit, target);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      PickedUnitPayloadCallPacket packet = new PickedUnitPayloadCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      packet.target = target;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void ping(long time) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      PingCallPacket packet = new PingCallPacket();</b>
+<b class="nc">&nbsp;      packet.time = time;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void pingResponse(NetConnection playerConnection, long time) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      PingResponseCallPacket packet = new PingResponseCallPacket();</b>
+<b class="nc">&nbsp;      packet.time = time;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void playerDisconnect(int playerid) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      PlayerDisconnectCallPacket packet = new PlayerDisconnectCallPacket();</b>
+<b class="nc">&nbsp;      packet.playerid = playerid;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void playerSpawn(Tile tile, Player player) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.blocks.storage.CoreBlock.playerSpawn(tile, player);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      PlayerSpawnCallPacket packet = new PlayerSpawnCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      packet.player = player;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void removeMarker(int id) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.removeMarker(id);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      RemoveMarkerCallPacket packet = new RemoveMarkerCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void removeMarker(NetConnection playerConnection, int id) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.removeMarker(id);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      RemoveMarkerCallPacket packet = new RemoveMarkerCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void removeQueueBlock(NetConnection playerConnection, int x, int y,
+&nbsp;      boolean breaking) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      RemoveQueueBlockCallPacket packet = new RemoveQueueBlockCallPacket();</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.breaking = breaking;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void removeTile(Tile tile) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.Tile.removeTile(tile);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      RemoveTileCallPacket packet = new RemoveTileCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void removeWorldLabel(int id) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      RemoveWorldLabelCallPacket packet = new RemoveWorldLabelCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void requestBuildPayload(Player player, Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.requestBuildPayload(player, build);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      RequestBuildPayloadCallPacket packet = new RequestBuildPayloadCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void requestDebugStatus() {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      RequestDebugStatusCallPacket packet = new RequestDebugStatusCallPacket();</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void requestDropPayload(Player player, float x, float y) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.requestDropPayload(player, x, y);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      RequestDropPayloadCallPacket packet = new RequestDropPayloadCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void requestItem(Player player, Building build, Item item, int amount) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.requestItem(player, build, item, amount);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      RequestItemCallPacket packet = new RequestItemCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      packet.item = item;</b>
+<b class="nc">&nbsp;      packet.amount = amount;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void requestItem__forward(NetConnection exceptConnection, Player player, Building build,
+&nbsp;      Item item, int amount) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      RequestItemCallPacket packet = new RequestItemCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      packet.item = item;</b>
+<b class="nc">&nbsp;      packet.amount = amount;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void requestUnitPayload(Player player, Unit target) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.requestUnitPayload(player, target);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      RequestUnitPayloadCallPacket packet = new RequestUnitPayloadCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.target = target;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void researched(Content content) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      ResearchedCallPacket packet = new ResearchedCallPacket();</b>
+<b class="nc">&nbsp;      packet.content = content;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void rotateBlock(Player player, Building build, boolean direction) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.rotateBlock(player, build, direction);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      RotateBlockCallPacket packet = new RotateBlockCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      packet.direction = direction;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void rotateBlock__forward(NetConnection exceptConnection, Player player, Building build,
+&nbsp;      boolean direction) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      RotateBlockCallPacket packet = new RotateBlockCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      packet.direction = direction;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void sectorCapture() {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.Logic.sectorCapture();</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SectorCaptureCallPacket packet = new SectorCaptureCallPacket();</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void sendChatMessage(String message) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.sendChatMessage(mindustry.Vars.player, message);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      SendChatMessageCallPacket packet = new SendChatMessageCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void sendMessage(String message) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.sendMessage(message);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SendMessageCallPacket packet = new SendMessageCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void sendMessage(String message, String unformatted, Player playersender) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SendMessageCallPacket2 packet = new SendMessageCallPacket2();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.unformatted = unformatted;</b>
+<b class="nc">&nbsp;      packet.playersender = playersender;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void sendMessage(NetConnection playerConnection, String message, String unformatted,
+&nbsp;      Player playersender) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SendMessageCallPacket2 packet = new SendMessageCallPacket2();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.unformatted = unformatted;</b>
+<b class="nc">&nbsp;      packet.playersender = playersender;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void serverPacketReliable(String type, String contents) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      ServerPacketReliableCallPacket packet = new ServerPacketReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.type = type;</b>
+<b class="nc">&nbsp;      packet.contents = contents;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void serverPacketUnreliable(String type, String contents) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      ServerPacketUnreliableCallPacket packet = new ServerPacketUnreliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.type = type;</b>
+<b class="nc">&nbsp;      packet.contents = contents;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setCameraPosition(float x, float y) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetCameraPositionCallPacket packet = new SetCameraPositionCallPacket();</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setCameraPosition(NetConnection playerConnection, float x, float y) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetCameraPositionCallPacket packet = new SetCameraPositionCallPacket();</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setFlag(String flag, boolean add) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.setFlag(flag, add);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetFlagCallPacket packet = new SetFlagCallPacket();</b>
+<b class="nc">&nbsp;      packet.flag = flag;</b>
+<b class="nc">&nbsp;      packet.add = add;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setFloor(Tile tile, Block floor, Block overlay) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.Tile.setFloor(tile, floor, overlay);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetFloorCallPacket packet = new SetFloorCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      packet.floor = floor;</b>
+<b class="nc">&nbsp;      packet.overlay = overlay;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setHudText(String message) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetHudTextCallPacket packet = new SetHudTextCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setHudText(NetConnection playerConnection, String message) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetHudTextCallPacket packet = new SetHudTextCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setHudTextReliable(String message) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetHudTextReliableCallPacket packet = new SetHudTextReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setHudTextReliable(NetConnection playerConnection, String message) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetHudTextReliableCallPacket packet = new SetHudTextReliableCallPacket();</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setItem(Building build, Item item, int amount) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.setItem(build, item, amount);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetItemCallPacket packet = new SetItemCallPacket();</b>
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      packet.item = item;</b>
+<b class="nc">&nbsp;      packet.amount = amount;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setMapArea(int x, int y, int w, int h) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.setMapArea(x, y, w, h);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetMapAreaCallPacket packet = new SetMapAreaCallPacket();</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.w = w;</b>
+<b class="nc">&nbsp;      packet.h = h;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setObjectives(MapObjectives executor) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetObjectivesCallPacket packet = new SetObjectivesCallPacket();</b>
+<b class="nc">&nbsp;      packet.executor = executor;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setObjectives(NetConnection playerConnection, MapObjectives executor) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetObjectivesCallPacket packet = new SetObjectivesCallPacket();</b>
+<b class="nc">&nbsp;      packet.executor = executor;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setOverlay(Tile tile, Block overlay) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.Tile.setOverlay(tile, overlay);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetOverlayCallPacket packet = new SetOverlayCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      packet.overlay = overlay;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setPlayerTeamEditor(Player player, Team team) {
+<b class="nc">&nbsp;    mindustry.ui.fragments.HudFragment.setPlayerTeamEditor(player, team);</b>
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      SetPlayerTeamEditorCallPacket packet = new SetPlayerTeamEditorCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.team = team;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void setPlayerTeamEditor__forward(NetConnection exceptConnection, Player player,
+&nbsp;      Team team) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      SetPlayerTeamEditorCallPacket packet = new SetPlayerTeamEditorCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.team = team;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.sendExcept(exceptConnection, packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setPosition(NetConnection playerConnection, float x, float y) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetPositionCallPacket packet = new SetPositionCallPacket();</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setRules(Rules rules) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetRulesCallPacket packet = new SetRulesCallPacket();</b>
+<b class="nc">&nbsp;      packet.rules = rules;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setRules(NetConnection playerConnection, Rules rules) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetRulesCallPacket packet = new SetRulesCallPacket();</b>
+<b class="nc">&nbsp;      packet.rules = rules;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setTeam(Building build, Team team) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.Tile.setTeam(build, team);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetTeamCallPacket packet = new SetTeamCallPacket();</b>
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      packet.team = team;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setTile(Tile tile, Block block, Team team, int rotation) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.Tile.setTile(tile, block, team, rotation);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetTileCallPacket packet = new SetTileCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      packet.block = block;</b>
+<b class="nc">&nbsp;      packet.team = team;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setTileBlocks(Block block, Team team, int[] positions) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.Tile.setTileBlocks(block, team, positions);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetTileBlocksCallPacket packet = new SetTileBlocksCallPacket();</b>
+<b class="nc">&nbsp;      packet.block = block;</b>
+<b class="nc">&nbsp;      packet.team = team;</b>
+<b class="nc">&nbsp;      packet.positions = positions;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setTileFloors(Block block, int[] positions) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.Tile.setTileFloors(block, positions);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetTileFloorsCallPacket packet = new SetTileFloorsCallPacket();</b>
+<b class="nc">&nbsp;      packet.block = block;</b>
+<b class="nc">&nbsp;      packet.positions = positions;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setTileOverlays(Block block, int[] positions) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.Tile.setTileOverlays(block, positions);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SetTileOverlaysCallPacket packet = new SetTileOverlaysCallPacket();</b>
+<b class="nc">&nbsp;      packet.block = block;</b>
+<b class="nc">&nbsp;      packet.positions = positions;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setUnitCommand(Player player, int[] unitIds, UnitCommand command) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.setUnitCommand(player, unitIds, command);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      SetUnitCommandCallPacket packet = new SetUnitCommandCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.unitIds = unitIds;</b>
+<b class="nc">&nbsp;      packet.command = command;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void setUnitCommand__forward(NetConnection exceptConnection, Player player, int[] unitIds,
+&nbsp;      UnitCommand command) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      SetUnitCommandCallPacket packet = new SetUnitCommandCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.unitIds = unitIds;</b>
+<b class="nc">&nbsp;      packet.command = command;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void setUnitStance(Player player, int[] unitIds, UnitStance stance) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.setUnitStance(player, unitIds, stance);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      SetUnitStanceCallPacket packet = new SetUnitStanceCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.unitIds = unitIds;</b>
+<b class="nc">&nbsp;      packet.stance = stance;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void setUnitStance__forward(NetConnection exceptConnection, Player player, int[] unitIds,
+&nbsp;      UnitStance stance) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      SetUnitStanceCallPacket packet = new SetUnitStanceCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.unitIds = unitIds;</b>
+<b class="nc">&nbsp;      packet.stance = stance;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void sound(Sound sound, float volume, float pitch, float pan) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.sound(sound, volume, pitch, pan);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SoundCallPacket packet = new SoundCallPacket();</b>
+<b class="nc">&nbsp;      packet.sound = sound;</b>
+<b class="nc">&nbsp;      packet.volume = volume;</b>
+<b class="nc">&nbsp;      packet.pitch = pitch;</b>
+<b class="nc">&nbsp;      packet.pan = pan;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void sound(NetConnection playerConnection, Sound sound, float volume, float pitch,
+&nbsp;      float pan) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.sound(sound, volume, pitch, pan);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SoundCallPacket packet = new SoundCallPacket();</b>
+<b class="nc">&nbsp;      packet.sound = sound;</b>
+<b class="nc">&nbsp;      packet.volume = volume;</b>
+<b class="nc">&nbsp;      packet.pitch = pitch;</b>
+<b class="nc">&nbsp;      packet.pan = pan;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void soundAt(Sound sound, float x, float y, float volume, float pitch) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.soundAt(sound, x, y, volume, pitch);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SoundAtCallPacket packet = new SoundAtCallPacket();</b>
+<b class="nc">&nbsp;      packet.sound = sound;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.volume = volume;</b>
+<b class="nc">&nbsp;      packet.pitch = pitch;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void soundAt(NetConnection playerConnection, Sound sound, float x, float y,
+&nbsp;      float volume, float pitch) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.core.NetClient.soundAt(sound, x, y, volume, pitch);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SoundAtCallPacket packet = new SoundAtCallPacket();</b>
+<b class="nc">&nbsp;      packet.sound = sound;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.volume = volume;</b>
+<b class="nc">&nbsp;      packet.pitch = pitch;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void spawnEffect(float x, float y, float rotation, UnitType u) {
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="fc">&nbsp;      mindustry.ai.WaveSpawner.spawnEffect(x, y, rotation, u);</b>
+&nbsp;    }
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SpawnEffectCallPacket packet = new SpawnEffectCallPacket();</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.rotation = rotation;</b>
+<b class="nc">&nbsp;      packet.u = u;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void stateSnapshot(NetConnection playerConnection, float waveTime, int wave,
+&nbsp;      int enemies, boolean paused, boolean gameOver, int timeData, byte tps, long rand0, long rand1,
+&nbsp;      byte[] coreData) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      StateSnapshotCallPacket packet = new StateSnapshotCallPacket();</b>
+<b class="nc">&nbsp;      packet.waveTime = waveTime;</b>
+<b class="nc">&nbsp;      packet.wave = wave;</b>
+<b class="nc">&nbsp;      packet.enemies = enemies;</b>
+<b class="nc">&nbsp;      packet.paused = paused;</b>
+<b class="nc">&nbsp;      packet.gameOver = gameOver;</b>
+<b class="nc">&nbsp;      packet.timeData = timeData;</b>
+<b class="nc">&nbsp;      packet.tps = tps;</b>
+<b class="nc">&nbsp;      packet.rand0 = rand0;</b>
+<b class="nc">&nbsp;      packet.rand1 = rand1;</b>
+<b class="nc">&nbsp;      packet.coreData = coreData;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void syncVariable(Building building, int variable, Object value) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      SyncVariableCallPacket packet = new SyncVariableCallPacket();</b>
+<b class="nc">&nbsp;      packet.building = building;</b>
+<b class="nc">&nbsp;      packet.variable = variable;</b>
+<b class="nc">&nbsp;      packet.value = value;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void takeItems(Building build, Item item, int amount, Unit to) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.takeItems(build, item, amount, to);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      TakeItemsCallPacket packet = new TakeItemsCallPacket();</b>
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      packet.item = item;</b>
+<b class="nc">&nbsp;      packet.amount = amount;</b>
+<b class="nc">&nbsp;      packet.to = to;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void textInput(int textInputId, String title, String message, int textLength,
+&nbsp;      String def, boolean numeric) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      TextInputCallPacket packet = new TextInputCallPacket();</b>
+<b class="nc">&nbsp;      packet.textInputId = textInputId;</b>
+<b class="nc">&nbsp;      packet.title = title;</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.textLength = textLength;</b>
+<b class="nc">&nbsp;      packet.def = def;</b>
+<b class="nc">&nbsp;      packet.numeric = numeric;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void textInput(NetConnection playerConnection, int textInputId, String title,
+&nbsp;      String message, int textLength, String def, boolean numeric) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      TextInputCallPacket packet = new TextInputCallPacket();</b>
+<b class="nc">&nbsp;      packet.textInputId = textInputId;</b>
+<b class="nc">&nbsp;      packet.title = title;</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.textLength = textLength;</b>
+<b class="nc">&nbsp;      packet.def = def;</b>
+<b class="nc">&nbsp;      packet.numeric = numeric;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void textInput(int textInputId, String title, String message, int textLength,
+&nbsp;      String def, boolean numeric, boolean allowEmpty) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      TextInputCallPacket2 packet = new TextInputCallPacket2();</b>
+<b class="nc">&nbsp;      packet.textInputId = textInputId;</b>
+<b class="nc">&nbsp;      packet.title = title;</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.textLength = textLength;</b>
+<b class="nc">&nbsp;      packet.def = def;</b>
+<b class="nc">&nbsp;      packet.numeric = numeric;</b>
+<b class="nc">&nbsp;      packet.allowEmpty = allowEmpty;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void textInput(NetConnection playerConnection, int textInputId, String title,
+&nbsp;      String message, int textLength, String def, boolean numeric, boolean allowEmpty) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      TextInputCallPacket2 packet = new TextInputCallPacket2();</b>
+<b class="nc">&nbsp;      packet.textInputId = textInputId;</b>
+<b class="nc">&nbsp;      packet.title = title;</b>
+<b class="nc">&nbsp;      packet.message = message;</b>
+<b class="nc">&nbsp;      packet.textLength = textLength;</b>
+<b class="nc">&nbsp;      packet.def = def;</b>
+<b class="nc">&nbsp;      packet.numeric = numeric;</b>
+<b class="nc">&nbsp;      packet.allowEmpty = allowEmpty;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void textInputResult(Player player, int textInputId, String text) {
+<b class="nc">&nbsp;    mindustry.ui.Menus.textInputResult(player, textInputId, text);</b>
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      TextInputResultCallPacket packet = new TextInputResultCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.textInputId = textInputId;</b>
+<b class="nc">&nbsp;      packet.text = text;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void tileConfig(Player player, Building build, Object value) {
+<b class="fc">&nbsp;    mindustry.input.InputHandler.tileConfig(player, build, value);</b>
+<b class="fc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      TileConfigCallPacket packet = new TileConfigCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      packet.value = value;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void tileConfig__forward(NetConnection exceptConnection, Player player, Building build,
+&nbsp;      Object value) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      TileConfigCallPacket packet = new TileConfigCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      packet.value = value;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.sendExcept(exceptConnection, packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void tileTap(Player player, Tile tile) {
+<b class="nc">&nbsp;    mindustry.input.InputHandler.tileTap(player, tile);</b>
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      TileTapCallPacket packet = new TileTapCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void traceInfo(NetConnection playerConnection, Player player,
+&nbsp;      Administration.TraceInfo info) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      TraceInfoCallPacket packet = new TraceInfoCallPacket();</b>
+<b class="nc">&nbsp;      packet.player = player;</b>
+<b class="nc">&nbsp;      packet.info = info;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void transferInventory(Player player, Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.transferInventory(player, build);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      TransferInventoryCallPacket packet = new TransferInventoryCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void transferInventory__forward(NetConnection exceptConnection, Player player,
+&nbsp;      Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      TransferInventoryCallPacket packet = new TransferInventoryCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void transferItemEffect(Item item, float x, float y, Itemsc to) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.transferItemEffect(item, x, y, to);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      TransferItemEffectCallPacket packet = new TransferItemEffectCallPacket();</b>
+<b class="nc">&nbsp;      packet.item = item;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.to = to;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void transferItemTo(Unit unit, Item item, int amount, float x, float y,
+&nbsp;      Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.transferItemTo(unit, item, amount, x, y, build);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      TransferItemToCallPacket packet = new TransferItemToCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      packet.item = item;</b>
+<b class="nc">&nbsp;      packet.amount = amount;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void transferItemToUnit(Item item, float x, float y, Itemsc to) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.transferItemToUnit(item, x, y, to);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      TransferItemToUnitCallPacket packet = new TransferItemToUnitCallPacket();</b>
+<b class="nc">&nbsp;      packet.item = item;</b>
+<b class="nc">&nbsp;      packet.x = x;</b>
+<b class="nc">&nbsp;      packet.y = y;</b>
+<b class="nc">&nbsp;      packet.to = to;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitBlockSpawn(Tile tile) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.blocks.units.UnitBlock.unitBlockSpawn(tile);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UnitBlockSpawnCallPacket packet = new UnitBlockSpawnCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitBuildingControlSelect(Unit unit, Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.unitBuildingControlSelect(unit, build);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UnitBuildingControlSelectCallPacket packet = new UnitBuildingControlSelectCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitCapDeath(Unit unit) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.entities.Units.unitCapDeath(unit);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UnitCapDeathCallPacket packet = new UnitCapDeathCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitClear(Player player) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.unitClear(player);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      UnitClearCallPacket packet = new UnitClearCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void unitClear__forward(NetConnection exceptConnection, Player player) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      UnitClearCallPacket packet = new UnitClearCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitControl(Player player, Unit unit) {
+<b class="nc">&nbsp;    mindustry.input.InputHandler.unitControl(player, unit);</b>
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      UnitControlCallPacket packet = new UnitControlCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  static void unitControl__forward(NetConnection exceptConnection, Player player, Unit unit) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      UnitControlCallPacket packet = new UnitControlCallPacket();</b>
+<b class="nc">&nbsp;      if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;        packet.player = player;</b>
+&nbsp;      }
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.sendExcept(exceptConnection, packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitDeath(int uid) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.entities.Units.unitDeath(uid);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UnitDeathCallPacket packet = new UnitDeathCallPacket();</b>
+<b class="nc">&nbsp;      packet.uid = uid;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitDespawn(Unit unit) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.entities.Units.unitDespawn(unit);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UnitDespawnCallPacket packet = new UnitDespawnCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitDestroy(int uid) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.entities.Units.unitDestroy(uid);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UnitDestroyCallPacket packet = new UnitDestroyCallPacket();</b>
+<b class="nc">&nbsp;      packet.uid = uid;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitEnteredPayload(Unit unit, Building build) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.input.InputHandler.unitEnteredPayload(unit, build);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UnitEnteredPayloadCallPacket packet = new UnitEnteredPayloadCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      packet.build = build;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitEnvDeath(Unit unit) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.entities.Units.unitEnvDeath(unit);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UnitEnvDeathCallPacket packet = new UnitEnvDeathCallPacket();</b>
+<b class="nc">&nbsp;      packet.unit = unit;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void unitTetherBlockSpawned(Tile tile, int id) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.world.blocks.units.UnitCargoLoader.unitTetherBlockSpawned(tile, id);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UnitTetherBlockSpawnedCallPacket packet = new UnitTetherBlockSpawnedCallPacket();</b>
+<b class="nc">&nbsp;      packet.tile = tile;</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void updateGameOver(Team winner) {
+<b class="nc">&nbsp;    mindustry.core.Logic.updateGameOver(winner);</b>
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UpdateGameOverCallPacket packet = new UpdateGameOverCallPacket();</b>
+<b class="nc">&nbsp;      packet.winner = winner;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void updateMarker(int id, LMarkerControl control, double p1, double p2, double p3) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.updateMarker(id, control, p1, p2, p3);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UpdateMarkerCallPacket packet = new UpdateMarkerCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      packet.control = control;</b>
+<b class="nc">&nbsp;      packet.p1 = p1;</b>
+<b class="nc">&nbsp;      packet.p2 = p2;</b>
+<b class="nc">&nbsp;      packet.p3 = p3;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void updateMarker(NetConnection playerConnection, int id, LMarkerControl control,
+&nbsp;      double p1, double p2, double p3) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.updateMarker(id, control, p1, p2, p3);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UpdateMarkerCallPacket packet = new UpdateMarkerCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      packet.control = control;</b>
+<b class="nc">&nbsp;      packet.p1 = p1;</b>
+<b class="nc">&nbsp;      packet.p2 = p2;</b>
+<b class="nc">&nbsp;      packet.p3 = p3;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void updateMarkerText(int id, LMarkerControl type, boolean fetch, String text) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.updateMarkerText(id, type, fetch, text);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UpdateMarkerTextCallPacket packet = new UpdateMarkerTextCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      packet.type = type;</b>
+<b class="nc">&nbsp;      packet.fetch = fetch;</b>
+<b class="nc">&nbsp;      packet.text = text;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void updateMarkerText(NetConnection playerConnection, int id, LMarkerControl type,
+&nbsp;      boolean fetch, String text) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.updateMarkerText(id, type, fetch, text);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UpdateMarkerTextCallPacket packet = new UpdateMarkerTextCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      packet.type = type;</b>
+<b class="nc">&nbsp;      packet.fetch = fetch;</b>
+<b class="nc">&nbsp;      packet.text = text;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void updateMarkerTexture(int id, String textureName) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.updateMarkerTexture(id, textureName);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UpdateMarkerTextureCallPacket packet = new UpdateMarkerTextureCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      packet.textureName = textureName;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void updateMarkerTexture(NetConnection playerConnection, int id,
+&nbsp;      String textureName) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server() || !mindustry.Vars.net.active()) {</b>
+<b class="nc">&nbsp;      mindustry.logic.LExecutor.updateMarkerTexture(id, textureName);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      UpdateMarkerTextureCallPacket packet = new UpdateMarkerTextureCallPacket();</b>
+<b class="nc">&nbsp;      packet.id = id;</b>
+<b class="nc">&nbsp;      packet.textureName = textureName;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, false);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void warningToast(int unicode, String text) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      WarningToastCallPacket packet = new WarningToastCallPacket();</b>
+<b class="nc">&nbsp;      packet.unicode = unicode;</b>
+<b class="nc">&nbsp;      packet.text = text;</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void warningToast(NetConnection playerConnection, int unicode, String text) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      WarningToastCallPacket packet = new WarningToastCallPacket();</b>
+<b class="nc">&nbsp;      packet.unicode = unicode;</b>
+<b class="nc">&nbsp;      packet.text = text;</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void worldDataBegin() {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      WorldDataBeginCallPacket packet = new WorldDataBeginCallPacket();</b>
+<b class="nc">&nbsp;      mindustry.Vars.net.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void worldDataBegin(NetConnection playerConnection) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      WorldDataBeginCallPacket packet = new WorldDataBeginCallPacket();</b>
+<b class="nc">&nbsp;      playerConnection.send(packet, true);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void registerPackets() {
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.AdminRequestCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.AnnounceCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.AssemblerDroneSpawnedCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.AssemblerUnitSpawnedCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.AutoDoorToggleCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.BeginBreakCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.BeginPlaceCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.BlockSnapshotCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.BuildDestroyedCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.BuildHealthUpdateCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.BuildingControlSelectCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ClearItemsCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ClearObjectivesCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ClientLogicDataReliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ClientLogicDataUnreliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ClientPacketReliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ClientPacketUnreliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ClientSnapshotCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.CommandBuildingCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.CommandUnitsCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.CompleteObjectiveCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ConnectCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ConnectConfirmCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ConstructFinishCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.CreateBulletCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.CreateMarkerCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.CreateWeatherCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.DebugStatusClientCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.DebugStatusClientUnreliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.DeconstructFinishCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.DeletePlansCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.DestroyPayloadCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.DropItemCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.EffectCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.EffectCallPacket2::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.EffectReliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.EntitySnapshotCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.FollowUpMenuCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.GameOverCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.HiddenSnapshotCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.HideFollowUpMenuCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.HideHudTextCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.InfoMessageCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.InfoPopupCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.InfoPopupReliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.InfoToastCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.KickCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.KickCallPacket2::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.LabelCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.LabelReliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.LogicExplosionCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.MenuCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.MenuChooseCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.OpenURICallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.PayloadDroppedCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.PickedBuildPayloadCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.PickedUnitPayloadCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.PingCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.PingResponseCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.PlayerDisconnectCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.PlayerSpawnCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.RemoveMarkerCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.RemoveQueueBlockCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.RemoveTileCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.RemoveWorldLabelCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.RequestBuildPayloadCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.RequestDebugStatusCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.RequestDropPayloadCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.RequestItemCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.RequestUnitPayloadCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ResearchedCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.RotateBlockCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SectorCaptureCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SendChatMessageCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SendMessageCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SendMessageCallPacket2::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ServerPacketReliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.ServerPacketUnreliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetCameraPositionCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetFlagCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetFloorCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetHudTextCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetHudTextReliableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetItemCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetMapAreaCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetObjectivesCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetOverlayCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetPlayerTeamEditorCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetPositionCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetRulesCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetTeamCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetTileCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetTileBlocksCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetTileFloorsCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetTileOverlaysCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetUnitCommandCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SetUnitStanceCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SoundCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SoundAtCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SpawnEffectCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.StateSnapshotCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.SyncVariableCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TakeItemsCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TextInputCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TextInputCallPacket2::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TextInputResultCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TileConfigCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TileTapCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TraceInfoCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TransferInventoryCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TransferItemEffectCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TransferItemToCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.TransferItemToUnitCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitBlockSpawnCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitBuildingControlSelectCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitCapDeathCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitClearCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitControlCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitDeathCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitDespawnCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitDestroyCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitEnteredPayloadCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitEnvDeathCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UnitTetherBlockSpawnedCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UpdateGameOverCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UpdateMarkerCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UpdateMarkerTextCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.UpdateMarkerTextureCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.WarningToastCallPacket::new);</b>
+<b class="fc">&nbsp;    mindustry.net.Net.registerPacket(mindustry.gen.WorldDataBeginCallPacket::new);</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

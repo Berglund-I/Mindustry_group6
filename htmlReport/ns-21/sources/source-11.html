@@ -1,0 +1,211 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LVar</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: LVar (mindustry.logic)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LVar</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70.6%
+  </span>
+  <span class="absValue">
+    (12/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75.8%
+  </span>
+  <span class="absValue">
+    (25/33)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.logic;
+&nbsp;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;public class LVar{
+&nbsp;    public final String name;
+&nbsp;    public int id;
+&nbsp;
+&nbsp;    public boolean isobj, constant;
+&nbsp;
+&nbsp;    public Object objval;
+&nbsp;    public double numval;
+&nbsp;
+&nbsp;    //ms timestamp for when this was last synced; used in the sync instruction
+&nbsp;    public long syncTime;
+&nbsp;
+&nbsp;    public LVar(String name){
+<b class="fc">&nbsp;        this(name, -1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public LVar(String name, int id){
+<b class="fc">&nbsp;        this(name, id, false);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public LVar(String name, int id, boolean constant){</b>
+<b class="fc">&nbsp;        this.name = name;</b>
+<b class="fc">&nbsp;        this.id = id;</b>
+<b class="fc">&nbsp;        this.constant = constant;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Building building(){
+<b class="nc">&nbsp;        return isobj &amp;&amp; objval instanceof Building building ? building : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Object obj(){
+<b class="fc">&nbsp;        return isobj ? objval : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Team team(){
+<b class="fc">&nbsp;        if(isobj){</b>
+<b class="fc">&nbsp;            return objval instanceof Team t ? t : null;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            int t = (int)numval;</b>
+<b class="nc">&nbsp;            if(t &lt; 0 || t &gt;= Team.all.length) return null;</b>
+<b class="nc">&nbsp;            return Team.all[t];</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean bool(){
+<b class="nc">&nbsp;        return isobj ? objval != null : Math.abs(numval) &gt;= 0.00001;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public double num(){
+<b class="fc">&nbsp;        return isobj ? objval != null ? 1 : 0 : invalid(numval) ? 0 : numval;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Get num value from variable, convert null to NaN to handle it differently in some instructions */
+&nbsp;    public double numOrNan(){
+<b class="nc">&nbsp;        return isobj ? objval != null ? 1 : Double.NaN : invalid(numval) ? 0 : numval;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float numf(){
+<b class="nc">&nbsp;        return isobj ? objval != null ? 1 : 0 : invalid(numval) ? 0 : (float)numval;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Get float value from variable, convert null to NaN to handle it differently in some instructions */
+&nbsp;    public float numfOrNan(){
+<b class="nc">&nbsp;        return isobj ? objval != null ? 1 : Float.NaN : invalid(numval) ? 0 : (float)numval;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int numi(){
+<b class="fc">&nbsp;        return (int)num();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setbool(boolean value){
+<b class="fc">&nbsp;        setnum(value ? 1 : 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setnum(double value){
+<b class="fc">&nbsp;        if(constant) return;</b>
+<b class="fc">&nbsp;        if(invalid(value)){</b>
+<b class="fc">&nbsp;            objval = null;</b>
+<b class="fc">&nbsp;            isobj = true;</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            numval = value;</b>
+<b class="fc">&nbsp;            objval = null;</b>
+<b class="fc">&nbsp;            isobj = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setobj(Object value){
+<b class="fc">&nbsp;        if(constant) return;</b>
+<b class="fc">&nbsp;        objval = value;</b>
+<b class="fc">&nbsp;        isobj = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setconst(Object value){
+<b class="fc">&nbsp;        objval = value;</b>
+<b class="fc">&nbsp;        isobj = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean invalid(double d){
+<b class="fc">&nbsp;        return Double.isNaN(d) || Double.isInfinite(d);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

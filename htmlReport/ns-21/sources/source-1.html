@@ -1,0 +1,159 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ConditionOp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: ConditionOp (mindustry.logic)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConditionOp</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.3%
+  </span>
+  <span class="absValue">
+    (12/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    93.8%
+  </span>
+  <span class="absValue">
+    (15/16)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ConditionOp$CondObjOpLambda</td>
+  </tr>
+  <tr>
+    <td class="name">ConditionOp$CondOpLambda</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    92.3%
+  </span>
+  <span class="absValue">
+    (12/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    93.8%
+  </span>
+  <span class="absValue">
+    (15/16)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.logic;
+&nbsp;
+&nbsp;import arc.util.*;
+&nbsp;
+<b class="fc">&nbsp;public enum ConditionOp{</b>
+<b class="fc">&nbsp;    equal(&quot;==&quot;, (a, b) -&gt; Math.abs(a - b) &lt; 0.000001, Structs::eq),</b>
+<b class="fc">&nbsp;    notEqual(&quot;not&quot;, (a, b) -&gt; Math.abs(a - b) &gt;= 0.000001, (a, b) -&gt; !Structs.eq(a, b)),</b>
+<b class="fc">&nbsp;    lessThan(&quot;&lt;&quot;, (a, b) -&gt; a &lt; b),</b>
+<b class="fc">&nbsp;    lessThanEq(&quot;&lt;=&quot;, (a, b) -&gt; a &lt;= b),</b>
+<b class="fc">&nbsp;    greaterThan(&quot;&gt;&quot;, (a, b) -&gt; a &gt; b),</b>
+<b class="fc">&nbsp;    greaterThanEq(&quot;&gt;=&quot;, (a, b) -&gt; a &gt;= b),</b>
+<b class="fc">&nbsp;    strictEqual(&quot;===&quot;, (a, b) -&gt; false),</b>
+<b class="fc">&nbsp;    always(&quot;always&quot;, (a, b) -&gt; true);</b>
+&nbsp;
+<b class="fc">&nbsp;    public static final ConditionOp[] all = values();</b>
+&nbsp;
+&nbsp;    public final CondObjOpLambda objFunction;
+&nbsp;    public final CondOpLambda function;
+&nbsp;    public final String symbol;
+&nbsp;
+&nbsp;    ConditionOp(String symbol, CondOpLambda function){
+<b class="fc">&nbsp;        this(symbol, function, null);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    ConditionOp(String symbol, CondOpLambda function, CondObjOpLambda objFunction){</b>
+<b class="fc">&nbsp;        this.symbol = symbol;</b>
+<b class="fc">&nbsp;        this.function = function;</b>
+<b class="fc">&nbsp;        this.objFunction = objFunction;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return symbol;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    interface CondObjOpLambda{
+&nbsp;        boolean get(Object a, Object b);
+&nbsp;    }
+&nbsp;
+&nbsp;    interface CondOpLambda{
+&nbsp;        boolean get(double a, double b);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

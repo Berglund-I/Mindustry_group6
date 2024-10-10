@@ -1,0 +1,1236 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TypeIO</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.io</a>
+</div>
+
+<h1>Coverage Summary for Class: TypeIO (mindustry.io)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TypeIO</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.7%
+  </span>
+  <span class="absValue">
+    (36/98)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (148/542)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TypeIO$Boxed</td>
+  </tr>
+  <tr>
+    <td class="name">TypeIO$BuildingBox</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TypeIO$UnitBox</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    34.6%
+  </span>
+  <span class="absValue">
+    (36/104)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.9%
+  </span>
+  <span class="absValue">
+    (148/550)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.io;
+&nbsp;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.TechTree.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.MapObjectives.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.nio.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Class for specifying read/write methods for code generation. All IO MUST be thread safe!*/
+&nbsp;@SuppressWarnings(&quot;unused&quot;)
+&nbsp;@TypeIOHandler
+<b class="nc">&nbsp;public class TypeIO{</b>
+&nbsp;
+&nbsp;    public static void writeObject(Writes write, Object object){
+<b class="fc">&nbsp;        if(object == null){</b>
+<b class="nc">&nbsp;            write.b((byte)0);</b>
+<b class="fc">&nbsp;        }else if(object instanceof Integer i){</b>
+<b class="nc">&nbsp;            write.b((byte)1);</b>
+<b class="nc">&nbsp;            write.i(i);</b>
+<b class="fc">&nbsp;        }else if(object instanceof Long l){</b>
+<b class="nc">&nbsp;            write.b((byte)2);</b>
+<b class="nc">&nbsp;            write.l(l);</b>
+<b class="fc">&nbsp;        }else if(object instanceof Float f){</b>
+<b class="nc">&nbsp;            write.b((byte)3);</b>
+<b class="nc">&nbsp;            write.f(f);</b>
+<b class="fc">&nbsp;        }else if(object instanceof String s){</b>
+<b class="nc">&nbsp;            write.b((byte)4);</b>
+<b class="nc">&nbsp;            writeString(write, s);</b>
+<b class="fc">&nbsp;        }else if(object instanceof Content map){</b>
+<b class="nc">&nbsp;            write.b((byte)5);</b>
+<b class="nc">&nbsp;            write.b((byte)map.getContentType().ordinal());</b>
+<b class="nc">&nbsp;            write.s(map.id);</b>
+<b class="fc">&nbsp;        }else if(object instanceof IntSeq arr){</b>
+<b class="nc">&nbsp;            write.b((byte)6);</b>
+<b class="nc">&nbsp;            write.s((short)arr.size);</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; arr.size; i++){</b>
+<b class="nc">&nbsp;                write.i(arr.items[i]);</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }else if(object instanceof Point2 p){</b>
+<b class="nc">&nbsp;            write.b((byte)7);</b>
+<b class="nc">&nbsp;            write.i(p.x);</b>
+<b class="nc">&nbsp;            write.i(p.y);</b>
+<b class="fc">&nbsp;        }else if(object instanceof Point2[] p){</b>
+<b class="nc">&nbsp;            write.b((byte)8);</b>
+<b class="nc">&nbsp;            write.b(p.length);</b>
+<b class="nc">&nbsp;            for(Point2 point2 : p){</b>
+<b class="nc">&nbsp;                write.i(point2.pack());</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }else if(object instanceof TechNode map){</b>
+<b class="nc">&nbsp;            write.b(9);</b>
+<b class="nc">&nbsp;            write.b((byte)map.content.getContentType().ordinal());</b>
+<b class="nc">&nbsp;            write.s(map.content.id);</b>
+<b class="fc">&nbsp;        }else if(object instanceof Boolean b){</b>
+<b class="nc">&nbsp;            write.b((byte)10);</b>
+<b class="nc">&nbsp;            write.bool(b);</b>
+<b class="fc">&nbsp;        }else if(object instanceof Double d){</b>
+<b class="fc">&nbsp;            write.b((byte)11);</b>
+<b class="fc">&nbsp;            write.d(d);</b>
+<b class="nc">&nbsp;        }else if(object instanceof Building b){</b>
+<b class="nc">&nbsp;            write.b(12);</b>
+<b class="nc">&nbsp;            write.i(b.pos());</b>
+<b class="nc">&nbsp;        }else if(object instanceof BuildingBox b){</b>
+<b class="nc">&nbsp;            write.b(12);</b>
+<b class="nc">&nbsp;            write.i(b.pos);</b>
+<b class="nc">&nbsp;        }else if(object instanceof LAccess l){</b>
+<b class="nc">&nbsp;            write.b((byte)13);</b>
+<b class="nc">&nbsp;            write.s(l.ordinal());</b>
+<b class="nc">&nbsp;        }else if(object instanceof byte[] b){</b>
+<b class="nc">&nbsp;            write.b((byte)14);</b>
+<b class="nc">&nbsp;            write.i(b.length);</b>
+<b class="nc">&nbsp;            write.b(b);</b>
+<b class="nc">&nbsp;        }else if(object instanceof boolean[] b){</b>
+<b class="nc">&nbsp;            write.b(16);</b>
+<b class="nc">&nbsp;            write.i(b.length);</b>
+<b class="nc">&nbsp;            for(boolean bool : b){</b>
+<b class="nc">&nbsp;                write.bool(bool);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(object instanceof Unit u){</b>
+<b class="nc">&nbsp;            write.b(17);</b>
+<b class="nc">&nbsp;            write.i(u.id);</b>
+<b class="nc">&nbsp;        }else if(object instanceof UnitBox u){</b>
+<b class="nc">&nbsp;            write.b(17);</b>
+<b class="nc">&nbsp;            write.i(u.id);</b>
+<b class="nc">&nbsp;        }else if(object instanceof Vec2[] vecs){</b>
+<b class="nc">&nbsp;            write.b(18);</b>
+<b class="nc">&nbsp;            write.s(vecs.length);</b>
+<b class="nc">&nbsp;            for(Vec2 v : vecs){</b>
+<b class="nc">&nbsp;                write.f(v.x);</b>
+<b class="nc">&nbsp;                write.f(v.y);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(object instanceof Vec2 v){</b>
+<b class="nc">&nbsp;            write.b((byte)19);</b>
+<b class="nc">&nbsp;            write.f(v.x);</b>
+<b class="nc">&nbsp;            write.f(v.y);</b>
+<b class="nc">&nbsp;        }else if(object instanceof Team t){</b>
+<b class="nc">&nbsp;            write.b((byte)20);</b>
+<b class="nc">&nbsp;            write.b(t.id);</b>
+<b class="nc">&nbsp;        }else if(object instanceof int[] i){</b>
+<b class="nc">&nbsp;            write.b((byte)21);</b>
+<b class="nc">&nbsp;            writeInts(write, i);</b>
+<b class="nc">&nbsp;        }else if(object instanceof Object[] objs){</b>
+<b class="nc">&nbsp;            write.b((byte)22);</b>
+<b class="nc">&nbsp;            write.i(objs.length);</b>
+<b class="nc">&nbsp;            for(Object obj : objs){</b>
+<b class="nc">&nbsp;                writeObject(write, obj);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(object instanceof UnitCommand command){</b>
+<b class="nc">&nbsp;            write.b(23);</b>
+<b class="nc">&nbsp;            write.s(command.id);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Unknown object type: &quot; + object.getClass());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public static Object readObject(Reads read){
+<b class="fc">&nbsp;        return readObjectBoxed(read, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Reads an object, but boxes buildings. */
+&nbsp;    @Nullable
+&nbsp;    public static Object readObjectBoxed(Reads read, boolean box){
+<b class="fc">&nbsp;        byte type = read.b();</b>
+<b class="fc">&nbsp;        return switch(type){</b>
+<b class="fc">&nbsp;            case 0 -&gt; null;</b>
+<b class="nc">&nbsp;            case 1 -&gt; read.i();</b>
+<b class="nc">&nbsp;            case 2 -&gt; read.l();</b>
+<b class="nc">&nbsp;            case 3 -&gt; read.f();</b>
+<b class="nc">&nbsp;            case 4 -&gt; readString(read);</b>
+<b class="nc">&nbsp;            case 5 -&gt; content.getByID(ContentType.all[read.b()], read.s());</b>
+&nbsp;            case 6 -&gt; {
+<b class="nc">&nbsp;                short length = read.s();</b>
+<b class="nc">&nbsp;                IntSeq arr = new IntSeq(length);</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; length; i ++) arr.add(read.i());</b>
+<b class="nc">&nbsp;                yield arr;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            case 7 -&gt; new Point2(read.i(), read.i());</b>
+&nbsp;            case 8 -&gt; {
+<b class="nc">&nbsp;                byte len = read.b();</b>
+<b class="nc">&nbsp;                Point2[] out = new Point2[len];</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; len; i ++) out[i] = Point2.unpack(read.i());</b>
+<b class="nc">&nbsp;                yield out;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            case 9 -&gt; content.&lt;UnlockableContent&gt;getByID(ContentType.all[read.b()], read.s()).techNode;</b>
+<b class="nc">&nbsp;            case 10 -&gt; read.bool();</b>
+<b class="fc">&nbsp;            case 11 -&gt; read.d();</b>
+<b class="nc">&nbsp;            case 12 -&gt; !box ? world.build(read.i()) : new BuildingBox(read.i());</b>
+<b class="nc">&nbsp;            case 13 -&gt; LAccess.all[read.s()];</b>
+&nbsp;            case 14 -&gt; {
+<b class="nc">&nbsp;                int blen = read.i();</b>
+<b class="nc">&nbsp;                byte[] bytes = new byte[blen];</b>
+<b class="nc">&nbsp;                read.b(bytes);</b>
+<b class="nc">&nbsp;                yield bytes;</b>
+&nbsp;            }
+&nbsp;            //unit command
+&nbsp;            case 15 -&gt; {
+<b class="nc">&nbsp;                read.b();</b>
+<b class="nc">&nbsp;                yield null;</b>
+&nbsp;            }
+&nbsp;            case 16 -&gt; {
+<b class="nc">&nbsp;                int boollen = read.i();</b>
+<b class="nc">&nbsp;                boolean[] bools = new boolean[boollen];</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; boollen; i ++) bools[i] = read.bool();</b>
+<b class="nc">&nbsp;                yield bools;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            case 17 -&gt; !box ? Groups.unit.getByID(read.i()) : new UnitBox(read.i());</b>
+&nbsp;            case 18 -&gt; {
+<b class="nc">&nbsp;                int len = read.s();</b>
+<b class="nc">&nbsp;                Vec2[] out = new Vec2[len];</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; len; i ++) out[i] = new Vec2(read.f(), read.f());</b>
+<b class="nc">&nbsp;                yield out;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            case 19 -&gt; new Vec2(read.f(), read.f());</b>
+<b class="nc">&nbsp;            case 20 -&gt; Team.all[read.ub()];</b>
+<b class="nc">&nbsp;            case 21 -&gt; readInts(read);</b>
+&nbsp;            case 22 -&gt; {
+<b class="nc">&nbsp;                int objlen = read.i();</b>
+<b class="nc">&nbsp;                Object[] objs = new Object[objlen];</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; objlen; i++) objs[i] = readObjectBoxed(read, box);</b>
+<b class="nc">&nbsp;                yield objs;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            case 23 -&gt; content.unitCommand(read.us());</b>
+<b class="nc">&nbsp;            default -&gt; throw new IllegalArgumentException(&quot;Unknown object type: &quot; + type);</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writePayload(Writes writes, Payload payload){
+<b class="nc">&nbsp;        Payload.write(payload, writes);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Payload readPayload(Reads read){
+<b class="nc">&nbsp;        return Payload.read(read);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeMounts(Writes writes, WeaponMount[] mounts){
+<b class="fc">&nbsp;        writes.b(mounts.length);</b>
+<b class="fc">&nbsp;        for(WeaponMount m : mounts){</b>
+<b class="fc">&nbsp;            writes.b((m.shoot ? 1 : 0) | (m.rotate ? 2 : 0));</b>
+<b class="fc">&nbsp;            writes.f(m.aimX);</b>
+<b class="fc">&nbsp;            writes.f(m.aimY);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static WeaponMount[] readMounts(Reads read, WeaponMount[] mounts){
+<b class="fc">&nbsp;        byte len = read.b();</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; len; i++){</b>
+<b class="fc">&nbsp;            byte state = read.b();</b>
+<b class="fc">&nbsp;            float ax = read.f(), ay = read.f();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(i &lt;= mounts.length - 1){</b>
+<b class="nc">&nbsp;                WeaponMount m = mounts[i];</b>
+<b class="nc">&nbsp;                m.aimX = ax;</b>
+<b class="nc">&nbsp;                m.aimY = ay;</b>
+<b class="nc">&nbsp;                m.shoot = (state &amp; 1) != 0;</b>
+<b class="nc">&nbsp;                m.rotate = (state &amp; 2) != 0;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return mounts;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //this is irrelevant.
+<b class="fc">&nbsp;    static final WeaponMount[] noMounts = {};</b>
+&nbsp;
+&nbsp;    public static WeaponMount[] readMounts(Reads read){
+<b class="nc">&nbsp;        read.skip(read.b() * (1 + 4 + 4));</b>
+&nbsp;
+<b class="nc">&nbsp;        return noMounts;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Ability[] readAbilities(Reads read, Ability[] abilities){
+<b class="fc">&nbsp;        byte len = read.b();</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; len; i++){</b>
+<b class="nc">&nbsp;            float data = read.f();</b>
+<b class="nc">&nbsp;            if(abilities.length &gt; i){</b>
+<b class="nc">&nbsp;                abilities[i].data = data;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return abilities;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeAbilities(Writes write, Ability[] abilities){
+<b class="fc">&nbsp;        write.b(abilities.length);</b>
+<b class="fc">&nbsp;        for(var a : abilities){</b>
+<b class="nc">&nbsp;            write.f(a.data);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    static final Ability[] noAbilities = {};</b>
+&nbsp;
+&nbsp;    public static Ability[] readAbilities(Reads read){
+<b class="nc">&nbsp;        read.skip(read.b());</b>
+<b class="nc">&nbsp;        return noAbilities;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeUnit(Writes write, Unit unit){
+<b class="nc">&nbsp;        write.b(unit == null ? 0 : unit instanceof BlockUnitc ? 1 : 2);</b>
+&nbsp;
+&nbsp;        //block units are special
+<b class="nc">&nbsp;        if(unit instanceof BlockUnitc){</b>
+<b class="nc">&nbsp;            write.i(((BlockUnitc)unit).tile().pos());</b>
+<b class="nc">&nbsp;        }else if(unit == null){</b>
+<b class="nc">&nbsp;            write.i(0);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            write.i(unit.id);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Unit readUnit(Reads read){
+<b class="nc">&nbsp;        byte type = read.b();</b>
+<b class="nc">&nbsp;        int id = read.i();</b>
+&nbsp;        //nothing
+<b class="nc">&nbsp;        if(type == 0) return null;</b>
+<b class="nc">&nbsp;        if(type == 2){ //standard unit</b>
+<b class="nc">&nbsp;            return Groups.unit.getByID(id);</b>
+<b class="nc">&nbsp;        }else if(type == 1){ //block</b>
+<b class="nc">&nbsp;            Building tile = world.build(id);</b>
+<b class="nc">&nbsp;            return tile instanceof ControlBlock cont ? cont.unit() : null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeCommand(Writes write, @Nullable UnitCommand command){
+<b class="fc">&nbsp;        write.b(command == null ? 255 : command.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static @Nullable UnitCommand readCommand(Reads read){
+<b class="fc">&nbsp;        int val = read.ub();</b>
+<b class="fc">&nbsp;        return val == 255 ? null : content.unitCommand(val);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeStance(Writes write, @Nullable UnitStance stance){
+<b class="fc">&nbsp;        write.b(stance == null ? 255 : stance.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static UnitStance readStance(Reads read){
+<b class="fc">&nbsp;        int val = read.ub();</b>
+&nbsp;        //never returns null
+<b class="fc">&nbsp;        return val == 255 || val &gt;= content.unitStances().size ? UnitStance.shoot : content.unitStance(val);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeEntity(Writes write, Entityc entity){
+<b class="nc">&nbsp;        write.i(entity == null ? -1 : entity.id());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T extends Entityc&gt; T readEntity(Reads read){
+<b class="nc">&nbsp;        return (T)Groups.sync.getByID(read.i());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeBuilding(Writes write, Building tile){
+<b class="nc">&nbsp;        write.i(tile == null ? -1 : tile.pos());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Building readBuilding(Reads read){
+<b class="nc">&nbsp;        return world.build(read.i());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeTile(Writes write, Tile tile){
+<b class="fc">&nbsp;        write.i(tile == null ? Point2.pack(-1, -1) : tile.pos());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Tile readTile(Reads read){
+<b class="fc">&nbsp;        return world.tile(read.i());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeBlock(Writes write, Block block){
+<b class="nc">&nbsp;        write.s(block.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Block readBlock(Reads read){
+<b class="nc">&nbsp;        return content.block(read.s());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the maximum acceptable amount of plans to send over the network */
+&nbsp;    public static int getMaxPlans(Queue&lt;BuildPlan&gt; plans){
+&nbsp;        //limit to prevent buffer overflows
+<b class="nc">&nbsp;        int used = Math.min(plans.size, 20);</b>
+<b class="nc">&nbsp;        int totalLength = 0;</b>
+&nbsp;
+&nbsp;        //prevent buffer overflow by checking config length
+<b class="nc">&nbsp;        for(int i = 0; i &lt; used; i++){</b>
+<b class="nc">&nbsp;            BuildPlan plan = plans.get(i);</b>
+<b class="nc">&nbsp;            if(plan.config instanceof byte[] b){</b>
+<b class="nc">&nbsp;                totalLength += b.length;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(plan.config instanceof String b){</b>
+<b class="nc">&nbsp;                totalLength += b.length();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(totalLength &gt; 500){</b>
+<b class="nc">&nbsp;                used = i + 1;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return used;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //on the network, plans must be capped by size
+&nbsp;    public static void writePlansQueueNet(Writes write, Queue&lt;BuildPlan&gt; plans){
+<b class="nc">&nbsp;        if(plans == null){</b>
+<b class="nc">&nbsp;            write.i(-1);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int used = getMaxPlans(plans);</b>
+&nbsp;
+<b class="nc">&nbsp;        write.i(used);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; used; i++){</b>
+<b class="nc">&nbsp;            writePlan(write, plans.get(i));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Queue&lt;BuildPlan&gt; readPlansQueue(Reads read){
+<b class="fc">&nbsp;        int used = read.i();</b>
+<b class="fc">&nbsp;        if(used == -1) return null;</b>
+<b class="fc">&nbsp;        var out = new Queue&lt;BuildPlan&gt;();</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; used; i++){</b>
+<b class="nc">&nbsp;            out.add(readPlan(read));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writePlan(Writes write, BuildPlan plan){
+<b class="nc">&nbsp;        write.b(plan.breaking ? (byte)1 : 0);</b>
+<b class="nc">&nbsp;        write.i(Point2.pack(plan.x, plan.y));</b>
+<b class="nc">&nbsp;        if(!plan.breaking){</b>
+<b class="nc">&nbsp;            write.s(plan.block.id);</b>
+<b class="nc">&nbsp;            write.b((byte)plan.rotation);</b>
+<b class="nc">&nbsp;            write.b(1); //always has config</b>
+<b class="nc">&nbsp;            writeObject(write, plan.config);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static BuildPlan readPlan(Reads read){
+&nbsp;        BuildPlan current;
+&nbsp;
+<b class="nc">&nbsp;        byte type = read.b();</b>
+<b class="nc">&nbsp;        int position = read.i();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(world.tile(position) == null){</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(type == 1){ //remove</b>
+<b class="nc">&nbsp;            current = new BuildPlan(Point2.x(position), Point2.y(position));</b>
+&nbsp;        }else{ //place
+<b class="nc">&nbsp;            short block = read.s();</b>
+<b class="nc">&nbsp;            byte rotation = read.b();</b>
+<b class="nc">&nbsp;            boolean hasConfig = read.b() == 1;</b>
+<b class="nc">&nbsp;            Object config = readObject(read);</b>
+<b class="nc">&nbsp;            current = new BuildPlan(Point2.x(position), Point2.y(position), rotation, content.block(block));</b>
+&nbsp;            //should always happen, but is kept for legacy reasons just in case
+<b class="nc">&nbsp;            if(hasConfig){</b>
+<b class="nc">&nbsp;                current.config = config;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return current;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writePlans(Writes write, BuildPlan[] plans){
+<b class="fc">&nbsp;        if(plans == null){</b>
+<b class="nc">&nbsp;            write.s(-1);</b>
+&nbsp;            return;
+&nbsp;        }
+<b class="fc">&nbsp;        write.s((short)plans.length);</b>
+<b class="fc">&nbsp;        for(BuildPlan plan : plans){</b>
+<b class="nc">&nbsp;            writePlan(write, plan);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static BuildPlan[] readPlans(Reads read){
+<b class="fc">&nbsp;        short reqamount = read.s();</b>
+<b class="fc">&nbsp;        if(reqamount == -1){</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        BuildPlan[] reqs = new BuildPlan[reqamount];</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; reqamount; i++){</b>
+<b class="nc">&nbsp;            BuildPlan plan = readPlan(read);</b>
+<b class="nc">&nbsp;            if(plan != null){</b>
+<b class="nc">&nbsp;                reqs[i] = plan;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return reqs;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeController(Writes write, UnitController control){
+&nbsp;        //no real unit controller state is written, only the type
+<b class="fc">&nbsp;        if(control instanceof Player p){</b>
+<b class="nc">&nbsp;            write.b(0);</b>
+<b class="nc">&nbsp;            write.i(p.id);</b>
+<b class="fc">&nbsp;        }else if(control instanceof LogicAI logic &amp;&amp; logic.controller != null){</b>
+<b class="nc">&nbsp;            write.b(3);</b>
+<b class="nc">&nbsp;            write.i(logic.controller.pos());</b>
+<b class="fc">&nbsp;        }else if(control instanceof CommandAI ai){</b>
+<b class="fc">&nbsp;            write.b(8);</b>
+<b class="fc">&nbsp;            write.bool(ai.attackTarget != null);</b>
+<b class="fc">&nbsp;            write.bool(ai.targetPos != null);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(ai.targetPos != null){</b>
+<b class="nc">&nbsp;                write.f(ai.targetPos.x);</b>
+<b class="nc">&nbsp;                write.f(ai.targetPos.y);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if(ai.attackTarget != null){</b>
+<b class="nc">&nbsp;                write.b(ai.attackTarget instanceof Building ? 1 : 0);</b>
+<b class="nc">&nbsp;                if(ai.attackTarget instanceof Building b){</b>
+<b class="nc">&nbsp;                    write.i(b.pos());</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    write.i(((Unit)ai.attackTarget).id);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;            write.b(ai.command == null ? -1 : ai.command.id);</b>
+&nbsp;
+<b class="fc">&nbsp;            write.b(ai.commandQueue.size);</b>
+<b class="fc">&nbsp;            for(var pos : ai.commandQueue){</b>
+<b class="nc">&nbsp;                if(pos instanceof Building b){</b>
+<b class="nc">&nbsp;                    write.b(0);</b>
+<b class="nc">&nbsp;                    write.i(b.pos());</b>
+<b class="nc">&nbsp;                }else if(pos instanceof Unit u){</b>
+<b class="nc">&nbsp;                    write.b(1);</b>
+<b class="nc">&nbsp;                    write.i(u.id);</b>
+<b class="nc">&nbsp;                }else if(pos instanceof Vec2 v){</b>
+<b class="nc">&nbsp;                    write.b(2);</b>
+<b class="nc">&nbsp;                    write.f(v.x);</b>
+<b class="nc">&nbsp;                    write.f(v.y);</b>
+&nbsp;                }else{
+&nbsp;                    //who put garbage in the command queue??
+<b class="nc">&nbsp;                    write.b(3);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            writeStance(write, ai.stance);</b>
+<b class="nc">&nbsp;        }else if(control instanceof AssemblerAI){  //hate</b>
+<b class="nc">&nbsp;            write.b(5);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            write.b(2);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static UnitController readController(Reads read, UnitController prev){
+<b class="fc">&nbsp;        byte type = read.b();</b>
+<b class="fc">&nbsp;        if(type == 0){ //is player</b>
+<b class="fc">&nbsp;            int id = read.i();</b>
+<b class="fc">&nbsp;            Player player = Groups.player.getByID(id);</b>
+&nbsp;            //make sure player exists
+<b class="fc">&nbsp;            if(player == null) return prev;</b>
+<b class="nc">&nbsp;            return player;</b>
+<b class="fc">&nbsp;        }else if(type == 1){ //formation controller (ignored)</b>
+<b class="nc">&nbsp;            read.i();</b>
+<b class="nc">&nbsp;            return prev;</b>
+<b class="fc">&nbsp;        }else if(type == 3){</b>
+<b class="nc">&nbsp;            int pos = read.i();</b>
+<b class="nc">&nbsp;            if(prev instanceof LogicAI pai){</b>
+<b class="nc">&nbsp;                pai.controller = world.build(pos);</b>
+<b class="nc">&nbsp;                return pai;</b>
+&nbsp;            }else{
+&nbsp;                //create new AI for assignment
+<b class="nc">&nbsp;                LogicAI out = new LogicAI();</b>
+&nbsp;                //instantly time out when updated.
+<b class="nc">&nbsp;                out.controlTimer = LogicAI.logicControlTimeout;</b>
+<b class="nc">&nbsp;                out.controller = world.build(pos);</b>
+<b class="nc">&nbsp;                return out;</b>
+&nbsp;            }
+&nbsp;            //type 4 is the old CommandAI with no commandIndex, type 6 is the new one with the index as a single byte, type 7 is the one with the command queue, 8 adds a stance
+<b class="fc">&nbsp;        }else if(type == 4 || type == 6 || type == 7 || type == 8){</b>
+<b class="fc">&nbsp;            CommandAI ai = prev instanceof CommandAI pai ? pai : new CommandAI();</b>
+&nbsp;
+<b class="fc">&nbsp;            boolean hasAttack = read.bool(), hasPos = read.bool();</b>
+<b class="fc">&nbsp;            if(hasPos){</b>
+<b class="nc">&nbsp;                if(ai.targetPos == null) ai.targetPos = new Vec2();</b>
+<b class="nc">&nbsp;                ai.targetPos.set(read.f(), read.f());</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                ai.targetPos = null;</b>
+&nbsp;            }
+<b class="fc">&nbsp;            ai.setupLastPos();</b>
+<b class="fc">&nbsp;            ai.readAttackTarget = -1;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(hasAttack){</b>
+<b class="nc">&nbsp;                byte entityType = read.b();</b>
+<b class="nc">&nbsp;                if(entityType == 1){</b>
+<b class="nc">&nbsp;                    ai.attackTarget = world.build(read.i());</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    ai.attackTarget = Groups.unit.getByID(ai.readAttackTarget = read.i());</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else{</b>
+<b class="fc">&nbsp;                ai.attackTarget = null;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(type == 6 || type == 7 || type == 8){</b>
+<b class="fc">&nbsp;                byte id = read.b();</b>
+<b class="fc">&nbsp;                ai.command = id &lt; 0 ? null : content.unitCommand(id);</b>
+<b class="fc">&nbsp;                if(ai.command == null) ai.command = UnitCommand.moveCommand;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //command queue only in type 7/8
+<b class="fc">&nbsp;            if(type == 7 || type == 8){</b>
+<b class="fc">&nbsp;                ai.commandQueue.clear();</b>
+<b class="fc">&nbsp;                int length = read.ub();</b>
+<b class="fc">&nbsp;                for(int i = 0; i &lt; length; i++){</b>
+<b class="nc">&nbsp;                    int commandType = read.b();</b>
+<b class="nc">&nbsp;                    switch(commandType){</b>
+&nbsp;                        case 0 -&gt; {
+<b class="nc">&nbsp;                            var build = world.build(read.i());</b>
+<b class="nc">&nbsp;                            if(build != null) ai.commandQueue.add(build);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                        case 1 -&gt; {
+<b class="nc">&nbsp;                            var unit = Groups.unit.getByID(read.i());</b>
+<b class="nc">&nbsp;                            if(unit != null) ai.commandQueue.add(unit);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                        case 2 -&gt; {
+<b class="nc">&nbsp;                            ai.commandQueue.add(new Vec2(read.f(), read.f()));</b>
+&nbsp;                        }
+&nbsp;                        //otherwise disregard
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(type == 8){</b>
+<b class="fc">&nbsp;                ai.stance = readStance(read);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            return ai;</b>
+<b class="fc">&nbsp;        }else if(type == 5){</b>
+&nbsp;            //augh
+<b class="nc">&nbsp;            return prev instanceof AssemblerAI ? prev : new AssemblerAI();</b>
+&nbsp;        }else{
+&nbsp;            //there are two cases here:
+&nbsp;            //1: prev controller was not a player, carry on
+&nbsp;            //2: prev controller was a player, so replace this controller with *anything else*
+&nbsp;            //...since AI doesn&#39;t update clientside it doesn&#39;t matter
+&nbsp;            //TODO I hate this
+<b class="fc">&nbsp;            return (!(prev instanceof AIController) || (prev instanceof LogicAI)) ? new GroundAI() : prev;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeKick(Writes write, KickReason reason){
+<b class="nc">&nbsp;        write.b((byte)reason.ordinal());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static KickReason readKick(Reads read){
+<b class="nc">&nbsp;        return KickReason.all[read.b()];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeMarkerControl(Writes write, LMarkerControl reason){
+<b class="nc">&nbsp;        write.b((byte)reason.ordinal());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static LMarkerControl readMarkerControl(Reads read){
+<b class="nc">&nbsp;        return LMarkerControl.all[read.ub()];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeRules(Writes write, Rules rules){
+<b class="fc">&nbsp;        String string = JsonIO.write(rules);</b>
+<b class="fc">&nbsp;        byte[] bytes = string.getBytes(charset);</b>
+<b class="fc">&nbsp;        write.i(bytes.length);</b>
+<b class="fc">&nbsp;        write.b(bytes);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Rules readRules(Reads read){
+<b class="fc">&nbsp;        int length = read.i();</b>
+<b class="fc">&nbsp;        String string = new String(read.b(new byte[length]), charset);</b>
+<b class="fc">&nbsp;        return JsonIO.read(Rules.class, string);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeObjectives(Writes write, MapObjectives executor){
+<b class="nc">&nbsp;        String string = JsonIO.write(executor);</b>
+<b class="nc">&nbsp;        byte[] bytes = string.getBytes(charset);</b>
+<b class="nc">&nbsp;        write.i(bytes.length);</b>
+<b class="nc">&nbsp;        write.b(bytes);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static MapObjectives readObjectives(Reads read){
+<b class="nc">&nbsp;        int length = read.i();</b>
+<b class="nc">&nbsp;        String string = new String(read.b(new byte[length]), charset);</b>
+<b class="nc">&nbsp;        return JsonIO.read(MapObjectives.class, string);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeObjectiveMarker(Writes write, ObjectiveMarker marker){
+<b class="nc">&nbsp;        String string = JsonIO.json.toJson(marker, MapObjectives.ObjectiveMarker.class);</b>
+<b class="nc">&nbsp;        byte[] bytes = string.getBytes(charset);</b>
+<b class="nc">&nbsp;        write.i(bytes.length);</b>
+<b class="nc">&nbsp;        write.b(bytes);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ObjectiveMarker readObjectiveMarker(Reads read){
+<b class="nc">&nbsp;        int length = read.i();</b>
+<b class="nc">&nbsp;        String string = new String(read.b(new byte[length]), charset);</b>
+<b class="nc">&nbsp;        return JsonIO.read(MapObjectives.ObjectiveMarker.class, string);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeVecNullable(Writes write, @Nullable Vec2 v){
+<b class="fc">&nbsp;        if(v == null){</b>
+<b class="fc">&nbsp;            write.f(Float.NaN);</b>
+<b class="fc">&nbsp;            write.f(Float.NaN);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            write.f(v.x);</b>
+<b class="nc">&nbsp;            write.f(v.y);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static @Nullable Vec2 readVecNullable(Reads read){
+<b class="fc">&nbsp;        float x = read.f(), y = read.f();</b>
+<b class="fc">&nbsp;        return Float.isNaN(x) || Float.isNaN(y) ? null : new Vec2(x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeVec2(Writes write, Vec2 v){
+<b class="fc">&nbsp;        if(v == null){</b>
+<b class="nc">&nbsp;            write.f(0);</b>
+<b class="nc">&nbsp;            write.f(0);</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            write.f(v.x);</b>
+<b class="fc">&nbsp;            write.f(v.y);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Vec2 readVec2(Reads read, Vec2 base){
+<b class="fc">&nbsp;        return base.set(read.f(), read.f());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Vec2 readVec2(Reads read){
+<b class="nc">&nbsp;        return new Vec2(read.f(), read.f());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeStatus(Writes write, StatusEntry entry){
+<b class="nc">&nbsp;        write.s(entry.effect.id);</b>
+<b class="nc">&nbsp;        write.f(entry.time);</b>
+&nbsp;
+&nbsp;        //write dynamic fields
+<b class="nc">&nbsp;        if(entry.effect.dynamic){</b>
+&nbsp;            //write a byte with bits set based on which field is actually used
+<b class="nc">&nbsp;            write.b(</b>
+<b class="nc">&nbsp;            (entry.damageMultiplier != 1f ?     (1 &lt;&lt; 0) : 0) |</b>
+<b class="nc">&nbsp;            (entry.healthMultiplier != 1f ?     (1 &lt;&lt; 1) : 0) |</b>
+<b class="nc">&nbsp;            (entry.speedMultiplier != 1f ?      (1 &lt;&lt; 2) : 0) |</b>
+<b class="nc">&nbsp;            (entry.reloadMultiplier != 1f ?     (1 &lt;&lt; 3) : 0) |</b>
+<b class="nc">&nbsp;            (entry.buildSpeedMultiplier != 1f ? (1 &lt;&lt; 4) : 0) |</b>
+<b class="nc">&nbsp;            (entry.dragMultiplier != 1f ?       (1 &lt;&lt; 5) : 0) |</b>
+<b class="nc">&nbsp;            (entry.armorOverride &gt;= 0f ?        (1 &lt;&lt; 6) : 0)</b>
+&nbsp;            );
+&nbsp;
+<b class="nc">&nbsp;            if(entry.damageMultiplier != 1f) write.f(entry.damageMultiplier);</b>
+<b class="nc">&nbsp;            if(entry.healthMultiplier != 1f) write.f(entry.healthMultiplier);</b>
+<b class="nc">&nbsp;            if(entry.speedMultiplier != 1f) write.f(entry.speedMultiplier);</b>
+<b class="nc">&nbsp;            if(entry.reloadMultiplier != 1f) write.f(entry.reloadMultiplier);</b>
+<b class="nc">&nbsp;            if(entry.buildSpeedMultiplier != 1f) write.f(entry.buildSpeedMultiplier);</b>
+<b class="nc">&nbsp;            if(entry.dragMultiplier != 1f) write.f(entry.dragMultiplier);</b>
+<b class="nc">&nbsp;            if(entry.armorOverride &gt;= 0f) write.f(entry.armorOverride);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StatusEntry readStatus(Reads read){
+<b class="fc">&nbsp;        short id = read.s();</b>
+<b class="fc">&nbsp;        float time = read.f();</b>
+&nbsp;
+<b class="fc">&nbsp;        StatusEntry result = new StatusEntry().set(content.getByID(ContentType.status, id), time);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(result.effect.dynamic){</b>
+&nbsp;            //read flags that store which fields are set
+<b class="nc">&nbsp;            int flags = read.ub();</b>
+&nbsp;
+<b class="nc">&nbsp;            if((flags &amp; (1 &lt;&lt; 0)) != 0) result.damageMultiplier = read.f();</b>
+<b class="nc">&nbsp;            if((flags &amp; (1 &lt;&lt; 1)) != 0) result.healthMultiplier = read.f();</b>
+<b class="nc">&nbsp;            if((flags &amp; (1 &lt;&lt; 2)) != 0) result.speedMultiplier = read.f();</b>
+<b class="nc">&nbsp;            if((flags &amp; (1 &lt;&lt; 3)) != 0) result.reloadMultiplier = read.f();</b>
+<b class="nc">&nbsp;            if((flags &amp; (1 &lt;&lt; 4)) != 0) result.buildSpeedMultiplier = read.f();</b>
+<b class="nc">&nbsp;            if((flags &amp; (1 &lt;&lt; 5)) != 0) result.dragMultiplier = read.f();</b>
+<b class="nc">&nbsp;            if((flags &amp; (1 &lt;&lt; 6)) != 0) result.armorOverride = read.f();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeItems(Writes write, ItemStack stack){
+<b class="fc">&nbsp;        writeItem(write, stack.item);</b>
+<b class="fc">&nbsp;        write.i(stack.amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ItemStack readItems(Reads read, ItemStack stack){
+<b class="fc">&nbsp;        return stack.set(readItem(read), read.i());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ItemStack readItems(Reads read){
+<b class="nc">&nbsp;        return new ItemStack(readItem(read), read.i());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeTeam(Writes write, Team team){
+<b class="fc">&nbsp;        write.b(team == null ? 0 : team.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Team readTeam(Reads read){
+<b class="fc">&nbsp;        return Team.get(read.b());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeAction(Writes write, AdminAction reason){
+<b class="nc">&nbsp;        write.b((byte)reason.ordinal());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static AdminAction readAction(Reads read){
+<b class="nc">&nbsp;        return AdminAction.all[read.b()];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeUnitType(Writes write, UnitType effect){
+<b class="nc">&nbsp;        write.s(effect.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static UnitType readUnitType(Reads read){
+<b class="nc">&nbsp;        return content.getByID(ContentType.unit, read.s());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeEffect(Writes write, Effect effect){
+<b class="nc">&nbsp;        write.s(effect.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Effect readEffect(Reads read){
+<b class="nc">&nbsp;        return Effect.get(read.us());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeColor(Writes write, Color color){
+<b class="nc">&nbsp;        write.i(color.rgba());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Color readColor(Reads read){
+<b class="nc">&nbsp;        return new Color(read.i());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Color readColor(Reads read, Color color){
+<b class="nc">&nbsp;        return color.set(read.i());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeIntSeq(Writes write, IntSeq seq){
+<b class="nc">&nbsp;        write.i(seq.size);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; seq.size; i++){</b>
+<b class="nc">&nbsp;            write.i(seq.items[i]);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static IntSeq readIntSeq(Reads read){
+<b class="nc">&nbsp;        int size = read.i();</b>
+<b class="nc">&nbsp;        IntSeq result = new IntSeq(size);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; size; i++){</b>
+<b class="nc">&nbsp;            result.items[i] = read.i();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        result.size = size;</b>
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeContent(Writes write, Content cont){
+<b class="nc">&nbsp;        write.b(cont.getContentType().ordinal());</b>
+<b class="nc">&nbsp;        write.s(cont.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Content readContent(Reads read){
+<b class="nc">&nbsp;        byte id = read.b();</b>
+<b class="nc">&nbsp;        return content.getByID(ContentType.all[id], read.s());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeLiquid(Writes write, Liquid liquid){
+<b class="nc">&nbsp;        write.s(liquid == null ? -1 : liquid.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Liquid readLiquid(Reads read){
+<b class="nc">&nbsp;        short id = read.s();</b>
+<b class="nc">&nbsp;        return id == -1 ? null : content.liquid(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeBulletType(Writes write, BulletType type){
+<b class="nc">&nbsp;        write.s(type.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static BulletType readBulletType(Reads read){
+<b class="nc">&nbsp;        return content.getByID(ContentType.bullet, read.s());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeItem(Writes write, Item item){
+<b class="fc">&nbsp;        write.s(item == null ? -1 : item.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Item readItem(Reads read){
+<b class="fc">&nbsp;        short id = read.s();</b>
+<b class="fc">&nbsp;        return id == -1 ? null : content.item(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //note that only the standard sound constants in Sounds are supported; modded sounds are not.
+&nbsp;    public static void writeSound(Writes write, Sound sound){
+<b class="nc">&nbsp;        write.s(Sounds.getSoundId(sound));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Sound readSound(Reads read){
+<b class="nc">&nbsp;        return Sounds.getSound(read.s());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeWeather(Writes write, Weather item){
+<b class="nc">&nbsp;        write.s(item == null ? -1 : item.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Weather readWeather(Reads read){
+<b class="nc">&nbsp;        short id = read.s();</b>
+<b class="nc">&nbsp;        return id == -1 ? null : content.getByID(ContentType.weather, id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeString(Writes write, String string){
+<b class="fc">&nbsp;        if(string != null){</b>
+<b class="fc">&nbsp;            write.b(1);</b>
+<b class="fc">&nbsp;            write.str(string);</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            write.b(0);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String readString(Reads read){
+<b class="fc">&nbsp;        byte exists = read.b();</b>
+<b class="fc">&nbsp;        if(exists != 0){</b>
+<b class="fc">&nbsp;            return read.str();</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeString(ByteBuffer write, String string){
+<b class="fc">&nbsp;        if(string != null){</b>
+<b class="fc">&nbsp;            byte[] bytes = string.getBytes(charset);</b>
+<b class="fc">&nbsp;            write.putShort((short)bytes.length);</b>
+<b class="fc">&nbsp;            write.put(bytes);</b>
+<b class="fc">&nbsp;        }else{</b>
+<b class="fc">&nbsp;            write.putShort((short)-1);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String readString(ByteBuffer read){
+<b class="fc">&nbsp;        short slength = read.getShort();</b>
+<b class="fc">&nbsp;        if(slength != -1){</b>
+<b class="fc">&nbsp;            byte[] bytes = new byte[slength];</b>
+<b class="fc">&nbsp;            read.get(bytes);</b>
+<b class="fc">&nbsp;            return new String(bytes, charset);</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeBytes(Writes write, byte[] bytes){
+<b class="nc">&nbsp;        write.s((short)bytes.length);</b>
+<b class="nc">&nbsp;        write.b(bytes);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static byte[] readBytes(Reads read){
+<b class="nc">&nbsp;        short length = read.s();</b>
+<b class="nc">&nbsp;        return read.b(new byte[length]);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeInts(Writes write, int[] ints){
+<b class="nc">&nbsp;        write.s((short)ints.length);</b>
+<b class="nc">&nbsp;        for(int i : ints){</b>
+<b class="nc">&nbsp;            write.i(i);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static int[] readInts(Reads read){
+<b class="nc">&nbsp;        short length = read.s();</b>
+<b class="nc">&nbsp;        int[] out = new int[length];</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; length; i++){</b>
+<b class="nc">&nbsp;            out[i] = read.i();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeTraceInfo(Writes write, TraceInfo trace){
+<b class="nc">&nbsp;        writeString(write, trace.ip);</b>
+<b class="nc">&nbsp;        writeString(write, trace.uuid);</b>
+<b class="nc">&nbsp;        write.b(trace.modded ? (byte)1 : 0);</b>
+<b class="nc">&nbsp;        write.b(trace.mobile ? (byte)1 : 0);</b>
+<b class="nc">&nbsp;        write.i(trace.timesJoined);</b>
+<b class="nc">&nbsp;        write.i(trace.timesKicked);</b>
+&nbsp;        //there is a cap to prevent TCP packet size overrun
+<b class="nc">&nbsp;        writeStrings(write, trace.ips, 12);</b>
+<b class="nc">&nbsp;        writeStrings(write, trace.names, 12);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static TraceInfo readTraceInfo(Reads read){
+<b class="nc">&nbsp;        return new TraceInfo(readString(read), readString(read), read.b() == 1, read.b() == 1, read.i(), read.i(), readStrings(read), readStrings(read));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeStrings(Writes write, String[] strings, int maxLen){
+<b class="nc">&nbsp;        write.b(Math.min(strings.length, maxLen));</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; Math.min(strings.length, maxLen); i++){</b>
+<b class="nc">&nbsp;            writeString(write, strings[i]);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeStrings(Writes write, String[] strings){
+<b class="nc">&nbsp;        write.b(strings.length);</b>
+<b class="nc">&nbsp;        for(String s : strings){</b>
+<b class="nc">&nbsp;            writeString(write, s);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String[] readStrings(Reads read){
+<b class="nc">&nbsp;        int length = read.ub();</b>
+<b class="nc">&nbsp;        var result = new String[length];</b>
+<b class="nc">&nbsp;        for(int j = 0; j &lt; length; j++){</b>
+<b class="nc">&nbsp;            result[j] = readString(read);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public static void writeStringArray(Writes write, String[][] strings){
+<b class="nc">&nbsp;        write.b(strings.length);</b>
+<b class="nc">&nbsp;        for(String[] string : strings){</b>
+<b class="nc">&nbsp;            write.b(string.length);</b>
+<b class="nc">&nbsp;            for(String s : string){</b>
+<b class="nc">&nbsp;                writeString(write, s);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String[][] readStringArray(Reads read){
+<b class="nc">&nbsp;        int rows = read.ub();</b>
+&nbsp;
+<b class="nc">&nbsp;        String[][] strings = new String[rows][];</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; rows; i++){</b>
+<b class="nc">&nbsp;            int columns = read.ub();</b>
+<b class="nc">&nbsp;            strings[i] = new String[columns];</b>
+<b class="nc">&nbsp;            for(int j = 0; j &lt; columns; j++){</b>
+<b class="nc">&nbsp;                strings[i][j] = readString(read);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return strings;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void writeStringData(DataOutput buffer, String string) throws IOException{
+<b class="nc">&nbsp;        if(string != null){</b>
+<b class="nc">&nbsp;            byte[] bytes = string.getBytes(charset);</b>
+<b class="nc">&nbsp;            buffer.writeShort((short)bytes.length);</b>
+<b class="nc">&nbsp;            buffer.write(bytes);</b>
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            buffer.writeShort((short)-1);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String readStringData(DataInput buffer) throws IOException{
+<b class="nc">&nbsp;        short slength = buffer.readShort();</b>
+<b class="nc">&nbsp;        if(slength != -1){</b>
+<b class="nc">&nbsp;            byte[] bytes = new byte[slength];</b>
+<b class="nc">&nbsp;            buffer.readFully(bytes);</b>
+<b class="nc">&nbsp;            return new String(bytes, charset);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface Boxed&lt;T&gt; {
+&nbsp;        T unbox();
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Represents a building that has not been resolved yet. */
+&nbsp;    public static class BuildingBox implements Boxed&lt;Building&gt;{
+&nbsp;        public int pos;
+&nbsp;
+<b class="nc">&nbsp;        public BuildingBox(int pos){</b>
+<b class="nc">&nbsp;            this.pos = pos;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Building unbox(){
+<b class="nc">&nbsp;            return world.build(pos);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String toString(){
+<b class="nc">&nbsp;            return &quot;BuildingBox{&quot; +</b>
+&nbsp;            &quot;pos=&quot; + pos +
+&nbsp;            &#39;}&#39;;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Represents a unit that has not been resolved yet. TODO unimplemented / unused*/
+&nbsp;    public static class UnitBox implements Boxed&lt;Unit&gt;{
+&nbsp;        public int id;
+&nbsp;
+<b class="nc">&nbsp;        public UnitBox(int id){</b>
+<b class="nc">&nbsp;            this.id = id;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Unit unbox(){
+<b class="nc">&nbsp;            return Groups.unit.getByID(id);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String toString(){
+<b class="nc">&nbsp;            return &quot;UnitBox{&quot; +</b>
+&nbsp;            &quot;id=&quot; + id +
+&nbsp;            &#39;}&#39;;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

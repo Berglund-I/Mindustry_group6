@@ -1,0 +1,264 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PlanetGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps.generators</a>
+</div>
+
+<h1>Coverage Summary for Class: PlanetGenerator (mindustry.maps.generators)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PlanetGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.1%
+  </span>
+  <span class="absValue">
+    (1/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.6%
+  </span>
+  <span class="absValue">
+    (4/71)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps.generators;
+&nbsp;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.ObjectIntMap.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.graphics.g3d.*;
+&nbsp;import mindustry.graphics.g3d.PlanetGrid.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.type.Weather.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public abstract class PlanetGenerator extends BasicGenerator implements HexMesher{</b>
+<b class="fc">&nbsp;    public int baseSeed = 0;</b>
+<b class="fc">&nbsp;    public int seed = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;    protected IntSeq ints = new IntSeq();</b>
+&nbsp;    protected @Nullable Sector sector;
+&nbsp;
+&nbsp;    /** Should generate sector bases for a planet. */
+&nbsp;    public void generateSector(Sector sector){
+<b class="nc">&nbsp;        Ptile tile = sector.tile;</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean any = false;</b>
+<b class="nc">&nbsp;        float noise = Noise.snoise3(tile.v.x, tile.v.y, tile.v.z, 0.001f, 0.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(noise &gt; 0.027){</b>
+<b class="nc">&nbsp;            any = true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(noise &lt; 0.15){</b>
+<b class="nc">&nbsp;            for(Ptile other : tile.tiles){</b>
+&nbsp;                //no sectors near start sector!
+<b class="nc">&nbsp;                if(sector.planet.getSector(other).id == sector.planet.startSector){</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;                
+<b class="nc">&nbsp;                if(sector.planet.getSector(other).generateEnemyBase){</b>
+<b class="nc">&nbsp;                    any = false;</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(any){</b>
+<b class="nc">&nbsp;            sector.generateEnemyBase = true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether to allow landing on the specified procedural sector */
+&nbsp;    public boolean allowLanding(Sector sector){
+<b class="nc">&nbsp;        return sector.planet.allowLaunchToNumbered &amp;&amp; (sector.hasBase() || sector.near().contains(Sector::hasBase));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addWeather(Sector sector, Rules rules){
+&nbsp;
+&nbsp;        //apply weather based on terrain
+<b class="nc">&nbsp;        ObjectIntMap&lt;Block&gt; floorc = new ObjectIntMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        ObjectSet&lt;UnlockableContent&gt; content = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Tile tile : world.tiles){</b>
+<b class="nc">&nbsp;            if(world.getDarkness(tile.x, tile.y) &gt;= 3){</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Liquid liquid = tile.floor().liquidDrop;</b>
+<b class="nc">&nbsp;            if(tile.floor().itemDrop != null) content.add(tile.floor().itemDrop);</b>
+<b class="nc">&nbsp;            if(tile.overlay().itemDrop != null) content.add(tile.overlay().itemDrop);</b>
+<b class="nc">&nbsp;            if(liquid != null) content.add(liquid);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!tile.block().isStatic()){</b>
+<b class="nc">&nbsp;                floorc.increment(tile.floor());</b>
+<b class="nc">&nbsp;                if(tile.overlay() != Blocks.air){</b>
+<b class="nc">&nbsp;                    floorc.increment(tile.overlay());</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //sort counts in descending order
+<b class="nc">&nbsp;        Seq&lt;Entry&lt;Block&gt;&gt; entries = floorc.entries().toArray();</b>
+<b class="nc">&nbsp;        entries.sort(e -&gt; -e.value);</b>
+&nbsp;        //remove all blocks occurring &lt; 30 times - unimportant
+<b class="nc">&nbsp;        entries.removeAll(e -&gt; e.value &lt; 30);</b>
+&nbsp;
+<b class="nc">&nbsp;        Block[] floors = new Block[entries.size];</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; entries.size; i++){</b>
+<b class="nc">&nbsp;            floors[i] = entries.get(i).key;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //bad contains() code, but will likely never be fixed
+<b class="nc">&nbsp;        boolean hasSnow = floors.length &gt; 0 &amp;&amp; (floors[0].name.contains(&quot;ice&quot;) || floors[0].name.contains(&quot;snow&quot;));</b>
+<b class="nc">&nbsp;        boolean hasRain = floors.length &gt; 0 &amp;&amp; !hasSnow &amp;&amp; content.contains(Liquids.water) &amp;&amp; !floors[0].name.contains(&quot;sand&quot;);</b>
+<b class="nc">&nbsp;        boolean hasDesert = floors.length &gt; 0 &amp;&amp; !hasSnow &amp;&amp; !hasRain &amp;&amp; floors[0] == Blocks.sand;</b>
+<b class="nc">&nbsp;        boolean hasSpores = floors.length &gt; 0 &amp;&amp; (floors[0].name.contains(&quot;spore&quot;) || floors[0].name.contains(&quot;moss&quot;) || floors[0].name.contains(&quot;tainted&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(hasSnow){</b>
+<b class="nc">&nbsp;            rules.weather.add(new WeatherEntry(Weathers.snow));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(hasRain){</b>
+<b class="nc">&nbsp;            rules.weather.add(new WeatherEntry(Weathers.rain));</b>
+<b class="nc">&nbsp;            rules.weather.add(new WeatherEntry(Weathers.fog));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(hasDesert){</b>
+<b class="nc">&nbsp;            rules.weather.add(new WeatherEntry(Weathers.sandstorm));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(hasSpores){</b>
+<b class="nc">&nbsp;            rules.weather.add(new WeatherEntry(Weathers.sporestorm));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void genTile(Vec3 position, TileGen tile){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected float noise(float x, float y, double octaves, double falloff, double scl, double mag){
+<b class="nc">&nbsp;        Vec3 v = sector.rect.project(x, y);</b>
+<b class="nc">&nbsp;        return Simplex.noise3d(0, octaves, falloff, 1f / scl, v.x, v.y, v.z) * (float)mag;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the scaling factor for sector rects. */
+&nbsp;    public float getSizeScl(){
+<b class="nc">&nbsp;        return 3200;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getSectorSize(Sector sector){
+<b class="nc">&nbsp;        int res = (int)(sector.rect.radius * getSizeScl());</b>
+<b class="nc">&nbsp;        return res % 2 == 0 ? res : res + 1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void generate(Tiles tiles, Sector sec, int seed){
+<b class="nc">&nbsp;        this.tiles = tiles;</b>
+<b class="nc">&nbsp;        this.seed = seed + baseSeed;</b>
+<b class="nc">&nbsp;        this.sector = sec;</b>
+<b class="nc">&nbsp;        this.width = tiles.width;</b>
+<b class="nc">&nbsp;        this.height = tiles.height;</b>
+<b class="nc">&nbsp;        this.rand.setSeed(sec.id + seed + baseSeed);</b>
+&nbsp;
+<b class="nc">&nbsp;        TileGen gen = new TileGen();</b>
+<b class="nc">&nbsp;        for(int y = 0; y &lt; height; y++){</b>
+<b class="nc">&nbsp;            for(int x = 0; x &lt; width; x++){</b>
+<b class="nc">&nbsp;                gen.reset();</b>
+<b class="nc">&nbsp;                Vec3 position = sector.rect.project(x / (float)tiles.width, y / (float)tiles.height);</b>
+&nbsp;
+<b class="nc">&nbsp;                genTile(position, gen);</b>
+<b class="nc">&nbsp;                tiles.set(x, y, new Tile(x, y, gen.floor, gen.overlay, gen.block));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        generate(tiles);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

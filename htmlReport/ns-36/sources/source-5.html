@@ -1,0 +1,295 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Door</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense</a>
+</div>
+
+<h1>Coverage Summary for Class: Door (mindustry.world.blocks.defense)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Door</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55%
+  </span>
+  <span class="absValue">
+    (11/20)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Door$DoorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (6/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55%
+  </span>
+  <span class="absValue">
+    (22/40)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    42.1%
+  </span>
+  <span class="absValue">
+    (8/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55%
+  </span>
+  <span class="absValue">
+    (33/60)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense;
+&nbsp;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Door extends Wall{
+<b class="fc">&nbsp;    protected final static Rect rect = new Rect();</b>
+<b class="fc">&nbsp;    protected final static Queue&lt;DoorBuild&gt; doorQueue = new Queue&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    public final int timerToggle = timers++;</b>
+<b class="fc">&nbsp;    public Effect openfx = Fx.dooropen;</b>
+<b class="fc">&nbsp;    public Effect closefx = Fx.doorclose;</b>
+<b class="fc">&nbsp;    public Sound doorSound = Sounds.door;</b>
+&nbsp;    public @Load(&quot;@-open&quot;) TextureRegion openRegion;
+&nbsp;
+&nbsp;    public Door(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        solid = false;</b>
+<b class="fc">&nbsp;        solidifes = true;</b>
+<b class="fc">&nbsp;        consumesTap = true;</b>
+&nbsp;
+<b class="fc">&nbsp;        config(Boolean.class, (DoorBuild base, Boolean open) -&gt; {</b>
+<b class="nc">&nbsp;            doorSound.at(base);</b>
+<b class="nc">&nbsp;            base.effect();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(DoorBuild entity : base.chained){</b>
+&nbsp;                //skip doors with things in them
+<b class="nc">&nbsp;                if((Units.anyEntities(entity.tile) &amp;&amp; !open) || entity.open == open){</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                entity.open = open;</b>
+<b class="nc">&nbsp;                pathfinder.updateTile(entity.tile());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion getPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        return plan.config == Boolean.TRUE ? openRegion : region;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class DoorBuild extends Building{</b>
+<b class="fc">&nbsp;        public boolean open = false;</b>
+<b class="fc">&nbsp;        public Seq&lt;DoorBuild&gt; chained = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityAdded(){
+<b class="fc">&nbsp;            super.onProximityAdded();</b>
+<b class="fc">&nbsp;            updateChained();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityRemoved(){
+<b class="nc">&nbsp;            super.onProximityRemoved();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Building b : proximity){</b>
+<b class="nc">&nbsp;                if(b instanceof DoorBuild d){</b>
+<b class="nc">&nbsp;                    d.updateChained();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public double sense(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.enabled) return open ? 1 : 0;</b>
+<b class="nc">&nbsp;            return super.sense(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void control(LAccess type, double p1, double p2, double p3, double p4){
+<b class="nc">&nbsp;            if(type == LAccess.enabled){</b>
+<b class="nc">&nbsp;                boolean shouldOpen = !Mathf.zero(p1);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(net.client() || open == shouldOpen || (Units.anyEntities(tile) &amp;&amp; !shouldOpen) || !origin().timer(timerToggle, 80f)){</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                configureAny(shouldOpen);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public DoorBuild origin(){
+<b class="nc">&nbsp;            return chained.isEmpty() ? this : chained.first();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void effect(){
+<b class="nc">&nbsp;            (open ? closefx : openfx).at(this, size);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void updateChained(){
+<b class="fc">&nbsp;            chained = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;            doorQueue.clear();</b>
+<b class="fc">&nbsp;            doorQueue.add(this);</b>
+&nbsp;
+<b class="fc">&nbsp;            while(!doorQueue.isEmpty()){</b>
+<b class="fc">&nbsp;                var next = doorQueue.removeLast();</b>
+<b class="fc">&nbsp;                chained.add(next);</b>
+&nbsp;
+<b class="fc">&nbsp;                for(var b : next.proximity){</b>
+<b class="fc">&nbsp;                    if(b instanceof DoorBuild d &amp;&amp; d.chained != chained){</b>
+<b class="fc">&nbsp;                        d.chained = chained;</b>
+<b class="fc">&nbsp;                        doorQueue.addFirst(d);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(open ? openRegion : region, x, y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Cursor getCursor(){
+<b class="nc">&nbsp;            return interactable(player.team()) ? SystemCursor.hand : SystemCursor.arrow;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean checkSolid(){
+<b class="fc">&nbsp;            return !open;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void tapped(){
+<b class="nc">&nbsp;            if((Units.anyEntities(tile) &amp;&amp; open) || !origin().timer(timerToggle, 60f)){</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            configure(!open);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Boolean config(){
+<b class="nc">&nbsp;            return open;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.bool(open);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            open = read.bool();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

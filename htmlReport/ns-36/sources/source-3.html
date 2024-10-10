@@ -1,0 +1,417 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BuildTurret</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense</a>
+</div>
+
+<h1>Coverage Summary for Class: BuildTurret (mindustry.world.blocks.defense)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BuildTurret</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    82.4%
+  </span>
+  <span class="absValue">
+    (14/17)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BuildTurret$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (12/12)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">BuildTurret$BuildTurretBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.5%
+  </span>
+  <span class="absValue">
+    (6/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.1%
+  </span>
+  <span class="absValue">
+    (37/90)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    56.2%
+  </span>
+  <span class="absValue">
+    (9/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.9%
+  </span>
+  <span class="absValue">
+    (63/119)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.defense.turrets.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class BuildTurret extends BaseTurret{
+<b class="fc">&nbsp;    public final int timerTarget = timers++, timerTarget2 = timers++;</b>
+<b class="fc">&nbsp;    public int targetInterval = 15;</b>
+&nbsp;
+&nbsp;    public @Load(value = &quot;@-base&quot;, fallback = &quot;block-@size&quot;) TextureRegion baseRegion;
+&nbsp;    public @Load(&quot;@-glow&quot;) TextureRegion glowRegion;
+<b class="fc">&nbsp;    public float buildSpeed = 1f;</b>
+<b class="fc">&nbsp;    public float buildBeamOffset = 5f;</b>
+&nbsp;    //created in init()
+&nbsp;    public @Nullable UnitType unitType;
+<b class="fc">&nbsp;    public float elevation = -1f;</b>
+<b class="fc">&nbsp;    public Color heatColor = Pal.accent.cpy().a(0.9f);</b>
+&nbsp;
+&nbsp;    public BuildTurret(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        group = BlockGroup.turrets;</b>
+<b class="fc">&nbsp;        sync = false;</b>
+<b class="fc">&nbsp;        rotateSpeed = 10f;</b>
+<b class="fc">&nbsp;        suppressable = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(elevation &lt; 0) elevation = size / 2f;</b>
+&nbsp;
+&nbsp;        //this is super hacky, but since blocks are initialized before units it does not run into init/concurrent modification issues
+<b class="fc">&nbsp;        unitType = new UnitType(&quot;turret-unit-&quot; + name){{</b>
+<b class="fc">&nbsp;            hidden = true;</b>
+<b class="fc">&nbsp;            internal = true;</b>
+<b class="fc">&nbsp;            speed = 0f;</b>
+<b class="fc">&nbsp;            hitSize = 0f;</b>
+<b class="fc">&nbsp;            health = 1;</b>
+<b class="fc">&nbsp;            itemCapacity = 0;</b>
+<b class="fc">&nbsp;            rotateSpeed = BuildTurret.this.rotateSpeed;</b>
+<b class="fc">&nbsp;            buildBeamOffset = BuildTurret.this.buildBeamOffset;</b>
+<b class="fc">&nbsp;            buildRange = BuildTurret.this.range;</b>
+<b class="fc">&nbsp;            buildSpeed = BuildTurret.this.buildSpeed;</b>
+<b class="fc">&nbsp;            constructor = BlockUnitUnit::create;</b>
+&nbsp;        }};
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.addPercent(Stat.buildSpeed, buildSpeed);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{baseRegion, region};</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class BuildTurretBuild extends BaseTurretBuild implements ControlBlock, RotBlock{</b>
+<b class="fc">&nbsp;        public BlockUnitc unit = (BlockUnitc)unitType.create(team);</b>
+&nbsp;        public @Nullable Unit following;
+&nbsp;        public @Nullable BlockPlan lastPlan;
+&nbsp;        public float warmup;
+&nbsp;
+&nbsp;        {
+<b class="fc">&nbsp;            unit.rotation(90f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean canControl(){
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float buildRotation(){
+<b class="nc">&nbsp;            return unit.rotation();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Unit unit(){
+&nbsp;            //make sure stats are correct
+<b class="fc">&nbsp;            unit.tile(this);</b>
+<b class="fc">&nbsp;            unit.team(team);</b>
+<b class="fc">&nbsp;            return (Unit)unit;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            unit.tile(this);</b>
+<b class="fc">&nbsp;            unit.team(team);</b>
+&nbsp;
+&nbsp;            //only cares about where the unit itself is looking
+<b class="fc">&nbsp;            rotation = unit.rotation();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(unit.activelyBuilding()){</b>
+<b class="nc">&nbsp;                unit.lookAt(angleTo(unit.buildPlan()));</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(checkSuppression()){</b>
+<b class="nc">&nbsp;                efficiency = potentialEfficiency = 0f;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            unit.buildSpeedMultiplier(potentialEfficiency * timeScale);</b>
+<b class="fc">&nbsp;            unit.speedMultiplier(potentialEfficiency * timeScale);</b>
+&nbsp;
+<b class="fc">&nbsp;            warmup = Mathf.lerpDelta(warmup, unit.activelyBuilding() ? efficiency : 0f, 0.1f);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(!isControlled()){</b>
+<b class="fc">&nbsp;                unit.updateBuilding(true);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(following != null){</b>
+&nbsp;                    //validate follower
+<b class="nc">&nbsp;                    if(!following.isValid() || !following.activelyBuilding()){</b>
+<b class="nc">&nbsp;                        following = null;</b>
+<b class="nc">&nbsp;                        unit.plans().clear();</b>
+&nbsp;                    }else{
+&nbsp;                        //set to follower&#39;s first build plan, whatever that is
+<b class="nc">&nbsp;                        unit.plans().clear();</b>
+<b class="nc">&nbsp;                        unit.plans().addFirst(following.buildPlan());</b>
+<b class="nc">&nbsp;                        lastPlan = null;</b>
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                }else if(unit.buildPlan() == null &amp;&amp; timer(timerTarget, targetInterval)){ //search for new stuff</b>
+<b class="fc">&nbsp;                    Queue&lt;BlockPlan&gt; blocks = team.data().plans;</b>
+<b class="fc">&nbsp;                    for(int i = 0; i &lt; blocks.size; i++){</b>
+<b class="nc">&nbsp;                        var block = blocks.get(i);</b>
+<b class="nc">&nbsp;                        if(within(block.x * tilesize, block.y * tilesize, range)){</b>
+<b class="nc">&nbsp;                            var btype = content.block(block.block);</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(Build.validPlace(btype, unit.team(), block.x, block.y, block.rotation) &amp;&amp; (state.rules.infiniteResources || team.rules().infiniteResources || team.items().has(btype.requirements, state.rules.buildCostMultiplier))){</b>
+<b class="nc">&nbsp;                                unit.addBuild(new BuildPlan(block.x, block.y, block.rotation, content.block(block.block), block.config));</b>
+&nbsp;                                //shift build plan to tail so next unit builds something else
+<b class="nc">&nbsp;                                blocks.addLast(blocks.removeIndex(i));</b>
+<b class="nc">&nbsp;                                lastPlan = block;</b>
+<b class="nc">&nbsp;                                break;</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //still not building, find someone to mimic
+<b class="fc">&nbsp;                    if(unit.buildPlan() == null){</b>
+<b class="fc">&nbsp;                        following = null;</b>
+<b class="fc">&nbsp;                        Units.nearby(team, x, y, range, u -&gt; {</b>
+<b class="nc">&nbsp;                            if(following  != null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(u.canBuild() &amp;&amp; u.activelyBuilding()){</b>
+<b class="nc">&nbsp;                                BuildPlan plan = u.buildPlan();</b>
+&nbsp;
+<b class="nc">&nbsp;                                Building build = world.build(plan.x, plan.y);</b>
+<b class="nc">&nbsp;                                if(build instanceof ConstructBuild &amp;&amp; within(build, range)){</b>
+<b class="nc">&nbsp;                                    following = u;</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        });
+&nbsp;                    }
+<b class="fc">&nbsp;                }else if(unit.buildPlan() != null){ //validate building</b>
+<b class="nc">&nbsp;                    BuildPlan req = unit.buildPlan();</b>
+&nbsp;
+&nbsp;                    //clear break plan if another player is breaking something
+<b class="nc">&nbsp;                    if(!req.breaking &amp;&amp; timer.get(timerTarget2, 30f)){</b>
+<b class="nc">&nbsp;                        for(Player player : team.data().players){</b>
+<b class="nc">&nbsp;                            if(player.isBuilder() &amp;&amp; player.unit().activelyBuilding() &amp;&amp; player.unit().buildPlan().samePos(req) &amp;&amp; player.unit().buildPlan().breaking){</b>
+<b class="nc">&nbsp;                                unit.plans().removeFirst();</b>
+&nbsp;                                //remove from list of plans
+<b class="nc">&nbsp;                                team.data().plans.remove(p -&gt; p.x == req.x &amp;&amp; p.y == req.y);</b>
+&nbsp;                                return;
+&nbsp;                            }
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    boolean valid =
+<b class="nc">&nbsp;                        !(lastPlan != null &amp;&amp; lastPlan.removed) &amp;&amp;</b>
+<b class="nc">&nbsp;                        ((req.tile() != null &amp;&amp; req.tile().build instanceof ConstructBuild cons &amp;&amp; cons.current == req.block) ||</b>
+&nbsp;                        (req.breaking ?
+<b class="nc">&nbsp;                        Build.validBreak(unit.team(), req.x, req.y) :</b>
+<b class="nc">&nbsp;                        Build.validPlace(req.block, unit.team(), req.x, req.y, req.rotation)));</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(!valid){</b>
+&nbsp;                        //discard invalid request
+<b class="nc">&nbsp;                        unit.plans().removeFirst();</b>
+<b class="nc">&nbsp;                        lastPlan = null;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }else{ //is being controlled, forget everything
+<b class="nc">&nbsp;                following = null;</b>
+<b class="nc">&nbsp;                lastPlan = null;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //please do not commit suicide
+<b class="fc">&nbsp;            unit.plans().remove(b -&gt; b.build() == this);</b>
+&nbsp;
+<b class="fc">&nbsp;            unit.updateBuildLogic();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return unit.plans().size &gt; 0 &amp;&amp; !isHealSuppressed();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(baseRegion, x, y);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.turret);</b>
+&nbsp;
+<b class="nc">&nbsp;            Drawf.shadow(region, x - elevation, y - elevation, rotation - 90);</b>
+<b class="nc">&nbsp;            Draw.rect(region, x, y, rotation - 90);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(glowRegion.found()){</b>
+<b class="nc">&nbsp;                Drawf.additive(glowRegion, heatColor, warmup, x, y, rotation - 90f, Layer.turretHeat);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(efficiency &gt; 0){</b>
+<b class="nc">&nbsp;                unit.drawBuilding();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float warmup(){
+<b class="nc">&nbsp;            return warmup;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.f(rotation);</b>
+&nbsp;            //TODO queue can be very large due to logic?
+<b class="fc">&nbsp;            TypeIO.writePlans(write, unit.plans().toArray(BuildPlan.class));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            rotation = read.f();</b>
+<b class="fc">&nbsp;            unit.rotation(rotation);</b>
+<b class="fc">&nbsp;            unit.plans().clear();</b>
+<b class="fc">&nbsp;            var reqs = TypeIO.readPlans(read);</b>
+<b class="fc">&nbsp;            if(reqs != null){</b>
+<b class="fc">&nbsp;                for(var req : reqs){</b>
+<b class="nc">&nbsp;                    unit.plans().add(req);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

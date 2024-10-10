@@ -1,0 +1,217 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MechComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: MechComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MechComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class MechComp implements Posc, Flyingc, Hitboxc, Unitc, Mechc, ElevationMovec{</b>
+&nbsp;    @Import float x, y, hitSize;
+&nbsp;    @Import UnitType type;
+&nbsp;
+&nbsp;    @SyncField(false) @SyncLocal float baseRotation;
+&nbsp;    transient float walkTime, walkExtension;
+&nbsp;    transient private boolean walked;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+&nbsp;        //trigger animation only when walking manually
+<b class="nc">&nbsp;        if(walked || net.client()){</b>
+<b class="nc">&nbsp;            float len = deltaLen();</b>
+<b class="nc">&nbsp;            baseRotation = Angles.moveToward(baseRotation, deltaAngle(), type().baseRotateSpeed * Mathf.clamp(len / type().speed / Time.delta) * Time.delta);</b>
+<b class="nc">&nbsp;            walkTime += len;</b>
+<b class="nc">&nbsp;            walked = false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //update mech effects
+<b class="nc">&nbsp;        float extend = walkExtend(false);</b>
+<b class="nc">&nbsp;        float base = walkExtend(true);</b>
+<b class="nc">&nbsp;        float extendScl = base % 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;        float lastExtend = walkExtension;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!headless &amp;&amp; extendScl &lt; lastExtend &amp;&amp; base % 2f &gt; 1f &amp;&amp; !isFlying() &amp;&amp; !inFogTo(player.team())){</b>
+<b class="nc">&nbsp;            int side = -Mathf.sign(extend);</b>
+<b class="nc">&nbsp;            float width = hitSize / 2f * side, length = type.mechStride * 1.35f;</b>
+&nbsp;
+<b class="nc">&nbsp;            float cx = x + Angles.trnsx(baseRotation, length, width),</b>
+<b class="nc">&nbsp;            cy = y + Angles.trnsy(baseRotation, length, width);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(type.stepShake &gt; 0){</b>
+<b class="nc">&nbsp;                Effect.shake(type.stepShake, type.stepShake, cx, cy);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(type.mechStepParticles){</b>
+<b class="nc">&nbsp;                Effect.floorDust(cx, cy, hitSize/8f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        walkExtension = extendScl;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public @Nullable Floor drownFloor(){
+&nbsp;        //large mechs can only drown when all the nearby floors are deep
+<b class="nc">&nbsp;        if(hitSize &gt;= 12 &amp;&amp; canDrown()){</b>
+<b class="nc">&nbsp;            for(Point2 p : Geometry.d8){</b>
+<b class="nc">&nbsp;                Floor f = world.floorWorld(x + p.x * tilesize, y + p.y * tilesize);</b>
+<b class="nc">&nbsp;                if(!f.isDeep()){</b>
+<b class="nc">&nbsp;                    return null;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return canDrown() ? floorOn() : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float walkExtend(boolean scaled){
+&nbsp;
+&nbsp;        //now ranges from -maxExtension to maxExtension*3
+<b class="nc">&nbsp;        float raw = walkTime % (type.mechStride * 4);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(scaled) return raw / type.mechStride;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(raw &gt; type.mechStride*3) raw = raw - type.mechStride * 4;</b>
+<b class="nc">&nbsp;        else if(raw &gt; type.mechStride*2) raw = type.mechStride * 2 - raw;</b>
+<b class="nc">&nbsp;        else if(raw &gt; type.mechStride) raw = type.mechStride * 2 - raw;</b>
+&nbsp;
+<b class="nc">&nbsp;        return raw;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public void rotateMove(Vec2 vec){
+&nbsp;        //mechs use baseRotation to rotate, not rotation.
+<b class="nc">&nbsp;        moveAt(Tmp.v2.trns(baseRotation, vec.len()));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!vec.isZero()){</b>
+<b class="nc">&nbsp;            baseRotation = Angles.moveToward(baseRotation, vec.angle(), type.rotateSpeed * Math.max(Time.delta, 1));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void moveAt(Vec2 vector, float acceleration){
+&nbsp;        //mark walking state when moving in a controlled manner
+<b class="nc">&nbsp;        if(!vector.isZero()){</b>
+<b class="nc">&nbsp;            walked = true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void approach(Vec2 vector){
+&nbsp;        //mark walking state when moving in a controlled manner
+<b class="nc">&nbsp;        if(!vector.isZero(0.001f)){</b>
+<b class="nc">&nbsp;            walked = true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

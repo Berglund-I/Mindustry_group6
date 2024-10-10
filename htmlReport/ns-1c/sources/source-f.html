@@ -1,0 +1,271 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MultiPacker</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: MultiPacker (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MultiPacker</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/42)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MultiPacker$PageType</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/55)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.Texture.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.Log.*;
+&nbsp;import mindustry.*;
+&nbsp;
+&nbsp;public class MultiPacker implements Disposable{
+<b class="nc">&nbsp;    private PixmapPacker[] packers = new PixmapPacker[PageType.all.length];</b>
+<b class="nc">&nbsp;    private ObjectSet&lt;String&gt; outlined = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;    public MultiPacker(){</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; packers.length; i++){</b>
+<b class="nc">&nbsp;            packers[i] = new PixmapPacker(Math.min(Vars.maxTextureSize, PageType.all[i].width), Math.min(Vars.maxTextureSize, PageType.all[i].height), 2, true);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public PixmapRegion get(String name){
+<b class="nc">&nbsp;        for(var packer : packers){</b>
+<b class="nc">&nbsp;            var region = packer.getRegion(name);</b>
+<b class="nc">&nbsp;            if(region != null){</b>
+<b class="nc">&nbsp;                return region;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void printStats(){
+<b class="nc">&nbsp;        if(Log.level != LogLevel.debug) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(PageType type : PageType.all){</b>
+<b class="nc">&nbsp;            var packer = packers[type.ordinal()];</b>
+<b class="nc">&nbsp;            Log.debug(&quot;[Atlas] [&amp;ly@&amp;fr]&quot;, type);</b>
+<b class="nc">&nbsp;            Log.debug(&quot;[Atlas] - &quot; + (packer.getPages().size &gt; 1 ? &quot;&amp;fb&amp;lr&quot; : &quot;&amp;lg&quot;) + &quot;@ page@&amp;r&quot;, packer.getPages().size, packer.getPages().size &gt; 1 ? &quot;s&quot; : &quot;&quot;);</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+<b class="nc">&nbsp;            for(var page : packer.getPages()){</b>
+<b class="nc">&nbsp;                float totalArea = 0;</b>
+<b class="nc">&nbsp;                for(var region : page.getRects().values()){</b>
+<b class="nc">&nbsp;                    totalArea += region.area();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                Log.debug(&quot;[Atlas] - [@] @x@ (&amp;lk@% used&amp;fr)&quot;, i, page.getPixmap().width, page.getPixmap().height, (int)(totalArea / (page.getPixmap().width * page.getPixmap().height) * 100f));</b>
+&nbsp;
+<b class="nc">&nbsp;                i ++;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this image was not already outlined. */
+&nbsp;    public boolean registerOutlined(String named){
+<b class="nc">&nbsp;        return outlined.add(named);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isOutlined(String name){
+<b class="nc">&nbsp;        return outlined.contains(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public PixmapPacker getPacker(PageType type){
+<b class="nc">&nbsp;        return packers[type.ordinal()];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(String name){
+<b class="nc">&nbsp;        for(var page : PageType.all){</b>
+<b class="nc">&nbsp;            if(packers[page.ordinal()].getRect(name) != null){</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean has(PageType type, String name){
+<b class="nc">&nbsp;        return packers[type.ordinal()].getRect(name) != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(PageType type, String name, PixmapRegion region){
+<b class="nc">&nbsp;        add(type, name, region, null, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(PageType type, String name, PixmapRegion region, int[] splits, int[] pads){
+<b class="nc">&nbsp;        packers[type.ordinal()].pack(name, region, splits, pads);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(PageType type, String name, Pixmap pix){
+<b class="nc">&nbsp;        add(type, name, new PixmapRegion(pix));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TextureAtlas flush(TextureFilter filter, TextureAtlas atlas){
+<b class="nc">&nbsp;        for(PixmapPacker p : packers){</b>
+<b class="nc">&nbsp;            p.updateTextureAtlas(atlas, filter, filter, false, false);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return atlas;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; PageType.all.length; i ++){</b>
+<b class="nc">&nbsp;            var packer = packers[i];</b>
+&nbsp;            //the UI packer&#39;s image is later used when merging with the font, don&#39;t dispose it
+<b class="nc">&nbsp;            if(i != PageType.ui.ordinal()){</b>
+<b class="nc">&nbsp;                packer.forceDispose();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //There are several pages for sprites.
+&nbsp;    //main page (sprites.png) - all sprites for units, weapons, placeable blocks, effects, bullets, etc
+&nbsp;    //environment page (sprites2.png) - all sprites for things in the environmental cache layer
+&nbsp;    //ui page (sprites3.png) - content icons, white icons, fonts and UI elements
+&nbsp;    //rubble page (sprites4.png) - scorch textures for unit deaths &amp; wrecks
+&nbsp;    //editor page (sprites5.png) - all sprites needed for rendering in the editor, including block icons and a few minor sprites
+<b class="nc">&nbsp;    public enum PageType{</b>
+&nbsp;        //main page can be massive, but 8192 throws GL_OUT_OF_MEMORY on some GPUs and I can&#39;t deal with it yet.
+<b class="nc">&nbsp;        main(4096),</b>
+&nbsp;
+&nbsp;        //TODO stuff like this throws OOM on some devices
+<b class="nc">&nbsp;        environment(4096, 2048),</b>
+<b class="nc">&nbsp;        ui(4096),</b>
+<b class="nc">&nbsp;        rubble(4096, 2048),</b>
+<b class="nc">&nbsp;        editor(4096, 2048);</b>
+&nbsp;
+<b class="nc">&nbsp;        public static final PageType[] all = values();</b>
+&nbsp;
+<b class="nc">&nbsp;        public int width = 2048, height = 2048;</b>
+&nbsp;
+<b class="nc">&nbsp;        PageType(int defaultSize){</b>
+<b class="nc">&nbsp;            this.width = this.height = defaultSize;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        PageType(int width, int height){</b>
+<b class="nc">&nbsp;            this.width = width;</b>
+<b class="nc">&nbsp;            this.height = height;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        PageType(){
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

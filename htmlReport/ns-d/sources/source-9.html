@@ -1,0 +1,769 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Renderer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.core</a>
+</div>
+
+<h1>Coverage Summary for Class: Renderer (mindustry.core)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Renderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/46)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/298)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Renderer$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Renderer$EnvRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/48)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/304)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.core;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.assets.loaders.TextureLoader.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.Texture.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.gl.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.graphics.g3d.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Renderer implements ApplicationListener{
+&nbsp;    /** These are global variables, for headless access. Cached. */
+<b class="nc">&nbsp;    public static float laserOpacity = 0.5f, bridgeOpacity = 0.75f;</b>
+&nbsp;
+<b class="nc">&nbsp;    public final BlockRenderer blocks = new BlockRenderer();</b>
+<b class="nc">&nbsp;    public final FogRenderer fog = new FogRenderer();</b>
+<b class="nc">&nbsp;    public final MinimapRenderer minimap = new MinimapRenderer();</b>
+<b class="nc">&nbsp;    public final OverlayRenderer overlays = new OverlayRenderer();</b>
+<b class="nc">&nbsp;    public final LightRenderer lights = new LightRenderer();</b>
+<b class="nc">&nbsp;    public final Pixelator pixelator = new Pixelator();</b>
+&nbsp;    public PlanetRenderer planets;
+&nbsp;
+&nbsp;    public @Nullable Bloom bloom;
+&nbsp;    public @Nullable FrameBuffer backgroundBuffer;
+<b class="nc">&nbsp;    public FrameBuffer effectBuffer = new FrameBuffer();</b>
+<b class="nc">&nbsp;    public boolean animateShields, drawWeather = true, drawStatus, enableEffects, drawDisplays = true, drawLight = true, pixelate = false;</b>
+&nbsp;    public float weatherAlpha;
+&nbsp;    /** minZoom = zooming out, maxZoom = zooming in */
+<b class="nc">&nbsp;    public float minZoom = 1.5f, maxZoom = 6f;</b>
+<b class="nc">&nbsp;    public Seq&lt;EnvRenderer&gt; envRenderers = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    public ObjectMap&lt;String, Runnable&gt; customBackgrounds = new ObjectMap&lt;&gt;();</b>
+<b class="nc">&nbsp;    public TextureRegion[] bubbles = new TextureRegion[16], splashes = new TextureRegion[12];</b>
+&nbsp;    public TextureRegion[][] fluidFrames;
+&nbsp;
+&nbsp;    //currently landing core, null if there are no cores or it has finished landing.
+&nbsp;    private @Nullable CoreBuild landCore;
+&nbsp;    private @Nullable CoreBlock launchCoreType;
+<b class="nc">&nbsp;    private Color clearColor = new Color(0f, 0f, 0f, 1f);</b>
+<b class="nc">&nbsp;    private float</b>
+&nbsp;    //target camera scale that is lerp-ed to
+<b class="nc">&nbsp;    targetscale = Scl.scl(4),</b>
+&nbsp;    //current actual camera scale
+&nbsp;    camerascale = targetscale,
+&nbsp;    //starts at coreLandDuration, ends at 0. if positive, core is landing.
+&nbsp;    landTime,
+&nbsp;    //timer for core landing particles
+&nbsp;    landPTimer,
+&nbsp;    //intensity for screen shake
+&nbsp;    shakeIntensity,
+&nbsp;    //reduction rate of screen shake
+&nbsp;    shakeReduction,
+&nbsp;    //current duration of screen shake
+&nbsp;    shakeTime;
+&nbsp;    //for landTime &gt; 0: if true, core is currently *launching*, otherwise landing.
+&nbsp;    private boolean launching;
+<b class="nc">&nbsp;    private Vec2 camShakeOffset = new Vec2();</b>
+&nbsp;
+<b class="nc">&nbsp;    public Renderer(){</b>
+<b class="nc">&nbsp;        camera = new Camera();</b>
+<b class="nc">&nbsp;        Shaders.init();</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ResetEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            shakeTime = shakeIntensity = shakeReduction = 0f;</b>
+<b class="nc">&nbsp;            camShakeOffset.setZero();</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void shake(float intensity, float duration){
+<b class="nc">&nbsp;        shakeIntensity = Math.max(shakeIntensity, Mathf.clamp(intensity, 0, 100));</b>
+<b class="nc">&nbsp;        shakeTime = Math.max(shakeTime, duration);</b>
+<b class="nc">&nbsp;        shakeReduction = shakeIntensity / shakeTime;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addEnvRenderer(int mask, Runnable render){
+<b class="nc">&nbsp;        envRenderers.add(new EnvRenderer(mask, render));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addCustomBackground(String name, Runnable render){
+<b class="nc">&nbsp;        customBackgrounds.put(name, render);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="nc">&nbsp;        planets = new PlanetRenderer();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(settings.getBool(&quot;bloom&quot;, !ios)){</b>
+<b class="nc">&nbsp;            setupBloom();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        EnvRenderers.init();</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; bubbles.length; i++) bubbles[i] = atlas.find(&quot;bubble-&quot; + i);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; splashes.length; i++) splashes[i] = atlas.find(&quot;splash-&quot; + i);</b>
+&nbsp;
+<b class="nc">&nbsp;        loadFluidFrames();</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ClientLoadEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            loadFluidFrames();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        assets.load(&quot;sprites/clouds.png&quot;, Texture.class).loaded = t -&gt; {</b>
+<b class="nc">&nbsp;            t.setWrap(TextureWrap.repeat);</b>
+<b class="nc">&nbsp;            t.setFilter(TextureFilter.linear);</b>
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        Events.on(WorldLoadEvent.class, e -&gt; {</b>
+&nbsp;            //reset background buffer on every world load, so it can be re-cached first render
+<b class="nc">&nbsp;            if(backgroundBuffer != null){</b>
+<b class="nc">&nbsp;                backgroundBuffer.dispose();</b>
+<b class="nc">&nbsp;                backgroundBuffer = null;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void loadFluidFrames(){
+<b class="nc">&nbsp;        fluidFrames = new TextureRegion[2][Liquid.animationFrames];</b>
+&nbsp;
+<b class="nc">&nbsp;        String[] fluidTypes = {&quot;liquid&quot;, &quot;gas&quot;};</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; fluidTypes.length; i++){</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int j = 0; j &lt; Liquid.animationFrames; j++){</b>
+<b class="nc">&nbsp;                fluidFrames[i][j] = atlas.find(&quot;fluid-&quot; + fluidTypes[i] + &quot;-&quot; + j);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public TextureRegion[][] getFluidFrames(){
+<b class="nc">&nbsp;        if(fluidFrames == null || fluidFrames[0][0].texture.isDisposed()){</b>
+<b class="nc">&nbsp;            loadFluidFrames();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return fluidFrames;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        Color.white.set(1f, 1f, 1f, 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        float baseTarget = targetscale;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(control.input.logicCutscene){</b>
+<b class="nc">&nbsp;            baseTarget = Mathf.lerp(minZoom, maxZoom, control.input.logicCutsceneZoom);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float dest = Mathf.clamp(Mathf.round(baseTarget, 0.5f), minScale(), maxScale());</b>
+<b class="nc">&nbsp;        camerascale = Mathf.lerpDelta(camerascale, dest, 0.1f);</b>
+<b class="nc">&nbsp;        if(Mathf.equal(camerascale, dest, 0.001f)) camerascale = dest;</b>
+<b class="nc">&nbsp;        laserOpacity = settings.getInt(&quot;lasersopacity&quot;) / 100f;</b>
+<b class="nc">&nbsp;        bridgeOpacity = settings.getInt(&quot;bridgeopacity&quot;) / 100f;</b>
+<b class="nc">&nbsp;        animateShields = settings.getBool(&quot;animatedshields&quot;);</b>
+<b class="nc">&nbsp;        drawStatus = settings.getBool(&quot;blockstatus&quot;);</b>
+<b class="nc">&nbsp;        enableEffects = settings.getBool(&quot;effects&quot;);</b>
+<b class="nc">&nbsp;        drawDisplays = !settings.getBool(&quot;hidedisplays&quot;);</b>
+<b class="nc">&nbsp;        drawLight = settings.getBool(&quot;drawlight&quot;, true);</b>
+<b class="nc">&nbsp;        pixelate = settings.getBool(&quot;pixelate&quot;);</b>
+&nbsp;
+&nbsp;        //don&#39;t bother drawing landing animation if core is null
+<b class="nc">&nbsp;        if(landCore == null) landTime = 0f;</b>
+<b class="nc">&nbsp;        if(landTime &gt; 0){</b>
+<b class="nc">&nbsp;            if(!state.isPaused()) landCore.updateLaunching();</b>
+&nbsp;
+<b class="nc">&nbsp;            weatherAlpha = 0f;</b>
+<b class="nc">&nbsp;            camerascale = landCore.zoomLaunching();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!state.isPaused()) landTime -= Time.delta;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            weatherAlpha = Mathf.lerpDelta(weatherAlpha, 1f, 0.08f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(landCore != null &amp;&amp; landTime &lt;= 0f){</b>
+<b class="nc">&nbsp;            landCore.endLaunch();</b>
+<b class="nc">&nbsp;            landCore = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        camera.width = graphics.getWidth() / camerascale;</b>
+<b class="nc">&nbsp;        camera.height = graphics.getHeight() / camerascale;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.isMenu()){</b>
+<b class="nc">&nbsp;            landTime = 0f;</b>
+<b class="nc">&nbsp;            graphics.clear(Color.black);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            minimap.update();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(shakeTime &gt; 0){</b>
+<b class="nc">&nbsp;                float intensity = shakeIntensity * (settings.getInt(&quot;screenshake&quot;, 4) / 4f) * 0.75f;</b>
+<b class="nc">&nbsp;                camShakeOffset.setToRandomDirection().scl(Mathf.random(intensity));</b>
+<b class="nc">&nbsp;                camera.position.add(camShakeOffset);</b>
+<b class="nc">&nbsp;                shakeIntensity -= shakeReduction * Time.delta;</b>
+<b class="nc">&nbsp;                shakeTime -= Time.delta;</b>
+<b class="nc">&nbsp;                shakeIntensity = Mathf.clamp(shakeIntensity, 0f, 100f);</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                camShakeOffset.setZero();</b>
+<b class="nc">&nbsp;                shakeIntensity = 0f;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(renderer.pixelate){</b>
+<b class="nc">&nbsp;                pixelator.drawPixelate();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                draw();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            camera.position.sub(camShakeOffset);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateAllDarkness(){
+<b class="nc">&nbsp;        blocks.updateDarkness();</b>
+<b class="nc">&nbsp;        minimap.updateAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether a launch/land cutscene is playing. */
+&nbsp;    public boolean isCutscene(){
+<b class="nc">&nbsp;        return landTime &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float landScale(){
+<b class="nc">&nbsp;        return landTime &gt; 0 ? camerascale : 1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+<b class="nc">&nbsp;        Events.fire(new DisposeEvent());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void resume(){
+<b class="nc">&nbsp;        if(settings.getBool(&quot;bloom&quot;) &amp;&amp; bloom != null){</b>
+<b class="nc">&nbsp;            bloom.resume();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void setupBloom(){
+&nbsp;        try{
+<b class="nc">&nbsp;            if(bloom != null){</b>
+<b class="nc">&nbsp;                bloom.dispose();</b>
+<b class="nc">&nbsp;                bloom = null;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            bloom = new Bloom(true);</b>
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            settings.put(&quot;bloom&quot;, false);</b>
+<b class="nc">&nbsp;            ui.showErrorMessage(&quot;@error.bloom&quot;);</b>
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void toggleBloom(boolean enabled){
+<b class="nc">&nbsp;        if(enabled){</b>
+<b class="nc">&nbsp;            if(bloom == null){</b>
+<b class="nc">&nbsp;                setupBloom();</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            if(bloom != null){</b>
+<b class="nc">&nbsp;                bloom.dispose();</b>
+<b class="nc">&nbsp;                bloom = null;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        Events.fire(Trigger.preDraw);</b>
+<b class="nc">&nbsp;        MapPreviewLoader.checkPreviews();</b>
+&nbsp;
+<b class="nc">&nbsp;        camera.update();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Float.isNaN(camera.position.x) || Float.isNaN(camera.position.y)){</b>
+<b class="nc">&nbsp;            camera.position.set(player);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        graphics.clear(clearColor);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(settings.getBool(&quot;animatedwater&quot;) || animateShields){</b>
+<b class="nc">&nbsp;            effectBuffer.resize(graphics.getWidth(), graphics.getHeight());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.proj(camera);</b>
+&nbsp;
+<b class="nc">&nbsp;        blocks.checkChanges();</b>
+<b class="nc">&nbsp;        blocks.floor.checkChanges();</b>
+<b class="nc">&nbsp;        blocks.processBlocks();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.sort(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(Trigger.draw);</b>
+<b class="nc">&nbsp;        MapPreviewLoader.checkPreviews();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(renderer.pixelate){</b>
+<b class="nc">&nbsp;            pixelator.register();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.draw(Layer.background, this::drawBackground);</b>
+<b class="nc">&nbsp;        Draw.draw(Layer.floor, blocks.floor::drawFloor);</b>
+<b class="nc">&nbsp;        Draw.draw(Layer.block - 1, blocks::drawShadows);</b>
+<b class="nc">&nbsp;        Draw.draw(Layer.block - 0.09f, () -&gt; {</b>
+<b class="nc">&nbsp;            blocks.floor.beginDraw();</b>
+<b class="nc">&nbsp;            blocks.floor.drawLayer(CacheLayer.walls);</b>
+<b class="nc">&nbsp;            blocks.floor.endDraw();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Draw.drawRange(Layer.blockBuilding, () -&gt; Draw.shader(Shaders.blockbuild, true), Draw::shader);</b>
+&nbsp;
+&nbsp;        //render all matching environments
+<b class="nc">&nbsp;        for(var renderer : envRenderers){</b>
+<b class="nc">&nbsp;            if((renderer.env &amp; state.rules.env) == renderer.env){</b>
+<b class="nc">&nbsp;                renderer.renderer.run();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.lighting &amp;&amp; drawLight){</b>
+<b class="nc">&nbsp;            Draw.draw(Layer.light, lights::draw);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(enableDarkness){</b>
+<b class="nc">&nbsp;            Draw.draw(Layer.darkness, blocks::drawDarkness);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(bloom != null){</b>
+<b class="nc">&nbsp;            bloom.resize(graphics.getWidth(), graphics.getHeight());</b>
+<b class="nc">&nbsp;            bloom.setBloomIntensity(settings.getInt(&quot;bloomintensity&quot;, 6) / 4f + 1f);</b>
+<b class="nc">&nbsp;            bloom.blurPasses = settings.getInt(&quot;bloomblur&quot;, 1);</b>
+<b class="nc">&nbsp;            Draw.draw(Layer.bullet - 0.02f, bloom::capture);</b>
+<b class="nc">&nbsp;            Draw.draw(Layer.effect + 0.02f, bloom::render);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.draw(Layer.plans, overlays::drawBottom);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(animateShields &amp;&amp; Shaders.shield != null){</b>
+&nbsp;            //TODO would be nice if there were a way to detect if any shields or build beams actually *exist* before beginning/ending buffers, otherwise you&#39;re just blitting and swapping shaders for nothing
+<b class="nc">&nbsp;            Draw.drawRange(Layer.shields, 1f, () -&gt; effectBuffer.begin(Color.clear), () -&gt; {</b>
+<b class="nc">&nbsp;                effectBuffer.end();</b>
+<b class="nc">&nbsp;                effectBuffer.blit(Shaders.shield);</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            Draw.drawRange(Layer.buildBeam, 1f, () -&gt; effectBuffer.begin(Color.clear), () -&gt; {</b>
+<b class="nc">&nbsp;                effectBuffer.end();</b>
+<b class="nc">&nbsp;                effectBuffer.blit(Shaders.buildBeam);</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float scaleFactor = 4f / renderer.getDisplayScale();</b>
+&nbsp;
+&nbsp;        //draw objective markers
+<b class="nc">&nbsp;        state.rules.objectives.eachRunning(obj -&gt; {</b>
+<b class="nc">&nbsp;            for(var marker : obj.markers){</b>
+<b class="nc">&nbsp;                if(marker.world){</b>
+<b class="nc">&nbsp;                    marker.draw(marker.autoscale ? scaleFactor : 1);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        for(var marker : state.markers){</b>
+<b class="nc">&nbsp;            if(marker.world){</b>
+<b class="nc">&nbsp;                marker.draw(marker.autoscale ? scaleFactor : 1);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.draw(Layer.overlayUI, overlays::drawTop);</b>
+<b class="nc">&nbsp;        if(state.rules.fog) Draw.draw(Layer.fogOfWar, fog::drawFog);</b>
+<b class="nc">&nbsp;        Draw.draw(Layer.space, () -&gt; {</b>
+<b class="nc">&nbsp;            if(landCore == null || landTime &lt;= 0f) return;</b>
+<b class="nc">&nbsp;            landCore.drawLanding(launching &amp;&amp; launchCoreType != null ? launchCoreType : (CoreBlock)landCore.block);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(Trigger.drawOver);</b>
+<b class="nc">&nbsp;        blocks.drawBlocks();</b>
+&nbsp;
+<b class="nc">&nbsp;        Groups.draw.draw(Drawc::draw);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Draw.flush();</b>
+<b class="nc">&nbsp;        Draw.sort(false);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(Trigger.postDraw);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawBackground(){
+&nbsp;        //draw background only if there is no planet background with a skybox
+<b class="nc">&nbsp;        if(state.rules.backgroundTexture != null &amp;&amp; (state.rules.planetBackground == null || !state.rules.planetBackground.drawSkybox)){</b>
+<b class="nc">&nbsp;            if(!assets.isLoaded(state.rules.backgroundTexture, Texture.class)){</b>
+<b class="nc">&nbsp;                var file = assets.getFileHandleResolver().resolve(state.rules.backgroundTexture);</b>
+&nbsp;
+&nbsp;                //don&#39;t draw invalid/non-existent backgrounds.
+<b class="nc">&nbsp;                if(!file.exists() || !file.extEquals(&quot;png&quot;)){</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                var desc = assets.load(state.rules.backgroundTexture, Texture.class, new TextureParameter(){{</b>
+<b class="nc">&nbsp;                    wrapU = wrapV = TextureWrap.mirroredRepeat;</b>
+<b class="nc">&nbsp;                    magFilter = minFilter = TextureFilter.linear;</b>
+&nbsp;                }});
+&nbsp;
+<b class="nc">&nbsp;                assets.finishLoadingAsset(desc);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Texture tex = assets.get(state.rules.backgroundTexture, Texture.class);</b>
+<b class="nc">&nbsp;            Tmp.tr1.set(tex);</b>
+<b class="nc">&nbsp;            Tmp.tr1.u = 0f;</b>
+<b class="nc">&nbsp;            Tmp.tr1.v = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;            float ratio = camera.width / camera.height;</b>
+<b class="nc">&nbsp;            float size = state.rules.backgroundScl;</b>
+&nbsp;
+<b class="nc">&nbsp;            Tmp.tr1.u2 = size;</b>
+<b class="nc">&nbsp;            Tmp.tr1.v2 = size / ratio;</b>
+&nbsp;
+<b class="nc">&nbsp;            float sx = 0f, sy = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!Mathf.zero(state.rules.backgroundSpeed)){</b>
+<b class="nc">&nbsp;                sx = (camera.position.x) / state.rules.backgroundSpeed;</b>
+<b class="nc">&nbsp;                sy = (camera.position.y) / state.rules.backgroundSpeed;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Tmp.tr1.scroll(sx + state.rules.backgroundOffsetX, -sy + state.rules.backgroundOffsetY);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(Tmp.tr1, camera.position.x, camera.position.y, camera.width, camera.height);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.planetBackground != null){</b>
+<b class="nc">&nbsp;            int size = Math.max(graphics.getWidth(), graphics.getHeight());</b>
+&nbsp;
+<b class="nc">&nbsp;            boolean resized = false;</b>
+<b class="nc">&nbsp;            if(backgroundBuffer == null){</b>
+<b class="nc">&nbsp;                resized = true;</b>
+<b class="nc">&nbsp;                backgroundBuffer = new FrameBuffer(size, size);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(resized || backgroundBuffer.resizeCheck(size, size)){</b>
+<b class="nc">&nbsp;                backgroundBuffer.begin(Color.clear);</b>
+&nbsp;
+<b class="nc">&nbsp;                var params = state.rules.planetBackground;</b>
+&nbsp;
+&nbsp;                //override some values
+<b class="nc">&nbsp;                params.viewW = size;</b>
+<b class="nc">&nbsp;                params.viewH = size;</b>
+<b class="nc">&nbsp;                params.alwaysDrawAtmosphere = true;</b>
+<b class="nc">&nbsp;                params.drawUi = false;</b>
+&nbsp;
+<b class="nc">&nbsp;                planets.render(params);</b>
+&nbsp;
+<b class="nc">&nbsp;                backgroundBuffer.end();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float drawSize = Math.max(camera.width, camera.height);</b>
+<b class="nc">&nbsp;            Draw.rect(Draw.wrap(backgroundBuffer.getTexture()), camera.position.x, camera.position.y, drawSize, -drawSize);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.customBackgroundCallback != null &amp;&amp; customBackgrounds.containsKey(state.rules.customBackgroundCallback)){</b>
+<b class="nc">&nbsp;            customBackgrounds.get(state.rules.customBackgroundCallback).run();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void scaleCamera(float amount){
+<b class="nc">&nbsp;        targetscale *= (amount / 4) + 1;</b>
+<b class="nc">&nbsp;        clampScale();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clampScale(){
+<b class="nc">&nbsp;        targetscale = Mathf.clamp(targetscale, minScale(), maxScale());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getDisplayScale(){
+<b class="nc">&nbsp;        return camerascale;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float minScale(){
+<b class="nc">&nbsp;        return Scl.scl(minZoom);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float maxScale(){
+<b class="nc">&nbsp;        return Mathf.round(Scl.scl(maxZoom));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getScale(){
+<b class="nc">&nbsp;        return targetscale;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setScale(float scl){
+<b class="nc">&nbsp;        targetscale = scl;</b>
+<b class="nc">&nbsp;        clampScale();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isLaunching(){
+<b class="nc">&nbsp;        return launching;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public CoreBlock getLaunchCoreType(){
+<b class="nc">&nbsp;        return launchCoreType;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getLandTime(){
+<b class="nc">&nbsp;        return landTime;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getLandTimeIn(){
+<b class="nc">&nbsp;        if(landCore == null) return 0f;</b>
+<b class="nc">&nbsp;        float fin = landTime / landCore.landDuration();</b>
+<b class="nc">&nbsp;        if(!launching) fin = 1f - fin;</b>
+<b class="nc">&nbsp;        return fin;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getLandPTimer(){
+<b class="nc">&nbsp;        return landPTimer;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setLandPTimer(float landPTimer){
+<b class="nc">&nbsp;        this.landPTimer = landPTimer;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Deprecated
+&nbsp;    public void showLanding(){
+<b class="nc">&nbsp;        var core = player.bestCore();</b>
+<b class="nc">&nbsp;        if(core != null) showLanding(core);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void showLanding(CoreBuild landCore){
+<b class="nc">&nbsp;        this.landCore = landCore;</b>
+<b class="nc">&nbsp;        launching = false;</b>
+<b class="nc">&nbsp;        landTime = landCore.landDuration();</b>
+&nbsp;
+<b class="nc">&nbsp;        landCore.beginLaunch(null);</b>
+<b class="nc">&nbsp;        camerascale = landCore.zoomLaunching();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Deprecated
+&nbsp;    public void showLaunch(CoreBlock coreType){
+<b class="nc">&nbsp;        var core = player.team().core();</b>
+<b class="nc">&nbsp;        if(core != null) showLaunch(core, coreType);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void showLaunch(CoreBuild landCore, CoreBlock coreType){
+<b class="nc">&nbsp;        control.input.config.hideConfig();</b>
+<b class="nc">&nbsp;        control.input.inv.hide();</b>
+&nbsp;
+<b class="nc">&nbsp;        this.landCore = landCore;</b>
+<b class="nc">&nbsp;        launching = true;</b>
+<b class="nc">&nbsp;        landTime = landCore.landDuration();</b>
+<b class="nc">&nbsp;        launchCoreType = coreType;</b>
+&nbsp;
+<b class="nc">&nbsp;        Music music = landCore.launchMusic();</b>
+<b class="nc">&nbsp;        music.stop();</b>
+<b class="nc">&nbsp;        music.play();</b>
+<b class="nc">&nbsp;        music.setVolume(settings.getInt(&quot;musicvol&quot;) / 100f);</b>
+&nbsp;
+<b class="nc">&nbsp;        landCore.beginLaunch(coreType);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void takeMapScreenshot(){
+<b class="nc">&nbsp;        int w = world.width() * tilesize, h = world.height() * tilesize;</b>
+<b class="nc">&nbsp;        int memory = w * h * 4 / 1024 / 1024;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Vars.checkScreenshotMemory &amp;&amp; memory &gt;= (mobile ? 65 : 120)){</b>
+<b class="nc">&nbsp;            ui.showInfo(&quot;@screenshot.invalid&quot;);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        FrameBuffer buffer = new FrameBuffer(w, h);</b>
+&nbsp;
+<b class="nc">&nbsp;        drawWeather = false;</b>
+<b class="nc">&nbsp;        float vpW = camera.width, vpH = camera.height, px = camera.position.x, py = camera.position.y;</b>
+<b class="nc">&nbsp;        disableUI = true;</b>
+<b class="nc">&nbsp;        camera.width = w;</b>
+<b class="nc">&nbsp;        camera.height = h;</b>
+<b class="nc">&nbsp;        camera.position.x = w / 2f + tilesize / 2f;</b>
+<b class="nc">&nbsp;        camera.position.y = h / 2f + tilesize / 2f;</b>
+<b class="nc">&nbsp;        buffer.begin();</b>
+<b class="nc">&nbsp;        draw();</b>
+<b class="nc">&nbsp;        Draw.flush();</b>
+<b class="nc">&nbsp;        byte[] lines = ScreenUtils.getFrameBufferPixels(0, 0, w, h, true);</b>
+<b class="nc">&nbsp;        buffer.end();</b>
+<b class="nc">&nbsp;        disableUI = false;</b>
+<b class="nc">&nbsp;        camera.width = vpW;</b>
+<b class="nc">&nbsp;        camera.height = vpH;</b>
+<b class="nc">&nbsp;        camera.position.set(px, py);</b>
+<b class="nc">&nbsp;        drawWeather = true;</b>
+<b class="nc">&nbsp;        buffer.dispose();</b>
+&nbsp;
+<b class="nc">&nbsp;        Threads.thread(() -&gt; {</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; lines.length; i += 4){</b>
+<b class="nc">&nbsp;                lines[i + 3] = (byte)255;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Pixmap fullPixmap = new Pixmap(w, h);</b>
+<b class="nc">&nbsp;            Buffers.copy(lines, 0, fullPixmap.pixels, lines.length);</b>
+<b class="nc">&nbsp;            Fi file = screenshotDirectory.child(&quot;screenshot-&quot; + Time.millis() + &quot;.png&quot;);</b>
+<b class="nc">&nbsp;            PixmapIO.writePng(file, fullPixmap);</b>
+<b class="nc">&nbsp;            fullPixmap.dispose();</b>
+<b class="nc">&nbsp;            app.post(() -&gt; ui.showInfoFade(bundle.format(&quot;screenshot&quot;, file.toString())));</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class EnvRenderer{
+&nbsp;        /** Environment bitmask; must match env exactly when and-ed. */
+&nbsp;        public final int env;
+&nbsp;        /** Rendering callback. */
+&nbsp;        public final Runnable renderer;
+&nbsp;
+<b class="nc">&nbsp;        public EnvRenderer(int env, Runnable renderer){</b>
+<b class="nc">&nbsp;            this.env = env;</b>
+<b class="nc">&nbsp;            this.renderer = renderer;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

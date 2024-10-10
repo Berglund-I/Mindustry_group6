@@ -1,0 +1,293 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ContinuousLiquidTurret</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense.turrets</a>
+</div>
+
+<h1>Coverage Summary for Class: ContinuousLiquidTurret (mindustry.world.blocks.defense.turrets)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ContinuousLiquidTurret</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (12/18)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ContinuousLiquidTurret$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ContinuousLiquidTurret$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ContinuousLiquidTurret$ContinuousLiquidTurretBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (5/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (6/16)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    47.4%
+  </span>
+  <span class="absValue">
+    (9/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.4%
+  </span>
+  <span class="absValue">
+    (19/37)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense.turrets;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class ContinuousLiquidTurret extends ContinuousTurret{
+<b class="fc">&nbsp;    public ObjectMap&lt;Liquid, BulletType&gt; ammoTypes = new ObjectMap&lt;&gt;();</b>
+<b class="fc">&nbsp;    public float liquidConsumed = 1f / 60f;</b>
+&nbsp;
+&nbsp;    public ContinuousLiquidTurret(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        hasLiquids = true;</b>
+&nbsp;        //TODO
+<b class="fc">&nbsp;        loopSound = Sounds.minebeam;</b>
+<b class="fc">&nbsp;        shootSound = Sounds.none;</b>
+<b class="fc">&nbsp;        smokeEffect = Fx.none;</b>
+<b class="fc">&nbsp;        shootEffect = Fx.none;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Initializes accepted ammo map. Format: [liquid1, bullet1, liquid2, bullet2...] */
+&nbsp;    public void ammo(Object... objects){
+<b class="fc">&nbsp;        ammoTypes = ObjectMap.of(objects);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.remove(Stat.ammo);</b>
+&nbsp;        //TODO looks bad
+<b class="nc">&nbsp;        stats.add(Stat.ammo, table -&gt; {</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            StatValues.number(liquidConsumed * 60f, StatUnit.perSecond, true).display(table);</b>
+&nbsp;        });
+<b class="nc">&nbsp;        stats.add(Stat.ammo, StatValues.ammo(ammoTypes));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+&nbsp;        //TODO display ammoMultiplier.
+<b class="fc">&nbsp;        consume(new ConsumeLiquidFilter(i -&gt; ammoTypes.containsKey(i), liquidConsumed){</b>
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void display(Stats stats){
+&nbsp;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            //TODO
+&nbsp;            //@Override
+&nbsp;            //protected float use(Building entity){
+&nbsp;            //    BulletType type = ammoTypes.get(entity.liquids.current());
+&nbsp;            //    return Math.min(amount * entity.edelta(), entity.block.liquidCapacity) / (type == null ? 1f : type.ammoMultiplier);
+&nbsp;            //}
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        ammoTypes.each((item, type) -&gt; placeOverlapRange = Math.max(placeOverlapRange, range + type.rangeChange + placeOverlapMargin));</b>
+&nbsp;
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ContinuousLiquidTurretBuild extends ContinuousTurretBuild{</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldActiveSound(){
+<b class="nc">&nbsp;            return wasShooting &amp;&amp; enabled;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            super.updateTile();</b>
+&nbsp;
+<b class="fc">&nbsp;            unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Object senseObject(LAccess sensor){
+<b class="nc">&nbsp;            return switch(sensor){</b>
+<b class="nc">&nbsp;                case currentAmmoType -&gt; liquids.current();</b>
+<b class="nc">&nbsp;                default -&gt; super.senseObject(sensor);</b>
+&nbsp;            };
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean canConsume(){
+<b class="nc">&nbsp;            return hasCorrectAmmo() &amp;&amp; super.canConsume();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public BulletType useAmmo(){
+&nbsp;            //does not consume ammo upon firing
+<b class="nc">&nbsp;            return peekAmmo();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public BulletType peekAmmo(){
+<b class="fc">&nbsp;            return ammoTypes.get(liquids.current());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean hasAmmo(){
+<b class="fc">&nbsp;            return hasCorrectAmmo() &amp;&amp; ammoTypes.get(liquids.current()) != null &amp;&amp; liquids.currentAmount() &gt; 0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean hasCorrectAmmo(){
+<b class="fc">&nbsp;            return !bullets.any() || bullets.first().bullet.type == peekAmmo();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptLiquid(Building source, Liquid liquid){
+<b class="nc">&nbsp;            return ammoTypes.get(liquid) != null &amp;&amp;</b>
+<b class="nc">&nbsp;                (liquids.current() == liquid ||</b>
+<b class="nc">&nbsp;                ((!ammoTypes.containsKey(liquids.current()) || liquids.get(liquids.current()) &lt;= 1f / ammoTypes.get(liquids.current()).ammoMultiplier + 0.001f)));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

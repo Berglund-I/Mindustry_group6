@@ -1,0 +1,336 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapListDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: MapListDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapListDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/136)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public abstract class MapListDialog extends BaseDialog{
+&nbsp;    BaseDialog activeDialog;
+&nbsp;
+&nbsp;    private String searchString;
+<b class="nc">&nbsp;    private Seq&lt;Gamemode&gt; modes = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    private Table mapTable = new Table();</b>
+&nbsp;    private TextField searchField;
+&nbsp;
+<b class="nc">&nbsp;    private boolean</b>
+<b class="nc">&nbsp;    showBuiltIn = Core.settings.getBool(&quot;editorshowbuiltinmaps&quot;, true),</b>
+<b class="nc">&nbsp;    showCustom = Core.settings.getBool(&quot;editorshowcustommaps&quot;, true),</b>
+<b class="nc">&nbsp;    searchAuthor = Core.settings.getBool(&quot;editorsearchauthor&quot;, false),</b>
+<b class="nc">&nbsp;    searchDescription = Core.settings.getBool(&quot;editorsearchdescription&quot;, false),</b>
+&nbsp;    displayType;
+&nbsp;
+&nbsp;    public MapListDialog(String title, boolean displayType){
+<b class="nc">&nbsp;        super(title);</b>
+&nbsp;
+<b class="nc">&nbsp;        this.displayType = displayType;</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.remove();</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseListener();</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(this::setup);</b>
+<b class="nc">&nbsp;        onResize(() -&gt; {</b>
+<b class="nc">&nbsp;            if(activeDialog != null){</b>
+<b class="nc">&nbsp;                activeDialog.hide();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            setup();</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    void buildButtons(){}</b>
+&nbsp;
+&nbsp;    abstract void showMap(Map map);
+&nbsp;
+&nbsp;    void setup(){
+<b class="nc">&nbsp;        makeButtonOverlay();</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.clearChildren();</b>
+&nbsp;
+<b class="nc">&nbsp;        searchString = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.graphics.isPortrait() &amp;&amp; displayType){</b>
+<b class="nc">&nbsp;            buttons.button(&quot;@back&quot;, Icon.left, this::hide).size(210f * 2f, 64f).colspan(2);</b>
+<b class="nc">&nbsp;            buttons.row();</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            buttons.button(&quot;@back&quot;, Icon.left, this::hide).size(210f, 64f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        buildButtons();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        rebuildMaps();</b>
+&nbsp;
+<b class="nc">&nbsp;        ScrollPane pane = new ScrollPane(mapTable);</b>
+<b class="nc">&nbsp;        pane.setFadeScrollBars(false);</b>
+<b class="nc">&nbsp;        pane.setScrollingDisabledX(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        Table search = new Table();</b>
+<b class="nc">&nbsp;        search.image(Icon.zoom);</b>
+<b class="nc">&nbsp;        searchField = search.field(&quot;&quot;, t -&gt; {</b>
+<b class="nc">&nbsp;            searchString = t.length() &gt; 0 ? t.toLowerCase() : null;</b>
+<b class="nc">&nbsp;            rebuildMaps();</b>
+<b class="nc">&nbsp;        }).maxTextLength(50).growX().get();</b>
+<b class="nc">&nbsp;        searchField.setMessageText(&quot;@editor.search&quot;);</b>
+<b class="nc">&nbsp;        search.button(Icon.filter, Styles.emptyi, this::showMapFilters).tooltip(&quot;@editor.filters&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.add(search).growX();</b>
+<b class="nc">&nbsp;        cont.row();</b>
+<b class="nc">&nbsp;        cont.add(pane).padLeft(28f).uniformX().growY();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void rebuildMaps(){
+<b class="nc">&nbsp;        mapTable.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        mapTable.marginRight(12f);</b>
+&nbsp;
+<b class="nc">&nbsp;        int maxwidth = Math.max((int)(Core.graphics.getWidth() / Scl.scl(230)), 1);</b>
+<b class="nc">&nbsp;        float mapsize = 200f;</b>
+<b class="nc">&nbsp;        boolean noMapsShown = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Map&gt; mapList = showCustom ?</b>
+<b class="nc">&nbsp;            showBuiltIn ? maps.all() : maps.customMaps() :</b>
+<b class="nc">&nbsp;            showBuiltIn ? maps.defaultMaps() : null;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(mapList != null){</b>
+<b class="nc">&nbsp;            for(Map map : mapList){</b>
+&nbsp;
+<b class="nc">&nbsp;                boolean invalid = false;</b>
+<b class="nc">&nbsp;                for(Gamemode mode : modes){</b>
+<b class="nc">&nbsp;                    invalid |= !mode.valid(map);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;                if(invalid || (searchString != null</b>
+<b class="nc">&nbsp;                    &amp;&amp; !map.plainName().toLowerCase().contains(searchString)</b>
+<b class="nc">&nbsp;                    &amp;&amp; (!searchAuthor || !map.plainAuthor().toLowerCase().contains(searchString))</b>
+<b class="nc">&nbsp;                    &amp;&amp; (!searchDescription || !map.plainDescription().toLowerCase().contains(searchString)))){</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                noMapsShown = false;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(i % maxwidth == 0){</b>
+<b class="nc">&nbsp;                    mapTable.row();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                TextButton button = mapTable.button(&quot;&quot;, Styles.grayt, () -&gt; showMap(map)).width(mapsize).bottom().pad(8).get();</b>
+<b class="nc">&nbsp;                button.clearChildren();</b>
+<b class="nc">&nbsp;                button.margin(9);</b>
+<b class="nc">&nbsp;                button.bottom();</b>
+&nbsp;
+&nbsp;                //TODO hide in editor?
+<b class="nc">&nbsp;                button.table(t -&gt; {</b>
+<b class="nc">&nbsp;                    t.left();</b>
+<b class="nc">&nbsp;                    for(Gamemode mode : Gamemode.all){</b>
+<b class="nc">&nbsp;                        TextureRegionDrawable icon = Vars.ui.getIcon(&quot;mode&quot; + Strings.capitalize(mode.name()) + &quot;Small&quot;);</b>
+<b class="nc">&nbsp;                        if(mode.valid(map) &amp;&amp; Core.atlas.isFound(icon.getRegion())){</b>
+<b class="nc">&nbsp;                            t.image(icon).size(16f).pad(4f);</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    if(t.getChildren().size == 0){</b>
+<b class="nc">&nbsp;                        t.add().size(16f).pad(4f);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }).left().row();</b>
+&nbsp;
+<b class="nc">&nbsp;                button.add(map.name()).width(mapsize - 18f).center().get().setEllipsis(true);</b>
+<b class="nc">&nbsp;                button.row();</b>
+<b class="nc">&nbsp;                button.image().growX().pad(4).color(Pal.gray);</b>
+<b class="nc">&nbsp;                button.row();</b>
+<b class="nc">&nbsp;                button.stack(new Image(map.safeTexture()).setScaling(Scaling.fit), new BorderImage(map.safeTexture()).setScaling(Scaling.fit)).size(mapsize - 20f);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(displayType){</b>
+<b class="nc">&nbsp;                    button.row();</b>
+<b class="nc">&nbsp;                    button.add(map.custom ? &quot;@custom&quot; : map.workshop ? &quot;@workshop&quot; : map.mod != null ? &quot;[lightgray]&quot; + map.mod.meta.displayName : &quot;@builtin&quot;).color(Color.gray).padTop(3);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                i++;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(noMapsShown){</b>
+<b class="nc">&nbsp;            mapTable.add(&quot;@maps.none&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void showMapFilters(){
+<b class="nc">&nbsp;        activeDialog = new BaseDialog(&quot;@editor.filters&quot;);</b>
+<b class="nc">&nbsp;        activeDialog.addCloseButton();</b>
+<b class="nc">&nbsp;        activeDialog.cont.table(menu -&gt; {</b>
+<b class="nc">&nbsp;            menu.add(&quot;@editor.filters.mode&quot;).width(150f).left();</b>
+<b class="nc">&nbsp;            menu.table(t -&gt; {</b>
+<b class="nc">&nbsp;                for(Gamemode mode : Gamemode.all){</b>
+<b class="nc">&nbsp;                    TextureRegionDrawable icon = Vars.ui.getIcon(&quot;mode&quot; + Strings.capitalize(mode.name()));</b>
+<b class="nc">&nbsp;                    if(Core.atlas.isFound(icon.getRegion())){</b>
+<b class="nc">&nbsp;                        t.button(icon, Styles.emptyTogglei, () -&gt; {</b>
+<b class="nc">&nbsp;                            if(modes.contains(mode)){</b>
+<b class="nc">&nbsp;                                modes.remove(mode);</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                modes.add(mode);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                            rebuildMaps();</b>
+<b class="nc">&nbsp;                        }).size(60f).checked(modes.contains(mode)).tooltip(&quot;@mode.&quot; + mode.name() + &quot;.name&quot;);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }).padBottom(10f);</b>
+<b class="nc">&nbsp;            menu.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            menu.add(&quot;@editor.filters.type&quot;).width(150f).left();</b>
+<b class="nc">&nbsp;            menu.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                t.button(&quot;@custom&quot;, Styles.flatTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                    showCustom = !showCustom;</b>
+<b class="nc">&nbsp;                    Core.settings.put(&quot;editorshowcustommaps&quot;, showCustom);</b>
+<b class="nc">&nbsp;                    rebuildMaps();</b>
+<b class="nc">&nbsp;                }).size(150f, 60f).checked(showCustom);</b>
+<b class="nc">&nbsp;                t.button(&quot;@builtin&quot;, Styles.flatTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                    showBuiltIn = !showBuiltIn;</b>
+<b class="nc">&nbsp;                    Core.settings.put(&quot;editorshowbuiltinmaps&quot;, showBuiltIn);</b>
+<b class="nc">&nbsp;                    rebuildMaps();</b>
+<b class="nc">&nbsp;                }).size(150f, 60f).checked(showBuiltIn);</b>
+<b class="nc">&nbsp;            }).padBottom(10f);</b>
+<b class="nc">&nbsp;            menu.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            menu.add(&quot;@editor.filters.search&quot;).width(150f).left();</b>
+<b class="nc">&nbsp;            menu.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                t.button(&quot;@editor.filters.author&quot;, Styles.flatTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                    searchAuthor = !searchAuthor;</b>
+<b class="nc">&nbsp;                    Core.settings.put(&quot;editorsearchauthor&quot;, searchAuthor);</b>
+<b class="nc">&nbsp;                    rebuildMaps();</b>
+<b class="nc">&nbsp;                }).size(150f, 60f).checked(searchAuthor);</b>
+<b class="nc">&nbsp;                t.button(&quot;@editor.filters.description&quot;, Styles.flatTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                    searchDescription = !searchDescription;</b>
+<b class="nc">&nbsp;                    Core.settings.put(&quot;editorsearchdescription&quot;, searchDescription);</b>
+<b class="nc">&nbsp;                    rebuildMaps();</b>
+<b class="nc">&nbsp;                }).size(150f, 60f).checked(searchDescription);</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        activeDialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Dialog show(){
+<b class="nc">&nbsp;        super.show();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.app.isDesktop() &amp;&amp; searchField != null){</b>
+<b class="nc">&nbsp;            Core.scene.setKeyboardFocus(searchField);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

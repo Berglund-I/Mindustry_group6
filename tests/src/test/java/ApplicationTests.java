@@ -484,6 +484,55 @@ public class ApplicationTests{
         assertTrue(state.teams.playerCores().size > 0);
     }
 
+    @Test
+    void testSaveNotNull() {
+        // Andreas
+        // Arrange
+        if (arc.Core.assets == null) {
+            Core.assets = new arc.assets.AssetManager();
+        }
+        Saves save = new Saves();
+//        Core arc = new Core();
+        assertFalse(save.isSaving());
+//        arc.notify();
+//
+//        assertNotNull(save.getCurrent());
+
+        // Act
+
+        // Assert
+
+    }
+
+//    @Test
+//    void testSaveIsNotSaving() {
+//        if (arc.Core.assets == null) {
+//            Core.assets = new arc.assets.AssetManager();
+//        }
+//        Saves save = new Saves();
+//        assertFalse(save.isSaving());
+//    }
+//
+//    @Test
+//    void testSaveNoSaves() {
+//        if (arc.Core.assets == null) {
+//            Core.assets = new arc.assets.AssetManager();
+//        }
+//        Saves save = new Saves();
+//        assertEquals(0, save.getTotalPlaytime());
+//    }
+
+    @Test
+    void testSaveStateChangeToMenu() {
+        if (arc.Core.assets == null) {
+            Core.assets = new arc.assets.AssetManager();
+        }
+        Saves save = new Saves();
+        Events.fire(new EventType.StateChangeEvent(State.playing, State.menu));
+        assertNull(save.getCurrent());
+    }
+
+
     void updateBlocks(int times){
         for(Tile tile : world.tiles){
             if(tile.build != null && tile.isCenter()){

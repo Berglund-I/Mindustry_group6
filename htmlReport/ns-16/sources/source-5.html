@@ -1,0 +1,150 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SeqEffect</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.effect</a>
+</div>
+
+<h1>Coverage Summary for Class: SeqEffect (mindustry.entities.effect)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SeqEffect</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15%
+  </span>
+  <span class="absValue">
+    (3/20)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.effect;
+&nbsp;
+&nbsp;import mindustry.entities.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Renders multiple particle effects in sequence.
+&nbsp; * Will not work correctly for effects that modify life dynamically.
+&nbsp; * Z layer of child effects is ignored.
+&nbsp; * */
+&nbsp;public class SeqEffect extends Effect{
+<b class="fc">&nbsp;    public Effect[] effects = {};</b>
+&nbsp;
+<b class="fc">&nbsp;    public SeqEffect(){</b>
+<b class="fc">&nbsp;        clip = 100f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SeqEffect(Effect... effects){
+<b class="nc">&nbsp;        this();</b>
+<b class="nc">&nbsp;        this.effects = effects;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="nc">&nbsp;        lifetime = 0f;</b>
+<b class="nc">&nbsp;        for(Effect f : effects){</b>
+<b class="nc">&nbsp;            f.init();</b>
+<b class="nc">&nbsp;            clip = Math.max(clip, f.clip);</b>
+<b class="nc">&nbsp;            lifetime += f.lifetime;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void render(EffectContainer e){
+<b class="nc">&nbsp;        var cont = e.inner();</b>
+<b class="nc">&nbsp;        float life = e.time, sum = 0f;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; effects.length; i++){</b>
+<b class="nc">&nbsp;            var fx = effects[i];</b>
+<b class="nc">&nbsp;            if(life &lt;= fx.lifetime + sum){</b>
+<b class="nc">&nbsp;                cont.set(e.id + i, e.color, life - sum, fx.lifetime, e.rotation, e.x, e.y, e.data);</b>
+<b class="nc">&nbsp;                fx.render(cont);</b>
+<b class="nc">&nbsp;                clip = Math.max(clip, fx.clip);</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            sum += fx.lifetime;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

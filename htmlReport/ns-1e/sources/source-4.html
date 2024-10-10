@@ -1,0 +1,1187 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MobileInput</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.input</a>
+</div>
+
+<h1>Coverage Summary for Class: MobileInput (mindustry.input)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MobileInput</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/50)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/529)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.input;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.GestureDetector.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.ui.ImageButton.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.input.PlaceMode.*;
+&nbsp;
+<b class="nc">&nbsp;public class MobileInput extends InputHandler implements GestureListener{</b>
+&nbsp;    /** Maximum speed the player can pan. */
+&nbsp;    private static final float maxPanSpeed = 1.3f;
+&nbsp;    /** Distance to edge of screen to start panning. */
+<b class="nc">&nbsp;    public final float edgePan = Scl.scl(60f);</b>
+&nbsp;
+&nbsp;    //gesture data
+<b class="nc">&nbsp;    public Vec2 vector = new Vec2(), movement = new Vec2(), targetPos = new Vec2();</b>
+<b class="nc">&nbsp;    public float lastZoom = -1;</b>
+&nbsp;
+&nbsp;    /** Position where the player started dragging a line. */
+&nbsp;    public int lineStartX, lineStartY, lastLineX, lastLineY;
+&nbsp;
+&nbsp;    /** Animation scale for line. */
+&nbsp;    public float lineScale;
+&nbsp;    /** Animation data for crosshair. */
+&nbsp;    public float crosshairScale;
+&nbsp;    public Teamc lastTarget;
+&nbsp;    /** Used for shifting build plans. */
+&nbsp;    public float shiftDeltaX, shiftDeltaY;
+&nbsp;
+&nbsp;    /** Place plans to be removed. */
+<b class="nc">&nbsp;    public Seq&lt;BuildPlan&gt; removals = new Seq&lt;&gt;();</b>
+&nbsp;    /** Whether the player is currently shifting all placed tiles. */
+&nbsp;    public boolean selecting;
+&nbsp;    /** Various modes that aren&#39;t enums for some reason. This should be cleaned up. */
+&nbsp;    public boolean lineMode, schematicMode, rebuildMode, queueCommandMode;
+&nbsp;    /** Current place mode. */
+<b class="nc">&nbsp;    public PlaceMode mode = none;</b>
+&nbsp;    /** Whether no recipe was available when switching to break mode. */
+&nbsp;    public @Nullable Block lastBlock;
+&nbsp;    /** Last placed plan. Used for drawing block overlay. */
+&nbsp;    public @Nullable BuildPlan lastPlaced;
+&nbsp;    /** Down tracking for panning. */
+<b class="nc">&nbsp;    public boolean down = false;</b>
+&nbsp;    /** Whether manual shooting (point with finger) is enabled. */
+<b class="nc">&nbsp;    public boolean manualShooting = false;</b>
+&nbsp;
+&nbsp;    /** Current thing being shot at. */
+&nbsp;    public @Nullable Teamc target;
+&nbsp;    /** Payload target being moved to. Can be a position (for dropping), or a unit/block. */
+&nbsp;    public @Nullable Position payloadTarget;
+&nbsp;    /** Unit last tapped, or null if last tap was not on a unit. */
+&nbsp;    public @Nullable Unit unitTapped;
+&nbsp;    /** Control building last tapped. */
+&nbsp;    public @Nullable Building buildingTapped;
+&nbsp;
+&nbsp;    {
+<b class="nc">&nbsp;        Events.on(UnitDestroyEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.unit != null &amp;&amp; e.unit.isPlayer() &amp;&amp; e.unit.getPlayer().isLocal() &amp;&amp; e.unit.type.weapons.contains(w -&gt; w.bullet.killShooter)){</b>
+<b class="nc">&nbsp;                manualShooting = false;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    //region utility methods
+&nbsp;
+&nbsp;    /** Check and assign targets for a specific position. */
+&nbsp;    void checkTargets(float x, float y){
+<b class="nc">&nbsp;        Unit unit = Units.closestEnemy(player.team(), x, y, 20f, u -&gt; !u.dead);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit != null &amp;&amp; !player.dead() &amp;&amp; player.unit().type.canAttack){</b>
+<b class="nc">&nbsp;            player.unit().mineTile = null;</b>
+<b class="nc">&nbsp;            target = unit;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Building tile = world.buildWorld(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            if((tile != null &amp;&amp; player.team() != tile.team &amp;&amp; (tile.team != Team.derelict || state.rules.coreCapture)) || (tile != null &amp;&amp; player.unit().type.canHeal &amp;&amp; tile.team == player.team() &amp;&amp; tile.damaged())){</b>
+<b class="nc">&nbsp;                player.unit().mineTile = null;</b>
+<b class="nc">&nbsp;                target = tile;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns whether this tile is in the list of plans, or at least colliding with one. */
+&nbsp;    boolean hasPlan(Tile tile){
+<b class="nc">&nbsp;        return getPlan(tile) != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns whether this block overlaps any selection plans. */
+&nbsp;    boolean checkOverlapPlacement(int x, int y, Block block){
+<b class="nc">&nbsp;        r2.setSize(block.size * tilesize);</b>
+<b class="nc">&nbsp;        r2.setCenter(x * tilesize + block.offset, y * tilesize + block.offset);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var plan : selectPlans){</b>
+<b class="nc">&nbsp;            Tile other = plan.tile();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(other == null || plan.breaking) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            r1.setSize(plan.block.size * tilesize);</b>
+<b class="nc">&nbsp;            r1.setCenter(other.worldx() + plan.block.offset, other.worldy() + plan.block.offset);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(r2.overlaps(r1)){</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!player.dead()){</b>
+<b class="nc">&nbsp;            for(var plan : player.unit().plans()){</b>
+<b class="nc">&nbsp;                Tile other = world.tile(plan.x, plan.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(other == null || plan.breaking) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                r1.setSize(plan.block.size * tilesize);</b>
+<b class="nc">&nbsp;                r1.setCenter(other.worldx() + plan.block.offset, other.worldy() + plan.block.offset);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(r2.overlaps(r1)){</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the selection plan that overlaps this tile, or null. */
+&nbsp;    BuildPlan getPlan(Tile tile){
+<b class="nc">&nbsp;        r2.setSize(tilesize);</b>
+<b class="nc">&nbsp;        r2.setCenter(tile.worldx(), tile.worldy());</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var plan : selectPlans){</b>
+<b class="nc">&nbsp;            Tile other = plan.tile();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(other == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!plan.breaking){</b>
+<b class="nc">&nbsp;                r1.setSize(plan.block.size * tilesize);</b>
+<b class="nc">&nbsp;                r1.setCenter(other.worldx() + plan.block.offset, other.worldy() + plan.block.offset);</b>
+&nbsp;
+&nbsp;            }else{
+<b class="nc">&nbsp;                r1.setSize(other.block().size * tilesize);</b>
+<b class="nc">&nbsp;                r1.setCenter(other.worldx() + other.block().offset, other.worldy() + other.block().offset);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(r2.overlaps(r1)) return plan;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void removePlan(BuildPlan plan){
+<b class="nc">&nbsp;        selectPlans.remove(plan, true);</b>
+<b class="nc">&nbsp;        if(!plan.breaking){</b>
+<b class="nc">&nbsp;            removals.add(plan);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean isLinePlacing(){
+<b class="nc">&nbsp;        return mode == placing &amp;&amp; lineMode &amp;&amp; Mathf.dst(lineStartX * tilesize, lineStartY * tilesize, Core.input.mouseWorld().x, Core.input.mouseWorld().y) &gt;= 3 * tilesize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean isAreaBreaking(){
+<b class="nc">&nbsp;        return mode == breaking &amp;&amp; lineMode &amp;&amp; Mathf.dst(lineStartX * tilesize, lineStartY * tilesize, Core.input.mouseWorld().x, Core.input.mouseWorld().y) &gt;= 2 * tilesize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;    //region UI and drawing
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void buildPlacementUI(Table table){
+<b class="nc">&nbsp;        table.image().color(Pal.gray).height(4f).colspan(4).growX();</b>
+<b class="nc">&nbsp;        table.row();</b>
+<b class="nc">&nbsp;        table.left().margin(0f).defaults().size(48f);</b>
+&nbsp;
+<b class="nc">&nbsp;        table.button(Icon.hammer, Styles.clearNoneTogglei, () -&gt; {</b>
+<b class="nc">&nbsp;            mode = mode == breaking ? block == null ? none : placing : breaking;</b>
+<b class="nc">&nbsp;            lastBlock = block;</b>
+<b class="nc">&nbsp;        }).update(l -&gt; l.setChecked(mode == breaking)).name(&quot;breakmode&quot;);</b>
+&nbsp;
+&nbsp;        //diagonal swap button
+<b class="nc">&nbsp;        table.button(Icon.diagonal, Styles.clearNoneTogglei, () -&gt; {</b>
+<b class="nc">&nbsp;            Core.settings.put(&quot;swapdiagonal&quot;, !Core.settings.getBool(&quot;swapdiagonal&quot;));</b>
+<b class="nc">&nbsp;        }).update(l -&gt; l.setChecked(Core.settings.getBool(&quot;swapdiagonal&quot;)));</b>
+&nbsp;
+&nbsp;        //rotate button
+<b class="nc">&nbsp;        table.button(Icon.right, Styles.clearNoneTogglei, () -&gt; {</b>
+<b class="nc">&nbsp;            if(block != null &amp;&amp; block.rotate){</b>
+<b class="nc">&nbsp;                rotation = Mathf.mod(rotation + 1, 4);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                schematicMode = !schematicMode;</b>
+<b class="nc">&nbsp;                if(schematicMode){</b>
+<b class="nc">&nbsp;                    block = null;</b>
+<b class="nc">&nbsp;                    mode = none;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    rebuildMode = false;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }).update(i -&gt; {</b>
+<b class="nc">&nbsp;            boolean arrow = block != null &amp;&amp; block.rotate;</b>
+&nbsp;
+<b class="nc">&nbsp;            i.getImage().setRotationOrigin(!arrow ? 0 : rotation * 90, Align.center);</b>
+<b class="nc">&nbsp;            i.getStyle().imageUp = arrow ? Icon.right : Icon.copy;</b>
+<b class="nc">&nbsp;            i.setChecked(!arrow &amp;&amp; schematicMode);</b>
+&nbsp;        });
+&nbsp;
+&nbsp;        //confirm button
+<b class="nc">&nbsp;        table.button(Icon.ok, Styles.clearNoneTogglei, () -&gt; {</b>
+<b class="nc">&nbsp;            if(schematicMode){</b>
+<b class="nc">&nbsp;                rebuildMode = !rebuildMode;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                for(BuildPlan plan : selectPlans){</b>
+<b class="nc">&nbsp;                    Tile tile = plan.tile();</b>
+&nbsp;
+&nbsp;                    //actually place/break all selected blocks
+<b class="nc">&nbsp;                    if(tile != null){</b>
+<b class="nc">&nbsp;                        if(!plan.breaking){</b>
+<b class="nc">&nbsp;                            if(validPlace(plan.x, plan.y, plan.block, plan.rotation)){</b>
+<b class="nc">&nbsp;                                BuildPlan other = getPlan(plan.x, plan.y, plan.block.size, null);</b>
+<b class="nc">&nbsp;                                BuildPlan copy = plan.copy();</b>
+&nbsp;
+<b class="nc">&nbsp;                                if(other == null){</b>
+<b class="nc">&nbsp;                                    player.unit().addBuild(copy);</b>
+<b class="nc">&nbsp;                                }else if(!other.breaking &amp;&amp; other.x == plan.x &amp;&amp; other.y == plan.y &amp;&amp; other.block.size == plan.block.size){</b>
+<b class="nc">&nbsp;                                    player.unit().plans().remove(other);</b>
+<b class="nc">&nbsp;                                    player.unit().addBuild(copy);</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            rotation = plan.rotation;</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            tryBreakBlock(tile.x, tile.y);</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                //move all current plans to removal array so they fade out
+<b class="nc">&nbsp;                removals.addAll(selectPlans.select(r -&gt; !r.breaking));</b>
+<b class="nc">&nbsp;                selectPlans.clear();</b>
+<b class="nc">&nbsp;                selecting = false;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).visible(() -&gt; !selectPlans.isEmpty() || schematicMode || rebuildMode).update(i -&gt; {</b>
+<b class="nc">&nbsp;            i.getStyle().imageUp = schematicMode || rebuildMode ? Icon.wrench : Icon.ok;</b>
+<b class="nc">&nbsp;            i.setChecked(rebuildMode);</b>
+&nbsp;
+<b class="nc">&nbsp;        }).name(&quot;confirmplace&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean showCancel(){
+<b class="nc">&nbsp;        return !player.dead() &amp;&amp; (player.unit().isBuilding() || block != null || mode == breaking || !selectPlans.isEmpty()) &amp;&amp; !hasSchem();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean hasSchem(){
+<b class="nc">&nbsp;        return lastSchematic != null &amp;&amp; !selectPlans.isEmpty();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void buildUI(Group group){
+&nbsp;
+<b class="nc">&nbsp;        group.fill(t -&gt; {</b>
+<b class="nc">&nbsp;            t.visible(this::showCancel);</b>
+<b class="nc">&nbsp;            t.bottom().left();</b>
+<b class="nc">&nbsp;            t.button(&quot;@cancel&quot;, Icon.cancel, () -&gt; {</b>
+<b class="nc">&nbsp;                if(!player.dead()){</b>
+<b class="nc">&nbsp;                    player.unit().clearBuilding();</b>
+&nbsp;                }
+<b class="nc">&nbsp;                selectPlans.clear();</b>
+<b class="nc">&nbsp;                mode = none;</b>
+<b class="nc">&nbsp;                block = null;</b>
+<b class="nc">&nbsp;            }).width(155f).height(50f).margin(12f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        group.fill(t -&gt; {</b>
+<b class="nc">&nbsp;            t.visible(() -&gt; !showCancel() &amp;&amp; block == null &amp;&amp; !hasSchem());</b>
+<b class="nc">&nbsp;            t.bottom().left();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@command.queue&quot;, Icon.rightOpen, Styles.clearTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                queueCommandMode = !queueCommandMode;</b>
+<b class="nc">&nbsp;            }).width(155f).height(48f).margin(12f).checked(b -&gt; queueCommandMode).visible(() -&gt; commandMode).row();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@command&quot;, Icon.units, Styles.clearTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                commandMode = !commandMode;</b>
+<b class="nc">&nbsp;            }).width(155f).height(48f).margin(12f).checked(b -&gt; commandMode);</b>
+&nbsp;
+&nbsp;            //for better looking insets
+<b class="nc">&nbsp;            t.rect((x, y, w, h) -&gt; {</b>
+<b class="nc">&nbsp;                if(Core.scene.marginBottom &gt; 0){</b>
+<b class="nc">&nbsp;                    Tex.paneRight.draw(x, 0, w, y);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }).fillX().row();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        group.fill(t -&gt; {</b>
+<b class="nc">&nbsp;            t.visible(this::hasSchem);</b>
+<b class="nc">&nbsp;            t.bottom().left();</b>
+<b class="nc">&nbsp;            t.table(Tex.pane, b -&gt; {</b>
+<b class="nc">&nbsp;                b.defaults().size(50f);</b>
+&nbsp;
+<b class="nc">&nbsp;                ImageButtonStyle style = Styles.clearNonei;</b>
+&nbsp;
+<b class="nc">&nbsp;                b.button(Icon.save, style, this::showSchematicSave).disabled(f -&gt; lastSchematic == null || lastSchematic.file != null);</b>
+<b class="nc">&nbsp;                b.button(Icon.cancel, style, () -&gt; {</b>
+<b class="nc">&nbsp;                    selectPlans.clear();</b>
+<b class="nc">&nbsp;                    lastSchematic = null;</b>
+&nbsp;                });
+<b class="nc">&nbsp;                b.row();</b>
+<b class="nc">&nbsp;                b.button(Icon.flipX, style, () -&gt; flipPlans(selectPlans, true));</b>
+<b class="nc">&nbsp;                b.button(Icon.flipY, style, () -&gt; flipPlans(selectPlans, false));</b>
+<b class="nc">&nbsp;                b.row();</b>
+<b class="nc">&nbsp;                b.button(Icon.rotate, style, () -&gt; rotatePlans(selectPlans, 1)).update(i -&gt; {</b>
+<b class="nc">&nbsp;                    var img = i.getCells().first().get();</b>
+&nbsp;
+<b class="nc">&nbsp;                    img.setScale(-1f, 1f);</b>
+&nbsp;                    //why the heck doesn&#39;t setOrigin work for scaling
+<b class="nc">&nbsp;                    img.setTranslation(img.getWidth(), 0f);</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;            }).margin(4f);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawBottom(){
+<b class="nc">&nbsp;        Lines.stroke(1f);</b>
+&nbsp;
+&nbsp;        //draw plans about to be removed
+<b class="nc">&nbsp;        for(BuildPlan plan : removals){</b>
+<b class="nc">&nbsp;            Tile tile = plan.tile();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(tile == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            plan.animScale = Mathf.lerpDelta(plan.animScale, 0f, 0.2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(plan.breaking){</b>
+<b class="nc">&nbsp;                drawSelected(plan.x, plan.y, tile.block(), Pal.remove);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                plan.block.drawPlan(plan, allPlans(), true);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.mixcol();</b>
+<b class="nc">&nbsp;        Draw.color(Pal.accent);</b>
+&nbsp;
+&nbsp;        //Draw lines
+<b class="nc">&nbsp;        if(lineMode){</b>
+<b class="nc">&nbsp;            int tileX = tileX(Core.input.mouseX());</b>
+<b class="nc">&nbsp;            int tileY = tileY(Core.input.mouseY());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(mode == placing &amp;&amp; block != null){</b>
+&nbsp;                //draw placing
+<b class="nc">&nbsp;                for(int i = 0; i &lt; linePlans.size; i++){</b>
+<b class="nc">&nbsp;                    BuildPlan plan = linePlans.get(i);</b>
+<b class="nc">&nbsp;                    if(i == linePlans.size - 1 &amp;&amp; plan.block.rotate &amp;&amp; plan.block.drawArrow){</b>
+<b class="nc">&nbsp;                        drawArrow(block, plan.x, plan.y, plan.rotation);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    plan.block.drawPlan(plan, allPlans(), validPlace(plan.x, plan.y, plan.block, plan.rotation) &amp;&amp; getPlan(plan.x, plan.y, plan.block.size, null) == null);</b>
+<b class="nc">&nbsp;                    drawSelected(plan.x, plan.y, plan.block, Pal.accent);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                linePlans.each(this::drawOverPlan);</b>
+<b class="nc">&nbsp;            }else if(mode == breaking){</b>
+<b class="nc">&nbsp;                drawBreakSelection(lineStartX, lineStartY, tileX, tileY);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawTop(){
+<b class="nc">&nbsp;        if(mode == schematicSelect){</b>
+<b class="nc">&nbsp;            drawSelection(lineStartX, lineStartY, lastLineX, lastLineY, Vars.maxSchematicSize);</b>
+<b class="nc">&nbsp;        }else if(mode == rebuildSelect){</b>
+<b class="nc">&nbsp;            drawRebuildSelection(lineStartX, lineStartY, lastLineX, lastLineY);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        drawCommanded();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawOverSelect(){
+&nbsp;        //draw list of plans
+<b class="nc">&nbsp;        for(BuildPlan plan : selectPlans){</b>
+<b class="nc">&nbsp;            Tile tile = plan.tile();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(tile == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            if((!plan.breaking &amp;&amp; validPlace(tile.x, tile.y, plan.block, plan.rotation))</b>
+<b class="nc">&nbsp;            || (plan.breaking &amp;&amp; validBreak(tile.x, tile.y))){</b>
+<b class="nc">&nbsp;                plan.animScale = Mathf.lerpDelta(plan.animScale, 1f, 0.2f);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                plan.animScale = Mathf.lerpDelta(plan.animScale, 0.6f, 0.1f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Tmp.c1.set(Draw.getMixColor());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!plan.breaking &amp;&amp; plan == lastPlaced &amp;&amp; plan.block != null){</b>
+<b class="nc">&nbsp;                Draw.mixcol();</b>
+<b class="nc">&nbsp;                if(plan.block.rotate &amp;&amp; plan.block.drawArrow) drawArrow(plan.block, tile.x, tile.y, plan.rotation);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+<b class="nc">&nbsp;            drawPlan(plan);</b>
+<b class="nc">&nbsp;            if(!plan.breaking){</b>
+<b class="nc">&nbsp;                drawOverPlan(plan);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //draw last placed plan
+<b class="nc">&nbsp;            if(!plan.breaking &amp;&amp; plan == lastPlaced &amp;&amp; plan.block != null){</b>
+<b class="nc">&nbsp;                int rot = plan.block.planRotation(plan.rotation);</b>
+<b class="nc">&nbsp;                boolean valid = validPlace(tile.x, tile.y, plan.block, rot);</b>
+<b class="nc">&nbsp;                Draw.mixcol();</b>
+<b class="nc">&nbsp;                plan.block.drawPlace(tile.x, tile.y, rot, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;                drawOverlapCheck(plan.block, tile.x, tile.y, valid);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //draw targeting crosshair
+<b class="nc">&nbsp;        if(target != null &amp;&amp; !state.isEditor() &amp;&amp; !manualShooting){</b>
+<b class="nc">&nbsp;            if(target != lastTarget){</b>
+<b class="nc">&nbsp;                crosshairScale = 0f;</b>
+<b class="nc">&nbsp;                lastTarget = target;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            crosshairScale = Mathf.lerpDelta(crosshairScale, 1f, 0.2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Drawf.target(target.getX(), target.getY(), 7f * Interp.swingIn.apply(crosshairScale), Pal.remove);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected void drawPlan(BuildPlan plan){
+<b class="nc">&nbsp;        if(plan.tile() == null) return;</b>
+<b class="nc">&nbsp;        bplan.animScale = plan.animScale = Mathf.lerpDelta(plan.animScale, 1f, 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(plan.breaking){</b>
+<b class="nc">&nbsp;            drawSelected(plan.x, plan.y, plan.tile().block(), Pal.remove);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            plan.block.drawPlan(plan, allPlans(), validPlace(plan.x, plan.y, plan.block, plan.rotation));</b>
+<b class="nc">&nbsp;            drawSelected(plan.x, plan.y, plan.block, Pal.accent);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;    //region input events, overrides
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isRebuildSelecting(){
+<b class="nc">&nbsp;        return rebuildMode;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected int schemOriginX(){
+<b class="nc">&nbsp;        Tmp.v1.setZero();</b>
+<b class="nc">&nbsp;        selectPlans.each(r -&gt; Tmp.v1.add(r.drawx(), r.drawy()));</b>
+<b class="nc">&nbsp;        return World.toTile(Tmp.v1.scl(1f / selectPlans.size).x);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected int schemOriginY(){
+<b class="nc">&nbsp;        Tmp.v1.setZero();</b>
+<b class="nc">&nbsp;        selectPlans.each(r -&gt; Tmp.v1.add(r.drawx(), r.drawy()));</b>
+<b class="nc">&nbsp;        return World.toTile(Tmp.v1.scl(1f / selectPlans.size).y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isPlacing(){
+<b class="nc">&nbsp;        return super.isPlacing() &amp;&amp; mode == placing;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isBreaking(){
+<b class="nc">&nbsp;        return mode == breaking;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void useSchematic(Schematic schem){
+<b class="nc">&nbsp;        selectPlans.clear();</b>
+<b class="nc">&nbsp;        selectPlans.addAll(schematics.toPlans(schem, World.toTile(Core.camera.position.x), World.toTile(Core.camera.position.y)));</b>
+<b class="nc">&nbsp;        lastSchematic = schem;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean touchDown(int screenX, int screenY, int pointer, KeyCode button){
+<b class="nc">&nbsp;        if(state.isMenu() || locked()) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        down = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(player.dead()) return false;</b>
+&nbsp;
+&nbsp;        //get tile on cursor
+<b class="nc">&nbsp;        Tile cursor = tileAt(screenX, screenY);</b>
+&nbsp;
+<b class="nc">&nbsp;        float worldx = Core.input.mouseWorld(screenX, screenY).x, worldy = Core.input.mouseWorld(screenX, screenY).y;</b>
+&nbsp;
+&nbsp;        //ignore off-screen taps
+<b class="nc">&nbsp;        if(cursor == null || Core.scene.hasMouse(screenX, screenY)) return false;</b>
+&nbsp;
+&nbsp;        //only begin selecting if the tapped block is a plan
+<b class="nc">&nbsp;        selecting = hasPlan(cursor);</b>
+&nbsp;
+&nbsp;        //call tap events
+<b class="nc">&nbsp;        if(pointer == 0 &amp;&amp; !selecting){</b>
+<b class="nc">&nbsp;            if(schematicMode &amp;&amp; block == null){</b>
+<b class="nc">&nbsp;                mode = rebuildMode ? rebuildSelect : schematicSelect;</b>
+&nbsp;
+&nbsp;                //engage schematic selection mode
+<b class="nc">&nbsp;                int tileX = tileX(screenX);</b>
+<b class="nc">&nbsp;                int tileY = tileY(screenY);</b>
+<b class="nc">&nbsp;                lineStartX = tileX;</b>
+<b class="nc">&nbsp;                lineStartY = tileY;</b>
+<b class="nc">&nbsp;                lastLineX = tileX;</b>
+<b class="nc">&nbsp;                lastLineY = tileY;</b>
+<b class="nc">&nbsp;            }else if(!tryTapPlayer(worldx, worldy) &amp;&amp; Core.settings.getBool(&quot;keyboard&quot;)){</b>
+&nbsp;                //shoot on touch down when in keyboard mode
+<b class="nc">&nbsp;                player.shooting = true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean touchUp(int screenX, int screenY, int pointer, KeyCode button){
+<b class="nc">&nbsp;        lastZoom = renderer.getScale();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!Core.input.isTouched()){</b>
+<b class="nc">&nbsp;            down = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        manualShooting = false;</b>
+<b class="nc">&nbsp;        selecting = false;</b>
+&nbsp;
+&nbsp;        //place down a line if in line mode
+<b class="nc">&nbsp;        if(lineMode){</b>
+<b class="nc">&nbsp;            int tileX = tileX(screenX);</b>
+<b class="nc">&nbsp;            int tileY = tileY(screenY);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(mode == placing &amp;&amp; isPlacing()){</b>
+<b class="nc">&nbsp;                flushSelectPlans(linePlans);</b>
+<b class="nc">&nbsp;                Events.fire(new LineConfirmEvent());</b>
+<b class="nc">&nbsp;            }else if(mode == breaking){</b>
+<b class="nc">&nbsp;                removeSelection(lineStartX, lineStartY, tileX, tileY, true);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            lineMode = false;</b>
+<b class="nc">&nbsp;        }else if(mode == schematicSelect){</b>
+<b class="nc">&nbsp;            selectPlans.clear();</b>
+<b class="nc">&nbsp;            lastSchematic = schematics.create(lineStartX, lineStartY, lastLineX, lastLineY);</b>
+<b class="nc">&nbsp;            useSchematic(lastSchematic);</b>
+<b class="nc">&nbsp;            if(selectPlans.isEmpty()){</b>
+<b class="nc">&nbsp;                lastSchematic = null;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            schematicMode = false;</b>
+<b class="nc">&nbsp;            mode = none;</b>
+<b class="nc">&nbsp;        }else if(mode == rebuildSelect){</b>
+<b class="nc">&nbsp;            rebuildArea(lineStartX, lineStartY, lastLineX, lastLineY);</b>
+<b class="nc">&nbsp;            mode = none;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Tile tile = tileAt(screenX, screenY);</b>
+&nbsp;
+<b class="nc">&nbsp;            tryDropItems(tile == null ? null : tile.build, Core.input.mouseWorld(screenX, screenY).x, Core.input.mouseWorld(screenX, screenY).y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //select some units
+<b class="nc">&nbsp;        selectUnitsRect();</b>
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean longPress(float x, float y){
+<b class="nc">&nbsp;        if(state.isMenu()|| player.dead() || locked()) return false;</b>
+&nbsp;
+&nbsp;        //get tile on cursor
+<b class="nc">&nbsp;        Tile cursor = tileAt(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.scene.hasMouse(x, y) || schematicMode) return false;</b>
+&nbsp;
+&nbsp;        //handle long tap when player isn&#39;t building
+<b class="nc">&nbsp;        if(mode == none){</b>
+<b class="nc">&nbsp;            Vec2 pos = Core.input.mouseWorld(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(commandMode){</b>
+&nbsp;
+&nbsp;                //long press begins rect selection.
+<b class="nc">&nbsp;                commandRect = true;</b>
+<b class="nc">&nbsp;                commandRectX = input.mouseWorldX();</b>
+<b class="nc">&nbsp;                commandRectY = input.mouseWorldY();</b>
+&nbsp;
+&nbsp;            }else{
+&nbsp;
+<b class="nc">&nbsp;                if(player.unit() instanceof Payloadc pay){</b>
+<b class="nc">&nbsp;                    Unit target = Units.closest(player.team(), pos.x, pos.y, 8f, u -&gt; u.isAI() &amp;&amp; u.isGrounded() &amp;&amp; pay.canPickup(u) &amp;&amp; u.within(pos, u.hitSize + 8f));</b>
+<b class="nc">&nbsp;                    if(target != null){</b>
+<b class="nc">&nbsp;                        payloadTarget = target;</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        Building build = world.buildWorld(pos.x, pos.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(build != null &amp;&amp; build.team == player.team() &amp;&amp; (pay.canPickup(build) || build.getPayload() != null &amp;&amp; pay.canPickupPayload(build.getPayload()))){</b>
+<b class="nc">&nbsp;                            payloadTarget = build;</b>
+<b class="nc">&nbsp;                        }else if(pay.hasPayload()){</b>
+&nbsp;                            //drop off at position
+<b class="nc">&nbsp;                            payloadTarget = new Vec2(pos);</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            manualShooting = true;</b>
+<b class="nc">&nbsp;                            this.target = null;</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                }else{</b>
+<b class="nc">&nbsp;                    manualShooting = true;</b>
+<b class="nc">&nbsp;                    this.target = null;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!state.isPaused()) Fx.select.at(pos);</b>
+<b class="nc">&nbsp;        }else{</b>
+&nbsp;
+&nbsp;            //ignore off-screen taps
+<b class="nc">&nbsp;            if(cursor == null) return false;</b>
+&nbsp;
+&nbsp;            //remove plan if it&#39;s there
+&nbsp;            //long pressing enables line mode otherwise
+<b class="nc">&nbsp;            lineStartX = cursor.x;</b>
+<b class="nc">&nbsp;            lineStartY = cursor.y;</b>
+<b class="nc">&nbsp;            lastLineX = cursor.x;</b>
+<b class="nc">&nbsp;            lastLineY = cursor.y;</b>
+<b class="nc">&nbsp;            lineMode = true;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(mode == breaking){</b>
+<b class="nc">&nbsp;                if(!state.isPaused()) Fx.tapBlock.at(cursor.worldx(), cursor.worldy(), 1f);</b>
+<b class="nc">&nbsp;            }else if(block != null){</b>
+<b class="nc">&nbsp;                updateLine(lineStartX, lineStartY, cursor.x, cursor.y);</b>
+<b class="nc">&nbsp;                if(!state.isPaused()) Fx.tapBlock.at(cursor.worldx() + block.offset, cursor.worldy() + block.offset, block.size);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean tap(float x, float y, int count, KeyCode button){
+<b class="nc">&nbsp;        if(state.isMenu() || lineMode || locked()) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        float worldx = Core.input.mouseWorld(x, y).x, worldy = Core.input.mouseWorld(x, y).y;</b>
+&nbsp;
+&nbsp;        //get tile on cursor
+<b class="nc">&nbsp;        Tile cursor = tileAt(x, y);</b>
+&nbsp;
+&nbsp;        //ignore off-screen taps
+<b class="nc">&nbsp;        if(cursor == null || Core.scene.hasMouse(x, y)) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        Call.tileTap(player, cursor);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tile linked = cursor.build == null ? cursor : cursor.build.tile;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!player.dead()){</b>
+<b class="nc">&nbsp;            checkTargets(worldx, worldy);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //remove if plan present
+<b class="nc">&nbsp;        if(hasPlan(cursor)){</b>
+<b class="nc">&nbsp;            removePlan(getPlan(cursor));</b>
+<b class="nc">&nbsp;        }else if(mode == placing &amp;&amp; isPlacing() &amp;&amp; validPlace(cursor.x, cursor.y, block, rotation) &amp;&amp; !checkOverlapPlacement(cursor.x, cursor.y, block)){</b>
+&nbsp;            //add to selection queue if it&#39;s a valid place position
+<b class="nc">&nbsp;            selectPlans.add(lastPlaced = new BuildPlan(cursor.x, cursor.y, rotation, block, block.nextConfig()));</b>
+<b class="nc">&nbsp;            block.onNewPlan(lastPlaced);</b>
+<b class="nc">&nbsp;        }else if(mode == breaking &amp;&amp; validBreak(linked.x,linked.y) &amp;&amp; !hasPlan(linked)){</b>
+&nbsp;            //add to selection queue if it&#39;s a valid BREAK position
+<b class="nc">&nbsp;            selectPlans.add(new BuildPlan(linked.x, linked.y));</b>
+<b class="nc">&nbsp;        }else if((commandMode &amp;&amp; selectedUnits.size &gt; 0) || commandBuildings.size &gt; 0){</b>
+&nbsp;            //handle selecting units with command mode
+<b class="nc">&nbsp;            commandTap(x, y, queueCommandMode);</b>
+<b class="nc">&nbsp;        }else if(commandMode){</b>
+<b class="nc">&nbsp;            tapCommandUnit();</b>
+&nbsp;        }else{
+&nbsp;            //control units
+<b class="nc">&nbsp;            if(count == 2){</b>
+&nbsp;                //reset payload target
+<b class="nc">&nbsp;                payloadTarget = null;</b>
+&nbsp;
+&nbsp;                //control a unit/block detected on first tap of double-tap
+<b class="nc">&nbsp;                if(unitTapped != null &amp;&amp; state.rules.possessionAllowed &amp;&amp; unitTapped.isAI() &amp;&amp; unitTapped.team == player.team() &amp;&amp; !unitTapped.dead &amp;&amp; unitTapped.type.playerControllable){</b>
+<b class="nc">&nbsp;                    Call.unitControl(player, unitTapped);</b>
+<b class="nc">&nbsp;                    recentRespawnTimer = 1f;</b>
+<b class="nc">&nbsp;                }else if(buildingTapped != null &amp;&amp; state.rules.possessionAllowed){</b>
+<b class="nc">&nbsp;                    Call.buildingControlSelect(player, buildingTapped);</b>
+<b class="nc">&nbsp;                    recentRespawnTimer = 1f;</b>
+<b class="nc">&nbsp;                }else if(!checkConfigTap() &amp;&amp; !tryBeginMine(cursor)){</b>
+<b class="nc">&nbsp;                    tileTapped(linked.build);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            unitTapped = selectedUnit();</b>
+<b class="nc">&nbsp;            buildingTapped = selectedControlBuild();</b>
+&nbsp;
+&nbsp;            //prevent mining if placing/breaking blocks
+<b class="nc">&nbsp;            if(!tryRepairDerelict(cursor) &amp;&amp; !tryStopMine() &amp;&amp; !canTapPlayer(worldx, worldy) &amp;&amp; !checkConfigTap() &amp;&amp; !tileTapped(linked.build) &amp;&amp; mode == none &amp;&amp; !Core.settings.getBool(&quot;doubletapmine&quot;)){</b>
+<b class="nc">&nbsp;                tryBeginMine(cursor);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateState(){
+<b class="nc">&nbsp;        super.updateState();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.isMenu()){</b>
+<b class="nc">&nbsp;            selectPlans.clear();</b>
+<b class="nc">&nbsp;            removals.clear();</b>
+<b class="nc">&nbsp;            mode = none;</b>
+<b class="nc">&nbsp;            manualShooting = false;</b>
+<b class="nc">&nbsp;            payloadTarget = null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        super.update();</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean locked = locked();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!commandMode){</b>
+<b class="nc">&nbsp;            queueCommandMode = false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //cannot rebuild and place at the same time
+<b class="nc">&nbsp;        if(block != null){</b>
+<b class="nc">&nbsp;            rebuildMode = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(player.dead()){</b>
+<b class="nc">&nbsp;            mode = none;</b>
+<b class="nc">&nbsp;            manualShooting = false;</b>
+<b class="nc">&nbsp;            payloadTarget = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(locked || block != null || scene.hasField() || hasSchem() || selectPlans.size &gt; 0){</b>
+<b class="nc">&nbsp;            commandMode = false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //validate commanding units
+<b class="nc">&nbsp;        selectedUnits.removeAll(u -&gt; !u.isCommandable() || !u.isValid());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!commandMode){</b>
+<b class="nc">&nbsp;            commandBuildings.clear();</b>
+<b class="nc">&nbsp;            selectedUnits.clear();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //zoom camera
+<b class="nc">&nbsp;        if(!locked &amp;&amp; Math.abs(Core.input.axisTap(Binding.zoom)) &gt; 0 &amp;&amp; !Core.input.keyDown(Binding.rotateplaced) &amp;&amp; (Core.input.keyDown(Binding.diagonal_placement) || ((!player.isBuilder() || !isPlacing() || !block.rotate) &amp;&amp; selectPlans.isEmpty()))){</b>
+<b class="nc">&nbsp;            renderer.scaleCamera(Core.input.axisTap(Binding.zoom));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!Core.settings.getBool(&quot;keyboard&quot;) &amp;&amp; !locked &amp;&amp; !scene.hasKeyboard()){</b>
+&nbsp;            //move camera around
+<b class="nc">&nbsp;            float camSpeed = 6f;</b>
+<b class="nc">&nbsp;            Core.camera.position.add(Tmp.v1.setZero().add(Core.input.axis(Binding.move_x), Core.input.axis(Binding.move_y)).nor().scl(Time.delta * camSpeed));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.settings.getBool(&quot;keyboard&quot;)){</b>
+<b class="nc">&nbsp;            if(Core.input.keyRelease(Binding.select)){</b>
+<b class="nc">&nbsp;                player.shooting = false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(player.shooting &amp;&amp; !canShoot()){</b>
+<b class="nc">&nbsp;                player.shooting = false;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!player.dead() &amp;&amp; !state.isPaused() &amp;&amp; !locked){</b>
+<b class="nc">&nbsp;            updateMovement(player.unit());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //reset state when not placing
+<b class="nc">&nbsp;        if(mode == none){</b>
+<b class="nc">&nbsp;            lineMode = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(lineMode &amp;&amp; mode == placing &amp;&amp; block == null){</b>
+<b class="nc">&nbsp;            lineMode = false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //if there is no mode and there&#39;s a recipe, switch to placing
+<b class="nc">&nbsp;        if(block != null &amp;&amp; mode == none){</b>
+<b class="nc">&nbsp;            mode = placing;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(block == null &amp;&amp; mode == placing){</b>
+<b class="nc">&nbsp;            mode = none;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //stop schematic when in block mode
+<b class="nc">&nbsp;        if(block != null){</b>
+<b class="nc">&nbsp;            schematicMode = false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //stop select when not in schematic mode
+<b class="nc">&nbsp;        if(!schematicMode &amp;&amp; (mode == schematicSelect || mode == rebuildSelect)){</b>
+<b class="nc">&nbsp;            mode = none;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!rebuildMode &amp;&amp; mode == rebuildSelect){</b>
+<b class="nc">&nbsp;            mode = none;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(mode == schematicSelect || mode == rebuildSelect){</b>
+<b class="nc">&nbsp;            lastLineX = rawTileX();</b>
+<b class="nc">&nbsp;            lastLineY = rawTileY();</b>
+<b class="nc">&nbsp;            autoPan();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //automatically switch to placing after a new recipe is selected
+<b class="nc">&nbsp;        if(lastBlock != block &amp;&amp; mode == breaking &amp;&amp; block != null){</b>
+<b class="nc">&nbsp;            mode = placing;</b>
+<b class="nc">&nbsp;            lastBlock = block;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(lineMode){</b>
+<b class="nc">&nbsp;            lineScale = Mathf.lerpDelta(lineScale, 1f, 0.1f);</b>
+&nbsp;
+&nbsp;            //When in line mode, pan when near screen edges automatically
+<b class="nc">&nbsp;            if(Core.input.isTouched(0)){</b>
+<b class="nc">&nbsp;                autoPan();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            int lx = tileX(Core.input.mouseX()), ly = tileY(Core.input.mouseY());</b>
+&nbsp;
+<b class="nc">&nbsp;            if((lastLineX != lx || lastLineY != ly) &amp;&amp; isPlacing()){</b>
+<b class="nc">&nbsp;                lastLineX = lx;</b>
+<b class="nc">&nbsp;                lastLineY = ly;</b>
+<b class="nc">&nbsp;                updateLine(lineStartX, lineStartY, lx, ly);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            linePlans.clear();</b>
+<b class="nc">&nbsp;            lineScale = 0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //remove place plans that have disappeared
+<b class="nc">&nbsp;        for(int i = removals.size - 1; i &gt;= 0; i--){</b>
+&nbsp;
+<b class="nc">&nbsp;            if(removals.get(i).animScale &lt;= 0.0001f){</b>
+<b class="nc">&nbsp;                removals.remove(i);</b>
+<b class="nc">&nbsp;                i--;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(player.shooting &amp;&amp; !player.dead() &amp;&amp; (player.unit().activelyBuilding() || player.unit().mining())){</b>
+<b class="nc">&nbsp;            player.shooting = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void autoPan(){
+<b class="nc">&nbsp;        float screenX = Core.input.mouseX(), screenY = Core.input.mouseY();</b>
+&nbsp;
+<b class="nc">&nbsp;        float panX = 0, panY = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(screenX &lt;= edgePan){</b>
+<b class="nc">&nbsp;            panX = -(edgePan - screenX);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(screenX &gt;= Core.graphics.getWidth() - edgePan){</b>
+<b class="nc">&nbsp;            panX = (screenX - Core.graphics.getWidth()) + edgePan;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(screenY &lt;= edgePan){</b>
+<b class="nc">&nbsp;            panY = -(edgePan - screenY);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(screenY &gt;= Core.graphics.getHeight() - edgePan){</b>
+<b class="nc">&nbsp;            panY = (screenY - Core.graphics.getHeight()) + edgePan;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        vector.set(panX, panY).scl((Core.camera.width) / Core.graphics.getWidth());</b>
+<b class="nc">&nbsp;        vector.limit(maxPanSpeed);</b>
+&nbsp;
+&nbsp;        //pan view
+<b class="nc">&nbsp;        Core.camera.position.x += vector.x;</b>
+<b class="nc">&nbsp;        Core.camera.position.y += vector.y;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean pan(float x, float y, float deltaX, float deltaY){
+<b class="nc">&nbsp;        if(Core.scene == null || Core.scene.hasDialog() || Core.settings.getBool(&quot;keyboard&quot;) || locked() || commandRect) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        float scale = Core.camera.width / Core.graphics.getWidth();</b>
+<b class="nc">&nbsp;        deltaX *= scale;</b>
+<b class="nc">&nbsp;        deltaY *= scale;</b>
+&nbsp;
+&nbsp;        //can&#39;t pan in line mode with one finger or while dropping items!
+<b class="nc">&nbsp;        if((lineMode &amp;&amp; !Core.input.isTouched(1)) || droppingItem || schematicMode){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //do not pan with manual shooting enabled
+<b class="nc">&nbsp;        if(!down || manualShooting) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(selecting){ //pan all plans</b>
+<b class="nc">&nbsp;            shiftDeltaX += deltaX;</b>
+<b class="nc">&nbsp;            shiftDeltaY += deltaY;</b>
+&nbsp;
+<b class="nc">&nbsp;            int shiftedX = (int)(shiftDeltaX / tilesize);</b>
+<b class="nc">&nbsp;            int shiftedY = (int)(shiftDeltaY / tilesize);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Math.abs(shiftedX) &gt; 0 || Math.abs(shiftedY) &gt; 0){</b>
+<b class="nc">&nbsp;                for(var plan : selectPlans){</b>
+<b class="nc">&nbsp;                    if(plan.breaking) continue; //don&#39;t shift removal plans</b>
+<b class="nc">&nbsp;                    plan.x += shiftedX;</b>
+<b class="nc">&nbsp;                    plan.y += shiftedY;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                shiftDeltaX %= tilesize;</b>
+<b class="nc">&nbsp;                shiftDeltaY %= tilesize;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+&nbsp;            //pan player
+<b class="nc">&nbsp;            Core.camera.position.x -= deltaX;</b>
+<b class="nc">&nbsp;            Core.camera.position.y -= deltaY;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        camera.position.clamp(-camera.width/4f, -camera.height/4f, world.unitWidth() + camera.width/4f, world.unitHeight() + camera.height/4f);</b>
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean panStop(float x, float y, int pointer, KeyCode button){
+<b class="nc">&nbsp;        shiftDeltaX = shiftDeltaY = 0f;</b>
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean zoom(float initialDistance, float distance){
+<b class="nc">&nbsp;        if(Core.settings.getBool(&quot;keyboard&quot;)) return false;</b>
+<b class="nc">&nbsp;        if(lastZoom &lt; 0){</b>
+<b class="nc">&nbsp;            lastZoom = renderer.getScale();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        renderer.setScale(distance / initialDistance * lastZoom);</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;    //region movement
+&nbsp;
+&nbsp;    protected void updateMovement(Unit unit){
+<b class="nc">&nbsp;        Rect rect = Tmp.r3;</b>
+&nbsp;
+<b class="nc">&nbsp;        UnitType type = unit.type;</b>
+<b class="nc">&nbsp;        if(type == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean omni = unit.type.omniMovement;</b>
+<b class="nc">&nbsp;        boolean allowHealing = type.canHeal;</b>
+<b class="nc">&nbsp;        boolean validHealTarget = allowHealing &amp;&amp; target instanceof Building b &amp;&amp; b.isValid() &amp;&amp; target.team() == unit.team &amp;&amp; b.damaged() &amp;&amp; target.within(unit, type.range);</b>
+<b class="nc">&nbsp;        boolean boosted = (unit instanceof Mechc &amp;&amp; unit.isFlying());</b>
+&nbsp;        //reset target if:
+&nbsp;        // - in the editor, or...
+&nbsp;        // - it&#39;s both an invalid standard target and an invalid heal target
+<b class="nc">&nbsp;        if((Units.invalidateTarget(target, unit, type.range) &amp;&amp; !validHealTarget) || state.isEditor()){</b>
+<b class="nc">&nbsp;            target = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        targetPos.set(Core.camera.position);</b>
+<b class="nc">&nbsp;        float attractDst = 15f;</b>
+&nbsp;
+<b class="nc">&nbsp;        float speed = unit.speed();</b>
+<b class="nc">&nbsp;        float range = unit.hasWeapons() ? unit.range() : 0f;</b>
+<b class="nc">&nbsp;        float bulletSpeed = unit.hasWeapons() ? type.weapons.first().bullet.speed : 0f;</b>
+<b class="nc">&nbsp;        float mouseAngle = unit.angleTo(unit.aimX(), unit.aimY());</b>
+<b class="nc">&nbsp;        boolean aimCursor = omni &amp;&amp; player.shooting &amp;&amp; type.hasWeapons() &amp;&amp; !boosted &amp;&amp; type.faceTarget;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(aimCursor){</b>
+<b class="nc">&nbsp;            unit.lookAt(mouseAngle);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            unit.lookAt(unit.prefRotation());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //validate payload, if it&#39;s a destroyed unit/building, remove it
+<b class="nc">&nbsp;        if(payloadTarget instanceof Healthc h &amp;&amp; !h.isValid()){</b>
+<b class="nc">&nbsp;            payloadTarget = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(payloadTarget != null &amp;&amp; unit instanceof Payloadc pay){</b>
+<b class="nc">&nbsp;            targetPos.set(payloadTarget);</b>
+<b class="nc">&nbsp;            attractDst = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(unit.within(payloadTarget, 3f * Time.delta)){</b>
+<b class="nc">&nbsp;                if(payloadTarget instanceof Vec2 &amp;&amp; pay.hasPayload()){</b>
+&nbsp;                    //vec -&gt; dropping something
+<b class="nc">&nbsp;                    tryDropPayload();</b>
+<b class="nc">&nbsp;                }else if(payloadTarget instanceof Building build &amp;&amp; build.team == unit.team){</b>
+&nbsp;                    //building -&gt; picking building up
+<b class="nc">&nbsp;                    Call.requestBuildPayload(player, build);</b>
+<b class="nc">&nbsp;                }else if(payloadTarget instanceof Unit other &amp;&amp; pay.canPickup(other)){</b>
+&nbsp;                    //unit -&gt; picking unit up
+<b class="nc">&nbsp;                    Call.requestUnitPayload(player, other);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                payloadTarget = null;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            payloadTarget = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        movement.set(targetPos).sub(player).limit(speed);</b>
+<b class="nc">&nbsp;        movement.setAngle(Mathf.slerp(movement.angle(), unit.vel.angle(), 0.05f));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(player.within(targetPos, attractDst)){</b>
+<b class="nc">&nbsp;            movement.setZero();</b>
+<b class="nc">&nbsp;            unit.vel.approachDelta(Vec2.ZERO, unit.speed() * type.accel / 2f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        unit.hitbox(rect);</b>
+<b class="nc">&nbsp;        rect.grow(4f);</b>
+&nbsp;
+<b class="nc">&nbsp;        player.boosting = collisions.overlapsTile(rect, EntityCollisions::solid) || !unit.within(targetPos, 85f);</b>
+&nbsp;
+<b class="nc">&nbsp;        unit.movePref(movement);</b>
+&nbsp;
+&nbsp;        //update shooting if not building + not mining
+<b class="nc">&nbsp;        if(!unit.activelyBuilding() &amp;&amp; unit.mineTile == null){</b>
+&nbsp;
+&nbsp;            //autofire targeting
+<b class="nc">&nbsp;            if(manualShooting){</b>
+<b class="nc">&nbsp;                player.shooting = !boosted;</b>
+<b class="nc">&nbsp;                unit.aim(player.mouseX = Core.input.mouseWorldX(), player.mouseY = Core.input.mouseWorldY());</b>
+<b class="nc">&nbsp;            }else if(target == null){</b>
+<b class="nc">&nbsp;                player.shooting = false;</b>
+<b class="nc">&nbsp;                if(Core.settings.getBool(&quot;autotarget&quot;) &amp;&amp; !(player.unit() instanceof BlockUnitUnit u &amp;&amp; u.tile() instanceof ControlBlock c &amp;&amp; !c.shouldAutoTarget())){</b>
+<b class="nc">&nbsp;                    if(unit.type.canAttack){</b>
+<b class="nc">&nbsp;                        target = Units.closestTarget(unit.team, unit.x, unit.y, range, u -&gt; u.checkTarget(type.targetAir, type.targetGround), u -&gt; type.targetGround);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(allowHealing &amp;&amp; target == null){</b>
+<b class="nc">&nbsp;                        target = Geometry.findClosest(unit.x, unit.y, indexer.getDamaged(player.team()));</b>
+<b class="nc">&nbsp;                        if(target != null &amp;&amp; !unit.within(target, range)){</b>
+<b class="nc">&nbsp;                            target = null;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //when not shooting, aim at mouse cursor
+&nbsp;                //this may be a bad idea, aiming for a point far in front could work better, test it out
+<b class="nc">&nbsp;                unit.aim(Core.input.mouseWorldX(), Core.input.mouseWorldY());</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Vec2 intercept = Predict.intercept(unit, target, bulletSpeed);</b>
+&nbsp;
+<b class="nc">&nbsp;                player.mouseX = intercept.x;</b>
+<b class="nc">&nbsp;                player.mouseY = intercept.y;</b>
+<b class="nc">&nbsp;                player.shooting = !boosted;</b>
+&nbsp;
+<b class="nc">&nbsp;                unit.aim(player.mouseX, player.mouseY);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        unit.controlWeapons(player.shooting &amp;&amp; !boosted);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,436 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ClientLauncher</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry</a>
+</div>
+
+<h1>Coverage Summary for Class: ClientLauncher (mindustry)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClientLauncher</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/112)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ClientLauncher$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ClientLauncher$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/140)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.assets.*;
+&nbsp;import arc.assets.loaders.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.mod.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public abstract class ClientLauncher extends ApplicationCore implements Platform{</b>
+&nbsp;    private static final int loadingFPS = 20;
+&nbsp;
+&nbsp;    private long nextFrame;
+&nbsp;    private long beginTime;
+<b class="nc">&nbsp;    private long lastTargetFps = -1;</b>
+<b class="nc">&nbsp;    private boolean finished = false;</b>
+&nbsp;    private LoadRenderer loader;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setup(){
+<b class="nc">&nbsp;        String dataDir = OS.env(&quot;MINDUSTRY_DATA_DIR&quot;);</b>
+<b class="nc">&nbsp;        if(dataDir != null){</b>
+<b class="nc">&nbsp;            Core.settings.setDataDirectory(files.absolute(dataDir));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        checkLaunch();</b>
+<b class="nc">&nbsp;        loadLogger();</b>
+&nbsp;
+<b class="nc">&nbsp;        loader = new LoadRenderer();</b>
+<b class="nc">&nbsp;        Events.fire(new ClientCreateEvent());</b>
+&nbsp;
+<b class="nc">&nbsp;        loadFileLogger();</b>
+<b class="nc">&nbsp;        platform = this;</b>
+<b class="nc">&nbsp;        maxTextureSize = Gl.getInt(Gl.maxTextureSize);</b>
+<b class="nc">&nbsp;        beginTime = Time.millis();</b>
+&nbsp;
+&nbsp;        //debug GL information
+<b class="nc">&nbsp;        Log.info(&quot;[GL] Version: @&quot;, graphics.getGLVersion());</b>
+<b class="nc">&nbsp;        Log.info(&quot;[GL] Max texture size: @&quot;, maxTextureSize);</b>
+<b class="nc">&nbsp;        Log.info(&quot;[GL] Using @ context.&quot;, gl30 != null ? &quot;OpenGL 3&quot; : &quot;OpenGL 2&quot;);</b>
+<b class="nc">&nbsp;        if(maxTextureSize &lt; 4096) Log.warn(&quot;[GL] Your maximum texture size is below the recommended minimum of 4096. This will cause severe performance issues.&quot;);</b>
+<b class="nc">&nbsp;        Log.info(&quot;[JAVA] Version: @&quot;, OS.javaVersion);</b>
+<b class="nc">&nbsp;        if(Core.app.isAndroid()){</b>
+<b class="nc">&nbsp;            Log.info(&quot;[ANDROID] API level: @&quot;, Core.app.getVersion());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        long ram = Runtime.getRuntime().maxMemory();</b>
+<b class="nc">&nbsp;        boolean gb = ram &gt;= 1024 * 1024 * 1024;</b>
+<b class="nc">&nbsp;        if(!OS.isIos){</b>
+<b class="nc">&nbsp;            Log.info(&quot;[RAM] Available: @ @&quot;, Strings.fixed(gb ? ram / 1024f / 1024 / 1024f : ram / 1024f / 1024f, 1), gb ? &quot;GB&quot; : &quot;MB&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Time.setDeltaProvider(() -&gt; {</b>
+<b class="nc">&nbsp;            float result = Core.graphics.getDeltaTime() * 60f;</b>
+<b class="nc">&nbsp;            return (Float.isNaN(result) || Float.isInfinite(result)) ? 1f : Mathf.clamp(result, 0.0001f, maxDeltaClient);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        UI.loadColors();</b>
+<b class="nc">&nbsp;        batch = new SpriteBatch();</b>
+<b class="nc">&nbsp;        assets = new AssetManager();</b>
+<b class="nc">&nbsp;        assets.setLoader(Texture.class, &quot;.&quot; + mapExtension, new MapPreviewLoader());</b>
+&nbsp;
+<b class="nc">&nbsp;        tree = new FileTree();</b>
+<b class="nc">&nbsp;        assets.setLoader(Sound.class, new SoundLoader(tree){</b>
+&nbsp;            @Override
+&nbsp;            public void loadAsync(AssetManager manager, String fileName, Fi file, SoundParameter parameter){
+&nbsp;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public Sound loadSync(AssetManager manager, String fileName, Fi file, SoundParameter parameter){
+<b class="nc">&nbsp;                if(parameter != null &amp;&amp; parameter.sound != null){</b>
+<b class="nc">&nbsp;                    mainExecutor.submit(() -&gt; parameter.sound.load(file));</b>
+&nbsp;
+<b class="nc">&nbsp;                    return parameter.sound;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Sound sound = new Sound();</b>
+&nbsp;
+<b class="nc">&nbsp;                    mainExecutor.submit(() -&gt; {</b>
+&nbsp;                        try{
+<b class="nc">&nbsp;                            sound.load(file);</b>
+<b class="nc">&nbsp;                        }catch(Throwable t){</b>
+<b class="nc">&nbsp;                            Log.err(&quot;Error loading sound: &quot; + file, t);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    return sound;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+<b class="nc">&nbsp;        assets.setLoader(Music.class, new MusicLoader(tree){</b>
+&nbsp;            @Override
+<b class="nc">&nbsp;            public void loadAsync(AssetManager manager, String fileName, Fi file, MusicParameter parameter){}</b>
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public Music loadSync(AssetManager manager, String fileName, Fi file, MusicParameter parameter){
+<b class="nc">&nbsp;                if(parameter != null &amp;&amp; parameter.music != null){</b>
+<b class="nc">&nbsp;                    mainExecutor.submit(() -&gt; {</b>
+&nbsp;                        try{
+<b class="nc">&nbsp;                            parameter.music.load(file);</b>
+<b class="nc">&nbsp;                        }catch(Throwable t){</b>
+<b class="nc">&nbsp;                            Log.err(&quot;Error loading music: &quot; + file, t);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    return parameter.music;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Music music = new Music();</b>
+&nbsp;
+<b class="nc">&nbsp;                    mainExecutor.submit(() -&gt; {</b>
+&nbsp;                        try{
+<b class="nc">&nbsp;                            music.load(file);</b>
+<b class="nc">&nbsp;                        }catch(Throwable t){</b>
+<b class="nc">&nbsp;                            Log.err(&quot;Error loading music: &quot; + file, t);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    return music;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        assets.load(&quot;sprites/error.png&quot;, Texture.class);</b>
+<b class="nc">&nbsp;        atlas = TextureAtlas.blankAtlas();</b>
+<b class="nc">&nbsp;        Vars.net = new Net(platform.getNet());</b>
+<b class="nc">&nbsp;        MapPreviewLoader.setupLoaders();</b>
+<b class="nc">&nbsp;        mods = new Mods();</b>
+<b class="nc">&nbsp;        schematics = new Schematics();</b>
+&nbsp;
+<b class="nc">&nbsp;        Fonts.loadSystemCursors();</b>
+&nbsp;
+<b class="nc">&nbsp;        assets.load(new Vars());</b>
+&nbsp;
+<b class="nc">&nbsp;        Fonts.loadDefaultFont();</b>
+&nbsp;
+&nbsp;        //load fallback atlas if max texture size is below 4096
+<b class="nc">&nbsp;        assets.load(new AssetDescriptor&lt;&gt;(maxTextureSize &gt;= 4096 ? &quot;sprites/sprites.aatls&quot; : &quot;sprites/fallback/sprites.aatls&quot;, TextureAtlas.class)).loaded = t -&gt; atlas = t;</b>
+<b class="nc">&nbsp;        assets.loadRun(&quot;maps&quot;, Map.class, () -&gt; maps.loadPreviews());</b>
+&nbsp;
+<b class="nc">&nbsp;        Musics.load();</b>
+<b class="nc">&nbsp;        Sounds.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        assets.loadRun(&quot;contentcreate&quot;, Content.class, () -&gt; {</b>
+<b class="nc">&nbsp;            content.createBaseContent();</b>
+<b class="nc">&nbsp;            content.loadColors();</b>
+&nbsp;        }, () -&gt; {
+<b class="nc">&nbsp;            mods.loadScripts();</b>
+<b class="nc">&nbsp;            content.createModContent();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        assets.load(mods);</b>
+<b class="nc">&nbsp;        assets.loadRun(&quot;mergeUI&quot;, PixmapPacker.class, () -&gt; {}, () -&gt; Fonts.mergeFontAtlas(atlas));</b>
+&nbsp;
+<b class="nc">&nbsp;        add(logic = new Logic());</b>
+<b class="nc">&nbsp;        add(control = new Control());</b>
+<b class="nc">&nbsp;        add(renderer = new Renderer());</b>
+<b class="nc">&nbsp;        add(ui = new UI());</b>
+<b class="nc">&nbsp;        add(netServer = new NetServer());</b>
+<b class="nc">&nbsp;        add(netClient = new NetClient());</b>
+&nbsp;
+<b class="nc">&nbsp;        assets.load(schematics);</b>
+&nbsp;
+<b class="nc">&nbsp;        assets.loadRun(&quot;contentinit&quot;, ContentLoader.class, () -&gt; content.init(), () -&gt; content.load());</b>
+<b class="nc">&nbsp;        assets.loadRun(&quot;baseparts&quot;, BaseRegistry.class, () -&gt; {}, () -&gt; bases.load());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void add(ApplicationListener module){
+<b class="nc">&nbsp;        super.add(module);</b>
+&nbsp;
+&nbsp;        //autoload modules when necessary
+<b class="nc">&nbsp;        if(module instanceof Loadable l){</b>
+<b class="nc">&nbsp;            assets.load(l);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void resize(int width, int height){
+<b class="nc">&nbsp;        if(assets == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!finished){</b>
+<b class="nc">&nbsp;            Draw.proj().setOrtho(0, 0, width, height);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            super.resize(width, height);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        int targetfps = Core.settings.getInt(&quot;fpscap&quot;, 120);</b>
+<b class="nc">&nbsp;        boolean changed = lastTargetFps != targetfps &amp;&amp; lastTargetFps != -1;</b>
+<b class="nc">&nbsp;        boolean limitFps = targetfps &gt; 0 &amp;&amp; targetfps &lt;= 240;</b>
+&nbsp;
+<b class="nc">&nbsp;        lastTargetFps = targetfps;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(limitFps &amp;&amp; !changed){</b>
+<b class="nc">&nbsp;            nextFrame += (1000 * 1000000) / targetfps;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            nextFrame = Time.nanos();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!finished){</b>
+<b class="nc">&nbsp;            if(loader != null){</b>
+<b class="nc">&nbsp;                loader.draw();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(assets.update(1000 / loadingFPS)){</b>
+<b class="nc">&nbsp;                loader.dispose();</b>
+<b class="nc">&nbsp;                loader = null;</b>
+<b class="nc">&nbsp;                Log.info(&quot;Total time to load: @ms&quot;, Time.timeSinceMillis(beginTime));</b>
+<b class="nc">&nbsp;                for(ApplicationListener listener : modules){</b>
+<b class="nc">&nbsp;                    listener.init();</b>
+&nbsp;                }
+<b class="nc">&nbsp;                mods.eachClass(Mod::init);</b>
+<b class="nc">&nbsp;                finished = true;</b>
+<b class="nc">&nbsp;                Events.fire(new ClientLoadEvent());</b>
+<b class="nc">&nbsp;                clientLoaded = true;</b>
+<b class="nc">&nbsp;                super.resize(graphics.getWidth(), graphics.getHeight());</b>
+<b class="nc">&nbsp;                app.post(() -&gt; app.post(() -&gt; app.post(() -&gt; app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                    super.resize(graphics.getWidth(), graphics.getHeight());</b>
+&nbsp;
+&nbsp;                    //mark initialization as complete
+<b class="nc">&nbsp;                    finishLaunch();</b>
+&nbsp;                }))));
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            asyncCore.begin();</b>
+&nbsp;
+<b class="nc">&nbsp;            super.update();</b>
+&nbsp;
+<b class="nc">&nbsp;            asyncCore.end();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(limitFps){</b>
+<b class="nc">&nbsp;            long current = Time.nanos();</b>
+<b class="nc">&nbsp;            if(nextFrame &gt; current){</b>
+<b class="nc">&nbsp;                long toSleep = nextFrame - current;</b>
+<b class="nc">&nbsp;                Threads.sleep(toSleep / 1000000, (int)(toSleep % 1000000));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void exit(){
+&nbsp;        //on graceful exit, finish the launch normally.
+<b class="nc">&nbsp;        Vars.finishLaunch();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="nc">&nbsp;        nextFrame = Time.nanos();</b>
+<b class="nc">&nbsp;        setup();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void resume(){
+<b class="nc">&nbsp;        if(finished){</b>
+<b class="nc">&nbsp;            super.resume();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void pause(){
+&nbsp;        //when the user tabs out on mobile, the exit() event doesn&#39;t fire reliably - in that case, just assume they&#39;re about to kill the app
+&nbsp;        //this isn&#39;t 100% reliable but it should work for most cases
+<b class="nc">&nbsp;        if(mobile){</b>
+<b class="nc">&nbsp;            Vars.finishLaunch();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(finished){</b>
+<b class="nc">&nbsp;            super.pause();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

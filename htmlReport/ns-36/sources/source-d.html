@@ -1,0 +1,261 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ShockwaveTower</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense</a>
+</div>
+
+<h1>Coverage Summary for Class: ShockwaveTower (mindustry.world.blocks.defense)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ShockwaveTower</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    73.9%
+  </span>
+  <span class="absValue">
+    (17/23)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ShockwaveTower$ShockwaveTowerBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (3/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.6%
+  </span>
+  <span class="absValue">
+    (7/34)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (4/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.1%
+  </span>
+  <span class="absValue">
+    (24/57)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class ShockwaveTower extends Block{
+<b class="fc">&nbsp;    public int timerCheck = timers ++;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float range = 110f;</b>
+<b class="fc">&nbsp;    public float reload = 60f * 1.5f;</b>
+<b class="fc">&nbsp;    public float bulletDamage = 160;</b>
+<b class="fc">&nbsp;    public float falloffCount = 20f;</b>
+<b class="fc">&nbsp;    public float shake = 2f;</b>
+&nbsp;    //checking for bullets every frame is costly, so only do it at intervals even when ready.
+<b class="fc">&nbsp;    public float checkInterval = 8f;</b>
+<b class="fc">&nbsp;    public Sound shootSound = Sounds.bang;</b>
+<b class="fc">&nbsp;    public Color waveColor = Pal.accent, heatColor = Pal.turretHeat, shapeColor = Color.valueOf(&quot;f29c83&quot;);</b>
+<b class="fc">&nbsp;    public float cooldownMultiplier = 1f;</b>
+<b class="fc">&nbsp;    public Effect hitEffect = Fx.hitSquaresColor;</b>
+<b class="fc">&nbsp;    public Effect waveEffect = Fx.pointShockwave;</b>
+&nbsp;
+&nbsp;    //TODO switch to drawers eventually or something
+<b class="fc">&nbsp;    public float shapeRotateSpeed = 1f, shapeRadius = 6f;</b>
+<b class="fc">&nbsp;    public int shapeSides = 4;</b>
+&nbsp;
+&nbsp;    public @Load(&quot;@-heat&quot;) TextureRegion heatRegion;
+&nbsp;
+&nbsp;    public ShockwaveTower(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.damage, bulletDamage, StatUnit.none);</b>
+<b class="nc">&nbsp;        stats.add(Stat.range, range / tilesize, StatUnit.blocks);</b>
+<b class="nc">&nbsp;        stats.add(Stat.reload, 60f / reload, StatUnit.perSecond);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        super.drawPlace(x, y, rotation, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, waveColor);</b>
+&nbsp;    }
+&nbsp;    
+<b class="fc">&nbsp;    public class ShockwaveTowerBuild extends Building{</b>
+<b class="fc">&nbsp;        public float reloadCounter = Mathf.random(reload);</b>
+<b class="fc">&nbsp;        public float heat = 0f;</b>
+<b class="fc">&nbsp;        public Seq&lt;Bullet&gt; targets = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(potentialEfficiency &gt; 0 &amp;&amp; (reloadCounter += Time.delta) &gt;= reload &amp;&amp; timer(timerCheck, checkInterval)){</b>
+<b class="nc">&nbsp;                targets.clear();</b>
+<b class="nc">&nbsp;                Groups.bullet.intersect(x - range, y - range, range * 2, range * 2, b -&gt; {</b>
+<b class="nc">&nbsp;                    if(b.team != team &amp;&amp; b.type.hittable){</b>
+<b class="nc">&nbsp;                        targets.add(b);</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                if(targets.size &gt; 0){</b>
+<b class="nc">&nbsp;                    heat = 1f;</b>
+<b class="nc">&nbsp;                    reloadCounter = 0f;</b>
+<b class="nc">&nbsp;                    waveEffect.at(x, y, range, waveColor);</b>
+<b class="nc">&nbsp;                    shootSound.at(this);</b>
+<b class="nc">&nbsp;                    Effect.shake(shake, shake, this);</b>
+<b class="nc">&nbsp;                    float waveDamage = Math.min(bulletDamage, bulletDamage * falloffCount / targets.size);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(var target : targets){</b>
+<b class="nc">&nbsp;                        if(target.damage &gt; waveDamage){</b>
+<b class="nc">&nbsp;                            target.damage -= waveDamage;</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            target.remove();</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        hitEffect.at(target.x, target.y, waveColor);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(team == state.rules.defaultTeam){</b>
+<b class="nc">&nbsp;                        Events.fire(Trigger.shockwaveTowerUse);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            heat = Mathf.clamp(heat - Time.delta / reload * cooldownMultiplier);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float warmup(){
+<b class="nc">&nbsp;            return heat;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return targets.size != 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+<b class="nc">&nbsp;            Drawf.additive(heatRegion, heatColor, heat, x, y, 0f, Layer.blockAdditive);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.effect);</b>
+<b class="nc">&nbsp;            Draw.color(shapeColor, waveColor, Mathf.pow(heat, 2f));</b>
+<b class="nc">&nbsp;            Fill.poly(x, y, shapeSides, shapeRadius * potentialEfficiency, Time.time * shapeRotateSpeed);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawSelect(){
+<b class="nc">&nbsp;            Drawf.dashCircle(x, y, range, waveColor);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

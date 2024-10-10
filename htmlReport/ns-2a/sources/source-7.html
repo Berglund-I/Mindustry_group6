@@ -1,0 +1,295 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Liquid</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: Liquid (mindustry.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Liquid</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.3%
+  </span>
+  <span class="absValue">
+    (6/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    49.2%
+  </span>
+  <span class="absValue">
+    (32/65)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.entities.Puddles.*;
+&nbsp;
+&nbsp;/** A better name for this class would be &quot;fluid&quot;, but it&#39;s too late for that. */
+&nbsp;public class Liquid extends UnlockableContent implements Senseable{
+&nbsp;    //must be static and global so conduits don&#39;t conflict - DO NOT INTERACT WITH THESE IN MODS OR I WILL PERSONALLY YELL AT YOU
+&nbsp;    public static final int animationFrames = 50;
+<b class="fc">&nbsp;    public static float animationScaleGas = 190f, animationScaleLiquid = 230f;</b>
+&nbsp;
+<b class="fc">&nbsp;    protected static final Rand rand = new Rand();</b>
+&nbsp;
+&nbsp;    /** If true, this fluid is treated as a gas (and does not create puddles) */
+<b class="fc">&nbsp;    public boolean gas = false;</b>
+&nbsp;    /** Color used in pipes and on the ground. */
+&nbsp;    public Color color;
+&nbsp;    /** Color of this liquid in gas form. */
+<b class="fc">&nbsp;    public Color gasColor = Color.lightGray.cpy();</b>
+&nbsp;    /** Color used in bars. */
+&nbsp;    public @Nullable Color barColor;
+&nbsp;    /** Color used to draw lights. Note that the alpha channel is used to dictate brightness. */
+<b class="fc">&nbsp;    public Color lightColor = Color.clear.cpy();</b>
+&nbsp;    /** 0-1, 0 is completely not flammable, anything above that may catch fire when exposed to heat, 0.5+ is very flammable. */
+&nbsp;    public float flammability;
+&nbsp;    /** temperature: 0.5 is &#39;room&#39; temperature, 0 is very cold, 1 is molten hot */
+<b class="fc">&nbsp;    public float temperature = 0.5f;</b>
+&nbsp;    /** how much heat this liquid can store. 0.4=water (decent), anything lower is probably less dense and bad at cooling. */
+<b class="fc">&nbsp;    public float heatCapacity = 0.5f;</b>
+&nbsp;    /** how thick this liquid is. 0.5=water (relatively viscous), 1 would be something like tar (very slow). */
+<b class="fc">&nbsp;    public float viscosity = 0.5f;</b>
+&nbsp;    /** how prone to exploding this liquid is, when heated. 0 = nothing, 1 = nuke */
+&nbsp;    public float explosiveness;
+&nbsp;    /** whether this fluid reacts in blocks at all (e.g. slag with water) */
+<b class="fc">&nbsp;    public boolean blockReactive = true;</b>
+&nbsp;    /** if false, this liquid cannot be a coolant */
+<b class="fc">&nbsp;    public boolean coolant = true;</b>
+&nbsp;    /** if true, this liquid can move through blocks as a puddle. */
+<b class="fc">&nbsp;    public boolean moveThroughBlocks = false;</b>
+&nbsp;    /** if true, this liquid can be incinerated in the incinerator block. */
+<b class="fc">&nbsp;    public boolean incinerable = true;</b>
+&nbsp;    /** The associated status effect. */
+<b class="fc">&nbsp;    public StatusEffect effect = StatusEffects.none;</b>
+&nbsp;    /** Effect shown in puddles. */
+<b class="fc">&nbsp;    public Effect particleEffect = Fx.none;</b>
+&nbsp;    /** Particle effect rate spacing in ticks. */
+<b class="fc">&nbsp;    public float particleSpacing = 60f;</b>
+&nbsp;    /** Temperature at which this liquid vaporizes. This isn&#39;t just boiling. */
+<b class="fc">&nbsp;    public float boilPoint = 2f;</b>
+&nbsp;    /** If true, puddle size is capped. */
+<b class="fc">&nbsp;    public boolean capPuddles = true;</b>
+&nbsp;    /** Effect when this liquid vaporizes. */
+<b class="fc">&nbsp;    public Effect vaporEffect = Fx.vapor;</b>
+&nbsp;    /** If true, this liquid is hidden in most UI. */
+&nbsp;    public boolean hidden;
+&nbsp;    /** Liquids this puddle can stay on, e.g. oil on water. */
+<b class="fc">&nbsp;    public ObjectSet&lt;Liquid&gt; canStayOn = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public Liquid(String name, Color color){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        this.color = new Color(color);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** For modding only.*/
+&nbsp;    public Liquid(String name){
+<b class="fc">&nbsp;        this(name, new Color(Color.black));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(gas){</b>
+&nbsp;            //always &quot;boils&quot;, it&#39;s a gas
+<b class="fc">&nbsp;            boilPoint = -1;</b>
+&nbsp;            //ensure no accidental global mutation
+<b class="fc">&nbsp;            color = color.cpy();</b>
+&nbsp;            //all gases are transparent
+<b class="fc">&nbsp;            color.a = 0.6f;</b>
+&nbsp;            //for gases, gas color is implicitly their color
+<b class="fc">&nbsp;            gasColor = color;</b>
+<b class="fc">&nbsp;            if(barColor == null){</b>
+<b class="fc">&nbsp;                barColor = color.cpy().a(1f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isHidden(){
+<b class="fc">&nbsp;        return hidden;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getAnimationFrame(){
+<b class="nc">&nbsp;        return (int)(Time.time / (gas ? animationScaleGas : animationScaleLiquid) * animationFrames + id*5) % animationFrames;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return true if this liquid will boil in this global environment. */
+&nbsp;    public boolean willBoil(){
+<b class="nc">&nbsp;        return Attribute.heat.env() &gt;= boilPoint;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canExtinguish(){
+<b class="nc">&nbsp;        return flammability &lt; 0.1f &amp;&amp; temperature &lt;= 0.5f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Color barColor(){
+<b class="nc">&nbsp;        return barColor == null ? color : barColor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Draws a puddle of this liquid on the floor. */
+&nbsp;    public void drawPuddle(Puddle puddle){
+<b class="nc">&nbsp;        float amount = puddle.amount, x = puddle.x, y = puddle.y;</b>
+<b class="nc">&nbsp;        float f = Mathf.clamp(amount / (maxLiquid / 1.5f));</b>
+<b class="nc">&nbsp;        float smag = puddle.tile.floor().isLiquid ? 0.8f : 0f, sscl = 25f;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Tmp.c1.set(color).shiftValue(-0.05f));</b>
+<b class="nc">&nbsp;        Fill.circle(x + Mathf.sin(Time.time + id * 532, sscl, smag), y + Mathf.sin(Time.time + id * 53, sscl, smag), f * 8f);</b>
+&nbsp;
+<b class="nc">&nbsp;        float length = f * 6f;</b>
+<b class="nc">&nbsp;        rand.setSeed(id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 3; i++){</b>
+<b class="nc">&nbsp;            Tmp.v1.trns(rand.random(360f), rand.random(length));</b>
+<b class="nc">&nbsp;            float vx = x + Tmp.v1.x, vy = y + Tmp.v1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;            Fill.circle(</b>
+<b class="nc">&nbsp;            vx + Mathf.sin(Time.time + i * 532, sscl, smag),</b>
+<b class="nc">&nbsp;            vy + Mathf.sin(Time.time + i * 53, sscl, smag),</b>
+&nbsp;            f * 5f);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(lightColor.a &gt; 0.001f &amp;&amp; f &gt; 0){</b>
+<b class="nc">&nbsp;            Drawf.light(x, y, 30f * f, lightColor, color.a * f * 0.8f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Runs when puddles update. */
+&nbsp;    public void update(Puddle puddle){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    //TODO proper API for this (do not use yet!)
+&nbsp;    public float react(Liquid other, float amount, Tile tile, float x, float y){
+<b class="nc">&nbsp;        return 0f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        stats.addPercent(Stat.explosiveness, explosiveness);</b>
+<b class="nc">&nbsp;        stats.addPercent(Stat.flammability, flammability);</b>
+<b class="nc">&nbsp;        stats.addPercent(Stat.temperature, temperature);</b>
+<b class="nc">&nbsp;        stats.addPercent(Stat.heatCapacity, heatCapacity);</b>
+<b class="nc">&nbsp;        stats.addPercent(Stat.viscosity, viscosity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public double sense(LAccess sensor){
+<b class="nc">&nbsp;        if(sensor == LAccess.color) return color.toDoubleBits();</b>
+<b class="nc">&nbsp;        if(sensor == LAccess.id) return getLogicId();</b>
+<b class="nc">&nbsp;        return Double.NaN;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Object senseObject(LAccess sensor){
+<b class="nc">&nbsp;        if(sensor == LAccess.name) return name;</b>
+<b class="nc">&nbsp;        return noSensed;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return localizedName;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ContentType getContentType(){
+<b class="fc">&nbsp;        return ContentType.liquid;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

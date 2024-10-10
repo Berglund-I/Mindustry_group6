@@ -1,0 +1,156 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > FlarePart</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.part</a>
+</div>
+
+<h1>Coverage Summary for Class: FlarePart (mindustry.entities.part)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FlarePart</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24%
+  </span>
+  <span class="absValue">
+    (6/25)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.part;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;
+<b class="fc">&nbsp;public class FlarePart extends DrawPart{</b>
+<b class="fc">&nbsp;    public int sides = 4;</b>
+<b class="fc">&nbsp;    public float radius = 100f, radiusTo = -1f, stroke = 6f, innerScl = 0.5f, innerRadScl = 0.33f;</b>
+&nbsp;    public float x, y, rotation, rotMove, spinSpeed;
+&nbsp;    public boolean followRotation;
+<b class="fc">&nbsp;    public Color color1 = Pal.techBlue, color2 = Color.white;</b>
+<b class="fc">&nbsp;    public PartProgress progress = PartProgress.warmup;</b>
+<b class="fc">&nbsp;    public float layer = Layer.effect;</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(PartParams params){
+<b class="nc">&nbsp;        float z = Draw.z();</b>
+<b class="nc">&nbsp;        if(layer &gt; 0) Draw.z(layer);</b>
+&nbsp;
+<b class="nc">&nbsp;        float prog = progress.getClamp(params);</b>
+<b class="nc">&nbsp;        int i = params.sideOverride == -1 ? 0 : params.sideOverride;</b>
+&nbsp;
+<b class="nc">&nbsp;        float sign = (i == 0 ? 1 : -1) * params.sideMultiplier;</b>
+<b class="nc">&nbsp;        Tmp.v1.set(x * sign, y).rotate(params.rotation - 90);</b>
+&nbsp;
+&nbsp;        float
+<b class="nc">&nbsp;        rx = params.x + Tmp.v1.x,</b>
+<b class="nc">&nbsp;        ry = params.y + Tmp.v1.y,</b>
+<b class="nc">&nbsp;        rot = (followRotation ? params.rotation : 0f) + rotMove * prog + rotation + Time.time * spinSpeed,</b>
+<b class="nc">&nbsp;        rad = radiusTo &lt; 0 ? radius : Mathf.lerp(radius, radiusTo, prog);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(color1);</b>
+<b class="nc">&nbsp;        for(int j = 0; j &lt; sides; j++){</b>
+<b class="nc">&nbsp;            Drawf.tri(rx, ry, stroke, rad, j * 360f / sides + rot);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(color2);</b>
+<b class="nc">&nbsp;        for(int j = 0; j &lt; sides; j++){</b>
+<b class="nc">&nbsp;            Drawf.tri(rx, ry, stroke * innerScl, rad * innerRadScl, j * 360f / sides + rot);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.color();</b>
+<b class="nc">&nbsp;        Draw.z(z);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(String name){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

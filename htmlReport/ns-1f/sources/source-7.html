@@ -1,0 +1,629 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SaveVersion</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.io</a>
+</div>
+
+<h1>Coverage Summary for Class: SaveVersion (mindustry.io)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SaveVersion</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96.6%
+  </span>
+  <span class="absValue">
+    (28/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83%
+  </span>
+  <span class="absValue">
+    (235/283)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.io;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.content.TechTree.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.maps.Map;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public abstract class SaveVersion extends SaveFileReader{
+<b class="fc">&nbsp;    protected static OrderedMap&lt;String, CustomChunk&gt; customChunks = new OrderedMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public final int version;
+&nbsp;
+&nbsp;    //HACK stores the last read build of the save file, valid after read meta call
+&nbsp;    protected int lastReadBuild;
+&nbsp;    //stores entity mappings for use after readEntityMapping
+&nbsp;    //if null, fall back to EntityMapping&#39;s values
+&nbsp;    protected @Nullable Prov[] entityMapping;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Registers a custom save chunk reader/writer by name. This is mostly used for mods that need to save extra data.
+&nbsp;     * @param name a mod-specific, unique name for identifying this chunk. Prefixing is recommended.
+&nbsp;     * */
+&nbsp;    public static void addCustomChunk(String name, CustomChunk chunk){
+<b class="fc">&nbsp;        customChunks.put(name, chunk);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public SaveVersion(int version){</b>
+<b class="fc">&nbsp;        this.version = version;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SaveMeta getMeta(DataInput stream) throws IOException{
+<b class="nc">&nbsp;        stream.readInt(); //length of data, doesn&#39;t matter here</b>
+<b class="nc">&nbsp;        StringMap map = readStringMap(stream);</b>
+<b class="nc">&nbsp;        return new SaveMeta(</b>
+<b class="nc">&nbsp;            map.getInt(&quot;version&quot;),</b>
+<b class="nc">&nbsp;            map.getLong(&quot;saved&quot;),</b>
+<b class="nc">&nbsp;            map.getLong(&quot;playtime&quot;),</b>
+<b class="nc">&nbsp;            map.getInt(&quot;build&quot;),</b>
+<b class="nc">&nbsp;            map.get(&quot;mapname&quot;),</b>
+<b class="nc">&nbsp;            map.getInt(&quot;wave&quot;),</b>
+<b class="nc">&nbsp;            JsonIO.read(Rules.class, map.get(&quot;rules&quot;, &quot;{}&quot;)),</b>
+&nbsp;            map
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public final void write(DataOutputStream stream) throws IOException{
+<b class="fc">&nbsp;        write(stream, new StringMap());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void read(DataInputStream stream, CounterInputStream counter, WorldContext context) throws IOException{
+<b class="fc">&nbsp;        region(&quot;meta&quot;, stream, counter, in -&gt; readMeta(in, context));</b>
+<b class="fc">&nbsp;        region(&quot;content&quot;, stream, counter, this::readContentHeader);</b>
+&nbsp;
+&nbsp;        try{
+<b class="fc">&nbsp;            region(&quot;map&quot;, stream, counter, in -&gt; readMap(in, context));</b>
+<b class="fc">&nbsp;            region(&quot;entities&quot;, stream, counter, this::readEntities);</b>
+<b class="fc">&nbsp;            if(version &gt;= 8) region(&quot;markers&quot;, stream, counter, this::readMarkers);</b>
+<b class="fc">&nbsp;            region(&quot;custom&quot;, stream, counter, this::readCustomChunks);</b>
+&nbsp;        }finally{
+<b class="fc">&nbsp;            content.setTemporaryMapper(null);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void write(DataOutputStream stream, StringMap extraTags) throws IOException{
+<b class="fc">&nbsp;        region(&quot;meta&quot;, stream, out -&gt; writeMeta(out, extraTags));</b>
+<b class="fc">&nbsp;        region(&quot;content&quot;, stream, this::writeContentHeader);</b>
+<b class="fc">&nbsp;        region(&quot;map&quot;, stream, this::writeMap);</b>
+<b class="fc">&nbsp;        region(&quot;entities&quot;, stream, this::writeEntities);</b>
+<b class="fc">&nbsp;        region(&quot;markers&quot;, stream, this::writeMarkers);</b>
+<b class="fc">&nbsp;        region(&quot;custom&quot;, stream, s -&gt; writeCustomChunks(s, false));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeCustomChunks(DataOutput stream, boolean net) throws IOException{
+<b class="fc">&nbsp;        var chunks = customChunks.orderedKeys().select(s -&gt; customChunks.get(s).shouldWrite() &amp;&amp; (!net || customChunks.get(s).writeNet()));</b>
+<b class="fc">&nbsp;        stream.writeInt(chunks.size);</b>
+<b class="fc">&nbsp;        for(var chunkName : chunks){</b>
+<b class="nc">&nbsp;            var chunk = customChunks.get(chunkName);</b>
+<b class="nc">&nbsp;            stream.writeUTF(chunkName);</b>
+&nbsp;
+<b class="nc">&nbsp;            writeChunk(stream, false, chunk::write);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readCustomChunks(DataInput stream) throws IOException{
+<b class="fc">&nbsp;        int amount = stream.readInt();</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; amount; i++){</b>
+<b class="fc">&nbsp;            String name = stream.readUTF();</b>
+<b class="fc">&nbsp;            var chunk = customChunks.get(name);</b>
+<b class="fc">&nbsp;            if(chunk != null){</b>
+<b class="fc">&nbsp;                readChunk(stream, false, chunk::read);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                skipChunk(stream);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeMeta(DataOutput stream, StringMap tags) throws IOException{
+&nbsp;        //prepare campaign data for writing
+<b class="fc">&nbsp;        if(state.isCampaign()){</b>
+<b class="nc">&nbsp;            state.rules.sector.info.prepare();</b>
+<b class="nc">&nbsp;            state.rules.sector.saveInfo();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //flush tech node progress
+<b class="fc">&nbsp;        for(TechNode node : TechTree.all){</b>
+<b class="fc">&nbsp;            node.save();</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        StringMap result = new StringMap();</b>
+<b class="fc">&nbsp;        result.putAll(tags);</b>
+&nbsp;
+<b class="fc">&nbsp;        writeStringMap(stream, result.merge(StringMap.of(</b>
+<b class="fc">&nbsp;            &quot;saved&quot;, Time.millis(),</b>
+<b class="fc">&nbsp;            &quot;playtime&quot;, headless ? 0 : control.saves.getTotalPlaytime(),</b>
+<b class="fc">&nbsp;            &quot;build&quot;, Version.build,</b>
+<b class="fc">&nbsp;            &quot;mapname&quot;, state.map.name(),</b>
+<b class="fc">&nbsp;            &quot;wave&quot;, state.wave,</b>
+<b class="fc">&nbsp;            &quot;tick&quot;, state.tick,</b>
+<b class="fc">&nbsp;            &quot;wavetime&quot;, state.wavetime,</b>
+<b class="fc">&nbsp;            &quot;stats&quot;, JsonIO.write(state.stats),</b>
+<b class="fc">&nbsp;            &quot;rules&quot;, JsonIO.write(state.rules),</b>
+<b class="fc">&nbsp;            &quot;locales&quot;, JsonIO.write(state.mapLocales),</b>
+<b class="fc">&nbsp;            &quot;mods&quot;, JsonIO.write(mods.getModStrings().toArray(String.class)),</b>
+<b class="fc">&nbsp;            &quot;controlGroups&quot;, headless || control == null ? &quot;null&quot; : JsonIO.write(control.input.controlGroups),</b>
+<b class="fc">&nbsp;            &quot;width&quot;, world.width(),</b>
+<b class="fc">&nbsp;            &quot;height&quot;, world.height(),</b>
+<b class="fc">&nbsp;            &quot;viewpos&quot;, Tmp.v1.set(player == null ? Vec2.ZERO : player).toString(),</b>
+<b class="fc">&nbsp;            &quot;controlledType&quot;, headless || control.input.controlledType == null ? &quot;null&quot; : control.input.controlledType.name,</b>
+<b class="fc">&nbsp;            &quot;nocores&quot;, state.rules.defaultTeam.cores().isEmpty(),</b>
+<b class="fc">&nbsp;            &quot;playerteam&quot;, player == null ? state.rules.defaultTeam.id : player.team().id</b>
+&nbsp;        )));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readMeta(DataInput stream, WorldContext context) throws IOException{
+<b class="fc">&nbsp;        StringMap map = readStringMap(stream);</b>
+&nbsp;
+<b class="fc">&nbsp;        state.wave = map.getInt(&quot;wave&quot;);</b>
+<b class="fc">&nbsp;        state.wavetime = map.getFloat(&quot;wavetime&quot;, state.rules.waveSpacing);</b>
+<b class="fc">&nbsp;        state.tick = map.getFloat(&quot;tick&quot;);</b>
+<b class="fc">&nbsp;        state.stats = JsonIO.read(GameStats.class, map.get(&quot;stats&quot;, &quot;{}&quot;));</b>
+<b class="fc">&nbsp;        state.rules = JsonIO.read(Rules.class, map.get(&quot;rules&quot;, &quot;{}&quot;));</b>
+<b class="fc">&nbsp;        state.mapLocales = JsonIO.read(MapLocales.class, map.get(&quot;locales&quot;, &quot;{}&quot;));</b>
+<b class="fc">&nbsp;        if(state.rules.spawns.isEmpty()) state.rules.spawns = waves.get();</b>
+<b class="fc">&nbsp;        lastReadBuild = map.getInt(&quot;build&quot;, -1);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(context.getSector() != null){</b>
+<b class="fc">&nbsp;            state.rules.sector = context.getSector();</b>
+<b class="fc">&nbsp;            if(state.rules.sector != null){</b>
+<b class="fc">&nbsp;                state.rules.sector.planet.applyRules(state.rules);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //replace the default serpulo env with erekir
+<b class="fc">&nbsp;        if(state.rules.planet == Planets.serpulo &amp;&amp; state.rules.hasEnv(Env.scorching)){</b>
+<b class="nc">&nbsp;            state.rules.planet = Planets.erekir;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(!headless){</b>
+<b class="nc">&nbsp;            Tmp.v1.tryFromString(map.get(&quot;viewpos&quot;));</b>
+<b class="nc">&nbsp;            Core.camera.position.set(Tmp.v1);</b>
+<b class="nc">&nbsp;            player.set(Tmp.v1);</b>
+&nbsp;
+<b class="nc">&nbsp;            control.input.controlledType = content.getByName(ContentType.unit, map.get(&quot;controlledType&quot;, &quot;&lt;none&gt;&quot;));</b>
+<b class="nc">&nbsp;            Team team = Team.get(map.getInt(&quot;playerteam&quot;, state.rules.defaultTeam.id));</b>
+<b class="nc">&nbsp;            if(!net.client() &amp;&amp; team != Team.derelict){</b>
+<b class="nc">&nbsp;                player.team(team);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            var groups = JsonIO.read(IntSeq[].class, map.get(&quot;controlGroups&quot;, &quot;null&quot;));</b>
+<b class="nc">&nbsp;            if(groups != null &amp;&amp; groups.length == control.input.controlGroups.length){</b>
+<b class="nc">&nbsp;                control.input.controlGroups = groups;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Map worldmap = maps.byName(map.get(&quot;mapname&quot;, &quot;\\\\\\&quot;));</b>
+<b class="fc">&nbsp;        state.map = worldmap == null ? new Map(StringMap.of(</b>
+<b class="fc">&nbsp;            &quot;name&quot;, map.get(&quot;mapname&quot;, &quot;Unknown&quot;),</b>
+<b class="fc">&nbsp;            &quot;width&quot;, 1,</b>
+<b class="fc">&nbsp;            &quot;height&quot;, 1</b>
+<b class="fc">&nbsp;        )) : worldmap;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeMap(DataOutput stream) throws IOException{
+&nbsp;        //write world size
+<b class="fc">&nbsp;        stream.writeShort(world.width());</b>
+<b class="fc">&nbsp;        stream.writeShort(world.height());</b>
+&nbsp;
+&nbsp;        //floor + overlay
+<b class="fc">&nbsp;        for(int i = 0; i &lt; world.width() * world.height(); i++){</b>
+<b class="fc">&nbsp;            Tile tile = world.rawTile(i % world.width(), i / world.width());</b>
+<b class="fc">&nbsp;            stream.writeShort(tile.floorID());</b>
+<b class="fc">&nbsp;            stream.writeShort(tile.overlayID());</b>
+<b class="fc">&nbsp;            int consecutives = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;            for(int j = i + 1; j &lt; world.width() * world.height() &amp;&amp; consecutives &lt; 255; j++){</b>
+<b class="fc">&nbsp;                Tile nextTile = world.rawTile(j % world.width(), j / world.width());</b>
+&nbsp;
+<b class="fc">&nbsp;                if(nextTile.floorID() != tile.floorID() || nextTile.overlayID() != tile.overlayID()){</b>
+<b class="fc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                consecutives++;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            stream.writeByte(consecutives);</b>
+<b class="fc">&nbsp;            i += consecutives;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //blocks
+<b class="fc">&nbsp;        for(int i = 0; i &lt; world.width() * world.height(); i++){</b>
+<b class="fc">&nbsp;            Tile tile = world.rawTile(i % world.width(), i / world.width());</b>
+<b class="fc">&nbsp;            stream.writeShort(tile.blockID());</b>
+&nbsp;
+<b class="fc">&nbsp;            boolean savedata = tile.block().saveData;</b>
+<b class="fc">&nbsp;            byte packed = (byte)((tile.build != null ? 1 : 0) | (savedata ? 2 : 0));</b>
+&nbsp;
+&nbsp;            //make note of whether there was an entity/rotation here
+<b class="fc">&nbsp;            stream.writeByte(packed);</b>
+&nbsp;
+&nbsp;            //only write the entity for multiblocks once - in the center
+<b class="fc">&nbsp;            if(tile.build != null){</b>
+<b class="fc">&nbsp;                if(tile.isCenter()){</b>
+<b class="fc">&nbsp;                    stream.writeBoolean(true);</b>
+<b class="fc">&nbsp;                    writeChunk(stream, true, out -&gt; {</b>
+<b class="fc">&nbsp;                        out.writeByte(tile.build.version());</b>
+<b class="fc">&nbsp;                        tile.build.writeAll(Writes.get(out));</b>
+&nbsp;                    });
+&nbsp;                }else{
+<b class="fc">&nbsp;                    stream.writeBoolean(false);</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }else if(savedata){</b>
+<b class="nc">&nbsp;                stream.writeByte(tile.data);</b>
+&nbsp;            }else{
+&nbsp;                //write consecutive non-entity blocks
+<b class="fc">&nbsp;                int consecutives = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;                for(int j = i + 1; j &lt; world.width() * world.height() &amp;&amp; consecutives &lt; 255; j++){</b>
+<b class="fc">&nbsp;                    Tile nextTile = world.rawTile(j % world.width(), j / world.width());</b>
+&nbsp;
+<b class="fc">&nbsp;                    if(nextTile.blockID() != tile.blockID()){</b>
+<b class="fc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    consecutives++;</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                stream.writeByte(consecutives);</b>
+<b class="fc">&nbsp;                i += consecutives;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readMap(DataInput stream, WorldContext context) throws IOException{
+<b class="fc">&nbsp;        int width = stream.readUnsignedShort();</b>
+<b class="fc">&nbsp;        int height = stream.readUnsignedShort();</b>
+&nbsp;
+<b class="fc">&nbsp;        boolean generating = context.isGenerating();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(!generating) context.begin();</b>
+&nbsp;        try{
+&nbsp;
+<b class="fc">&nbsp;            context.resize(width, height);</b>
+&nbsp;
+&nbsp;            //read floor and create tiles first
+<b class="fc">&nbsp;            for(int i = 0; i &lt; width * height; i++){</b>
+<b class="fc">&nbsp;                int x = i % width, y = i / width;</b>
+<b class="fc">&nbsp;                short floorid = stream.readShort();</b>
+<b class="fc">&nbsp;                short oreid = stream.readShort();</b>
+<b class="fc">&nbsp;                int consecutives = stream.readUnsignedByte();</b>
+<b class="fc">&nbsp;                if(content.block(floorid) == Blocks.air) floorid = Blocks.stone.id;</b>
+&nbsp;
+<b class="fc">&nbsp;                context.create(x, y, floorid, oreid, (short)0);</b>
+&nbsp;
+<b class="fc">&nbsp;                for(int j = i + 1; j &lt; i + 1 + consecutives; j++){</b>
+<b class="fc">&nbsp;                    int newx = j % width, newy = j / width;</b>
+<b class="fc">&nbsp;                    context.create(newx, newy, floorid, oreid, (short)0);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                i += consecutives;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //read blocks
+<b class="fc">&nbsp;            for(int i = 0; i &lt; width * height; i++){</b>
+<b class="fc">&nbsp;                Block block = content.block(stream.readShort());</b>
+<b class="fc">&nbsp;                Tile tile = context.tile(i);</b>
+<b class="fc">&nbsp;                if(block == null) block = Blocks.air;</b>
+<b class="fc">&nbsp;                boolean isCenter = true;</b>
+<b class="fc">&nbsp;                byte packedCheck = stream.readByte();</b>
+<b class="fc">&nbsp;                boolean hadEntity = (packedCheck &amp; 1) != 0;</b>
+<b class="fc">&nbsp;                boolean hadData = (packedCheck &amp; 2) != 0;</b>
+&nbsp;
+<b class="fc">&nbsp;                if(hadEntity){</b>
+<b class="fc">&nbsp;                    isCenter = stream.readBoolean();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //set block only if this is the center; otherwise, it&#39;s handled elsewhere
+<b class="fc">&nbsp;                if(isCenter){</b>
+<b class="fc">&nbsp;                    tile.setBlock(block);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(hadEntity){</b>
+<b class="fc">&nbsp;                    if(isCenter){ //only read entity for center blocks</b>
+<b class="fc">&nbsp;                        if(block.hasBuilding()){</b>
+&nbsp;                            try{
+<b class="fc">&nbsp;                                readChunk(stream, true, in -&gt; {</b>
+<b class="fc">&nbsp;                                    byte revision = in.readByte();</b>
+<b class="fc">&nbsp;                                    tile.build.readAll(Reads.get(in), revision);</b>
+&nbsp;                                });
+<b class="nc">&nbsp;                            }catch(Throwable e){</b>
+<b class="nc">&nbsp;                                throw new IOException(&quot;Failed to read tile entity of block: &quot; + block, e);</b>
+<b class="fc">&nbsp;                            }</b>
+&nbsp;                        }else{
+&nbsp;                            //skip the entity region, as the entity and its IO code are now gone
+<b class="nc">&nbsp;                            skipChunk(stream, true);</b>
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        context.onReadBuilding();</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                }else if(hadData){</b>
+<b class="nc">&nbsp;                    tile.setBlock(block);</b>
+<b class="nc">&nbsp;                    tile.data = stream.readByte();</b>
+&nbsp;                }else{
+<b class="fc">&nbsp;                    int consecutives = stream.readUnsignedByte();</b>
+&nbsp;
+<b class="fc">&nbsp;                    for(int j = i + 1; j &lt; i + 1 + consecutives; j++){</b>
+<b class="fc">&nbsp;                        context.tile(j).setBlock(block);</b>
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    i += consecutives;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }finally{
+<b class="fc">&nbsp;            if(!generating) context.end();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeTeamBlocks(DataOutput stream) throws IOException{
+&nbsp;        //write team data with entities.
+<b class="fc">&nbsp;        Seq&lt;TeamData&gt; data = state.teams.getActive().copy();</b>
+<b class="fc">&nbsp;        if(!data.contains(Team.sharded.data())) data.add(Team.sharded.data());</b>
+<b class="fc">&nbsp;        stream.writeInt(data.size);</b>
+<b class="fc">&nbsp;        for(TeamData team : data){</b>
+<b class="fc">&nbsp;            stream.writeInt(team.team.id);</b>
+<b class="fc">&nbsp;            stream.writeInt(team.plans.size);</b>
+<b class="fc">&nbsp;            for(BlockPlan block : team.plans){</b>
+<b class="nc">&nbsp;                stream.writeShort(block.x);</b>
+<b class="nc">&nbsp;                stream.writeShort(block.y);</b>
+<b class="nc">&nbsp;                stream.writeShort(block.rotation);</b>
+<b class="nc">&nbsp;                stream.writeShort(block.block);</b>
+<b class="nc">&nbsp;                TypeIO.writeObject(Writes.get(stream), block.config);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeWorldEntities(DataOutput stream) throws IOException{
+<b class="fc">&nbsp;        stream.writeInt(Groups.all.count(Entityc::serialize));</b>
+<b class="fc">&nbsp;        for(Entityc entity : Groups.all){</b>
+<b class="fc">&nbsp;            if(!entity.serialize()) continue;</b>
+&nbsp;
+<b class="fc">&nbsp;            writeChunk(stream, true, out -&gt; {</b>
+<b class="fc">&nbsp;                out.writeByte(entity.classId());</b>
+<b class="fc">&nbsp;                out.writeInt(entity.id());</b>
+<b class="fc">&nbsp;                entity.write(Writes.get(out));</b>
+&nbsp;            });
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeEntityMapping(DataOutput stream) throws IOException{
+<b class="fc">&nbsp;        stream.writeShort(EntityMapping.customIdMap.size);</b>
+<b class="fc">&nbsp;        for(var entry : EntityMapping.customIdMap.entries()){</b>
+<b class="nc">&nbsp;            stream.writeShort(entry.key);</b>
+<b class="nc">&nbsp;            stream.writeUTF(entry.value);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeEntities(DataOutput stream) throws IOException{
+<b class="fc">&nbsp;        writeEntityMapping(stream);</b>
+<b class="fc">&nbsp;        writeTeamBlocks(stream);</b>
+<b class="fc">&nbsp;        writeWorldEntities(stream);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeMarkers(DataOutput stream) throws IOException{
+<b class="fc">&nbsp;        state.markers.write(stream);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readMarkers(DataInput stream) throws IOException{
+<b class="fc">&nbsp;        state.markers.read(stream);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readTeamBlocks(DataInput stream) throws IOException{
+<b class="fc">&nbsp;        int teamc = stream.readInt();</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; teamc; i++){</b>
+<b class="fc">&nbsp;            Team team = Team.get(stream.readInt());</b>
+<b class="fc">&nbsp;            TeamData data = team.data();</b>
+<b class="fc">&nbsp;            int blocks = stream.readInt();</b>
+<b class="fc">&nbsp;            data.plans.clear();</b>
+<b class="fc">&nbsp;            data.plans.ensureCapacity(Math.min(blocks, 1000));</b>
+<b class="fc">&nbsp;            var reads = Reads.get(stream);</b>
+<b class="fc">&nbsp;            var set = new IntSet();</b>
+&nbsp;
+<b class="fc">&nbsp;            for(int j = 0; j &lt; blocks; j++){</b>
+<b class="fc">&nbsp;                short x = stream.readShort(), y = stream.readShort(), rot = stream.readShort(), bid = stream.readShort();</b>
+<b class="fc">&nbsp;                var obj = TypeIO.readObject(reads);</b>
+&nbsp;                //cannot have two in the same position
+<b class="fc">&nbsp;                if(set.add(Point2.pack(x, y))){</b>
+<b class="fc">&nbsp;                    data.plans.addLast(new BlockPlan(x, y, rot, content.block(bid).id, obj));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readWorldEntities(DataInput stream) throws IOException{
+&nbsp;        //entityMapping is null in older save versions, so use the default
+<b class="fc">&nbsp;        var mapping = this.entityMapping == null ? EntityMapping.idMap : this.entityMapping;</b>
+&nbsp;
+<b class="fc">&nbsp;        Seq&lt;Entityc&gt; entities = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;        int amount = stream.readInt();</b>
+<b class="fc">&nbsp;        for(int j = 0; j &lt; amount; j++){</b>
+<b class="fc">&nbsp;            readChunk(stream, true, in -&gt; {</b>
+<b class="fc">&nbsp;                int typeid = in.readUnsignedByte();</b>
+<b class="fc">&nbsp;                if(mapping[typeid] == null){</b>
+<b class="nc">&nbsp;                    in.skipBytes(lastRegionLength - 1);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                int id = in.readInt();</b>
+&nbsp;
+<b class="fc">&nbsp;                Entityc entity = (Entityc)mapping[typeid].get();</b>
+<b class="fc">&nbsp;                entities.add(entity);</b>
+<b class="fc">&nbsp;                EntityGroup.checkNextId(id);</b>
+<b class="fc">&nbsp;                entity.id(id);</b>
+<b class="fc">&nbsp;                entity.read(Reads.get(in));</b>
+<b class="fc">&nbsp;                entity.add();</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        for(var e : entities){</b>
+<b class="fc">&nbsp;            e.afterAllRead();</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readEntityMapping(DataInput stream) throws IOException{
+&nbsp;        //copy entityMapping for further mutation; will be used in readWorldEntities
+<b class="fc">&nbsp;        entityMapping = Arrays.copyOf(EntityMapping.idMap, EntityMapping.idMap.length);</b>
+&nbsp;
+<b class="fc">&nbsp;        short amount = stream.readShort();</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; amount; i++){</b>
+&nbsp;            //everything that corresponded to this ID in this save goes by this name
+&nbsp;            //so replace the prov in the current mapping with the one found with this name
+<b class="nc">&nbsp;            short id = stream.readShort();</b>
+<b class="nc">&nbsp;            String name = stream.readUTF();</b>
+<b class="nc">&nbsp;            entityMapping[id] = EntityMapping.map(name);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readEntities(DataInput stream) throws IOException{
+<b class="fc">&nbsp;        readEntityMapping(stream);</b>
+<b class="fc">&nbsp;        readTeamBlocks(stream);</b>
+<b class="fc">&nbsp;        readWorldEntities(stream);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readContentHeader(DataInput stream) throws IOException{
+<b class="fc">&nbsp;        byte mapped = stream.readByte();</b>
+&nbsp;
+<b class="fc">&nbsp;        MappableContent[][] map = new MappableContent[ContentType.all.length][0];</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; mapped; i++){</b>
+<b class="fc">&nbsp;            ContentType type = ContentType.all[stream.readByte()];</b>
+<b class="fc">&nbsp;            short total = stream.readShort();</b>
+<b class="fc">&nbsp;            map[type.ordinal()] = new MappableContent[total];</b>
+&nbsp;
+<b class="fc">&nbsp;            for(int j = 0; j &lt; total; j++){</b>
+<b class="fc">&nbsp;                String name = stream.readUTF();</b>
+&nbsp;                //fallback only for blocks
+<b class="fc">&nbsp;                map[type.ordinal()][j] = content.getByName(type, type == ContentType.block ? fallback.get(name, name) : name);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        content.setTemporaryMapper(map);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeContentHeader(DataOutput stream) throws IOException{
+<b class="fc">&nbsp;        Seq&lt;Content&gt;[] map = content.getContentMap();</b>
+&nbsp;
+<b class="fc">&nbsp;        int mappable = 0;</b>
+<b class="fc">&nbsp;        for(Seq&lt;Content&gt; arr : map){</b>
+<b class="fc">&nbsp;            if(arr.size &gt; 0 &amp;&amp; arr.first() instanceof MappableContent){</b>
+<b class="fc">&nbsp;                mappable++;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        stream.writeByte(mappable);</b>
+<b class="fc">&nbsp;        for(Seq&lt;Content&gt; arr : map){</b>
+<b class="fc">&nbsp;            if(arr.size &gt; 0 &amp;&amp; arr.first() instanceof MappableContent){</b>
+<b class="fc">&nbsp;                stream.writeByte(arr.first().getContentType().ordinal());</b>
+<b class="fc">&nbsp;                stream.writeShort(arr.size);</b>
+<b class="fc">&nbsp;                for(Content c : arr){</b>
+<b class="fc">&nbsp;                    stream.writeUTF(((MappableContent)c).name);</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

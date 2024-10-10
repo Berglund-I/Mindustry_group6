@@ -1,0 +1,339 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnitEntityLegacyGamma</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: UnitEntityLegacyGamma (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnitEntityLegacyGamma</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (1/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.7%
+  </span>
+  <span class="absValue">
+    (1/134)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import java.nio.*;
+&nbsp;import java.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.async.PhysicsProcess.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.heat.*;
+&nbsp;import mindustry.world.blocks.heat.HeatConductor.*;
+&nbsp;import mindustry.world.blocks.logic.LogicBlock.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.entities.Puddles.*;
+&nbsp;import static mindustry.logic.GlobalVars.*;
+&nbsp;
+&nbsp;import arc.util.io.Reads;
+&nbsp;import arc.util.io.Writes;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+&nbsp;public class UnitEntityLegacyGamma extends UnitEntity implements Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
+<b class="fc">&nbsp;  protected UnitEntityLegacyGamma() {</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int classId() {
+<b class="nc">&nbsp;    return 31;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Annotations.CallSuper
+&nbsp;  public void read(Reads read) {
+<b class="nc">&nbsp;    short REV = read.s();</b>
+<b class="nc">&nbsp;    if(REV == 0) {</b>
+<b class="nc">&nbsp;      this.ammo = read.f();</b>
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+<b class="nc">&nbsp;      this.flag = read.d();</b>
+<b class="nc">&nbsp;      this.health = read.f();</b>
+<b class="nc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;      this.mineTile = mindustry.io.TypeIO.readTile(read);</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="nc">&nbsp;      this.plans = mindustry.io.TypeIO.readPlansQueue(read);</b>
+<b class="nc">&nbsp;      this.rotation = read.f();</b>
+<b class="nc">&nbsp;      this.shield = read.f();</b>
+<b class="nc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;      this.statuses.clear();</b>
+<b class="nc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else if(REV == 1) {</b>
+<b class="nc">&nbsp;      this.ammo = read.f();</b>
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+<b class="nc">&nbsp;      this.flag = read.d();</b>
+<b class="nc">&nbsp;      this.health = read.f();</b>
+<b class="nc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;      this.mineTile = mindustry.io.TypeIO.readTile(read);</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="nc">&nbsp;      this.plans = mindustry.io.TypeIO.readPlansQueue(read);</b>
+<b class="nc">&nbsp;      this.rotation = read.f();</b>
+<b class="nc">&nbsp;      this.shield = read.f();</b>
+<b class="nc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;      this.statuses.clear();</b>
+<b class="nc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;      this.updateBuilding = read.bool();</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else if(REV == 2) {</b>
+<b class="nc">&nbsp;      this.ammo = read.f();</b>
+<b class="nc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+<b class="nc">&nbsp;      this.flag = read.d();</b>
+<b class="nc">&nbsp;      this.health = read.f();</b>
+<b class="nc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;      this.mineTile = mindustry.io.TypeIO.readTile(read);</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="nc">&nbsp;      this.plans = mindustry.io.TypeIO.readPlansQueue(read);</b>
+<b class="nc">&nbsp;      this.rotation = read.f();</b>
+<b class="nc">&nbsp;      this.shield = read.f();</b>
+<b class="nc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;      this.statuses.clear();</b>
+<b class="nc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;      this.updateBuilding = read.bool();</b>
+<b class="nc">&nbsp;      this.vel = mindustry.io.TypeIO.readVec2(read, this.vel);</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else if(REV == 3) {</b>
+<b class="nc">&nbsp;      this.abilities = mindustry.io.TypeIO.readAbilities(read, this.abilities);</b>
+<b class="nc">&nbsp;      this.ammo = read.f();</b>
+<b class="nc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+<b class="nc">&nbsp;      this.flag = read.d();</b>
+<b class="nc">&nbsp;      this.health = read.f();</b>
+<b class="nc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;      this.mineTile = mindustry.io.TypeIO.readTile(read);</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="nc">&nbsp;      this.plans = mindustry.io.TypeIO.readPlansQueue(read);</b>
+<b class="nc">&nbsp;      this.rotation = read.f();</b>
+<b class="nc">&nbsp;      this.shield = read.f();</b>
+<b class="nc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;      this.statuses.clear();</b>
+<b class="nc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;      this.updateBuilding = read.bool();</b>
+<b class="nc">&nbsp;      this.vel = mindustry.io.TypeIO.readVec2(read, this.vel);</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else {</b>
+<b class="nc">&nbsp;      throw new IllegalArgumentException(&quot;Unknown revision &#39;&quot; + REV + &quot;&#39; for entity type &#39;gamma&#39;&quot;);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;        afterRead();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Annotations.CallSuper
+&nbsp;  public void write(Writes write) {
+<b class="nc">&nbsp;    write.s(3);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeAbilities(write, this.abilities);</b>
+<b class="nc">&nbsp;    write.f(this.ammo);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeController(write, this.controller);</b>
+<b class="nc">&nbsp;    write.f(this.elevation);</b>
+<b class="nc">&nbsp;    write.d(this.flag);</b>
+<b class="nc">&nbsp;    write.f(this.health);</b>
+<b class="nc">&nbsp;    write.bool(this.isShooting);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeTile(write, this.mineTile);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeMounts(write, this.mounts);</b>
+<b class="nc">&nbsp;    write.i(this.plans.size);</b>
+<b class="nc">&nbsp;    for(int INDEX = 0; INDEX &lt; this.plans.size; INDEX ++) {</b>
+<b class="nc">&nbsp;      mindustry.io.TypeIO.writePlan(write, this.plans.get(INDEX));</b>
+&nbsp;    }
+<b class="nc">&nbsp;    write.f(this.rotation);</b>
+<b class="nc">&nbsp;    write.f(this.shield);</b>
+<b class="nc">&nbsp;    write.bool(this.spawnedByCore);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeItems(write, this.stack);</b>
+<b class="nc">&nbsp;    write.i(this.statuses.size);</b>
+<b class="nc">&nbsp;    for(int INDEX = 0; INDEX &lt; this.statuses.size; INDEX ++) {</b>
+<b class="nc">&nbsp;      mindustry.io.TypeIO.writeStatus(write, this.statuses.get(INDEX));</b>
+&nbsp;    }
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeTeam(write, this.team);</b>
+<b class="nc">&nbsp;    write.s(this.type.id);</b>
+<b class="nc">&nbsp;    write.bool(this.updateBuilding);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeVec2(write, this.vel);</b>
+<b class="nc">&nbsp;    write.f(this.x);</b>
+<b class="nc">&nbsp;    write.f(this.y);</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean serialize() {
+<b class="nc">&nbsp;    return true;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static UnitEntityLegacyGamma create() {
+<b class="nc">&nbsp;    return new UnitEntityLegacyGamma();</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,139 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LegacySaveVersion2</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.io.versions</a>
+</div>
+
+<h1>Coverage Summary for Class: LegacySaveVersion2 (mindustry.io.versions)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LegacySaveVersion2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90.9%
+  </span>
+  <span class="absValue">
+    (10/11)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.io.versions;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;
+&nbsp;/** This version did not read/write entity IDs to the save. */
+&nbsp;public class LegacySaveVersion2 extends LegacyRegionSaveVersion{
+&nbsp;
+&nbsp;    public LegacySaveVersion2(int version){
+<b class="fc">&nbsp;        super(version);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void readWorldEntities(DataInput stream) throws IOException{
+&nbsp;        //entityMapping is null in older save versions, so use the default
+<b class="fc">&nbsp;        Prov[] mapping = this.entityMapping == null ? EntityMapping.idMap : this.entityMapping;</b>
+&nbsp;
+<b class="fc">&nbsp;        int amount = stream.readInt();</b>
+<b class="fc">&nbsp;        for(int j = 0; j &lt; amount; j++){</b>
+<b class="fc">&nbsp;            readChunk(stream, true, in -&gt; {</b>
+<b class="fc">&nbsp;                int typeid = in.readUnsignedByte();</b>
+<b class="fc">&nbsp;                if(mapping[typeid] == null){</b>
+<b class="nc">&nbsp;                    in.skipBytes(lastRegionLength - 1);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                Entityc entity = (Entityc)mapping[typeid].get();</b>
+<b class="fc">&nbsp;                entity.read(Reads.get(in));</b>
+<b class="fc">&nbsp;                entity.add();</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

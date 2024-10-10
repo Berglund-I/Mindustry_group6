@@ -1,0 +1,399 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BaseGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps.generators</a>
+</div>
+
+<h1>Coverage Summary for Class: BaseGenerator (mindustry.maps.generators)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BaseGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.1%
+  </span>
+  <span class="absValue">
+    (2/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.2%
+  </span>
+  <span class="absValue">
+    (3/134)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps.generators;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.BaseRegistry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Schematic.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.defense.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.blocks.production.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class BaseGenerator{</b>
+<b class="fc">&nbsp;    private static final Vec2 axis = new Vec2(), rotator = new Vec2();</b>
+&nbsp;
+&nbsp;    private static final int range = 180;
+<b class="fc">&nbsp;    private static boolean insanity = false;</b>
+&nbsp;
+&nbsp;    private Tiles tiles;
+&nbsp;    private Seq&lt;Tile&gt; cores;
+&nbsp;
+&nbsp;    public static Block getDifficultyWall(int size, float difficulty){
+<b class="nc">&nbsp;        Seq&lt;Block&gt; wallsSmall = content.blocks().select(b -&gt; b instanceof Wall &amp;&amp; b.isVanilla() &amp;&amp; b.size == size</b>
+&nbsp;            &amp;&amp; !b.insulated &amp;&amp; b.buildVisibility == BuildVisibility.shown
+&nbsp;            &amp;&amp; !(b instanceof Door)
+<b class="nc">&nbsp;            &amp;&amp; b.isOnPlanet(state.getPlanet()));</b>
+<b class="nc">&nbsp;        wallsSmall.sort(b -&gt; b.buildCost);</b>
+<b class="nc">&nbsp;        return wallsSmall.getFrac(difficulty * 0.91f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void generate(Tiles tiles, Seq&lt;Tile&gt; cores, Tile spawn, Team team, Sector sector, float difficulty){
+<b class="nc">&nbsp;        this.tiles = tiles;</b>
+<b class="nc">&nbsp;        this.cores = cores;</b>
+&nbsp;
+&nbsp;        //don&#39;t generate bases when there are no loaded schematics
+<b class="nc">&nbsp;        if(bases.cores.isEmpty()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Mathf.rand.setSeed(sector.id);</b>
+<b class="nc">&nbsp;        Mathf.rand.nextDouble();</b>
+&nbsp;
+<b class="nc">&nbsp;        float bracketRange = 0.17f;</b>
+<b class="nc">&nbsp;        float baseChance = Mathf.lerp(0.7f, 2.1f, difficulty);</b>
+<b class="nc">&nbsp;        int wallAngle = 70; //180 for full coverage</b>
+<b class="nc">&nbsp;        double resourceChance = 0.5 * baseChance;</b>
+<b class="nc">&nbsp;        double nonResourceChance = 0.002 * baseChance;</b>
+<b class="nc">&nbsp;        int passes = difficulty &lt; 0.4 ? 1 : difficulty &lt; 0.8 ? 3 : 5;</b>
+&nbsp;
+<b class="nc">&nbsp;        Block wall = getDifficultyWall(1, difficulty), wallLarge = getDifficultyWall(2, difficulty);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Tile tile : cores){</b>
+<b class="nc">&nbsp;            tile.clearOverlay();</b>
+<b class="nc">&nbsp;            Schematics.placeLoadout(bases.cores.getFrac((difficulty + Mathf.rand.range(0.4f)) / 1.4f).schematic, tile.x, tile.y, team, false);</b>
+&nbsp;
+&nbsp;            //fill core with every type of item (even non-material)
+<b class="nc">&nbsp;            Building entity = tile.build;</b>
+<b class="nc">&nbsp;            for(Item item : content.items()){</b>
+<b class="nc">&nbsp;                entity.items.add(item, entity.block.itemCapacity);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; passes; i++){</b>
+&nbsp;            //random schematics
+<b class="nc">&nbsp;            pass(tile -&gt; {</b>
+<b class="nc">&nbsp;                if(!tile.block().alwaysReplace) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(((tile.overlay().asFloor().itemDrop != null || (tile.drop() != null &amp;&amp; Mathf.chance(nonResourceChance)))</b>
+<b class="nc">&nbsp;                || (tile.floor().liquidDrop != null &amp;&amp; Mathf.chance(nonResourceChance * 2))) &amp;&amp; Mathf.chance(resourceChance)){</b>
+<b class="nc">&nbsp;                    Seq&lt;BasePart&gt; parts = bases.forResource(tile.drop() != null ? tile.drop() : tile.floor().liquidDrop);</b>
+<b class="nc">&nbsp;                    if(!parts.isEmpty()){</b>
+<b class="nc">&nbsp;                        tryPlace(parts.getFrac(difficulty + Mathf.range(bracketRange)), tile.x, tile.y, team);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }else if(Mathf.chance(nonResourceChance)){</b>
+<b class="nc">&nbsp;                    tryPlace(bases.parts.getFrac(Mathf.rand.random(1f)), tile.x, tile.y, team);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+&nbsp;        //replace walls with the correct type (disabled)
+&nbsp;        if(false)
+&nbsp;        pass(tile -&gt; {
+<b class="nc">&nbsp;            if(tile.block() instanceof Wall &amp;&amp; tile.team() == team &amp;&amp; tile.block() != wall &amp;&amp; tile.block() != wallLarge){</b>
+<b class="nc">&nbsp;                tile.setBlock(tile.block().size == 2 ? wallLarge : wall, team);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        if(wallAngle &gt; 0){</b>
+&nbsp;
+&nbsp;            //small walls
+<b class="nc">&nbsp;            pass(tile -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;                if(tile.block().alwaysReplace){</b>
+<b class="nc">&nbsp;                    boolean any = false;</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(Point2 p : Geometry.d4){</b>
+<b class="nc">&nbsp;                        Tile o = tiles.get(tile.x + p.x, tile.y + p.y);</b>
+&nbsp;
+&nbsp;                        //do not block payloads
+<b class="nc">&nbsp;                        if(o != null &amp;&amp; (o.block() instanceof PayloadConveyor || o.block() instanceof PayloadBlock)){</b>
+&nbsp;                            return;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    for(Point2 p : Geometry.d8){</b>
+<b class="nc">&nbsp;                        if(Angles.angleDist(Angles.angle(p.x, p.y), spawn.angleTo(tile)) &gt; wallAngle){</b>
+<b class="nc">&nbsp;                            continue;</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        Tile o = tiles.get(tile.x + p.x, tile.y + p.y);</b>
+<b class="nc">&nbsp;                        if(o != null &amp;&amp; o.team() == team &amp;&amp; !(o.block() instanceof Wall)){</b>
+<b class="nc">&nbsp;                            any = true;</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(any){</b>
+<b class="nc">&nbsp;                        tile.setBlock(wall, team);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+&nbsp;            //large walls
+<b class="nc">&nbsp;            pass(curr -&gt; {</b>
+<b class="nc">&nbsp;                int walls = 0;</b>
+<b class="nc">&nbsp;                for(int cx = 0; cx &lt; 2; cx++){</b>
+<b class="nc">&nbsp;                    for(int cy = 0; cy &lt; 2; cy++){</b>
+<b class="nc">&nbsp;                        Tile tile = tiles.get(curr.x + cx, curr.y + cy);</b>
+<b class="nc">&nbsp;                        if(tile == null || tile.block().size != 1 || (tile.block() != wall &amp;&amp; !tile.block().alwaysReplace)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(tile.block() == wall){</b>
+<b class="nc">&nbsp;                            walls ++;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(walls &gt;= 3){</b>
+<b class="nc">&nbsp;                    curr.setBlock(wallLarge, team);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        float coreDst = 10f * 8;</b>
+&nbsp;
+&nbsp;        //clear path for ground units
+<b class="nc">&nbsp;        for(Tile tile : cores){</b>
+<b class="nc">&nbsp;            Astar.pathfind(tile, spawn, t -&gt; t.team() == state.rules.waveTeam &amp;&amp; !t.within(tile, coreDst) ? 100000 : t.floor().hasSurface() ? 1 : 10, t -&gt; !t.block().isStatic()).each(t -&gt; {</b>
+<b class="nc">&nbsp;                if(!t.within(tile, coreDst)){</b>
+<b class="nc">&nbsp;                    if(t.team() == state.rules.waveTeam){</b>
+<b class="nc">&nbsp;                        t.setBlock(Blocks.air);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    for(Point2 p : Geometry.d8){</b>
+<b class="nc">&nbsp;                        Tile other = t.nearby(p);</b>
+<b class="nc">&nbsp;                        if(other != null &amp;&amp; other.team() == state.rules.waveTeam){</b>
+<b class="nc">&nbsp;                            other.setBlock(Blocks.air);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            });
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void postGenerate(){
+<b class="nc">&nbsp;        if(tiles == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Tile tile : tiles){</b>
+<b class="nc">&nbsp;            if(tile.isCenter() &amp;&amp; tile.block() instanceof PowerNode &amp;&amp; tile.team() == state.rules.waveTeam){</b>
+<b class="nc">&nbsp;                tile.build.configureAny(new Point2[0]);</b>
+<b class="nc">&nbsp;                tile.build.placed();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void pass(Cons&lt;Tile&gt; cons){
+<b class="nc">&nbsp;        Tile core = cores.first();</b>
+<b class="nc">&nbsp;        core.circle(range, (x, y) -&gt; cons.get(tiles.getn(x, y)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Tries to place a base part at a certain location with a certain team.
+&nbsp;     * @return success state
+&nbsp;     * */
+&nbsp;    public static boolean tryPlace(BasePart part, int x, int y, Team team){
+<b class="nc">&nbsp;        return tryPlace(part, x, y, team, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Tries to place a base part at a certain location with a certain team.
+&nbsp;     * @return success state
+&nbsp;     * */
+&nbsp;    public static boolean tryPlace(BasePart part, int x, int y, Team team, @Nullable Intc2 posc){
+<b class="nc">&nbsp;        int rotation = Mathf.range(2);</b>
+<b class="nc">&nbsp;        axis.set((int)(part.schematic.width / 2f), (int)(part.schematic.height / 2f));</b>
+<b class="nc">&nbsp;        Schematic result = Schematics.rotate(part.schematic, rotation);</b>
+<b class="nc">&nbsp;        int rotdeg = rotation*90;</b>
+&nbsp;
+<b class="nc">&nbsp;        rotator.set(part.centerX, part.centerY).rotateAround(axis, rotdeg);</b>
+&nbsp;        //bottom left schematic corner
+<b class="nc">&nbsp;        int cx = x - (int)rotator.x;</b>
+<b class="nc">&nbsp;        int cy = y - (int)rotator.y;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Stile tile : result.tiles){</b>
+<b class="nc">&nbsp;            int realX = tile.x + cx, realY = tile.y + cy;</b>
+<b class="nc">&nbsp;            if(!insanity &amp;&amp; isTaken(tile.block, realX, realY)){</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(posc != null){</b>
+<b class="nc">&nbsp;                posc.get(realX, realY);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(part.required instanceof Item item){</b>
+<b class="nc">&nbsp;            for(Stile tile : result.tiles){</b>
+&nbsp;                //uncomment for extra checks if changed above
+<b class="nc">&nbsp;                if(tile.block instanceof Drill &amp;&amp; (!insanity || !isTaken(tile.block, tile.x + cx, tile.y + cy))){</b>
+&nbsp;
+<b class="nc">&nbsp;                    tile.block.iterateTaken(tile.x + cx, tile.y + cy, (ex, ey) -&gt; {</b>
+<b class="nc">&nbsp;                        Tile placed = world.tiles.get(ex, ey);</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(placed == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(placed.floor().hasSurface()){</b>
+<b class="nc">&nbsp;                            set(placed, item);</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        Tile rand = world.tiles.getc(ex + Mathf.rand.range(1), ey + Mathf.rand.range(1));</b>
+<b class="nc">&nbsp;                        if(rand.floor().hasSurface()){</b>
+&nbsp;                            //random ores nearby to make it look more natural
+<b class="nc">&nbsp;                            set(rand, item);</b>
+&nbsp;                        }
+&nbsp;                    });
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Schematics.place(result, cx + result.width/2, cy + result.height/2, team, false);</b>
+&nbsp;
+&nbsp;        //fill drills with items after placing
+<b class="nc">&nbsp;        if(part.required instanceof Item item){</b>
+<b class="nc">&nbsp;            for(Stile tile : result.tiles){</b>
+<b class="nc">&nbsp;                if(tile.block instanceof Drill){</b>
+&nbsp;
+<b class="nc">&nbsp;                    var build = world.build(tile.x + cx, tile.y + cy);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(build != null &amp;&amp; build.block == tile.block){</b>
+<b class="nc">&nbsp;                        build.items.add(item, build.block.itemCapacity);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static void set(Tile tile, Item item){
+<b class="nc">&nbsp;        if(bases.ores.containsKey(item)){</b>
+<b class="nc">&nbsp;            tile.setOverlay(bases.ores.get(item));</b>
+<b class="nc">&nbsp;        }else if(bases.oreFloors.containsKey(item)){</b>
+<b class="nc">&nbsp;            tile.setFloor(bases.oreFloors.get(item));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static boolean isTaken(Block block, int x, int y){
+<b class="nc">&nbsp;        int offsetx = -(block.size - 1) / 2;</b>
+<b class="nc">&nbsp;        int offsety = -(block.size - 1) / 2;</b>
+<b class="nc">&nbsp;        int pad = 1;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int dx = -pad; dx &lt; block.size + pad; dx++){</b>
+<b class="nc">&nbsp;            for(int dy = -pad; dy &lt; block.size + pad; dy++){</b>
+<b class="nc">&nbsp;                if(overlaps(dx + offsetx + x, dy + offsety + y)){</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static boolean overlaps(int x, int y){
+<b class="nc">&nbsp;        Tile tile = world.tiles.get(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        return tile == null || !tile.block().alwaysReplace || world.getDarkness(x, y) &gt; 0;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

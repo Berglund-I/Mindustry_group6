@@ -1,0 +1,982 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Generators</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.tools</a>
+</div>
+
+<h1>Coverage Summary for Class: Generators (mindustry.tools)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Generators</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/449)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Generators$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Generators$ScorchGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/463)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.tools;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.legacy.*;
+&nbsp;
+&nbsp;import java.util.concurrent.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.tools.ImagePacker.*;
+&nbsp;
+<b class="nc">&nbsp;public class Generators{</b>
+&nbsp;    static final int maxUiIcon = 128;
+&nbsp;
+&nbsp;    private static float fluid(boolean gas, double x, double y, float frame){
+<b class="nc">&nbsp;        int keyframes = gas ? 4 : 3;</b>
+&nbsp;
+&nbsp;        //interpolate between the current two keyframes
+<b class="nc">&nbsp;        int curFrame = (int)(frame * keyframes);</b>
+<b class="nc">&nbsp;        int nextFrame = (curFrame + 1) % keyframes;</b>
+<b class="nc">&nbsp;        float progress = (frame * keyframes) % 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(gas){</b>
+<b class="nc">&nbsp;            float min = 0.56f;</b>
+<b class="nc">&nbsp;            float interpolated = Mathf.lerp((float)gasFrame(x, y, curFrame), (float)gasFrame(x, y, nextFrame), progress);</b>
+<b class="nc">&nbsp;            return min + (1f - min) * interpolated;</b>
+&nbsp;        }else{ //liquids
+<b class="nc">&nbsp;            float min = 0.84f;</b>
+<b class="nc">&nbsp;            double rx = (x + frame*32) % 32, ry = (y + frame*32) % 32;</b>
+<b class="nc">&nbsp;            float interpolated = (float)liquidFrame(rx, ry, 2);</b>
+&nbsp;            //only two colors here
+<b class="nc">&nbsp;            return min + (interpolated &gt;= 0.3f ? 1f - min : 0f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static double gasFrame(double x, double y, int frame){
+<b class="nc">&nbsp;        int s = 31;</b>
+&nbsp;        //calculate random space offsets for the frame cutout
+<b class="nc">&nbsp;        double ox = Mathf.randomSeed(frame, 200_000), oy = Mathf.randomSeed(frame, 200_000);</b>
+<b class="nc">&nbsp;        double scale = 21, second = 0.3;</b>
+<b class="nc">&nbsp;        return (Simplex.rawTiled(x, y, ox, oy, s, s, scale) + Simplex.rawTiled(x, y, ox, oy, s, s, scale / 1.5) * second) / (1.0 + second);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static double liquidFrame(double x, double y, int frame){
+<b class="nc">&nbsp;        int s = 31;</b>
+&nbsp;        //calculate random space offsets for the frame cutout
+<b class="nc">&nbsp;        double ox = Mathf.randomSeed(frame, 1), oy = Mathf.randomSeed(frame, 1);</b>
+<b class="nc">&nbsp;        double scale = 26, second = 0.5;</b>
+<b class="nc">&nbsp;        return (Simplex.rawTiled(x, y, ox, oy, s, s, scale) + Simplex.rawTiled(x, y, ox, oy, s, s, scale / 1.5) * second) / (1.0 + second);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void run(){
+<b class="nc">&nbsp;        ObjectMap&lt;Block, Pixmap&gt; gens = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;splashes&quot;, () -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;            int frames = 12;</b>
+<b class="nc">&nbsp;            int size = 32;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; frames; i++){</b>
+<b class="nc">&nbsp;                float fin = (float)i / (frames);</b>
+<b class="nc">&nbsp;                float fout = 1f - fin;</b>
+<b class="nc">&nbsp;                float stroke = 3.5f * fout;</b>
+<b class="nc">&nbsp;                float radius = (size/2f) * fin;</b>
+&nbsp;
+<b class="nc">&nbsp;                Pixmap pixmap = new Pixmap(size, size);</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int x = 0; x &lt; pixmap.width; x++){</b>
+<b class="nc">&nbsp;                    for(int y = 0; y &lt; pixmap.height; y++){</b>
+<b class="nc">&nbsp;                        float dst = Mathf.dst(x, y, size/2f, size/2f);</b>
+<b class="nc">&nbsp;                        if(Math.abs(dst - radius) &lt;= stroke){</b>
+<b class="nc">&nbsp;                            pixmap.set(x, y, Color.white);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Fi.get(&quot;splash-&quot; + i + &quot;.png&quot;).writePng(pixmap);</b>
+&nbsp;
+<b class="nc">&nbsp;                pixmap.dispose();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;bubbles&quot;, () -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;            int frames = 16;</b>
+<b class="nc">&nbsp;            int size = 40;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; frames; i++){</b>
+<b class="nc">&nbsp;                float fin = (float)i / (frames);</b>
+<b class="nc">&nbsp;                float fout = 1f - fin;</b>
+<b class="nc">&nbsp;                float stroke = 3.5f * fout;</b>
+<b class="nc">&nbsp;                float radius = (size/2f) * fin;</b>
+<b class="nc">&nbsp;                float shinelen = radius / 2.5f, shinerad = stroke*1.5f + 0.3f;</b>
+<b class="nc">&nbsp;                float shinex = size/2f + shinelen / Mathf.sqrt2, shiney = size/2f - shinelen / Mathf.sqrt2;</b>
+&nbsp;
+<b class="nc">&nbsp;                Pixmap pixmap = new Pixmap(size, size);</b>
+&nbsp;
+<b class="nc">&nbsp;                pixmap.each((x, y) -&gt; {</b>
+<b class="nc">&nbsp;                    float dst = Mathf.dst(x, y, size/2f, size/2f);</b>
+<b class="nc">&nbsp;                    if(Math.abs(dst - radius) &lt;= stroke || Mathf.within(x, y, shinex, shiney, shinerad)){</b>
+<b class="nc">&nbsp;                        pixmap.set(x, y, Color.white);</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                Fi.get(&quot;bubble-&quot; + i + &quot;.png&quot;).writePng(pixmap);</b>
+&nbsp;
+<b class="nc">&nbsp;                pixmap.dispose();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;gas-frames&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            int frames = Liquid.animationFrames;</b>
+<b class="nc">&nbsp;            String[] stencils = {&quot;fluid&quot;};</b>
+<b class="nc">&nbsp;            String[] types = {&quot;liquid&quot;, &quot;gas&quot;};</b>
+<b class="nc">&nbsp;            int typeIndex = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(String type : types){</b>
+<b class="nc">&nbsp;                boolean gas = typeIndex++ == 1;</b>
+<b class="nc">&nbsp;                for(String region : stencils){</b>
+<b class="nc">&nbsp;                    Pixmap base = get(region);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; frames; i++){</b>
+<b class="nc">&nbsp;                        float frame = i / (float)frames;</b>
+&nbsp;
+<b class="nc">&nbsp;                        Pixmap copy = base.copy();</b>
+<b class="nc">&nbsp;                        for(int x = 0; x &lt; copy.width; x++){</b>
+<b class="nc">&nbsp;                            for(int y = 0; y &lt; copy.height; y++){</b>
+<b class="nc">&nbsp;                                if(copy.getA(x, y) &gt; 128){</b>
+<b class="nc">&nbsp;                                    copy.setRaw(x, y, Color.rgba8888(1f, 1f, 1f, fluid(gas, x, y, frame)));</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                        save(copy, region + &quot;-&quot; + type + &quot;-&quot; + i);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;cliffs&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            ExecutorService exec = Executors.newFixedThreadPool(OS.cores);</b>
+<b class="nc">&nbsp;            int size = 64;</b>
+<b class="nc">&nbsp;            int dark = new Color(0.5f, 0.5f, 0.6f, 1f).mul(0.98f).rgba();</b>
+<b class="nc">&nbsp;            int mid = Color.lightGray.rgba();</b>
+&nbsp;
+<b class="nc">&nbsp;            Pixmap[] images = new Pixmap[8];</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 8; i++){</b>
+<b class="nc">&nbsp;                images[i] = new Pixmap(((GenRegion)Core.atlas.find(&quot;cliff&quot; + i)).path);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(int i = Byte.MIN_VALUE; i &lt;= Byte.MAX_VALUE; i++){</b>
+<b class="nc">&nbsp;                int bi = i;</b>
+<b class="nc">&nbsp;                exec.execute(() -&gt; {</b>
+<b class="nc">&nbsp;                    Color color = new Color();</b>
+<b class="nc">&nbsp;                    Pixmap result = new Pixmap(size, size);</b>
+<b class="nc">&nbsp;                    byte[][] mask = new byte[size][size];</b>
+&nbsp;
+<b class="nc">&nbsp;                    byte val = (byte)bi;</b>
+&nbsp;                    //check each bit/direction
+<b class="nc">&nbsp;                    for(int j = 0; j &lt; 8; j++){</b>
+<b class="nc">&nbsp;                        if((val &amp; (1 &lt;&lt; j)) != 0){</b>
+<b class="nc">&nbsp;                            if(j % 2 == 1 &amp;&amp; (((val &amp; (1 &lt;&lt; (j + 1))) != 0) != ((val &amp; (1 &lt;&lt; (j - 1))) != 0))){</b>
+<b class="nc">&nbsp;                                continue;</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            Pixmap image = images[j];</b>
+<b class="nc">&nbsp;                            image.each((x, y) -&gt; {</b>
+<b class="nc">&nbsp;                                color.set(image.getRaw(x, y));</b>
+<b class="nc">&nbsp;                                if(color.a &gt; 0.1){</b>
+&nbsp;                                    //white -&gt; bit 1 -&gt; top
+&nbsp;                                    //black -&gt; bit 2 -&gt; bottom
+<b class="nc">&nbsp;                                    mask[x][y] |= (color.r &gt; 0.5f ? 1 : 2);</b>
+&nbsp;                                }
+&nbsp;                            });
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    result.each((x, y) -&gt; {</b>
+<b class="nc">&nbsp;                        byte m = mask[x][y];</b>
+<b class="nc">&nbsp;                        if(m != 0){</b>
+&nbsp;                            //mid
+<b class="nc">&nbsp;                            if(m == 3){</b>
+&nbsp;                                //find nearest non-mid color
+<b class="nc">&nbsp;                                byte best = 0;</b>
+<b class="nc">&nbsp;                                float bestDst = 0;</b>
+<b class="nc">&nbsp;                                boolean found = false;</b>
+&nbsp;                                //expand search range until found
+<b class="nc">&nbsp;                                for(int rad = 9; rad &lt; 64; rad += 7){</b>
+<b class="nc">&nbsp;                                    for(int cx = Math.max(x - rad, 0); cx &lt;= Math.min(x + rad, size - 1); cx++){</b>
+<b class="nc">&nbsp;                                        for(int cy = Math.max(y - rad, 0); cy &lt;= Math.min(y + rad, size - 1); cy++){</b>
+<b class="nc">&nbsp;                                            byte nval = mask[cx][cy];</b>
+<b class="nc">&nbsp;                                            if(nval == 1 || nval == 2){</b>
+<b class="nc">&nbsp;                                                float dst2 = Mathf.dst2(cx, cy, x, y);</b>
+<b class="nc">&nbsp;                                                if(dst2 &lt;= rad * rad &amp;&amp; (!found || dst2 &lt; bestDst)){</b>
+<b class="nc">&nbsp;                                                    best = nval;</b>
+<b class="nc">&nbsp;                                                    bestDst = dst2;</b>
+<b class="nc">&nbsp;                                                    found = true;</b>
+&nbsp;                                                }
+&nbsp;                                            }
+&nbsp;                                        }
+&nbsp;                                    }
+&nbsp;                                }
+&nbsp;
+<b class="nc">&nbsp;                                if(found){</b>
+<b class="nc">&nbsp;                                    m = best;</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            result.setRaw(x, y, m == 1 ? Color.whiteRgba : m == 2 ? dark : mid);</b>
+&nbsp;                        }
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    Fi fi = Fi.get(&quot;../blocks/environment/cliffmask&quot; + (val &amp; 0xff) + &quot;.png&quot;);</b>
+<b class="nc">&nbsp;                    fi.writePng(result);</b>
+<b class="nc">&nbsp;                    fi.copyTo(Fi.get(&quot;../editor&quot;).child(&quot;editor-&quot; + fi.name()));</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Threads.await(exec);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;cracks&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            for(int size = 1; size &lt;= BlockRenderer.maxCrackSize; size++){</b>
+<b class="nc">&nbsp;                int dim = size * 32;</b>
+<b class="nc">&nbsp;                int steps = BlockRenderer.crackRegions;</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; steps; i++){</b>
+<b class="nc">&nbsp;                    float fract = i / (float)steps;</b>
+&nbsp;
+<b class="nc">&nbsp;                    Pixmap image = new Pixmap(dim, dim);</b>
+<b class="nc">&nbsp;                    for(int x = 0; x &lt; dim; x++){</b>
+<b class="nc">&nbsp;                        for(int y = 0; y &lt; dim; y++){</b>
+<b class="nc">&nbsp;                            float dst = Mathf.dst((float)x/dim, (float)y/dim, 0.5f, 0.5f) * 2f;</b>
+<b class="nc">&nbsp;                            if(dst &lt; 1.2f &amp;&amp; Ridged.noise2d(1, x, y, 3, 1f / 40f) - dst*(1f-fract) &gt; 0.16f){</b>
+<b class="nc">&nbsp;                                image.setRaw(x, y, Color.whiteRgba);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Pixmap output = new Pixmap(image.width, image.height);</b>
+<b class="nc">&nbsp;                    int rad = 3;</b>
+&nbsp;
+&nbsp;                    //median filter
+<b class="nc">&nbsp;                    for(int x = 0; x &lt; output.width; x++){</b>
+<b class="nc">&nbsp;                        for(int y = 0; y &lt; output.height; y++){</b>
+<b class="nc">&nbsp;                            int whites = 0, clears = 0;</b>
+<b class="nc">&nbsp;                            for(int cx = -rad; cx &lt; rad; cx++){</b>
+<b class="nc">&nbsp;                                for(int cy = -rad; cy &lt; rad; cy++){</b>
+<b class="nc">&nbsp;                                    int wx = Mathf.clamp(cx + x, 0, output.width - 1), wy = Mathf.clamp(cy + y, 0, output.height - 1);</b>
+<b class="nc">&nbsp;                                    int color = image.getRaw(wx, wy);</b>
+<b class="nc">&nbsp;                                    if((color &amp; 0xff) &gt; 127){</b>
+<b class="nc">&nbsp;                                        whites ++;</b>
+&nbsp;                                    }else{
+<b class="nc">&nbsp;                                        clears ++;</b>
+&nbsp;                                    }
+&nbsp;                                }
+&nbsp;                            }
+<b class="nc">&nbsp;                            output.setRaw(x, y, whites &gt;= clears ? Color.whiteRgba : Color.clearRgba);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Fi.get(&quot;../rubble/cracks-&quot; + size + &quot;-&quot; + i + &quot;.png&quot;).writePng(output);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;block-icons&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            Pixmap colors = new Pixmap(content.blocks().size, 1);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Block block : content.blocks()){</b>
+<b class="nc">&nbsp;                if(block.isAir() || block instanceof ConstructBlock || block instanceof OreBlock || block instanceof LegacyBlock) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                Seq&lt;TextureRegion&gt; toOutline = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;                block.getRegionsToOutline(toOutline);</b>
+&nbsp;
+<b class="nc">&nbsp;                TextureRegion[] regions = block.getGeneratedIcons();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(block.variants &gt; 0 || block instanceof Floor){</b>
+<b class="nc">&nbsp;                    for(TextureRegion region : block.variantRegions()){</b>
+<b class="nc">&nbsp;                        GenRegion gen = (GenRegion)region;</b>
+<b class="nc">&nbsp;                        if(gen.path == null) continue;</b>
+<b class="nc">&nbsp;                        gen.path.copyTo(Fi.get(&quot;../editor/editor-&quot; + gen.path.name()));</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                for(TextureRegion region : block.makeIconRegions()){</b>
+<b class="nc">&nbsp;                    GenRegion gen = (GenRegion)region;</b>
+<b class="nc">&nbsp;                    save(get(region).outline(block.outlineColor, block.outlineRadius), gen.name + &quot;-outline&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Pixmap shardTeamTop = null;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(block.teamRegion.found()){</b>
+<b class="nc">&nbsp;                    Pixmap teamr = get(block.teamRegion);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(Team team : Team.all){</b>
+<b class="nc">&nbsp;                        if(team.hasPalette){</b>
+<b class="nc">&nbsp;                            Pixmap out = new Pixmap(teamr.width, teamr.height);</b>
+<b class="nc">&nbsp;                            teamr.each((x, y) -&gt; {</b>
+<b class="nc">&nbsp;                                int color = teamr.getRaw(x, y);</b>
+<b class="nc">&nbsp;                                int index = color == 0xffffffff ? 0 : color == 0xdcc6c6ff ? 1 : color == 0x9d7f7fff ? 2 : -1;</b>
+<b class="nc">&nbsp;                                out.setRaw(x, y, index == -1 ? teamr.getRaw(x, y) : team.palettei[index]);</b>
+&nbsp;                            });
+<b class="nc">&nbsp;                            save(out, block.name + &quot;-team-&quot; + team.name);</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(team == Team.sharded){</b>
+<b class="nc">&nbsp;                                shardTeamTop = out;</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                for(TextureRegion region : toOutline){</b>
+<b class="nc">&nbsp;                    Pixmap pix = get(region).outline(block.outlineColor, block.outlineRadius);</b>
+<b class="nc">&nbsp;                    save(pix, ((GenRegion)region).name + &quot;-outline&quot;);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if(regions.length == 0){</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                try{
+<b class="nc">&nbsp;                    Pixmap last = null;</b>
+<b class="nc">&nbsp;                    if(block.outlineIcon){</b>
+<b class="nc">&nbsp;                        GenRegion region = (GenRegion)regions[block.outlinedIcon &gt;= 0 ? block.outlinedIcon : regions.length -1];</b>
+<b class="nc">&nbsp;                        Pixmap base = get(region);</b>
+<b class="nc">&nbsp;                        Pixmap out = last = base.outline(block.outlineColor, block.outlineRadius);</b>
+&nbsp;
+&nbsp;                        //do not run for legacy ones
+<b class="nc">&nbsp;                        if(block.outlinedIcon &gt;= 0){</b>
+&nbsp;                            //prevents the regions above from being ignored/invisible/etc
+<b class="nc">&nbsp;                            for(int i = block.outlinedIcon + 1; i &lt; regions.length; i++){</b>
+<b class="nc">&nbsp;                                out.draw(get(regions[i]), true);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        region.path.delete();</b>
+&nbsp;
+&nbsp;                        //1 pixel of padding to prevent edges with linear filtering
+<b class="nc">&nbsp;                        int padding = 1;</b>
+<b class="nc">&nbsp;                        Pixmap padded = new Pixmap(base.width + padding*2, base.height + padding*2);</b>
+<b class="nc">&nbsp;                        padded.draw(base, padding, padding);</b>
+<b class="nc">&nbsp;                        padded = padded.outline(block.outlineColor, block.outlineRadius);</b>
+&nbsp;
+<b class="nc">&nbsp;                        save(padded, region.name);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(!regions[0].found()){</b>
+<b class="nc">&nbsp;                        continue;</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Pixmap image = get(regions[0]);</b>
+&nbsp;
+<b class="nc">&nbsp;                    int i = 0;</b>
+<b class="nc">&nbsp;                    for(TextureRegion region : regions){</b>
+<b class="nc">&nbsp;                        i++;</b>
+<b class="nc">&nbsp;                        if(i != regions.length || last == null){</b>
+<b class="nc">&nbsp;                            image.draw(get(region), true);</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            image.draw(last, true);</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        //draw shard (default team top) on top of first sprite
+<b class="nc">&nbsp;                        if(region == block.teamRegions[Team.sharded.id] &amp;&amp; shardTeamTop != null){</b>
+<b class="nc">&nbsp;                            image.draw(shardTeamTop, true);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(!(regions.length == 1 &amp;&amp; regions[0] == Core.atlas.find(block.name) &amp;&amp; shardTeamTop == null)){</b>
+<b class="nc">&nbsp;                        save(image, &quot;block-&quot; + block.name + &quot;-full&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    save(image, &quot;../editor/&quot; + block.name + &quot;-icon-editor&quot;);</b>
+<b class="nc">&nbsp;                    saveScaled(image, &quot;../ui/block-&quot; + block.name + &quot;-ui&quot;, Math.min(image.width, maxUiIcon));</b>
+&nbsp;
+<b class="nc">&nbsp;                    boolean hasEmpty = false;</b>
+<b class="nc">&nbsp;                    Color average = new Color(), c = new Color();</b>
+<b class="nc">&nbsp;                    float asum = 0f;</b>
+<b class="nc">&nbsp;                    for(int x = 0; x &lt; image.width; x++){</b>
+<b class="nc">&nbsp;                        for(int y = 0; y &lt; image.height; y++){</b>
+<b class="nc">&nbsp;                            Color color = c.set(image.get(x, y));</b>
+<b class="nc">&nbsp;                            average.r += color.r*color.a;</b>
+<b class="nc">&nbsp;                            average.g += color.g*color.a;</b>
+<b class="nc">&nbsp;                            average.b += color.b*color.a;</b>
+<b class="nc">&nbsp;                            asum += color.a;</b>
+<b class="nc">&nbsp;                            if(color.a &lt; 0.9f){</b>
+<b class="nc">&nbsp;                                hasEmpty = true;</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    average.mul(1f / asum);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(block instanceof Floor &amp;&amp; !((Floor)block).wallOre){</b>
+<b class="nc">&nbsp;                        average.mul(0.77f);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        average.mul(1.1f);</b>
+&nbsp;                    }
+&nbsp;                    //encode square sprite in alpha channel
+<b class="nc">&nbsp;                    average.a = hasEmpty ? 0.1f : 1f;</b>
+<b class="nc">&nbsp;                    colors.setRaw(block.id, 0, average.rgba());</b>
+<b class="nc">&nbsp;                }catch(NullPointerException e){</b>
+<b class="nc">&nbsp;                    Log.err(&quot;Block &amp;ly&#39;@&#39;&amp;lr has an null region!&quot;, block);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            save(colors, &quot;../../../assets/sprites/block_colors&quot;);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;shallows&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            content.blocks().&lt;ShallowLiquid&gt;each(b -&gt; b instanceof ShallowLiquid, floor -&gt; {</b>
+<b class="nc">&nbsp;                Pixmap overlay = get(floor.liquidBase.region);</b>
+<b class="nc">&nbsp;                int index = 0;</b>
+<b class="nc">&nbsp;                for(TextureRegion region : floor.floorBase.variantRegions()){</b>
+<b class="nc">&nbsp;                    Pixmap res = get(region).copy();</b>
+<b class="nc">&nbsp;                    for(int x = 0; x &lt; res.width; x++){</b>
+<b class="nc">&nbsp;                        for(int y = 0; y &lt; res.height; y++){</b>
+<b class="nc">&nbsp;                            res.set(x, y, Pixmap.blend((overlay.getRaw(x, y) &amp; 0xffffff00) | (int)(floor.liquidOpacity * 255), res.getRaw(x, y)));</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    String name = floor.name + &quot;&quot; + (++index);</b>
+<b class="nc">&nbsp;                    save(res, &quot;../blocks/environment/&quot; + name);</b>
+<b class="nc">&nbsp;                    save(res, &quot;../editor/editor-&quot; + name);</b>
+&nbsp;
+<b class="nc">&nbsp;                    gens.put(floor, res);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;item-icons&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            for(UnlockableContent item : Seq.&lt;UnlockableContent&gt;withArrays(content.items(), content.liquids(), content.statusEffects())){</b>
+<b class="nc">&nbsp;                if(item instanceof StatusEffect &amp;&amp; !has(item.getContentType().name() + &quot;-&quot; + item.name)){</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Pixmap base = get(item.getContentType().name() + &quot;-&quot; + item.name);</b>
+&nbsp;                //tint status effect icon color
+<b class="nc">&nbsp;                if(item instanceof StatusEffect){</b>
+<b class="nc">&nbsp;                    StatusEffect stat = (StatusEffect)item;</b>
+<b class="nc">&nbsp;                    Pixmap tint = base;</b>
+<b class="nc">&nbsp;                    base.each((x, y) -&gt; tint.setRaw(x, y, Color.muli(tint.getRaw(x, y), stat.color.rgba())));</b>
+&nbsp;
+&nbsp;                    //outline the image
+<b class="nc">&nbsp;                    Pixmap container = new Pixmap(tint.width + 6, tint.height + 6);</b>
+<b class="nc">&nbsp;                    container.draw(base, 3, 3, true);</b>
+<b class="nc">&nbsp;                    base = container.outline(Pal.gray, 3);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                save(base, &quot;../ui/&quot; + item.getContentType().name() + &quot;-&quot; + item.name + &quot;-ui&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;team-icons&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            for(Team team : Team.all){</b>
+<b class="nc">&nbsp;                if(has(&quot;team-&quot; + team.name)){</b>
+<b class="nc">&nbsp;                    int rgba = team == Team.derelict ? Color.valueOf(&quot;b7b8c9&quot;).rgba() : team.color.rgba();</b>
+<b class="nc">&nbsp;                    Pixmap base = get(&quot;team-&quot; + team.name);</b>
+<b class="nc">&nbsp;                    base.each((x, y) -&gt; base.setRaw(x, y, Color.muli(base.getRaw(x, y), rgba)));</b>
+&nbsp;
+<b class="nc">&nbsp;                    delete(&quot;team-&quot; + team.name);</b>
+<b class="nc">&nbsp;                    save(base.outline(Pal.gray, 3), &quot;../ui/team-&quot; + team.name);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        MultiPacker packer = new MultiPacker(){</b>
+&nbsp;            @Override
+&nbsp;            public void add(PageType type, String name, PixmapRegion region, int[] splits, int[] pads){
+<b class="nc">&nbsp;                String prefix = type == PageType.main ? &quot;&quot; : &quot;../&quot; + type.name() + &quot;/&quot;;</b>
+<b class="nc">&nbsp;                Log.info(&quot;@ | @x@&quot;, prefix + name, region.width, region.height);</b>
+&nbsp;                //save(region.pixmap, prefix + name);
+&nbsp;            }
+&nbsp;        };
+&nbsp;
+&nbsp;        //TODO !!!!! currently just an experiment
+&nbsp;
+&nbsp;        if(false)
+&nbsp;        generate(&quot;all-icons&quot;, () -&gt; {
+<b class="nc">&nbsp;            for(Seq&lt;Content&gt; arr : content.getContentMap()){</b>
+<b class="nc">&nbsp;                for(Content cont : arr){</b>
+<b class="nc">&nbsp;                    if(cont instanceof UnlockableContent &amp;&amp; !(cont instanceof Planet)){</b>
+<b class="nc">&nbsp;                        UnlockableContent unlock = (UnlockableContent)cont;</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(unlock.generateIcons){</b>
+&nbsp;                            try{
+<b class="nc">&nbsp;                                unlock.createIcons(packer);</b>
+<b class="nc">&nbsp;                            }catch(IllegalArgumentException e){</b>
+<b class="nc">&nbsp;                                Log.err(e);</b>
+<b class="nc">&nbsp;                                Log.err(&quot;Skip: @&quot;, unlock.name);</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;unit-icons&quot;, () -&gt; content.units().each(type -&gt; {</b>
+<b class="nc">&nbsp;            if(type.internal) return; //internal hidden units don&#39;t generate</b>
+&nbsp;
+<b class="nc">&nbsp;            ObjectSet&lt;String&gt; outlined = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+&nbsp;            try{
+<b class="nc">&nbsp;                Unit sample = type.constructor.get();</b>
+&nbsp;
+<b class="nc">&nbsp;                Func&lt;Pixmap, Pixmap&gt; outline = i -&gt; i.outline(type.outlineColor, 3);</b>
+<b class="nc">&nbsp;                Cons&lt;TextureRegion&gt; outliner = t -&gt; {</b>
+<b class="nc">&nbsp;                    if(t != null &amp;&amp; t.found()){</b>
+<b class="nc">&nbsp;                        replace(t, outline.get(get(t)));</b>
+&nbsp;                    }
+&nbsp;                };
+&nbsp;
+<b class="nc">&nbsp;                Seq&lt;TextureRegion&gt; toOutline = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;                type.getRegionsToOutline(toOutline);</b>
+&nbsp;
+<b class="nc">&nbsp;                for(TextureRegion region : toOutline){</b>
+<b class="nc">&nbsp;                    Pixmap pix = get(region).outline(type.outlineColor, type.outlineRadius);</b>
+<b class="nc">&nbsp;                    save(pix, ((GenRegion)region).name + &quot;-outline&quot;);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                Seq&lt;Weapon&gt; weapons = type.weapons;</b>
+<b class="nc">&nbsp;                weapons.each(Weapon::load);</b>
+<b class="nc">&nbsp;                weapons.removeAll(w -&gt; !w.region.found());</b>
+&nbsp;
+<b class="nc">&nbsp;                for(Weapon weapon : weapons){</b>
+<b class="nc">&nbsp;                    if(outlined.add(weapon.name) &amp;&amp; has(weapon.name)){</b>
+&nbsp;                        //only non-top weapons need separate outline sprites (this is mostly just mechs)
+<b class="nc">&nbsp;                        if(!weapon.top || weapon.parts.contains(p -&gt; p.under)){</b>
+<b class="nc">&nbsp;                            save(outline.get(get(weapon.name)), weapon.name + &quot;-outline&quot;);</b>
+&nbsp;                        }else{
+&nbsp;                            //replace weapon with outlined version, no use keeping standard around
+<b class="nc">&nbsp;                            outliner.get(weapon.region);</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                //generate tank animation
+<b class="nc">&nbsp;                if(sample instanceof Tankc){</b>
+<b class="nc">&nbsp;                    Pixmap pix = get(type.treadRegion);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int r = 0; r &lt; type.treadRects.length; r++){</b>
+<b class="nc">&nbsp;                        Rect treadRect = type.treadRects[r];</b>
+&nbsp;                        //slice is always 1 pixel wide
+<b class="nc">&nbsp;                        Pixmap slice = pix.crop((int)(treadRect.x + pix.width/2f), (int)(treadRect.y + pix.height/2f), 1, (int)treadRect.height);</b>
+<b class="nc">&nbsp;                        int frames = type.treadFrames;</b>
+<b class="nc">&nbsp;                        for(int i = 0; i &lt; frames; i++){</b>
+<b class="nc">&nbsp;                            int pullOffset = type.treadPullOffset;</b>
+<b class="nc">&nbsp;                            Pixmap frame = new Pixmap(slice.width, slice.height);</b>
+<b class="nc">&nbsp;                            for(int y = 0; y &lt; slice.height; y++){</b>
+<b class="nc">&nbsp;                                int idx = y + i;</b>
+<b class="nc">&nbsp;                                if(idx &gt;= slice.height){</b>
+<b class="nc">&nbsp;                                    idx -= slice.height;</b>
+<b class="nc">&nbsp;                                    idx += pullOffset;</b>
+<b class="nc">&nbsp;                                    idx = Mathf.mod(idx, slice.height);</b>
+&nbsp;                                }
+&nbsp;
+<b class="nc">&nbsp;                                frame.setRaw(0, y, slice.getRaw(0, idx));</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                            save(frame, type.name + &quot;-treads&quot; + r + &quot;-&quot; + i);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                outliner.get(type.jointRegion);</b>
+<b class="nc">&nbsp;                outliner.get(type.footRegion);</b>
+<b class="nc">&nbsp;                outliner.get(type.legBaseRegion);</b>
+<b class="nc">&nbsp;                outliner.get(type.baseJointRegion);</b>
+<b class="nc">&nbsp;                if(sample instanceof Legsc) outliner.get(type.legRegion);</b>
+<b class="nc">&nbsp;                if(sample instanceof Tankc) outliner.get(type.treadRegion);</b>
+&nbsp;
+<b class="nc">&nbsp;                Pixmap image = type.segments &gt; 0 ? get(type.segmentRegions[0]) : outline.get(get(type.previewRegion));</b>
+&nbsp;
+<b class="nc">&nbsp;                Func&lt;Weapon, Pixmap&gt; weaponRegion = weapon -&gt; Core.atlas.has(weapon.name + &quot;-preview&quot;) ? get(weapon.name + &quot;-preview&quot;) : get(weapon.region);</b>
+<b class="nc">&nbsp;                Cons2&lt;Weapon, Pixmap&gt; drawWeapon = (weapon, pixmap) -&gt;</b>
+<b class="nc">&nbsp;                image.draw(weapon.flipSprite ? pixmap.flipX() : pixmap,</b>
+&nbsp;                (int)(weapon.x / Draw.scl + image.width / 2f - weapon.region.width / 2f),
+&nbsp;                (int)(-weapon.y / Draw.scl + image.height / 2f - weapon.region.height / 2f),
+&nbsp;                true
+&nbsp;                );
+&nbsp;
+<b class="nc">&nbsp;                boolean anyUnder = false;</b>
+&nbsp;
+&nbsp;                //draw each extra segment on top before it is saved as outline
+<b class="nc">&nbsp;                if(sample instanceof Crawlc){</b>
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; type.segments; i++){</b>
+&nbsp;                        //replace(type.segmentRegions[i], outline.get(get(type.segmentRegions[i])));
+<b class="nc">&nbsp;                        save(outline.get(get(type.segmentRegions[i])), type.name + &quot;-segment-outline&quot; + i);</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(i &gt; 0){</b>
+<b class="nc">&nbsp;                            drawCenter(image, get(type.segmentRegions[i]));</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    save(image, type.name);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //outline is currently never needed, although it could theoretically be necessary
+<b class="nc">&nbsp;                if(type.needsBodyOutline()){</b>
+<b class="nc">&nbsp;                    save(image, type.name + &quot;-outline&quot;);</b>
+<b class="nc">&nbsp;                }else if(type.segments == 0){</b>
+<b class="nc">&nbsp;                    replace(type.name, type.segments &gt; 0 ? get(type.segmentRegions[0]) : outline.get(get(type.region)));</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //draw weapons that are under the base
+<b class="nc">&nbsp;                for(Weapon weapon : weapons.select(w -&gt; w.layerOffset &lt; 0)){</b>
+<b class="nc">&nbsp;                    drawWeapon.get(weapon, outline.get(weaponRegion.get(weapon)));</b>
+<b class="nc">&nbsp;                    anyUnder = true;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                //draw over the weapons under the image
+<b class="nc">&nbsp;                if(anyUnder){</b>
+<b class="nc">&nbsp;                    image.draw(outline.get(get(type.previewRegion)), true);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //draw treads
+<b class="nc">&nbsp;                if(sample instanceof Tankc){</b>
+<b class="nc">&nbsp;                    Pixmap treads = outline.get(get(type.treadRegion));</b>
+<b class="nc">&nbsp;                    image.draw(treads, image.width / 2 - treads.width / 2, image.height / 2 - treads.height / 2, true);</b>
+<b class="nc">&nbsp;                    image.draw(get(type.previewRegion), true);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //draw mech parts
+<b class="nc">&nbsp;                if(sample instanceof Mechc){</b>
+<b class="nc">&nbsp;                    drawCenter(image, get(type.baseRegion));</b>
+<b class="nc">&nbsp;                    drawCenter(image, get(type.legRegion));</b>
+<b class="nc">&nbsp;                    drawCenter(image, get(type.legRegion).flipX());</b>
+<b class="nc">&nbsp;                    image.draw(get(type.previewRegion), true);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //draw weapon outlines on base
+<b class="nc">&nbsp;                for(Weapon weapon : weapons){</b>
+&nbsp;                    //skip weapons under unit
+<b class="nc">&nbsp;                    if(weapon.layerOffset &lt; 0) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    drawWeapon.get(weapon, outline.get(weaponRegion.get(weapon)));</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                //draw base region on top to mask weapons
+<b class="nc">&nbsp;                if(type.drawCell) image.draw(get(type.previewRegion), true);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(type.drawCell){</b>
+<b class="nc">&nbsp;                    Pixmap baseCell = get(type.cellRegion);</b>
+<b class="nc">&nbsp;                    Pixmap cell = baseCell.copy();</b>
+&nbsp;
+&nbsp;                    //replace with 0xffd37fff : 0xdca463ff for sharded colors?
+<b class="nc">&nbsp;                    cell.replace(in -&gt; in == 0xffffffff ? 0xffa664ff : in == 0xdcc6c6ff || in == 0xdcc5c5ff ? 0xd06b53ff : 0);</b>
+&nbsp;
+<b class="nc">&nbsp;                    image.draw(cell, image.width / 2 - cell.width / 2, image.height / 2 - cell.height / 2, true);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                for(Weapon weapon : weapons){</b>
+&nbsp;                    //skip weapons under unit
+<b class="nc">&nbsp;                    if(weapon.layerOffset &lt; 0) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    Pixmap reg = weaponRegion.get(weapon);</b>
+<b class="nc">&nbsp;                    Pixmap wepReg = weapon.top ? outline.get(reg) : reg;</b>
+&nbsp;
+<b class="nc">&nbsp;                    drawWeapon.get(weapon, wepReg);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(weapon.cellRegion.found()){</b>
+<b class="nc">&nbsp;                        Pixmap weaponCell = get(weapon.cellRegion);</b>
+<b class="nc">&nbsp;                        weaponCell.replace(in -&gt; in == 0xffffffff ? 0xffa664ff : in == 0xdcc6c6ff || in == 0xdcc5c5ff ? 0xd06b53ff : 0);</b>
+<b class="nc">&nbsp;                        drawWeapon.get(weapon, weaponCell);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                //TODO I can save a LOT of space by not creating a full icon.
+<b class="nc">&nbsp;                save(image, &quot;unit-&quot; + type.name + &quot;-full&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                Rand rand = new Rand();</b>
+<b class="nc">&nbsp;                rand.setSeed(type.name.hashCode());</b>
+&nbsp;
+&nbsp;                //generate random wrecks
+&nbsp;
+<b class="nc">&nbsp;                int splits = 3;</b>
+<b class="nc">&nbsp;                float degrees = rand.random(360f);</b>
+<b class="nc">&nbsp;                float offsetRange = Math.max(image.width, image.height) * 0.15f;</b>
+<b class="nc">&nbsp;                Vec2 offset = new Vec2(1, 1).rotate(rand.random(360f)).setLength(rand.random(0, offsetRange)).add(image.width/2f, image.height/2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                Pixmap[] wrecks = new Pixmap[splits];</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; wrecks.length; i++){</b>
+<b class="nc">&nbsp;                    wrecks[i] = new Pixmap(image.width, image.height);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                VoronoiNoise vn = new VoronoiNoise(type.id, true);</b>
+&nbsp;
+<b class="nc">&nbsp;                image.each((x, y) -&gt; {</b>
+&nbsp;                    //add darker cracks on top
+<b class="nc">&nbsp;                    boolean rValue = Math.max(Ridged.noise2d(1, x, y, 3, 1f / (20f + image.width/8f)), 0) &gt; 0.16f;</b>
+&nbsp;                    //cut out random chunks with voronoi
+<b class="nc">&nbsp;                    boolean vval = vn.noise(x, y, 1f / (14f + image.width/40f)) &gt; 0.47;</b>
+&nbsp;
+<b class="nc">&nbsp;                    float dst =  offset.dst(x, y);</b>
+&nbsp;                    //distort edges with random noise
+<b class="nc">&nbsp;                    float noise = (float)Noise.rawNoise(dst / (9f + image.width/70f)) * (60 + image.width/30f);</b>
+<b class="nc">&nbsp;                    int section = (int)Mathf.clamp(Mathf.mod(offset.angleTo(x, y) + noise + degrees, 360f) / 360f * splits, 0, splits - 1);</b>
+<b class="nc">&nbsp;                    if(!vval) wrecks[section].setRaw(x, y, Color.muli(image.getRaw(x, y), rValue ? 0.7f : 1f));</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; wrecks.length; i++){</b>
+<b class="nc">&nbsp;                    save(wrecks[i], &quot;../rubble/&quot; + type.name + &quot;-wreck&quot; + i);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                int maxd = Math.min(Math.max(image.width, image.height), maxUiIcon);</b>
+<b class="nc">&nbsp;                Pixmap fit = new Pixmap(maxd, maxd);</b>
+<b class="nc">&nbsp;                drawScaledFit(fit, image);</b>
+&nbsp;
+<b class="nc">&nbsp;                save(fit, &quot;../ui/unit-&quot; + type.name + &quot;-ui&quot;);</b>
+<b class="nc">&nbsp;            }catch(IllegalArgumentException e){</b>
+<b class="nc">&nbsp;                Log.err(&quot;WARNING: Skipping unit @: @&quot;, type.name, e.getMessage());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }));
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;ore-icons&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            content.blocks().&lt;OreBlock&gt;each(b -&gt; b instanceof OreBlock, ore -&gt; {</b>
+<b class="nc">&nbsp;                int shadowColor = Color.rgba8888(0, 0, 0, 0.3f);</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; ore.variants; i++){</b>
+&nbsp;                    //get base image to draw on
+<b class="nc">&nbsp;                    Pixmap base = get(ore.variantRegions[i]);</b>
+<b class="nc">&nbsp;                    Pixmap image = base.copy();</b>
+&nbsp;
+<b class="nc">&nbsp;                    int offset = image.width / tilesize - 1;</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int x = 0; x &lt; image.width; x++){</b>
+<b class="nc">&nbsp;                        for(int y = offset; y &lt; image.height; y++){</b>
+&nbsp;                            //draw semi transparent background
+<b class="nc">&nbsp;                            if(base.getA(x, y - offset) != 0){</b>
+<b class="nc">&nbsp;                                image.setRaw(x, y, Pixmap.blend(shadowColor, base.getRaw(x, y)));</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    image.draw(base, true);</b>
+&nbsp;
+<b class="nc">&nbsp;                    replace(ore.variantRegions[i], image);</b>
+&nbsp;
+<b class="nc">&nbsp;                    save(image, &quot;../blocks/environment/&quot; + ore.name + (i + 1));</b>
+<b class="nc">&nbsp;                    save(image, &quot;../editor/editor-&quot; + ore.name + (i + 1));</b>
+&nbsp;
+<b class="nc">&nbsp;                    save(image, &quot;block-&quot; + ore.name + &quot;-full&quot;);</b>
+<b class="nc">&nbsp;                    save(image, &quot;../ui/block-&quot; + ore.name + &quot;-ui&quot;);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;edges&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            content.blocks().&lt;Floor&gt;each(b -&gt; b instanceof Floor &amp;&amp; !(b instanceof OverlayFloor), floor -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;                if(has(floor.name + &quot;-edge&quot;) || floor.blendGroup != floor){</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+&nbsp;                try{
+<b class="nc">&nbsp;                    Pixmap image = gens.get(floor, get(floor.getGeneratedIcons()[0]));</b>
+<b class="nc">&nbsp;                    Pixmap edge = get(&quot;edge-stencil&quot;);</b>
+<b class="nc">&nbsp;                    Pixmap result = new Pixmap(edge.width, edge.height);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int x = 0; x &lt; edge.width; x++){</b>
+<b class="nc">&nbsp;                        for(int y = 0; y &lt; edge.height; y++){</b>
+<b class="nc">&nbsp;                            result.set(x, y, Color.muli(edge.getRaw(x, y), image.get(x % image.width, y % image.height)));</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    save(result, &quot;../blocks/environment/&quot; + floor.name + &quot;-edge&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                }catch(Exception ignored){}</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        generate(&quot;scorches&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            for(int size = 0; size &lt; 10; size++){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; 3; i++){</b>
+<b class="nc">&nbsp;                    ScorchGenerator gen = new ScorchGenerator();</b>
+<b class="nc">&nbsp;                    double multiplier = 30;</b>
+<b class="nc">&nbsp;                    double ss = size * multiplier / 20.0;</b>
+&nbsp;
+<b class="nc">&nbsp;                    gen.seed = Mathf.random(100000);</b>
+<b class="nc">&nbsp;                    gen.size += size*multiplier;</b>
+<b class="nc">&nbsp;                    gen.scale = gen.size / 80f * 18f;</b>
+&nbsp;                    //gen.nscl -= size * 0.2f;
+<b class="nc">&nbsp;                    gen.octaves += ss/3.0;</b>
+<b class="nc">&nbsp;                    gen.pers += ss/10.0/5.0;</b>
+&nbsp;
+<b class="nc">&nbsp;                    gen.scale += Mathf.range(3f);</b>
+<b class="nc">&nbsp;                    gen.scale -= ss*2f;</b>
+<b class="nc">&nbsp;                    gen.nscl -= Mathf.random(1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Pixmap out = gen.generate();</b>
+<b class="nc">&nbsp;                    Pixmap median = Pixmaps.median(out, 2, 0.75);</b>
+<b class="nc">&nbsp;                    Fi.get(&quot;../rubble/scorch-&quot; + size + &quot;-&quot; + i + &quot;.png&quot;).writePng(median);</b>
+<b class="nc">&nbsp;                    out.dispose();</b>
+<b class="nc">&nbsp;                    median.dispose();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Generates a scorch pixmap based on parameters. Thread safe. */
+<b class="nc">&nbsp;    public static class ScorchGenerator{</b>
+<b class="nc">&nbsp;        public int size = 80, seed = 0, color = Color.whiteRgba;</b>
+<b class="nc">&nbsp;        public double scale = 18, pow = 2, octaves = 4, pers = 0.4, add = 2, nscl = 4.5f;</b>
+&nbsp;
+&nbsp;        public Pixmap generate(){
+<b class="nc">&nbsp;            Pixmap pix = new Pixmap(size, size);</b>
+&nbsp;
+<b class="nc">&nbsp;            pix.each((x, y) -&gt; {</b>
+<b class="nc">&nbsp;                double dst = Mathf.dst(x, y, size/2, size/2) / (size / 2f);</b>
+<b class="nc">&nbsp;                double scaled = Math.abs(dst - 0.5f) * 5f + add;</b>
+<b class="nc">&nbsp;                scaled -= noise(Angles.angle(x, y, size/2, size/2))*nscl;</b>
+<b class="nc">&nbsp;                if(scaled &lt; 1.5f) pix.setRaw(x, y, color);</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            return pix;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private double noise(float angle){
+<b class="nc">&nbsp;            return Math.pow(Simplex.noise2d(seed, octaves, pers, 1 / scale, Angles.trnsx(angle, size/2f) + size/2f, Angles.trnsy(angle, size/2f) + size/2f), pow);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

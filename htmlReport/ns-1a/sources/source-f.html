@@ -1,0 +1,444 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SectorInfo</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.game</a>
+</div>
+
+<h1>Coverage Summary for Class: SectorInfo (mindustry.game)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SectorInfo</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.9%
+  </span>
+  <span class="absValue">
+    (1/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.9%
+  </span>
+  <span class="absValue">
+    (21/117)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SectorInfo$ExportStat</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    5.3%
+  </span>
+  <span class="absValue">
+    (1/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.5%
+  </span>
+  <span class="absValue">
+    (21/120)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.game;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class SectorInfo{</b>
+&nbsp;    /** average window size in samples */
+&nbsp;    private static final int valueWindow = 60;
+&nbsp;    /** refresh period of export in ticks */
+&nbsp;    private static final float refreshPeriod = 60;
+&nbsp;    private static float returnf;
+&nbsp;
+&nbsp;    /** Core input statistics. */
+<b class="fc">&nbsp;    public ObjectMap&lt;Item, ExportStat&gt; production = new ObjectMap&lt;&gt;();</b>
+&nbsp;    /** Raw item production statistics. */
+<b class="fc">&nbsp;    public ObjectMap&lt;Item, ExportStat&gt; rawProduction = new ObjectMap&lt;&gt;();</b>
+&nbsp;    /** Export statistics. */
+<b class="fc">&nbsp;    public ObjectMap&lt;Item, ExportStat&gt; export = new ObjectMap&lt;&gt;();</b>
+&nbsp;    /** Items stored in all cores. */
+<b class="fc">&nbsp;    public ItemSeq items = new ItemSeq();</b>
+&nbsp;    /** The best available core type. */
+<b class="fc">&nbsp;    public Block bestCoreType = Blocks.coreShard;</b>
+&nbsp;    /** Max storage capacity. */
+<b class="fc">&nbsp;    public int storageCapacity = 0;</b>
+&nbsp;    /** Whether a core is available here. */
+<b class="fc">&nbsp;    public boolean hasCore = true;</b>
+&nbsp;    /** Whether a world processor is on this map - implies that the map will get cleared. */
+&nbsp;    public boolean hasWorldProcessor;
+&nbsp;    /** Whether this sector was ever fully captured. */
+<b class="fc">&nbsp;    public boolean wasCaptured = false;</b>
+&nbsp;    /** Sector that was launched from. */
+&nbsp;    public @Nullable Sector origin;
+&nbsp;    /** Launch destination. */
+&nbsp;    public @Nullable Sector destination;
+&nbsp;    /** Resources known to occur at this sector. */
+<b class="fc">&nbsp;    public Seq&lt;UnlockableContent&gt; resources = new Seq&lt;&gt;();</b>
+&nbsp;    /** Whether waves are enabled here. */
+<b class="fc">&nbsp;    public boolean waves = true;</b>
+&nbsp;    /** Whether attack mode is enabled here. */
+<b class="fc">&nbsp;    public boolean attack = false;</b>
+&nbsp;    /** Whether this sector has any enemy spawns. */
+<b class="fc">&nbsp;    public boolean hasSpawns = true;</b>
+&nbsp;    /** Wave # from state */
+<b class="fc">&nbsp;    public int wave = 1, winWave = -1;</b>
+&nbsp;    /** Waves this sector can survive if under attack. Based on wave in info. &lt;0 means uncalculated. */
+<b class="fc">&nbsp;    public int wavesSurvived = -1;</b>
+&nbsp;    /** Time between waves. */
+<b class="fc">&nbsp;    public float waveSpacing = 2 * Time.toMinutes;</b>
+&nbsp;    /** Damage dealt to sector. */
+&nbsp;    public float damage;
+&nbsp;    /** How many waves have passed while the player was away. */
+&nbsp;    public int wavesPassed;
+&nbsp;    /** Packed core spawn position. */
+&nbsp;    public int spawnPosition;
+&nbsp;    /** How long the player has been playing elsewhere. */
+&nbsp;    public float secondsPassed;
+&nbsp;    /** How many minutes this sector has been captured. */
+&nbsp;    public float minutesCaptured;
+&nbsp;    /** Display name. */
+&nbsp;    public @Nullable String name;
+&nbsp;    /** Displayed icon. */
+&nbsp;    public @Nullable String icon;
+&nbsp;    /** Displayed icon, as content. */
+&nbsp;    public @Nullable UnlockableContent contentIcon;
+&nbsp;    /** Version of generated waves. When it doesn&#39;t match, new waves are generated. */
+<b class="fc">&nbsp;    public int waveVersion = -1;</b>
+&nbsp;    /** Whether this sector was indicated to the player or not. */
+<b class="fc">&nbsp;    public boolean shown = false;</b>
+&nbsp;    /** Temporary seq for last imported items. Do not use. */
+<b class="fc">&nbsp;    public transient ItemSeq lastImported = new ItemSeq();</b>
+&nbsp;
+&nbsp;    /** Special variables for simulation. */
+&nbsp;    public float sumHealth, sumRps, sumDps, bossHealth, bossDps, curEnemyHealth, curEnemyDps;
+&nbsp;    /** Wave where first boss shows up. */
+<b class="fc">&nbsp;    public int bossWave = -1;</b>
+&nbsp;
+&nbsp;    /** Counter refresh state. */
+<b class="fc">&nbsp;    private transient Interval time = new Interval();</b>
+&nbsp;    /** Core item storage input/output deltas. */
+&nbsp;    private @Nullable transient int[] coreDeltas;
+&nbsp;    /** Core item storage input/output deltas. */
+&nbsp;    private @Nullable transient int[] productionDeltas;
+&nbsp;
+&nbsp;    /** Handles core item changes. */
+&nbsp;    public void handleCoreItem(Item item, int amount){
+<b class="nc">&nbsp;        if(coreDeltas == null) coreDeltas = new int[content.items().size];</b>
+<b class="nc">&nbsp;        coreDeltas[item.id] += amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Handles raw production stats. */
+&nbsp;    public void handleProduction(Item item, int amount){
+<b class="nc">&nbsp;        if(productionDeltas == null) productionDeltas = new int[content.items().size];</b>
+<b class="nc">&nbsp;        productionDeltas[item.id] += amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the real location items go when launched on this sector */
+&nbsp;    public Sector getRealDestination(){
+&nbsp;        //on multiplayer the destination is, by default, the first captured sector (basically random)
+<b class="nc">&nbsp;        return !net.client() || destination != null ? destination : state.rules.sector.planet.sectors.find(Sector::hasBase);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Updates export statistics. */
+&nbsp;    public void handleItemExport(ItemStack stack){
+<b class="nc">&nbsp;        handleItemExport(stack.item, stack.amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Updates export statistics. */
+&nbsp;    public void handleItemExport(Item item, int amount){
+<b class="nc">&nbsp;        export.get(item, ExportStat::new).counter += amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getExport(Item item){
+<b class="nc">&nbsp;        return export.get(item, ExportStat::new).mean;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Write contents of meta into main storage. */
+&nbsp;    public void write(){
+&nbsp;        //enable attack mode when there&#39;s a core.
+<b class="nc">&nbsp;        if(state.rules.waveTeam.core() != null){</b>
+<b class="nc">&nbsp;            attack = true;</b>
+<b class="nc">&nbsp;            if(!state.rules.sector.planet.allowWaves){</b>
+<b class="nc">&nbsp;                winWave = 0;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //if there are infinite waves and no win wave, add a win wave.
+<b class="nc">&nbsp;        if(winWave &lt;= 0 &amp;&amp; !attack &amp;&amp; state.rules.sector.planet.allowWaves){</b>
+<b class="nc">&nbsp;            winWave = 30;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.sector != null &amp;&amp; state.rules.sector.preset != null &amp;&amp; state.rules.sector.preset.captureWave &gt; 0 &amp;&amp; !state.rules.sector.planet.allowWaves){</b>
+<b class="nc">&nbsp;            winWave = state.rules.sector.preset.captureWave;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        state.wave = wave;</b>
+<b class="nc">&nbsp;        state.rules.waves = waves;</b>
+<b class="nc">&nbsp;        state.rules.waveSpacing = waveSpacing;</b>
+<b class="nc">&nbsp;        state.rules.winWave = winWave;</b>
+<b class="nc">&nbsp;        state.rules.attackMode = attack;</b>
+&nbsp;
+<b class="nc">&nbsp;        CoreBuild entity = state.rules.defaultTeam.core();</b>
+<b class="nc">&nbsp;        if(entity != null){</b>
+<b class="nc">&nbsp;            entity.items.clear();</b>
+<b class="nc">&nbsp;            entity.items.add(items);</b>
+&nbsp;            //ensure capacity.
+<b class="nc">&nbsp;            entity.items.each((i, a) -&gt; entity.items.set(i, Mathf.clamp(a, 0, entity.storageCapacity)));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Prepare data for writing to a save. */
+&nbsp;    public void prepare(){
+&nbsp;        //update core items
+<b class="nc">&nbsp;        items.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        CoreBuild entity = state.rules.defaultTeam.core();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(entity != null){</b>
+<b class="nc">&nbsp;            ItemModule items = entity.items;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; items.length(); i++){</b>
+<b class="nc">&nbsp;                this.items.set(content.item(i), items.get(i));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            spawnPosition = entity.pos();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        hasWorldProcessor = state.teams.present.contains(t -&gt; t.getBuildings(Blocks.worldProcessor).any());</b>
+<b class="nc">&nbsp;        waveSpacing = state.rules.waveSpacing;</b>
+<b class="nc">&nbsp;        wave = state.wave;</b>
+<b class="nc">&nbsp;        winWave = state.rules.winWave;</b>
+<b class="nc">&nbsp;        waves = state.rules.waves;</b>
+<b class="nc">&nbsp;        attack = state.rules.attackMode;</b>
+<b class="nc">&nbsp;        hasCore = entity != null;</b>
+<b class="nc">&nbsp;        bestCoreType = !hasCore ? Blocks.air : state.rules.defaultTeam.cores().max(e -&gt; e.block.size).block;</b>
+<b class="nc">&nbsp;        storageCapacity = entity != null ? entity.storageCapacity : 0;</b>
+<b class="nc">&nbsp;        secondsPassed = 0;</b>
+<b class="nc">&nbsp;        wavesPassed = 0;</b>
+<b class="nc">&nbsp;        damage = 0;</b>
+<b class="nc">&nbsp;        hasSpawns = spawner.countSpawns() &gt; 0;</b>
+&nbsp;
+&nbsp;        //cap production at raw production.
+<b class="nc">&nbsp;        production.each((item, stat) -&gt; {</b>
+<b class="nc">&nbsp;            stat.mean = Math.min(stat.mean, rawProduction.get(item, ExportStat::new).mean);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        var pads = indexer.getFlagged(state.rules.defaultTeam, BlockFlag.launchPad);</b>
+&nbsp;
+&nbsp;        //disable export when launch pads are disabled, or there aren&#39;t any active ones
+<b class="nc">&nbsp;        if(pads.size == 0 || !pads.contains(t -&gt; t.efficiency &gt; 0)){</b>
+<b class="nc">&nbsp;            export.clear();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.sector != null){</b>
+<b class="nc">&nbsp;            state.rules.sector.saveInfo();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.sector != null &amp;&amp; state.rules.sector.planet.allowWaveSimulation){</b>
+<b class="nc">&nbsp;            SectorDamage.writeParameters(this);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Update averages of various stats, updates some special sector logic.
+&nbsp;     * Called every frame. */
+&nbsp;    public void update(){
+&nbsp;        //updating in multiplayer as a client doesn&#39;t make sense
+<b class="nc">&nbsp;        if(net.client()) return;</b>
+&nbsp;
+&nbsp;        //refresh throughput
+<b class="nc">&nbsp;        if(time.get(refreshPeriod)){</b>
+&nbsp;
+&nbsp;            //refresh export
+<b class="nc">&nbsp;            export.each((item, stat) -&gt; {</b>
+&nbsp;                //initialize stat after loading
+<b class="nc">&nbsp;                if(!stat.loaded){</b>
+<b class="nc">&nbsp;                    stat.means.fill(stat.mean);</b>
+<b class="nc">&nbsp;                    stat.loaded = true;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //add counter, subtract how many items were taken from the core during this time
+<b class="nc">&nbsp;                stat.means.add(Math.max(stat.counter, 0));</b>
+<b class="nc">&nbsp;                stat.counter = 0;</b>
+<b class="nc">&nbsp;                stat.mean = stat.means.rawMean();</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            if(coreDeltas == null) coreDeltas = new int[content.items().size];</b>
+<b class="nc">&nbsp;            if(productionDeltas == null) productionDeltas = new int[content.items().size];</b>
+&nbsp;
+&nbsp;            //refresh core items
+<b class="nc">&nbsp;            for(Item item : content.items()){</b>
+<b class="nc">&nbsp;                updateDelta(item, production, coreDeltas);</b>
+<b class="nc">&nbsp;                updateDelta(item, rawProduction, productionDeltas);</b>
+&nbsp;
+&nbsp;                //cap production/export by production
+<b class="nc">&nbsp;                production.get(item).mean = Math.min(production.get(item).mean, rawProduction.get(item).mean);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(export.containsKey(item)){</b>
+&nbsp;                    //export can, at most, be the raw items being produced from factories + the items being taken from the core
+<b class="nc">&nbsp;                    export.get(item).mean = Math.min(export.get(item).mean, rawProduction.get(item).mean + Math.max(-production.get(item).mean, 0));</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            Arrays.fill(coreDeltas, 0);</b>
+<b class="nc">&nbsp;            Arrays.fill(productionDeltas, 0);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void updateDelta(Item item, ObjectMap&lt;Item, ExportStat&gt; map, int[] deltas){
+<b class="nc">&nbsp;        ExportStat stat = map.get(item, ExportStat::new);</b>
+<b class="nc">&nbsp;        if(!stat.loaded){</b>
+<b class="nc">&nbsp;            stat.means.fill(stat.mean);</b>
+<b class="nc">&nbsp;            stat.loaded = true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //store means
+<b class="nc">&nbsp;        stat.means.add(deltas[item.id]);</b>
+<b class="nc">&nbsp;        stat.mean = stat.means.rawMean();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ObjectFloatMap&lt;Item&gt; exportRates(){
+<b class="nc">&nbsp;        ObjectFloatMap&lt;Item&gt; map = new ObjectFloatMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        export.each((item, value) -&gt; map.put(item, value.mean));</b>
+<b class="nc">&nbsp;        return map;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean anyExports(){
+<b class="nc">&nbsp;        if(export.size == 0) return false;</b>
+<b class="nc">&nbsp;        returnf = 0f;</b>
+<b class="nc">&nbsp;        export.each((i, e) -&gt; returnf += e.mean);</b>
+<b class="nc">&nbsp;        return returnf &gt;= 0.01f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return a newly allocated map with import statistics. Use sparingly. */
+&nbsp;    //TODO this can be a float map
+&nbsp;    public ObjectMap&lt;Item, ExportStat&gt; importStats(Planet planet){
+<b class="nc">&nbsp;        ObjectMap&lt;Item, ExportStat&gt; imports = new ObjectMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        eachImport(planet, sector -&gt; sector.info.export.each((item, stat) -&gt; imports.get(item, ExportStat::new).mean += stat.mean));</b>
+<b class="nc">&nbsp;        return imports;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Iterates through every sector this one imports from. */
+&nbsp;    public void eachImport(Planet planet, Cons&lt;Sector&gt; cons){
+<b class="nc">&nbsp;        for(Sector sector : planet.sectors){</b>
+<b class="nc">&nbsp;            Sector dest = sector.info.getRealDestination();</b>
+<b class="nc">&nbsp;            if(sector.hasBase() &amp;&amp; sector.info != this &amp;&amp; dest != null &amp;&amp; dest.info == this &amp;&amp; sector.info.anyExports()){</b>
+<b class="nc">&nbsp;                cons.get(sector);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static class ExportStat{</b>
+&nbsp;        public transient float counter;
+<b class="nc">&nbsp;        public transient WindowedMean means = new WindowedMean(valueWindow);</b>
+&nbsp;        public transient boolean loaded;
+&nbsp;
+&nbsp;        /** mean in terms of items produced per refresh rate (currently, per second) */
+&nbsp;        public float mean;
+&nbsp;
+&nbsp;        public String toString(){
+<b class="nc">&nbsp;            return mean + &quot;&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,302 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PathTile</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: PathTile (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PathTile</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (12/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24%
+  </span>
+  <span class="absValue">
+    (12/50)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;/**
+&nbsp; * Bits used: 27 / 32
+&nbsp; * &lt;br&gt;  health [0..8]
+&nbsp; * &lt;br&gt;  team [8..16]
+&nbsp; * &lt;br&gt;  solid [16..17]
+&nbsp; * &lt;br&gt;  liquid [17..18]
+&nbsp; * &lt;br&gt;  legSolid [18..19]
+&nbsp; * &lt;br&gt;  nearLiquid [19..20]
+&nbsp; * &lt;br&gt;  nearGround [20..21]
+&nbsp; * &lt;br&gt;  nearSolid [21..22]
+&nbsp; * &lt;br&gt;  nearLegSolid [22..23]
+&nbsp; * &lt;br&gt;  deep [23..24]
+&nbsp; * &lt;br&gt;  damages [24..25]
+&nbsp; * &lt;br&gt;  allDeep [25..26]
+&nbsp; * &lt;br&gt;  teamPassable [26..27]
+&nbsp; */
+<b class="nc">&nbsp;public final class PathTile {</b>
+&nbsp;  public static final int bitMaskHealth = (int)(0b00000000000000000000000011111111L);
+&nbsp;
+&nbsp;  public static final int bitMaskTeam = (int)(0b00000000000000001111111100000000L);
+&nbsp;
+&nbsp;  public static final int bitMaskSolid = (int)(1L &lt;&lt; 16);
+&nbsp;
+&nbsp;  public static final int bitMaskLiquid = (int)(1L &lt;&lt; 17);
+&nbsp;
+&nbsp;  public static final int bitMaskLegSolid = (int)(1L &lt;&lt; 18);
+&nbsp;
+&nbsp;  public static final int bitMaskNearLiquid = (int)(1L &lt;&lt; 19);
+&nbsp;
+&nbsp;  public static final int bitMaskNearGround = (int)(1L &lt;&lt; 20);
+&nbsp;
+&nbsp;  public static final int bitMaskNearSolid = (int)(1L &lt;&lt; 21);
+&nbsp;
+&nbsp;  public static final int bitMaskNearLegSolid = (int)(1L &lt;&lt; 22);
+&nbsp;
+&nbsp;  public static final int bitMaskDeep = (int)(1L &lt;&lt; 23);
+&nbsp;
+&nbsp;  public static final int bitMaskDamages = (int)(1L &lt;&lt; 24);
+&nbsp;
+&nbsp;  public static final int bitMaskAllDeep = (int)(1L &lt;&lt; 25);
+&nbsp;
+&nbsp;  public static final int bitMaskTeamPassable = (int)(1L &lt;&lt; 26);
+&nbsp;
+&nbsp;  public static int health(int pathtile) {
+<b class="fc">&nbsp;    return (int)((pathtile &gt;&gt;&gt; 0) &amp; 0b00000000000000000000000011111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int health(int pathtile, int value) {
+<b class="nc">&nbsp;    return (int)((pathtile &amp; (~0b00000000000000000000000011111111L)) | ((int)value &lt;&lt; 0L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int team(int pathtile) {
+<b class="fc">&nbsp;    return (int)((pathtile &gt;&gt;&gt; 8) &amp; 0b00000000000000000000000011111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int team(int pathtile, int value) {
+<b class="nc">&nbsp;    return (int)((pathtile &amp; (~0b00000000000000001111111100000000L)) | ((int)value &lt;&lt; 8L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean solid(int pathtile) {
+<b class="fc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 16)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int solid(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 16L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 16L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean liquid(int pathtile) {
+<b class="fc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 17)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int liquid(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 17L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 17L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean legSolid(int pathtile) {
+<b class="nc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 18)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int legSolid(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 18L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 18L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean nearLiquid(int pathtile) {
+<b class="fc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 19)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int nearLiquid(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 19L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 19L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean nearGround(int pathtile) {
+<b class="fc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 20)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int nearGround(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 20L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 20L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean nearSolid(int pathtile) {
+<b class="fc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 21)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int nearSolid(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 21L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 21L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean nearLegSolid(int pathtile) {
+<b class="nc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 22)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int nearLegSolid(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 22L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 22L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean deep(int pathtile) {
+<b class="fc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 23)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int deep(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 23L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 23L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean damages(int pathtile) {
+<b class="fc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 24)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int damages(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 24L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 24L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean allDeep(int pathtile) {
+<b class="fc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 25)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int allDeep(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 25L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 25L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static boolean teamPassable(int pathtile) {
+<b class="fc">&nbsp;    return (pathtile &amp; (1L &lt;&lt; 26)) != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int teamPassable(int pathtile, boolean value) {
+<b class="nc">&nbsp;    if(value) {</b>
+<b class="nc">&nbsp;      return (int)(pathtile | (1L &lt;&lt; 26L));</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      return (int)((pathtile &amp; ~(1L &lt;&lt; 26L)));</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int get(int health, int team, boolean solid, boolean liquid, boolean legSolid,
+&nbsp;      boolean nearLiquid, boolean nearGround, boolean nearSolid, boolean nearLegSolid, boolean deep,
+&nbsp;      boolean damages, boolean allDeep, boolean teamPassable) {
+<b class="fc">&nbsp;    return (int)((((int)health &lt;&lt; 0L) &amp; 0b00000000000000000000000011111111L) | (((int)team &lt;&lt; 8L) &amp; 0b00000000000000001111111100000000L) | (solid ? 1L &lt;&lt; 16L : 0) | (liquid ? 1L &lt;&lt; 17L : 0) | (legSolid ? 1L &lt;&lt; 18L : 0) | (nearLiquid ? 1L &lt;&lt; 19L : 0) | (nearGround ? 1L &lt;&lt; 20L : 0) | (nearSolid ? 1L &lt;&lt; 21L : 0) | (nearLegSolid ? 1L &lt;&lt; 22L : 0) | (deep ? 1L &lt;&lt; 23L : 0) | (damages ? 1L &lt;&lt; 24L : 0) | (allDeep ? 1L &lt;&lt; 25L : 0) | (teamPassable ? 1L &lt;&lt; 26L : 0));</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

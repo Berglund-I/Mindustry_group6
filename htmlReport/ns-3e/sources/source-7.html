@@ -1,0 +1,375 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PayloadDeconstructor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.payloads</a>
+</div>
+
+<h1>Coverage Summary for Class: PayloadDeconstructor (mindustry.world.blocks.payloads)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PayloadDeconstructor</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    94.4%
+  </span>
+  <span class="absValue">
+    (17/18)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PayloadDeconstructor$PayloadDeconstructorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (5/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.9%
+  </span>
+  <span class="absValue">
+    (18/95)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (7/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31%
+  </span>
+  <span class="absValue">
+    (35/113)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.payloads;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class PayloadDeconstructor extends PayloadBlock{
+<b class="fc">&nbsp;    public float maxPayloadSize = 4;</b>
+<b class="fc">&nbsp;    public float deconstructSpeed = 2.5f;</b>
+<b class="fc">&nbsp;    public int dumpRate = 4;</b>
+&nbsp;
+&nbsp;    public PayloadDeconstructor(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        outputsPayload = false;</b>
+<b class="fc">&nbsp;        acceptsPayload = true;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        rotate = false;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        size = 5;</b>
+<b class="fc">&nbsp;        payloadSpeed = 1f;</b>
+&nbsp;        //make sure to display large units.
+<b class="fc">&nbsp;        clipSize = 120;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        hasPower = true;</b>
+<b class="fc">&nbsp;        itemCapacity = 100;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{region, topRegion};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;progress&quot;, (PayloadDeconstructorBuild e) -&gt; new Bar(&quot;bar.progress&quot;, Pal.ammo, () -&gt; e.progress));</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class PayloadDeconstructorBuild extends PayloadBlockBuild&lt;Payload&gt;{</b>
+&nbsp;        public @Nullable Payload deconstructing;
+&nbsp;        public @Nullable float[] accum;
+&nbsp;        public float progress;
+&nbsp;        public float time, speedScl;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y);</b>
+&nbsp;
+&nbsp;            //draw input
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                if(blends(i)){</b>
+<b class="nc">&nbsp;                    Draw.rect(inRegion, x, y, (i * 90) - 180);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.blockOver);</b>
+<b class="nc">&nbsp;            drawPayload();</b>
+<b class="nc">&nbsp;            if(deconstructing != null){</b>
+<b class="nc">&nbsp;                deconstructing.set(x + payVector.x, y + payVector.y, payRotation);</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.z(Layer.blockOver);</b>
+<b class="nc">&nbsp;                deconstructing.drawShadow(1f - progress);</b>
+&nbsp;
+&nbsp;                //TODO looks really bad
+<b class="nc">&nbsp;                Draw.draw(Layer.blockOver, () -&gt; {</b>
+<b class="nc">&nbsp;                    Drawf.construct(x, y, deconstructing.icon(), Pal.remove, deconstructing instanceof BuildPayload ? 0f : payRotation - 90f, 1f - progress, 1f - progress, time);</b>
+<b class="nc">&nbsp;                    Draw.color(Pal.remove);</b>
+<b class="nc">&nbsp;                    Draw.alpha(1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Lines.lineAngleCenter(x + Mathf.sin(time, 20f, tilesize / 2f * block.size - 3f), y, 90f, block.size * tilesize - 6f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Draw.reset();</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptUnitPayload(Unit unit){
+<b class="nc">&nbsp;            return payload == null &amp;&amp; deconstructing == null &amp;&amp; unit.type.allowedInPayloads &amp;&amp; !unit.spawnedByCore</b>
+<b class="nc">&nbsp;                &amp;&amp; unit.type.getTotalRequirements().length &gt; 0 &amp;&amp; unit.hitSize / tilesize &lt;= maxPayloadSize;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handlePayload(Building source, Payload payload){
+<b class="nc">&nbsp;            super.handlePayload(source, payload);</b>
+<b class="nc">&nbsp;            accum = null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptPayload(Building source, Payload payload){
+<b class="nc">&nbsp;            return deconstructing == null &amp;&amp; this.payload == null &amp;&amp; super.acceptPayload(source, payload) &amp;&amp; payload.requirements().length &gt; 0 &amp;&amp; payload.fits(maxPayloadSize);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            super.updateTile();</b>
+<b class="fc">&nbsp;            if(items.total() &gt; 0){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; dumpRate; i++){</b>
+<b class="nc">&nbsp;                    dumpAccumulate();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(deconstructing == null){</b>
+<b class="fc">&nbsp;                progress = 0f;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            payRotation = Angles.moveToward(payRotation, 90f, payloadRotateSpeed * edelta());</b>
+&nbsp;
+<b class="fc">&nbsp;            if(deconstructing != null){</b>
+<b class="nc">&nbsp;                var reqs = deconstructing.requirements();</b>
+<b class="nc">&nbsp;                if(accum == null || reqs.length != accum.length){</b>
+<b class="nc">&nbsp;                    accum = new float[reqs.length];</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //check if there is enough space to get the items for deconstruction
+<b class="nc">&nbsp;                boolean canProgress = items.total() &lt;= itemCapacity;</b>
+<b class="nc">&nbsp;                if(canProgress){</b>
+<b class="nc">&nbsp;                    for(var ac : accum){</b>
+<b class="nc">&nbsp;                        if(ac &gt;= 1f){</b>
+<b class="nc">&nbsp;                            canProgress = false;</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //move progress forward if possible
+<b class="nc">&nbsp;                if(canProgress){</b>
+<b class="nc">&nbsp;                    float shift = edelta() * deconstructSpeed / deconstructing.buildTime();</b>
+<b class="nc">&nbsp;                    float realShift = Math.min(shift, 1f - progress);</b>
+&nbsp;
+&nbsp;                    //if began deconstruction...
+<b class="nc">&nbsp;                    if(progress == 0f &amp;&amp; shift &gt; 0f &amp;&amp; deconstructing instanceof BuildPayload pay){</b>
+<b class="nc">&nbsp;                        var build = pay.build;</b>
+&nbsp;                        //dump liquid on floor (does not respect block configuration with respect to dumping liquids on floor)
+<b class="nc">&nbsp;                        if(build.liquids != null &amp;&amp; build.liquids.currentAmount() &gt; 0){</b>
+<b class="nc">&nbsp;                            float perCell = build.liquids.currentAmount() / (block.size * block.size) * 2f;</b>
+<b class="nc">&nbsp;                            tile.getLinkedTiles(other -&gt; Puddles.deposit(other, build.liquids.current(), perCell));</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    progress += shift;</b>
+<b class="nc">&nbsp;                    time += edelta();</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; reqs.length; i++){</b>
+<b class="nc">&nbsp;                        accum[i] += reqs[i].amount * (deconstructing instanceof BuildPayload ? state.rules.buildCostMultiplier : state.rules.unitCost(team)) * realShift;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                speedScl = Mathf.lerpDelta(speedScl, canProgress ? 1f : 0f, 0.1f);</b>
+&nbsp;
+&nbsp;                //transfer items from accumulation buffer into block inventory when they reach integers
+<b class="nc">&nbsp;                for(int i = 0; i &lt; reqs.length; i++){</b>
+<b class="nc">&nbsp;                    int taken = Math.min((int)accum[i], itemCapacity - items.total());</b>
+<b class="nc">&nbsp;                    if(taken &gt; 0){</b>
+<b class="nc">&nbsp;                        items.add(reqs[i].item, taken);</b>
+<b class="nc">&nbsp;                        accum[i] -= taken;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //finish deconstruction, prepare for next payload.
+<b class="nc">&nbsp;                if(progress &gt;= 1f){</b>
+<b class="nc">&nbsp;                    canProgress = true;</b>
+&nbsp;                    //check for rounding errors
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; reqs.length; i++){</b>
+<b class="nc">&nbsp;                        if(Mathf.equal(accum[i], 1f, 0.0001f)){</b>
+<b class="nc">&nbsp;                            if(items.total() &lt; itemCapacity){</b>
+<b class="nc">&nbsp;                                items.add(reqs[i].item, 1);</b>
+<b class="nc">&nbsp;                                accum[i] = 0f;</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                canProgress = false;</b>
+<b class="nc">&nbsp;                                break;</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(canProgress){</b>
+<b class="nc">&nbsp;                        Fx.breakBlock.at(x, y, deconstructing.size() / tilesize);</b>
+&nbsp;
+<b class="nc">&nbsp;                        deconstructing = null;</b>
+<b class="nc">&nbsp;                        accum = null;</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(moveInPayload(false) &amp;&amp; payload != null){</b>
+<b class="nc">&nbsp;                accum = new float[payload.requirements().length];</b>
+<b class="nc">&nbsp;                deconstructing = payload;</b>
+<b class="nc">&nbsp;                payload = null;</b>
+<b class="nc">&nbsp;                progress = 0f;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public double sense(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.progress) return progress;</b>
+<b class="nc">&nbsp;            return super.sense(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return deconstructing != null &amp;&amp; enabled;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            write.f(progress);</b>
+<b class="fc">&nbsp;            if(accum != null){</b>
+<b class="nc">&nbsp;                write.s(accum.length);</b>
+<b class="nc">&nbsp;                for(float v : accum){</b>
+<b class="nc">&nbsp;                    write.f(v);</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="fc">&nbsp;                write.s(0);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            Payload.write(deconstructing, write);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            progress = read.f();</b>
+<b class="fc">&nbsp;            short accums = read.s();</b>
+<b class="fc">&nbsp;            if(accums &gt; 0){</b>
+<b class="nc">&nbsp;                accum = new float[accums];</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; accums; i++){</b>
+<b class="nc">&nbsp;                    accum[i] = read.f();</b>
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;            deconstructing = Payload.read(read);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

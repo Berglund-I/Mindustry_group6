@@ -1,0 +1,243 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawOperation</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawOperation (mindustry.editor)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawOperation</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/38)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DrawOperation$OpType</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DrawOperation$TileOpStruct</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/45)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class DrawOperation{</b>
+<b class="nc">&nbsp;    private LongSeq array = new LongSeq();</b>
+&nbsp;
+&nbsp;    public boolean isEmpty(){
+<b class="nc">&nbsp;        return array.isEmpty();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addOperation(long op){
+<b class="nc">&nbsp;        array.add(op);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void undo(){
+<b class="nc">&nbsp;        for(int i = array.size - 1; i &gt;= 0; i--){</b>
+<b class="nc">&nbsp;            updateTile(i);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void redo(){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; array.size; i++){</b>
+<b class="nc">&nbsp;            updateTile(i);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateTile(int i){
+<b class="nc">&nbsp;        long l = array.get(i);</b>
+<b class="nc">&nbsp;        array.set(i, TileOp.get(TileOp.x(l), TileOp.y(l), TileOp.type(l), getTile(editor.tile(TileOp.x(l), TileOp.y(l)), TileOp.type(l))));</b>
+<b class="nc">&nbsp;        setTile(editor.tile(TileOp.x(l), TileOp.y(l)), TileOp.type(l), TileOp.value(l));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    short getTile(Tile tile, byte type){
+<b class="nc">&nbsp;        if(type == OpType.floor.ordinal()){</b>
+<b class="nc">&nbsp;            return tile.floorID();</b>
+<b class="nc">&nbsp;        }else if(type == OpType.block.ordinal()){</b>
+<b class="nc">&nbsp;            return tile.blockID();</b>
+<b class="nc">&nbsp;        }else if(type == OpType.rotation.ordinal()){</b>
+<b class="nc">&nbsp;            return tile.build == null ? 0 : (byte)tile.build.rotation;</b>
+<b class="nc">&nbsp;        }else if(type == OpType.team.ordinal()){</b>
+<b class="nc">&nbsp;            return (byte)tile.getTeamID();</b>
+<b class="nc">&nbsp;        }else if(type == OpType.overlay.ordinal()){</b>
+<b class="nc">&nbsp;            return tile.overlayID();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        throw new IllegalArgumentException(&quot;Invalid type.&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void setTile(Tile tile, byte type, short to){
+<b class="nc">&nbsp;        editor.load(() -&gt; {</b>
+<b class="nc">&nbsp;            if(type == OpType.floor.ordinal()){</b>
+<b class="nc">&nbsp;                if(content.block(to) instanceof Floor floor){</b>
+<b class="nc">&nbsp;                    tile.setFloor(floor);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(type == OpType.block.ordinal()){</b>
+<b class="nc">&nbsp;                tile.getLinkedTiles(t -&gt; editor.renderer.updatePoint(t.x, t.y));</b>
+&nbsp;
+<b class="nc">&nbsp;                Block block = content.block(to);</b>
+<b class="nc">&nbsp;                tile.setBlock(block, tile.team(), tile.build == null ? 0 : tile.build.rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;                tile.getLinkedTiles(t -&gt; editor.renderer.updatePoint(t.x, t.y));</b>
+<b class="nc">&nbsp;            }else if(type == OpType.rotation.ordinal()){</b>
+<b class="nc">&nbsp;                if(tile.build != null) tile.build.rotation = to;</b>
+<b class="nc">&nbsp;            }else if(type == OpType.team.ordinal()){</b>
+<b class="nc">&nbsp;                tile.setTeam(Team.get(to));</b>
+<b class="nc">&nbsp;            }else if(type == OpType.overlay.ordinal()){</b>
+<b class="nc">&nbsp;                tile.setOverlayID(to);</b>
+&nbsp;            }
+&nbsp;        });
+<b class="nc">&nbsp;        editor.renderer.updatePoint(tile.x, tile.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Struct
+<b class="nc">&nbsp;    class TileOpStruct{</b>
+&nbsp;        short x;
+&nbsp;        short y;
+&nbsp;        byte type;
+&nbsp;        short value;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public enum OpType{</b>
+<b class="nc">&nbsp;        floor,</b>
+<b class="nc">&nbsp;        block,</b>
+<b class="nc">&nbsp;        rotation,</b>
+<b class="nc">&nbsp;        team,</b>
+<b class="nc">&nbsp;        overlay</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

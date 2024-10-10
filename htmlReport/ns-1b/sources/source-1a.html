@@ -1,0 +1,176 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > CommandUnitsCallPacket</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: CommandUnitsCallPacket (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CommandUnitsCallPacket</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (1/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8%
+  </span>
+  <span class="absValue">
+    (2/25)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.math.geom.Vec2;
+&nbsp;import arc.util.io.Reads;
+&nbsp;import arc.util.io.Writes;
+&nbsp;import java.lang.Override;
+&nbsp;import mindustry.net.NetConnection;
+&nbsp;import mindustry.net.Packet;
+&nbsp;
+<b class="fc">&nbsp;public class CommandUnitsCallPacket extends Packet {</b>
+<b class="fc">&nbsp;  private byte[] DATA = NODATA;</b>
+&nbsp;
+&nbsp;  public Player player;
+&nbsp;
+&nbsp;  public int[] unitIds;
+&nbsp;
+&nbsp;  public Building buildTarget;
+&nbsp;
+&nbsp;  public Unit unitTarget;
+&nbsp;
+&nbsp;  public Vec2 posTarget;
+&nbsp;
+&nbsp;  public boolean queueCommand;
+&nbsp;
+&nbsp;  public boolean finalBatch;
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void write(Writes WRITE) {
+<b class="nc">&nbsp;    if(mindustry.Vars.net.server()) {</b>
+<b class="nc">&nbsp;      mindustry.io.TypeIO.writeEntity(WRITE, player);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeInts(WRITE, unitIds);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeBuilding(WRITE, buildTarget);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeUnit(WRITE, unitTarget);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeVec2(WRITE, posTarget);</b>
+<b class="nc">&nbsp;    WRITE.bool(queueCommand);</b>
+<b class="nc">&nbsp;    WRITE.bool(finalBatch);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void read(Reads READ, int LENGTH) {
+<b class="nc">&nbsp;    DATA = READ.b(LENGTH);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void handled() {
+<b class="nc">&nbsp;    BAIS.setBytes(DATA);</b>
+<b class="nc">&nbsp;    if(mindustry.Vars.net.client()) {</b>
+<b class="nc">&nbsp;      player = mindustry.io.TypeIO.readEntity(READ);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    unitIds = mindustry.io.TypeIO.readInts(READ);</b>
+<b class="nc">&nbsp;    buildTarget = mindustry.io.TypeIO.readBuilding(READ);</b>
+<b class="nc">&nbsp;    unitTarget = mindustry.io.TypeIO.readUnit(READ);</b>
+<b class="nc">&nbsp;    posTarget = mindustry.io.TypeIO.readVec2(READ);</b>
+<b class="nc">&nbsp;    queueCommand = READ.bool();</b>
+<b class="nc">&nbsp;    finalBatch = READ.bool();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void handleServer(NetConnection con) {
+<b class="nc">&nbsp;    if(con.player == null || con.kicked) {</b>
+&nbsp;      return;
+&nbsp;    }
+<b class="nc">&nbsp;    mindustry.gen.Player player = con.player;</b>
+<b class="nc">&nbsp;    mindustry.input.InputHandler.commandUnits(player, unitIds, buildTarget, unitTarget, posTarget, queueCommand, finalBatch);</b>
+<b class="nc">&nbsp;    mindustry.gen.Call.commandUnits__forward(con, player, unitIds, buildTarget, unitTarget, posTarget, queueCommand, finalBatch);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void handleClient() {
+<b class="nc">&nbsp;    mindustry.input.InputHandler.commandUnits(player, unitIds, buildTarget, unitTarget, posTarget, queueCommand, finalBatch);</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,324 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PayloadAmmoTurret</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense.turrets</a>
+</div>
+
+<h1>Coverage Summary for Class: PayloadAmmoTurret (mindustry.world.blocks.defense.turrets)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PayloadAmmoTurret</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PayloadAmmoTurret$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PayloadAmmoTurret$PayloadTurretBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/54)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense.turrets;
+&nbsp;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;//TODO visuals!
+&nbsp;/** Do not use this class! */
+&nbsp;public class PayloadAmmoTurret extends Turret{
+<b class="nc">&nbsp;    public ObjectMap&lt;UnlockableContent, BulletType&gt; ammoTypes = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    protected UnlockableContent[] ammoKeys;
+&nbsp;
+&nbsp;    public PayloadAmmoTurret(String name){
+<b class="nc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="nc">&nbsp;        maxAmmo = 3;</b>
+<b class="nc">&nbsp;        acceptsPayload = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Initializes accepted ammo map. Format: [block1, bullet1, block2, bullet2...] */
+&nbsp;    public void ammo(Object... objects){
+<b class="nc">&nbsp;        ammoTypes = ObjectMap.of(objects);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Makes copies of all bullets and limits their range. */
+&nbsp;    public void limitRange(){
+<b class="nc">&nbsp;        limitRange(1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Makes copies of all bullets and limits their range. */
+&nbsp;    public void limitRange(float margin){
+<b class="nc">&nbsp;        for(var entry : ammoTypes.copy().entries()){</b>
+<b class="nc">&nbsp;            entry.value.lifetime = (range + margin) / entry.value.speed;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.remove(Stat.itemCapacity);</b>
+<b class="nc">&nbsp;        stats.add(Stat.ammo, StatValues.ammo(ammoTypes, true));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="nc">&nbsp;        consume(new ConsumePayloadFilter(i -&gt; ammoTypes.containsKey(i)){</b>
+&nbsp;            @Override
+&nbsp;            public void build(Building build, Table table){
+<b class="nc">&nbsp;                MultiReqImage image = new MultiReqImage();</b>
+&nbsp;
+<b class="nc">&nbsp;                for(var block : content.blocks()) displayContent(build, image, block);</b>
+<b class="nc">&nbsp;                for(var unit : content.units()) displayContent(build, image, unit);</b>
+&nbsp;
+<b class="nc">&nbsp;                table.add(image).size(8 * 4);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            void displayContent(Building build, MultiReqImage image, UnlockableContent content){
+<b class="nc">&nbsp;                if(filter.get(content) &amp;&amp; content.unlockedNow()){</b>
+<b class="nc">&nbsp;                    image.add(new ReqImage(new Image(content.uiIcon), () -&gt; build instanceof PayloadTurretBuild it &amp;&amp; !it.payloads.isEmpty() &amp;&amp; it.currentAmmo() == content));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public float efficiency(Building build){
+&nbsp;                //valid when there&#39;s any ammo in the turret
+<b class="nc">&nbsp;                return build instanceof PayloadTurretBuild it &amp;&amp; it.payloads.any() ? 1f : 0f;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void display(Stats stats){
+&nbsp;                //don&#39;t display
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        ammoKeys = ammoTypes.keys().toSeq().toArray(UnlockableContent.class);</b>
+&nbsp;
+<b class="nc">&nbsp;        super.init();</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public class PayloadTurretBuild extends TurretBuild{</b>
+<b class="nc">&nbsp;        public PayloadSeq payloads = new PayloadSeq();</b>
+&nbsp;
+&nbsp;        public UnlockableContent currentAmmo(){
+<b class="nc">&nbsp;            for(var content : ammoKeys){</b>
+<b class="nc">&nbsp;                if(payloads.contains(content)){</b>
+<b class="nc">&nbsp;                    return content;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptPayload(Building source, Payload payload){
+<b class="nc">&nbsp;            return payloads.total() &lt; maxAmmo &amp;&amp; ammoTypes.containsKey(payload.content());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handlePayload(Building source, Payload payload){
+<b class="nc">&nbsp;            payloads.add(payload.content());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean hasAmmo(){
+<b class="nc">&nbsp;            return payloads.total() &gt; 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public BulletType useAmmo(){
+<b class="nc">&nbsp;            for(var content : ammoKeys){</b>
+<b class="nc">&nbsp;                if(payloads.contains(content)){</b>
+<b class="nc">&nbsp;                    payloads.remove(content);</b>
+<b class="nc">&nbsp;                    return ammoTypes.get(content);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public BulletType peekAmmo(){
+<b class="nc">&nbsp;            for(var content : ammoKeys){</b>
+<b class="nc">&nbsp;                if(payloads.contains(content)){</b>
+<b class="nc">&nbsp;                    return ammoTypes.get(content);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public PayloadSeq getPayloads(){
+<b class="nc">&nbsp;            return payloads;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="nc">&nbsp;            totalAmmo = payloads.total();</b>
+<b class="nc">&nbsp;            unit.ammo((float)unit.type().ammoCapacity * totalAmmo / maxAmmo);</b>
+&nbsp;
+<b class="nc">&nbsp;            super.updateTile();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void displayBars(Table bars){
+<b class="nc">&nbsp;            super.displayBars(bars);</b>
+&nbsp;
+<b class="nc">&nbsp;            bars.add(new Bar(&quot;stat.ammo&quot;, Pal.ammo, () -&gt; (float)totalAmmo / maxAmmo)).growX();</b>
+<b class="nc">&nbsp;            bars.row();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="nc">&nbsp;            super.write(write);</b>
+<b class="nc">&nbsp;            payloads.write(write);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="nc">&nbsp;            super.read(read, revision);</b>
+<b class="nc">&nbsp;            payloads.read(read);</b>
+<b class="nc">&nbsp;            payloads.removeAll(u -&gt; !ammoTypes.containsKey(u));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

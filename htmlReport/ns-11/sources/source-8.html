@@ -1,0 +1,175 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapLoadDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: MapLoadDialog (mindustry.editor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapLoadDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/37)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class MapLoadDialog extends BaseDialog{
+<b class="nc">&nbsp;    private @Nullable Map selected = null;</b>
+&nbsp;
+&nbsp;    public MapLoadDialog(Cons&lt;Map&gt; loader){
+<b class="nc">&nbsp;        super(&quot;@editor.loadmap&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(this::rebuild);</b>
+<b class="nc">&nbsp;        hidden(() -&gt; selected = null);</b>
+<b class="nc">&nbsp;        onResize(this::rebuild);</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.defaults().size(210f, 64f);</b>
+<b class="nc">&nbsp;        buttons.button(&quot;@cancel&quot;, Icon.cancel, this::hide);</b>
+<b class="nc">&nbsp;        buttons.button(&quot;@load&quot;, Icon.ok, () -&gt; {</b>
+<b class="nc">&nbsp;            if(selected != null){</b>
+<b class="nc">&nbsp;                loader.get(selected);</b>
+<b class="nc">&nbsp;                hide();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).disabled(b -&gt; selected == null);</b>
+<b class="nc">&nbsp;        addCloseListener();</b>
+<b class="nc">&nbsp;        makeButtonOverlay();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void rebuild(){
+<b class="nc">&nbsp;        cont.clear();</b>
+<b class="nc">&nbsp;        ButtonGroup&lt;Button&gt; group = new ButtonGroup&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        int i = 0;</b>
+<b class="nc">&nbsp;        int cols = Math.max((int)(Core.graphics.getWidth() / Scl.scl(300f)), 1);</b>
+&nbsp;
+<b class="nc">&nbsp;        Table table = new Table();</b>
+<b class="nc">&nbsp;        table.defaults().size(250f, 90f).pad(4f);</b>
+<b class="nc">&nbsp;        table.margin(10f);</b>
+&nbsp;
+<b class="nc">&nbsp;        ScrollPane pane = new ScrollPane(table);</b>
+<b class="nc">&nbsp;        pane.setFadeScrollBars(false);</b>
+<b class="nc">&nbsp;        pane.setScrollingDisabledX(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Map map : maps.all()){</b>
+<b class="nc">&nbsp;            table.button(b -&gt; {</b>
+<b class="nc">&nbsp;                b.add(new BorderImage(map.safeTexture(), 2f).setScaling(Scaling.fit)).padLeft(5f).size(16 * 4f);</b>
+<b class="nc">&nbsp;                b.add(map.name()).wrap().grow().labelAlign(Align.center).padLeft(5f);</b>
+<b class="nc">&nbsp;            }, Styles.squareTogglet, () -&gt; selected = map).group(group).margin(8f).checked(b -&gt; selected == map);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(++i % cols == 0) table.row();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        group.uncheckAll();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(maps.all().isEmpty()){</b>
+<b class="nc">&nbsp;            table.add(&quot;@maps.none&quot;).center();</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            cont.add(&quot;@editor.selectmap&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        cont.row();</b>
+<b class="nc">&nbsp;        cont.add(pane);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

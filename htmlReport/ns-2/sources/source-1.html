@@ -1,0 +1,236 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Astar</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai</a>
+</div>
+
+<h1>Coverage Summary for Class: Astar (mindustry.ai)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Astar</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/48)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Astar$DistanceHeuristic</td>
+  </tr>
+  <tr>
+    <td class="name">Astar$TileHeuristic</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/49)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Astar{</b>
+<b class="nc">&nbsp;    public static final DistanceHeuristic manhattan = (x1, y1, x2, y2) -&gt; Math.abs(x1 - x2) + Math.abs(y1 - y2);</b>
+&nbsp;
+<b class="nc">&nbsp;    private static final Seq&lt;Tile&gt; out = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    private static final PQueue&lt;Tile&gt; queue = new PQueue&lt;&gt;(200 * 200 / 4, (a, b) -&gt; 0);</b>
+&nbsp;    private static float[] costs;
+&nbsp;    private static byte[][] rotations;
+&nbsp;
+&nbsp;    public static Seq&lt;Tile&gt; pathfind(Tile from, Tile to, TileHeuristic th, Boolf&lt;Tile&gt; passable){
+<b class="nc">&nbsp;        return pathfind(from.x, from.y, to.x, to.y, th, manhattan, passable);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Seq&lt;Tile&gt; pathfind(int startX, int startY, int endX, int endY, TileHeuristic th, Boolf&lt;Tile&gt; passable){
+<b class="nc">&nbsp;        return pathfind(startX, startY, endX, endY, th, manhattan, passable);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Seq&lt;Tile&gt; pathfind(int startX, int startY, int endX, int endY, TileHeuristic th, DistanceHeuristic dh, Boolf&lt;Tile&gt; passable){
+<b class="nc">&nbsp;        Tiles tiles = world.tiles;</b>
+&nbsp;
+<b class="nc">&nbsp;        Tile start = tiles.getn(startX, startY);</b>
+<b class="nc">&nbsp;        Tile end = tiles.getn(endX, endY);</b>
+&nbsp;
+<b class="nc">&nbsp;        GridBits closed = new GridBits(tiles.width, tiles.height);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(costs == null || costs.length != tiles.width * tiles.height){</b>
+<b class="nc">&nbsp;            costs = new float[tiles.width * tiles.height];</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Arrays.fill(costs, 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        queue.clear();</b>
+<b class="nc">&nbsp;        queue.comparator = Structs.comparingFloat(a -&gt; costs[a.array()] + dh.cost(a.x, a.y, end.x, end.y));</b>
+<b class="nc">&nbsp;        queue.add(start);</b>
+<b class="nc">&nbsp;        if(rotations == null || rotations.length != world.width() || rotations[0].length != world.height()){</b>
+<b class="nc">&nbsp;            rotations = new byte[world.width()][world.height()];</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean found = false;</b>
+<b class="nc">&nbsp;        while(!queue.empty()){</b>
+<b class="nc">&nbsp;            Tile next = queue.poll();</b>
+<b class="nc">&nbsp;            float baseCost = costs[next.array()];</b>
+<b class="nc">&nbsp;            if(next == end){</b>
+<b class="nc">&nbsp;                found = true;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            closed.set(next.x, next.y);</b>
+<b class="nc">&nbsp;            for(Point2 point : Geometry.d4){</b>
+<b class="nc">&nbsp;                int newx = next.x + point.x, newy = next.y + point.y;</b>
+<b class="nc">&nbsp;                if(Structs.inBounds(newx, newy, tiles.width, tiles.height)){</b>
+<b class="nc">&nbsp;                    Tile child = tiles.getn(newx, newy);</b>
+<b class="nc">&nbsp;                    if(passable.get(child)){</b>
+<b class="nc">&nbsp;                        float newCost = th.cost(next, child) + baseCost;</b>
+<b class="nc">&nbsp;                        if(!closed.get(child.x, child.y)){</b>
+<b class="nc">&nbsp;                            closed.set(child.x, child.y);</b>
+<b class="nc">&nbsp;                            rotations[child.x][child.y] = child.relativeTo(next.x, next.y);</b>
+<b class="nc">&nbsp;                            costs[child.array()] = newCost;</b>
+<b class="nc">&nbsp;                            queue.add(child);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        out.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!found) return out;</b>
+&nbsp;
+<b class="nc">&nbsp;        Tile current = end;</b>
+<b class="nc">&nbsp;        while(current != start){</b>
+<b class="nc">&nbsp;            out.add(current);</b>
+&nbsp;
+<b class="nc">&nbsp;            byte rot = rotations[current.x][current.y];</b>
+<b class="nc">&nbsp;            current = tiles.getn(current.x + Geometry.d4x[rot], current.y + Geometry.d4y[rot]);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        out.reverse();</b>
+&nbsp;
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface DistanceHeuristic{
+&nbsp;        float cost(int x1, int y1, int x2, int y2);
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface TileHeuristic{
+&nbsp;        float cost(Tile tile);
+&nbsp;
+&nbsp;        default float cost(Tile from, Tile tile){
+<b class="nc">&nbsp;            return cost(tile);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

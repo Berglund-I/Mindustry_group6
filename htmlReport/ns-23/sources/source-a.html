@@ -1,0 +1,202 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MirrorFilter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps.filters</a>
+</div>
+
+<h1>Coverage Summary for Class: MirrorFilter (mindustry.maps.filters)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MirrorFilter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.2%
+  </span>
+  <span class="absValue">
+    (2/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.3%
+  </span>
+  <span class="absValue">
+    (4/43)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps.filters;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.maps.filters.FilterOption.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+<b class="fc">&nbsp;public class MirrorFilter extends GenerateFilter{</b>
+<b class="fc">&nbsp;    private static final Vec2 v1 = new Vec2(), v2 = new Vec2(), v3 = new Vec2();</b>
+&nbsp;
+<b class="fc">&nbsp;    public int angle = 45;</b>
+<b class="fc">&nbsp;    public boolean rotate = false;</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public FilterOption[] options(){
+<b class="nc">&nbsp;        return new FilterOption[]{</b>
+<b class="nc">&nbsp;            new SliderOption(&quot;angle&quot;, () -&gt; angle, f -&gt; angle = (int)f, 0, 360, 15),</b>
+<b class="nc">&nbsp;            new ToggleOption(&quot;rotate&quot;, () -&gt; rotate, f -&gt; rotate = f)</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public char icon(){
+<b class="nc">&nbsp;        return Iconc.blockMetalFloor5;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void apply(GenerateInput in){
+<b class="nc">&nbsp;        v1.trnsExact(angle - 90, 1f);</b>
+<b class="nc">&nbsp;        v2.set(v1).scl(-1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        v1.add(in.width/2f - 0.5f, in.height/2f - 0.5f);</b>
+<b class="nc">&nbsp;        v2.add(in.width/2f - 0.5f, in.height/2f - 0.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        v3.set(in.x, in.y);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!left(v1, v2, v3)){</b>
+<b class="nc">&nbsp;            mirror(in.width, in.height, v3, v1.x, v1.y, v2.x, v2.y);</b>
+<b class="nc">&nbsp;            Tile tile = in.tile(v3.x, v3.y);</b>
+<b class="nc">&nbsp;            in.floor = tile.floor();</b>
+<b class="nc">&nbsp;            if(!tile.block().synthetic()){</b>
+<b class="nc">&nbsp;                in.block = tile.block();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            in.overlay = tile.overlay();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Image image){
+<b class="nc">&nbsp;        super.draw(image);</b>
+<b class="nc">&nbsp;        float imageGetWidth = image.getWidth()/2f;</b>
+<b class="nc">&nbsp;        float imageGetHeight = image.getHeight()/2f;</b>
+<b class="nc">&nbsp;        float size = Math.max(imageGetWidth, imageGetHeight);</b>
+&nbsp;
+<b class="nc">&nbsp;        Vec2 vsize = Scaling.fit.apply(image.getDrawable().getMinWidth(), image.getDrawable().getMinHeight(), imageGetWidth, imageGetHeight);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.v1.trns(angle - 90, size);</b>
+<b class="nc">&nbsp;        clipHalfLine(Tmp.v1, -vsize.x, -vsize.y, vsize.x, vsize.y);</b>
+<b class="nc">&nbsp;        Tmp.v2.set(Tmp.v1).scl(-1f); //opposite of v1</b>
+&nbsp;
+&nbsp;        //adding back the coordinates of the center of the image
+<b class="nc">&nbsp;        Tmp.v1.add(imageGetWidth + image.x, imageGetHeight + image.y);</b>
+<b class="nc">&nbsp;        Tmp.v2.add(imageGetWidth + image.x, imageGetHeight + image.y);</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(Scl.scl(3f), Pal.accent);</b>
+<b class="nc">&nbsp;        Lines.line(Tmp.v1.x, Tmp.v1.y, Tmp.v2.x, Tmp.v2.y);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void mirror(int width, int height, Vec2 p, float x0, float y0, float x1, float y1){
+&nbsp;        //special case: uneven map mirrored at 45 degree angle (or someone might just want rotational symmetry)
+<b class="nc">&nbsp;        if((width != height &amp;&amp; angle % 90 != 0) || rotate){</b>
+<b class="nc">&nbsp;            p.x = width - p.x - 1;</b>
+<b class="nc">&nbsp;            p.y = height - p.y - 1;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            float dx = x1 - x0;</b>
+<b class="nc">&nbsp;            float dy = y1 - y0;</b>
+&nbsp;
+<b class="nc">&nbsp;            float a = (dx * dx - dy * dy) / (dx * dx + dy * dy);</b>
+<b class="nc">&nbsp;            float b = 2 * dx * dy / (dx * dx + dy * dy);</b>
+&nbsp;
+<b class="nc">&nbsp;            p.set((a * (p.x - x0) + b * (p.y - y0) + x0), (b * (p.x - x0) - a * (p.y - y0) + y0));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean left(Vec2 a, Vec2 b, Vec2 c){
+<b class="nc">&nbsp;        return ((b.x - a.x)*(c.y - a.y) &gt; (b.y - a.y)*(c.x - a.x));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void clipHalfLine(Vec2 v, float xmin, float ymin, float xmax, float ymax){
+&nbsp;        //finds the coordinates of the intersection of the half line created by the vector at (0,0) with the clipping rectangle
+<b class="nc">&nbsp;        v.scl(1f / Math.max(Math.abs(v.x &lt; 0 ? v.x / xmin : v.x / xmax), Math.abs(v.y &lt; 0 ? v.y / ymin : v.y / ymax)));</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

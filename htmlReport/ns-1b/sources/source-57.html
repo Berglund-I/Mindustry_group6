@@ -1,0 +1,146 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > NodeIndex</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: NodeIndex (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NodeIndex</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;/**
+&nbsp; * Bits used: 32 / 32
+&nbsp; * &lt;br&gt;  cluster [0..22]
+&nbsp; * &lt;br&gt;  dir [22..24]
+&nbsp; * &lt;br&gt;  portal [24..32]
+&nbsp; */
+<b class="nc">&nbsp;public final class NodeIndex {</b>
+&nbsp;  public static final int bitMaskCluster = (int)(0b00000000001111111111111111111111L);
+&nbsp;
+&nbsp;  public static final int bitMaskDir = (int)(0b00000000110000000000000000000000L);
+&nbsp;
+&nbsp;  public static final int bitMaskPortal = (int)(0b11111111000000000000000000000000L);
+&nbsp;
+&nbsp;  public static int cluster(int nodeindex) {
+<b class="nc">&nbsp;    return (int)((nodeindex &gt;&gt;&gt; 0) &amp; 0b00000000001111111111111111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int cluster(int nodeindex, int value) {
+<b class="nc">&nbsp;    return (int)((nodeindex &amp; (~0b00000000001111111111111111111111L)) | ((int)value &lt;&lt; 0L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int dir(int nodeindex) {
+<b class="nc">&nbsp;    return (int)((nodeindex &gt;&gt;&gt; 22) &amp; 0b00000000000000000000000000000011L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int dir(int nodeindex, int value) {
+<b class="nc">&nbsp;    return (int)((nodeindex &amp; (~0b00000000110000000000000000000000L)) | ((int)value &lt;&lt; 22L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int portal(int nodeindex) {
+<b class="nc">&nbsp;    return (int)((nodeindex &gt;&gt;&gt; 24) &amp; 0b00000000000000000000000011111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int portal(int nodeindex, int value) {
+<b class="nc">&nbsp;    return (int)((nodeindex &amp; (~0b11111111000000000000000000000000L)) | ((int)value &lt;&lt; 24L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int get(int cluster, int dir, int portal) {
+<b class="nc">&nbsp;    return (int)((((int)cluster &lt;&lt; 0L) &amp; 0b00000000001111111111111111111111L) | (((int)dir &lt;&lt; 22L) &amp; 0b00000000110000000000000000000000L) | (((int)portal &lt;&lt; 24L) &amp; 0b11111111000000000000000000000000L));</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

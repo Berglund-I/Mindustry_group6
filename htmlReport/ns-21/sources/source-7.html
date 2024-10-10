@@ -1,0 +1,240 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LAssembler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: LAssembler (mindustry.logic)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LAssembler</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90.9%
+  </span>
+  <span class="absValue">
+    (10/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.9%
+  </span>
+  <span class="absValue">
+    (48/54)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.logic;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.logic.LExecutor.*;
+&nbsp;
+&nbsp;/** &quot;Compiles&quot; a sequence of statements into instructions. */
+&nbsp;public class LAssembler{
+<b class="fc">&nbsp;    public static ObjectMap&lt;String, Func&lt;String[], LStatement&gt;&gt; customParsers = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    private static final int invalidNum = Integer.MIN_VALUE;
+&nbsp;
+&nbsp;    private boolean privileged;
+&nbsp;    /** Maps names to variable. */
+<b class="fc">&nbsp;    public OrderedMap&lt;String, LVar&gt; vars = new OrderedMap&lt;&gt;();</b>
+&nbsp;    /** All instructions to be executed. */
+&nbsp;    public LInstruction[] instructions;
+&nbsp;
+<b class="fc">&nbsp;    public LAssembler(){</b>
+&nbsp;        //instruction counter
+<b class="fc">&nbsp;        putVar(&quot;@counter&quot;).isobj = false;</b>
+&nbsp;        //currently controlled unit
+<b class="fc">&nbsp;        putConst(&quot;@unit&quot;, null);</b>
+&nbsp;        //reference to self
+<b class="fc">&nbsp;        putConst(&quot;@this&quot;, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static LAssembler assemble(String data, boolean privileged){
+<b class="fc">&nbsp;        LAssembler asm = new LAssembler();</b>
+&nbsp;
+<b class="fc">&nbsp;        Seq&lt;LStatement&gt; st = read(data, privileged);</b>
+&nbsp;
+<b class="fc">&nbsp;        asm.privileged = privileged;</b>
+&nbsp;        
+<b class="fc">&nbsp;        asm.instructions = st.map(l -&gt; l.build(asm)).retainAll(l -&gt; l != null).toArray(LInstruction.class);</b>
+<b class="fc">&nbsp;        return asm;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String write(Seq&lt;LStatement&gt; statements){
+<b class="nc">&nbsp;        StringBuilder out = new StringBuilder();</b>
+<b class="nc">&nbsp;        for(LStatement s : statements){</b>
+<b class="nc">&nbsp;            s.write(out);</b>
+<b class="nc">&nbsp;            out.append(&quot;\n&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return out.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Parses a sequence of statements from a string. */
+&nbsp;    public static Seq&lt;LStatement&gt; read(String text, boolean privileged){
+&nbsp;        //don&#39;t waste time parsing null/empty text
+<b class="fc">&nbsp;        if(text == null || text.isEmpty()) return new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;        return new LParser(text, privileged).parse();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return a variable by name.
+&nbsp;     * This may be a constant variable referring to a number or object. */
+&nbsp;    public LVar var(String symbol){
+<b class="fc">&nbsp;        LVar constVar = Vars.logicVars.get(symbol, privileged);</b>
+<b class="fc">&nbsp;        if(constVar != null) return constVar;</b>
+&nbsp;
+<b class="fc">&nbsp;        symbol = symbol.trim();</b>
+&nbsp;
+&nbsp;        //string case
+<b class="fc">&nbsp;        if(!symbol.isEmpty() &amp;&amp; symbol.charAt(0) == &#39;\&quot;&#39; &amp;&amp; symbol.charAt(symbol.length() - 1) == &#39;\&quot;&#39;){</b>
+<b class="fc">&nbsp;            return putConst(&quot;___&quot; + symbol, symbol.substring(1, symbol.length() - 1).replace(&quot;\\n&quot;, &quot;\n&quot;));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //remove spaces for non-strings
+<b class="fc">&nbsp;        symbol = symbol.replace(&#39; &#39;, &#39;_&#39;);</b>
+&nbsp;
+<b class="fc">&nbsp;        double value = parseDouble(symbol);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(value == invalidNum){</b>
+<b class="fc">&nbsp;            return putVar(symbol);</b>
+&nbsp;        }else{
+&nbsp;            //this creates a hidden const variable with the specified value
+<b class="fc">&nbsp;            return putConst(&quot;___&quot; + value, value);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    double parseDouble(String symbol){
+&nbsp;        //parse hex/binary syntax
+<b class="fc">&nbsp;        if(symbol.startsWith(&quot;0b&quot;)) return Strings.parseLong(symbol, 2, 2, symbol.length(), invalidNum);</b>
+<b class="fc">&nbsp;        if(symbol.startsWith(&quot;0x&quot;)) return Strings.parseLong(symbol, 16, 2, symbol.length(), invalidNum);</b>
+<b class="fc">&nbsp;        if(symbol.startsWith(&quot;%&quot;) &amp;&amp; (symbol.length() == 7 || symbol.length() == 9)) return parseColor(symbol);</b>
+&nbsp;
+<b class="fc">&nbsp;        return Strings.parseDouble(symbol, invalidNum);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    double parseColor(String symbol){
+&nbsp;        int
+<b class="fc">&nbsp;        r = Strings.parseInt(symbol, 16, 0, 1, 3),</b>
+<b class="fc">&nbsp;        g = Strings.parseInt(symbol, 16, 0, 3, 5),</b>
+<b class="fc">&nbsp;        b = Strings.parseInt(symbol, 16, 0, 5, 7),</b>
+<b class="fc">&nbsp;        a = symbol.length() == 9 ? Strings.parseInt(symbol, 16, 0, 7, 9) : 255;</b>
+&nbsp;
+<b class="fc">&nbsp;        return Color.toDoubleBits(r, g, b, a);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a constant value by name. */
+&nbsp;    public LVar putConst(String name, Object value){
+<b class="fc">&nbsp;        LVar var = putVar(name);</b>
+<b class="fc">&nbsp;        if(value instanceof Number number){</b>
+<b class="fc">&nbsp;            var.isobj = false;</b>
+<b class="fc">&nbsp;            var.numval = number.doubleValue();</b>
+<b class="fc">&nbsp;            var.objval = null;</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            var.isobj = true;</b>
+<b class="fc">&nbsp;            var.objval = value;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        var.constant = true;</b>
+<b class="fc">&nbsp;        return var;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Registers a variable name mapping. */
+&nbsp;    public LVar putVar(String name){
+<b class="fc">&nbsp;        if(vars.containsKey(name)){</b>
+<b class="fc">&nbsp;            return vars.get(name);</b>
+&nbsp;        }else{
+&nbsp;            //variables are null objects by default
+<b class="fc">&nbsp;            LVar var = new LVar(name);</b>
+<b class="fc">&nbsp;            var.isobj = true;</b>
+<b class="fc">&nbsp;            vars.put(name, var);</b>
+<b class="fc">&nbsp;            return var;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public LVar getVar(String name){
+<b class="fc">&nbsp;        return vars.get(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>
