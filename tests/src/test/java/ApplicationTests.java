@@ -254,7 +254,7 @@ public class ApplicationTests{
 
     @Test
     void mode_shouldReturnAttack_whenAttackModelsIsTrue(){
-        //Ida
+        //Ida. B
         // Arrange
         Rules rules = new Rules();
         rules.attackMode = true;
