@@ -225,8 +225,8 @@ public class ApplicationTests{
     }
 
     @Test
-    void mode_shouldReturnPvp_whenPvpIsTrue(){
-        //Ida
+    void testMode_shouldReturnPvp_whenPvpIsTrue(){
+        //Ida Gamemode mode()
         //Arrange
         Rules rules = new Rules();
         rules.pvp = true;
@@ -239,8 +239,8 @@ public class ApplicationTests{
     }
 
     @Test
-    void mode_shouldReturnEditor_whenEditorIsTrue(){
-        //Ida
+    void testMode_shouldReturnEditor_whenEditorIsTrue(){
+        //Ida Gamemode mode()
         //Arrange
         Rules rules = new Rules();
         rules.editor = true;
@@ -253,8 +253,8 @@ public class ApplicationTests{
     }
 
     @Test
-    void mode_shouldReturnAttack_whenAttackModelsIsTrue(){
-        //Ida. B
+    void testMode_shouldReturnAttack_whenAttackModelsIsTrue(){
+        //Ida Gamemode mode()
         // Arrange
         Rules rules = new Rules();
         rules.attackMode = true;
@@ -267,8 +267,8 @@ public class ApplicationTests{
     }
 
     @Test
-    void mode_shouldReturnSandbox_whenInifiteResourcesIsTrue(){
-        //Ida
+    void testMode_shouldReturnSandbox_whenInifiteResourcesIsTrue(){
+        //Ida Gamemode mode()
         //Arrange
         Rules rules = new Rules();
         rules.infiniteResources = true;
@@ -281,8 +281,8 @@ public class ApplicationTests{
     }
 
     @Test
-    void mode_shouldReturnSurvival_whenNoOtherModesAreTrue() {
-        //Ida
+    void testMode_shouldReturnSurvival_whenNoOtherModesAreTrue() {
+        //Ida Gamemode mode()
         //Arrange
         Rules rules = new Rules();
 
@@ -291,6 +291,70 @@ public class ApplicationTests{
 
         //Assert
         assertEquals(Gamemode.survival, result);
+    }
+
+    @Test
+    void testUnitDamage_shouldReturnCorrectValue_whenTeamAndRulesHaveDefaultMultipliers() {
+        //Ida, UnitDamage(Team team)
+        //Arrange
+        Rules rules = new Rules();
+        Team team = Team.sharded;
+        rules.unitDamageMultiplier = 1.0f;
+        rules.teams.get(team).unitDamageMultiplier = 1.0f;
+
+        //Act
+        float result = rules.unitDamage(team);
+
+        //Assert
+        assertEquals(1.0f, result);
+    }
+
+    @Test
+    void testUnitDamage_shouldReturnCorrectValue_whenTeamHasCustomMultiplier() {
+        //Ida, UnitDamage(Team team)
+        //Arrange
+        Rules rules = new Rules();
+        Team team = Team.sharded;
+        rules.unitDamageMultiplier = 2.0f;
+        rules.teams.get(team).unitDamageMultiplier = 1.5f;
+
+        //Act
+        float result = rules.unitDamage(team);
+
+        //Assert
+        assertEquals(3.0f, result);
+    }
+
+    @Test
+    void testUnitDamage_shouldReturnZero_whenOneMultiplierIsZero() {
+        //Ida, UnitDamage(Team team)
+        //Arrange
+        Rules rules = new Rules();
+        Team team = Team.sharded;
+        rules.unitDamageMultiplier = 0.0f;
+        rules.teams.get(team).unitDamageMultiplier = 1.5f;
+
+        //Act
+        float result = rules.unitDamage(team);
+
+        //Assert
+        assertEquals(0.0f, result);
+    }
+
+    @Test
+    void testUnitDamage_shouldReturnCorrectValue_whenBothMultipliersAreNonDefault() {
+        //Ida, UnitDamage(Team team)
+        //Arrange
+        Rules rules = new Rules();
+        Team team = Team.sharded;
+        rules.unitDamageMultiplier = 1.2f;
+        rules.teams.get(team).unitDamageMultiplier = 2.5f;
+
+        //Act
+        float result = rules.unitDamage(team);
+
+        //Assert
+        assertEquals(3.0f, result);
     }
 
     @Test
