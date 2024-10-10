@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Drawc</title>
+  <title>Coverage Report > EffectStatec</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Drawc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: EffectStatec (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Drawc</td>
+  <td class="name">EffectStatec</td>
 </tr>
 
 </table>
@@ -40,17 +40,31 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
+&nbsp;import arc.graphics.Color;
 &nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.entities.Effect;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.DrawComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.EffectStateComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Drawc extends Entityc, Posc {
+&nbsp;public interface EffectStatec extends Childc, Drawc, Entityc, Posc, Rotc, Timedc {
+&nbsp;  Color color();
+&nbsp;
 &nbsp;  float clipSize();
 &nbsp;
+&nbsp;  Object data();
+&nbsp;
+&nbsp;  Effect effect();
+&nbsp;
+&nbsp;  void color(Color color);
+&nbsp;
+&nbsp;  void data(Object data);
+&nbsp;
 &nbsp;  void draw();
+&nbsp;
+&nbsp;  void effect(Effect effect);
 &nbsp;}
 </code>
 </pre>
@@ -75,7 +89,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

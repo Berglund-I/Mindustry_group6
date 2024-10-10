@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Rotc</title>
+  <title>Coverage Report > WaterMovec</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Rotc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: WaterMovec (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Rotc</td>
+  <td class="name">WaterMovec</td>
 </tr>
 
 </table>
@@ -41,16 +41,31 @@ Current scope:     <a href="../../index.html">all classes</a>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
 &nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.entities.EntityCollisions;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.RotComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.WaterMoveComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Rotc extends Entityc {
-&nbsp;  float rotation();
+&nbsp;public interface WaterMovec extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
+&nbsp;  boolean emitWalkSound();
 &nbsp;
-&nbsp;  void rotation(float rotation);
+&nbsp;  boolean onLiquid();
+&nbsp;
+&nbsp;  boolean onSolid();
+&nbsp;
+&nbsp;  float floorSpeedMultiplier();
+&nbsp;
+&nbsp;  int pathType();
+&nbsp;
+&nbsp;  EntityCollisions.SolidPred solidity();
+&nbsp;
+&nbsp;  void add();
+&nbsp;
+&nbsp;  void draw();
+&nbsp;
+&nbsp;  void update();
 &nbsp;}
 </code>
 </pre>
@@ -75,7 +90,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

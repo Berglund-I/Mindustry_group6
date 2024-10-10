@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > BlockUnitc</title>
+  <title>Coverage Report > Builderc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: BlockUnitc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Builderc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">BlockUnitc</td>
+  <td class="name">Builderc</td>
 </tr>
 
 </table>
@@ -40,35 +40,84 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.graphics.g2d.TextureRegion;
+&nbsp;import arc.struct.Queue;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.game.Team;
+&nbsp;import mindustry.entities.units.BuildPlan;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.BlockUnitComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.BuilderComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface BlockUnitc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
-&nbsp;  Building tile();
+&nbsp;public interface Builderc extends Entityc, Flyingc, Healthc, Hitboxc, Posc, Rotc, Statusc, Teamc, Velc {
+&nbsp;  /**
+&nbsp;   * @return  the build plan currently active, or the one at the top of the queue.
+&nbsp;   */
+&nbsp;  BuildPlan buildPlan();
 &nbsp;
-&nbsp;  TextureRegion icon();
+&nbsp;  /**
+&nbsp;   * @return whether this plan should be skipped, in favor of the next one. 
+&nbsp;   */
+&nbsp;  boolean shouldSkip(BuildPlan plan, Building core);
 &nbsp;
-&nbsp;  boolean dead();
+&nbsp;  /**
+&nbsp;   * Add another build plans to the queue, if it doesn&#39;t exist there yet. 
+&nbsp;   */
+&nbsp;  void addBuild(BuildPlan place, boolean tail);
 &nbsp;
-&nbsp;  boolean isValid();
+&nbsp;  /**
+&nbsp;   * Add another build plans to the tail of the queue, if it doesn&#39;t exist there yet. 
+&nbsp;   */
+&nbsp;  void addBuild(BuildPlan place);
 &nbsp;
-&nbsp;  void add();
+&nbsp;  /**
+&nbsp;   * Clears the placement queue. 
+&nbsp;   */
+&nbsp;  void clearBuilding();
 &nbsp;
-&nbsp;  void damage(float v, boolean b);
+&nbsp;  /**
+&nbsp;   * Draw all current build plans. Does not draw the beam effect, only the positions. 
+&nbsp;   */
+&nbsp;  void drawBuildPlans();
 &nbsp;
-&nbsp;  void killed();
+&nbsp;  /**
+&nbsp;   * Return whether this builder&#39;s place queue contains items. 
+&nbsp;   */
+&nbsp;  boolean isBuilding();
 &nbsp;
-&nbsp;  void team(Team team);
+&nbsp;  Queue&lt;BuildPlan&gt; plans();
 &nbsp;
-&nbsp;  void tile(Building tile);
+&nbsp;  boolean activelyBuilding();
+&nbsp;
+&nbsp;  boolean canBuild();
+&nbsp;
+&nbsp;  boolean updateBuilding();
+&nbsp;
+&nbsp;  float buildAlpha();
+&nbsp;
+&nbsp;  void afterRead();
+&nbsp;
+&nbsp;  void buildAlpha(float buildAlpha);
+&nbsp;
+&nbsp;  void drawBuilding();
+&nbsp;
+&nbsp;  void drawBuildingBeam(float px, float py);
+&nbsp;
+&nbsp;  void drawPlan(BuildPlan plan, float alpha);
+&nbsp;
+&nbsp;  void drawPlanTop(BuildPlan plan, float alpha);
+&nbsp;
+&nbsp;  void plans(Queue&lt;BuildPlan&gt; plans);
+&nbsp;
+&nbsp;  void removeBuild(int x, int y, boolean breaking);
 &nbsp;
 &nbsp;  void update();
+&nbsp;
+&nbsp;  void updateBuildLogic();
+&nbsp;
+&nbsp;  void updateBuilding(boolean updateBuilding);
+&nbsp;
+&nbsp;  void validatePlans();
 &nbsp;}
 </code>
 </pre>
@@ -93,7 +142,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

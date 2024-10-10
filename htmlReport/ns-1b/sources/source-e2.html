@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Timedc</title>
+  <title>Coverage Report > Crawlc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Timedc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Crawlc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Timedc</td>
+  <td class="name">Crawlc</td>
 </tr>
 
 </table>
@@ -40,24 +40,41 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.math.Scaled;
 &nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.entities.EntityCollisions;
+&nbsp;import mindustry.world.blocks.environment.Floor;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.TimedComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.CrawlComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Timedc extends Scaled, Entityc {
-&nbsp;  float fin();
+&nbsp;public interface Crawlc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
+&nbsp;  float crawlTime();
 &nbsp;
-&nbsp;  float lifetime();
+&nbsp;  float floorSpeedMultiplier();
 &nbsp;
-&nbsp;  float time();
+&nbsp;  float lastCrawlSlowdown();
 &nbsp;
-&nbsp;  void lifetime(float lifetime);
+&nbsp;  float segmentRot();
 &nbsp;
-&nbsp;  void time(float time);
+&nbsp;  int pathType();
+&nbsp;
+&nbsp;  EntityCollisions.SolidPred solidity();
+&nbsp;
+&nbsp;  Floor drownFloor();
+&nbsp;
+&nbsp;  Floor lastDeepFloor();
+&nbsp;
+&nbsp;  void add();
+&nbsp;
+&nbsp;  void crawlTime(float crawlTime);
+&nbsp;
+&nbsp;  void lastCrawlSlowdown(float lastCrawlSlowdown);
+&nbsp;
+&nbsp;  void lastDeepFloor(Floor lastDeepFloor);
+&nbsp;
+&nbsp;  void segmentRot(float segmentRot);
 &nbsp;
 &nbsp;  void update();
 &nbsp;}
@@ -84,7 +101,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

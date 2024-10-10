@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Shieldc</title>
+  <title>Coverage Report > WorldLabelc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Shieldc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: WorldLabelc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Shieldc</td>
+  <td class="name">WorldLabelc</td>
 </tr>
 
 </table>
@@ -43,48 +43,41 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;import mindustry.annotations.Annotations;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.ShieldComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.WorldLabelComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Shieldc extends Entityc, Healthc, Posc {
+&nbsp;public interface WorldLabelc extends Drawc, Entityc, Posc, Syncc {
 &nbsp;  /**
-&nbsp;   * Absorbs health damage. 
+&nbsp;   * Flags are packed into a byte for sync efficiency; see the flag static values. 
 &nbsp;   */
-&nbsp;  float shield();
-&nbsp;
-&nbsp;  /**
-&nbsp;   * Absorbs health damage. 
-&nbsp;   */
-&nbsp;  void shield(float shield);
+&nbsp;  byte flags();
 &nbsp;
 &nbsp;  /**
-&nbsp;   * Shield opacity. 
+&nbsp;   * Flags are packed into a byte for sync efficiency; see the flag static values. 
 &nbsp;   */
-&nbsp;  float shieldAlpha();
+&nbsp;  void flags(byte flags);
 &nbsp;
 &nbsp;  /**
-&nbsp;   * Shield opacity. 
+&nbsp;   * This MUST be called instead of remove()! 
 &nbsp;   */
-&nbsp;  void shieldAlpha(float shieldAlpha);
+&nbsp;  void hide();
 &nbsp;
-&nbsp;  /**
-&nbsp;   * Subtracts an amount from damage. No need to save. 
-&nbsp;   */
-&nbsp;  float armor();
+&nbsp;  float clipSize();
 &nbsp;
-&nbsp;  /**
-&nbsp;   * Subtracts an amount from damage. No need to save. 
-&nbsp;   */
-&nbsp;  void armor(float armor);
+&nbsp;  float fontSize();
 &nbsp;
-&nbsp;  void damage(float amount);
+&nbsp;  float z();
 &nbsp;
-&nbsp;  void damagePierce(float amount, boolean withEffect);
+&nbsp;  String text();
 &nbsp;
-&nbsp;  void rawDamage(float amount);
+&nbsp;  void draw();
 &nbsp;
-&nbsp;  void update();
+&nbsp;  void fontSize(float fontSize);
+&nbsp;
+&nbsp;  void text(String text);
+&nbsp;
+&nbsp;  void z(float z);
 &nbsp;}
 </code>
 </pre>
@@ -109,7 +102,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

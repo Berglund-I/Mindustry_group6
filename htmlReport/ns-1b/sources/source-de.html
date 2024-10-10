@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Damagec</title>
+  <title>Coverage Report > Minerc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Damagec (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Minerc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Damagec</td>
+  <td class="name">Minerc</td>
 </tr>
 
 </table>
@@ -40,17 +40,41 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
+&nbsp;import arc.util.Nullable;
 &nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.type.Item;
+&nbsp;import mindustry.world.Tile;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.DamageComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.MinerComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Damagec extends Entityc {
-&nbsp;  float damage();
+&nbsp;public interface Minerc extends Drawc, Entityc, Itemsc, Posc, Rotc, Teamc {
+&nbsp;  @Nullable
+&nbsp;  Tile mineTile();
 &nbsp;
-&nbsp;  void damage(float damage);
+&nbsp;  boolean canMine();
+&nbsp;
+&nbsp;  boolean canMine(Item item);
+&nbsp;
+&nbsp;  boolean mining();
+&nbsp;
+&nbsp;  boolean offloadImmediately();
+&nbsp;
+&nbsp;  boolean validMine(Tile tile);
+&nbsp;
+&nbsp;  boolean validMine(Tile tile, boolean checkDst);
+&nbsp;
+&nbsp;  float mineTimer();
+&nbsp;
+&nbsp;  Item getMineResult(Tile tile);
+&nbsp;
+&nbsp;  void mineTile(@Nullable Tile mineTile);
+&nbsp;
+&nbsp;  void mineTimer(float mineTimer);
+&nbsp;
+&nbsp;  void update();
 &nbsp;}
 </code>
 </pre>
@@ -75,7 +99,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>
