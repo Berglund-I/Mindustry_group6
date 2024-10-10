@@ -38,27 +38,33 @@ public class AbilityTest {
 
     @Test
     void testDisplayBars() {
+        // Arrange
         ability.displayBars(mockUnit, mockTable);
 
+        // Assert
         verifyNoInteractions(mockUnit, mockTable);
     }
 
     @Test
     void testAbilityStat() {
+        // Arrange
         String stat = "testStat";
         Object[] values = {1, 2, 3};
         String expectedOutput = "formattedString";
 
+        // Act
         when(mockBundle.format("ability.stat." + stat, values)).thenReturn(expectedOutput);
-
         String result = ability.abilityStat(stat, values);
 
+        // Assert
         assertEquals(expectedOutput, result);
     }
 
     @Test
     void testCopyCreatesNewInstance() {
+        // Act
         Ability copiedAbility = ability.copy();
+        // Assert
         assertNotSame(ability, copiedAbility);
     }
 }
