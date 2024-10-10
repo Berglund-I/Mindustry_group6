@@ -327,7 +327,7 @@ public class ApplicationTests{
 
     @Test
     void testUnitDamage_shouldReturnZero_whenOneMultiplierIsZero() {
-        //Ida, UnitDamage(Team team)
+        //Ida, UnitDamage(Team team) //ida.b
         //Arrange
         Rules rules = new Rules();
         Team team = Team.sharded;
