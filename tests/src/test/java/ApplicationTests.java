@@ -491,44 +491,22 @@ public class ApplicationTests{
         if (arc.Core.assets == null) {
             Core.assets = new arc.assets.AssetManager();
         }
-        Saves save = new Saves();
-//        Core arc = new Core();
-        assertFalse(save.isSaving());
-//        arc.notify();
-//
-//        assertNotNull(save.getCurrent());
-
         // Act
-
+        Saves save = new Saves();
         // Assert
-
+        assertFalse(save.isSaving());
     }
-
-//    @Test
-//    void testSaveIsNotSaving() {
-//        if (arc.Core.assets == null) {
-//            Core.assets = new arc.assets.AssetManager();
-//        }
-//        Saves save = new Saves();
-//        assertFalse(save.isSaving());
-//    }
-//
-//    @Test
-//    void testSaveNoSaves() {
-//        if (arc.Core.assets == null) {
-//            Core.assets = new arc.assets.AssetManager();
-//        }
-//        Saves save = new Saves();
-//        assertEquals(0, save.getTotalPlaytime());
-//    }
 
     @Test
     void testSaveStateChangeToMenu() {
+        // Arrange
         if (arc.Core.assets == null) {
             Core.assets = new arc.assets.AssetManager();
         }
+        // Act
         Saves save = new Saves();
         Events.fire(new EventType.StateChangeEvent(State.playing, State.menu));
+        // Assert
         assertNull(save.getCurrent());
     }
 
