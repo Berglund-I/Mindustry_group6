@@ -224,6 +224,52 @@ public class ApplicationTests{
         }});
     }
 
+    //Test case for copy() in Rules class
+    @Test
+    void testCopy(){
+        //Arrange Rules object and add some values
+        Rules originalRules = new Rules();
+        originalRules.blockDamageMultiplier = 2.0f;
+        originalRules.unitHealthMultiplier = 1.5f;
+        originalRules.infiniteResources = true;
+
+        //Act use the copy() method to copy the object
+        Rules copiedRules = originalRules.copy();
+
+        //Assert and make sure all values from originalRules are the same as from copiedRules
+        assertEquals(originalRules.blockDamageMultiplier, copiedRules.blockDamageMultiplier, "Block damage should be the same");
+        assertEquals(originalRules.unitHealthMultiplier, copiedRules.unitHealthMultiplier, "Unit health should be the same");
+        assertEquals(originalRules.infiniteResources, copiedRules.infiniteResources, "Infinate rescourses should be the same");
+
+        //Assert and make sure the copy is a new object
+        assertNotSame(originalRules, copiedRules);
+        assertNotSame(originalRules.teams, copiedRules.teams);
+
+    }
+
+    //Test case for unitCrashDamage()
+    @Test
+    void testUnitCrashDamage(){
+        //Arrange
+        Rules rules = new Rules();
+        Team team = Team.sharded;
+
+        //Enter values
+        rules.unitDamageMultiplier = 2.0f;
+        rules.unitCrashDamageMultiplier = 1.5f;
+        rules.teams.get(team).unitDamageMultiplier = 1.2f;
+        rules.teams.get(team).unitCrashDamageMultiplier = 1.1f;
+
+        //Act
+        float actualCrashDamage = rules.unitCrashDamage(team);
+
+        //Expected values
+        float unitDamage = rules.unitDamageMultiplier * rules.teams.get(team).unitDamageMultiplier; // 2.0 * 1.2 = 2.4
+        float expectedCrashDamage = unitDamage * rules.unitCrashDamageMultiplier * rules.teams.get(team).unitCrashDamageMultiplier; //2.4 * 1.5 * 1.1 = 3.96
+
+        assertEquals(expectedCrashDamage, actualCrashDamage, 0.001f, "Crash damage should match expectedCrashDamage");
+    }
+
     //Test case for blockDamage()
     @Test
     void testBlockDamage(){
