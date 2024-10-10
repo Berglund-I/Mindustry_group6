@@ -224,6 +224,46 @@ public class ApplicationTests{
         }});
     }
 
+    //Test case for blockDamage()
+    @Test
+    void testBlockDamage(){
+        //Arrange
+        Rules rules = new Rules();
+        Team team = Team.sharded;
+
+        rules.blockDamageMultiplier = 2.0f;
+
+        //Mock
+        rules.teams.get(team).blockDamageMultiplier = 1.5f;
+
+        //Act
+        float actualBlockDamage = rules.blockDamage(team);
+
+        //Assert
+        float expectedBlockDamage = 2.0f * 1.5f;
+        assertEquals(expectedBlockDamage, actualBlockDamage, 0.001f); //0.001f för eventuella flyttals avvikelser
+
+    }
+
+    //Test for blockHealth()
+    @Test
+    void testBlockHealth(){
+        Rules rules = new Rules();
+        Team team = Team.sharded;
+
+        rules.blockHealthMultiplier = 2.0f;
+
+        //Mock
+        rules.teams.get(team).blockHealthMultiplier = 1.5f;
+
+        //Act
+        float actualHealthDamage = rules.blockHealth(team);
+
+        //Assert
+        float excpectedHealthDamage = 2.0f * 1.5f;
+        assertEquals(excpectedHealthDamage, actualHealthDamage, 0.001f);
+    }
+
     @Test
     void serverListJson(){
         String[] files = {"servers_v6.json", "servers_v7.json", "servers_be.json"};
