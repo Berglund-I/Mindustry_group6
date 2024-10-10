@@ -692,7 +692,7 @@ public class ApplicationTests{
 
     @Test
     void testSaveStateChangeToMenu() {
-        // Andreas B
+        // Andreas
         // Arrange
         if (arc.Core.assets == null) {
             Core.assets = new arc.assets.AssetManager();
