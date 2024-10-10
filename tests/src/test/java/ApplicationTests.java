@@ -224,6 +224,115 @@ public class ApplicationTests{
         }});
     }
 
+    //Test case for blockDamage()
+    @Test
+    void testBlockDamage(){
+        //Arrange
+        Rules rules = new Rules();
+        Team team = Team.sharded;
+
+        rules.blockDamageMultiplier = 2.0f;
+
+        //Mock
+        rules.teams.get(team).blockDamageMultiplier = 1.5f;
+
+        //Act
+        float actualBlockDamage = rules.blockDamage(team);
+
+        //Assert
+        float expectedBlockDamage = 2.0f * 1.5f;
+        assertEquals(expectedBlockDamage, actualBlockDamage, 0.001f); //0.001f för eventuella flyttals avvikelser
+
+    }
+
+    //Test for blockHealth()
+    @Test
+    void testBlockHealth(){
+        Rules rules = new Rules();
+        Team team = Team.sharded;
+
+        rules.blockHealthMultiplier = 2.0f;
+
+        //Mock
+        rules.teams.get(team).blockHealthMultiplier = 1.5f;
+
+        //Act
+        float actualHealthDamage = rules.blockHealth(team);
+
+        //Assert
+        float excpectedHealthDamage = 2.0f * 1.5f;
+        assertEquals(excpectedHealthDamage, actualHealthDamage, 0.001f);
+    }
+
+    @Test
+    void mode_shouldReturnPvp_whenPvpIsTrue(){
+        //Ida
+        //Arrange
+        Rules rules = new Rules();
+        rules.pvp = true;
+
+        //Act
+        Gamemode result = rules.mode();
+
+        //Assert
+        assertEquals(Gamemode.pvp, result);
+    }
+
+    @Test
+    void mode_shouldReturnEditor_whenEditorIsTrue(){
+        //Ida
+        //Arrange
+        Rules rules = new Rules();
+        rules.editor = true;
+
+        //Act
+        Gamemode result = rules.mode();
+
+        //Assert
+        assertEquals(Gamemode.editor, result);
+    }
+
+    @Test
+    void mode_shouldReturnAttack_whenAttackModelsIsTrue(){
+        //Ida. B
+        // Arrange
+        Rules rules = new Rules();
+        rules.attackMode = true;
+
+        //Act
+        Gamemode result = rules.mode();
+
+        //Assert
+        assertEquals(Gamemode.attack, result);
+    }
+
+    @Test
+    void mode_shouldReturnSandbox_whenInifiteResourcesIsTrue(){
+        //Ida
+        //Arrange
+        Rules rules = new Rules();
+        rules.infiniteResources = true;
+
+        //Act
+        Gamemode result = rules.mode();
+
+        //Assert
+        assertEquals(Gamemode.sandbox, result);
+    }
+
+    @Test
+    void mode_shouldReturnSurvival_whenNoOtherModesAreTrue() {
+        //Ida
+        //Arrange
+        Rules rules = new Rules();
+
+        //Act
+        Gamemode result = rules.mode();
+
+        //Assert
+        assertEquals(Gamemode.survival, result);
+    }
+
     @Test
     void serverListJson(){
         String[] files = {"servers_v6.json", "servers_v7.json", "servers_be.json"};
