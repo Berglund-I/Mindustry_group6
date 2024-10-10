@@ -735,7 +735,7 @@ public class ApplicationTests{
         SaveIO.load(Core.files.internal("77.msav"));
 
         // Assert
-        //just tests if the map was loaded properly and didn't crash, no validity checks currently
+        //just tests if the map was loaded properly and didn't crash
         assertTrue(world.width() == 276 && world.height() == 10);
     }
 
