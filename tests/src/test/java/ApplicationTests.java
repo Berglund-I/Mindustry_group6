@@ -740,7 +740,7 @@ public class ApplicationTests{
 
 //    @Test
 //    void testSaveUpdateWhenStateIsNotPausedAndHasDialog() {
-//        // Andreas
+//        // Andreas B
 //        // Arrange
 //        if (arc.Core.assets == null) {
 //            Core.assets = new arc.assets.AssetManager();
