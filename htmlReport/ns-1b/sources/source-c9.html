@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Syncc</title>
+  <title>Coverage Report > BlockUnitc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Syncc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: BlockUnitc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Syncc</td>
+  <td class="name">BlockUnitc</td>
 </tr>
 
 </table>
@@ -40,48 +40,35 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.util.io.Reads;
-&nbsp;import arc.util.io.Writes;
-&nbsp;import java.nio.FloatBuffer;
+&nbsp;import arc.graphics.g2d.TextureRegion;
 &nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.game.Team;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.SyncComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.BlockUnitComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Syncc extends Entityc {
-&nbsp;  boolean isSyncHidden(Player player);
+&nbsp;public interface BlockUnitc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
+&nbsp;  Building tile();
 &nbsp;
-&nbsp;  long lastUpdated();
+&nbsp;  TextureRegion icon();
 &nbsp;
-&nbsp;  long updateSpacing();
+&nbsp;  boolean dead();
 &nbsp;
-&nbsp;  void afterSync();
+&nbsp;  boolean isValid();
 &nbsp;
-&nbsp;  void handleSyncHidden();
+&nbsp;  void add();
 &nbsp;
-&nbsp;  void interpolate();
+&nbsp;  void damage(float v, boolean b);
 &nbsp;
-&nbsp;  void lastUpdated(long lastUpdated);
+&nbsp;  void killed();
 &nbsp;
-&nbsp;  void readSync(Reads read);
+&nbsp;  void team(Team team);
 &nbsp;
-&nbsp;  void readSyncManual(FloatBuffer buffer);
-&nbsp;
-&nbsp;  void remove();
-&nbsp;
-&nbsp;  void snapInterpolation();
-&nbsp;
-&nbsp;  void snapSync();
+&nbsp;  void tile(Building tile);
 &nbsp;
 &nbsp;  void update();
-&nbsp;
-&nbsp;  void updateSpacing(long updateSpacing);
-&nbsp;
-&nbsp;  void writeSync(Writes write);
-&nbsp;
-&nbsp;  void writeSyncManual(FloatBuffer buffer);
 &nbsp;}
 </code>
 </pre>
@@ -106,7 +93,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

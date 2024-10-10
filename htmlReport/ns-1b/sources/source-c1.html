@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Puddlec</title>
+  <title>Coverage Report > Posc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Puddlec (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Posc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Puddlec</td>
+  <td class="name">Posc</td>
 </tr>
 
 </table>
@@ -40,57 +40,54 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
+&nbsp;import arc.math.geom.Position;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.type.Liquid;
+&nbsp;import mindustry.world.Block;
 &nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.world.blocks.environment.Floor;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.PuddleComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.PosComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Puddlec extends Drawc, Entityc, Posc, Syncc {
-&nbsp;  float accepting();
+&nbsp;public interface Posc extends Position, Entityc {
+&nbsp;  /**
+&nbsp;   * Returns air if this unit is on a non-air top block. 
+&nbsp;   */
+&nbsp;  Floor floorOn();
 &nbsp;
-&nbsp;  float amount();
+&nbsp;  Building buildOn();
 &nbsp;
-&nbsp;  float clipSize();
+&nbsp;  boolean onSolid();
 &nbsp;
-&nbsp;  float effectTime();
+&nbsp;  float getX();
 &nbsp;
-&nbsp;  float getFlammability();
+&nbsp;  float getY();
 &nbsp;
-&nbsp;  float lastRipple();
+&nbsp;  float x();
 &nbsp;
-&nbsp;  float updateTime();
+&nbsp;  float y();
 &nbsp;
-&nbsp;  Liquid liquid();
+&nbsp;  int tileX();
 &nbsp;
-&nbsp;  Tile tile();
+&nbsp;  int tileY();
 &nbsp;
-&nbsp;  void accepting(float accepting);
+&nbsp;  Block blockOn();
 &nbsp;
-&nbsp;  void afterRead();
+&nbsp;  Tile tileOn();
 &nbsp;
-&nbsp;  void afterSync();
+&nbsp;  void set(Position pos);
 &nbsp;
-&nbsp;  void amount(float amount);
+&nbsp;  void set(float x, float y);
 &nbsp;
-&nbsp;  void draw();
+&nbsp;  void trns(Position pos);
 &nbsp;
-&nbsp;  void effectTime(float effectTime);
+&nbsp;  void trns(float x, float y);
 &nbsp;
-&nbsp;  void lastRipple(float lastRipple);
+&nbsp;  void x(float x);
 &nbsp;
-&nbsp;  void liquid(Liquid liquid);
-&nbsp;
-&nbsp;  void remove();
-&nbsp;
-&nbsp;  void tile(Tile tile);
-&nbsp;
-&nbsp;  void update();
-&nbsp;
-&nbsp;  void updateTime(float updateTime);
+&nbsp;  void y(float y);
 &nbsp;}
 </code>
 </pre>
@@ -115,7 +112,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

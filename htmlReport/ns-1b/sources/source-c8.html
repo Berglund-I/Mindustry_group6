@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Weaponsc</title>
+  <title>Coverage Report > Payloadc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Weaponsc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Payloadc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Weaponsc</td>
+  <td class="name">Payloadc</td>
 </tr>
 
 </table>
@@ -40,70 +40,55 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.math.geom.Position;
+&nbsp;import arc.scene.ui.layout.Table;
+&nbsp;import arc.struct.Seq;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.entities.units.WeaponMount;
-&nbsp;import mindustry.type.UnitType;
+&nbsp;import mindustry.world.blocks.payloads.BuildPayload;
+&nbsp;import mindustry.world.blocks.payloads.Payload;
+&nbsp;import mindustry.world.blocks.payloads.UnitPayload;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.WeaponsComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.PayloadComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Weaponsc extends Entityc, Flyingc, Healthc, Hitboxc, Posc, Rotc, Statusc, Teamc, Velc {
+&nbsp;public interface Payloadc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
 &nbsp;  /**
-&nbsp;   * Aim at something. This will make all mounts point at it. 
+&nbsp;   * @return whether the tile has been successfully placed. 
 &nbsp;   */
-&nbsp;  void aim(float x, float y);
+&nbsp;  boolean dropBlock(BuildPayload payload);
 &nbsp;
-&nbsp;  /**
-&nbsp;   * Update shooting and rotation for this unit. 
-&nbsp;   */
+&nbsp;  Seq&lt;Payload&gt; payloads();
+&nbsp;
+&nbsp;  boolean canPickup(Building build);
+&nbsp;
+&nbsp;  boolean canPickup(Unit unit);
+&nbsp;
+&nbsp;  boolean canPickupPayload(Payload pay);
+&nbsp;
+&nbsp;  boolean dropLastPayload();
+&nbsp;
+&nbsp;  boolean dropUnit(UnitPayload payload);
+&nbsp;
+&nbsp;  boolean hasPayload();
+&nbsp;
+&nbsp;  boolean tryDropPayload(Payload payload);
+&nbsp;
+&nbsp;  float payloadUsed();
+&nbsp;
+&nbsp;  void addPayload(Payload load);
+&nbsp;
+&nbsp;  void contentInfo(Table table, float itemSize, float width);
+&nbsp;
+&nbsp;  void destroy();
+&nbsp;
+&nbsp;  void payloads(Seq&lt;Payload&gt; payloads);
+&nbsp;
+&nbsp;  void pickup(Building tile);
+&nbsp;
+&nbsp;  void pickup(Unit unit);
+&nbsp;
 &nbsp;  void update();
-&nbsp;
-&nbsp;  /**
-&nbsp;   * weapon mount array, never null 
-&nbsp;   */
-&nbsp;  WeaponMount[] mounts();
-&nbsp;
-&nbsp;  /**
-&nbsp;   * weapon mount array, never null 
-&nbsp;   */
-&nbsp;  void mounts(WeaponMount[] mounts);
-&nbsp;
-&nbsp;  boolean canShoot();
-&nbsp;
-&nbsp;  boolean isRotate();
-&nbsp;
-&nbsp;  boolean isShooting();
-&nbsp;
-&nbsp;  float aimX();
-&nbsp;
-&nbsp;  float aimY();
-&nbsp;
-&nbsp;  float ammo();
-&nbsp;
-&nbsp;  float ammof();
-&nbsp;
-&nbsp;  void aim(Position pos);
-&nbsp;
-&nbsp;  void aimX(float aimX);
-&nbsp;
-&nbsp;  void aimY(float aimY);
-&nbsp;
-&nbsp;  void ammo(float ammo);
-&nbsp;
-&nbsp;  void controlWeapons(boolean rotate, boolean shoot);
-&nbsp;
-&nbsp;  void controlWeapons(boolean rotateShoot);
-&nbsp;
-&nbsp;  void isShooting(boolean isShooting);
-&nbsp;
-&nbsp;  void remove();
-&nbsp;
-&nbsp;  void setWeaponRotation(float rotation);
-&nbsp;
-&nbsp;  void setupWeapons(UnitType def);
 &nbsp;}
 </code>
 </pre>
@@ -128,7 +113,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

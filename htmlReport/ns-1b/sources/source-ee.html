@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > LaunchPayloadc</title>
+  <title>Coverage Report > Tankc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: LaunchPayloadc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Tankc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">LaunchPayloadc</td>
+  <td class="name">Tankc</td>
 </tr>
 
 </table>
@@ -40,34 +40,33 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.struct.Seq;
-&nbsp;import arc.util.Interval;
+&nbsp;import arc.math.geom.Vec2;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.type.ItemStack;
+&nbsp;import mindustry.world.blocks.environment.Floor;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.world.blocks.campaign.LaunchPad.LaunchPayloadComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.TankComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface LaunchPayloadc extends Drawc, Entityc, Posc, Teamc, Timedc {
-&nbsp;  Seq&lt;ItemStack&gt; stacks();
+&nbsp;public interface Tankc extends Boundedc, Builderc, Drawc, ElevationMovec, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
+&nbsp;  boolean walked();
 &nbsp;
-&nbsp;  Interval in();
+&nbsp;  float floorSpeedMultiplier();
 &nbsp;
-&nbsp;  float cx();
+&nbsp;  float treadTime();
 &nbsp;
-&nbsp;  float cy();
+&nbsp;  Floor drownFloor();
 &nbsp;
-&nbsp;  void draw();
+&nbsp;  void approach(Vec2 vector);
 &nbsp;
-&nbsp;  void in(Interval in);
+&nbsp;  void moveAt(Vec2 vector, float acceleration);
 &nbsp;
-&nbsp;  void remove();
-&nbsp;
-&nbsp;  void stacks(Seq&lt;ItemStack&gt; stacks);
+&nbsp;  void treadTime(float treadTime);
 &nbsp;
 &nbsp;  void update();
+&nbsp;
+&nbsp;  void walked(boolean walked);
 &nbsp;}
 </code>
 </pre>
@@ -92,7 +91,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

@@ -2,6 +2,7 @@ import arc.*;
 import arc.backend.headless.*;
 import arc.files.*;
 import arc.math.geom.*;
+import arc.scene.Scene;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
@@ -30,8 +31,10 @@ import org.json.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
+import static org.mockito.Mockito.*;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.nio.*;
 
 import static mindustry.Vars.*;
@@ -689,6 +692,7 @@ public class ApplicationTests{
 
     @Test
     void testSaveStateChangeToMenu() {
+        // Andreas
         // Arrange
         if (arc.Core.assets == null) {
             Core.assets = new arc.assets.AssetManager();
@@ -699,6 +703,72 @@ public class ApplicationTests{
         // Assert
         assertNull(save.getCurrent());
     }
+
+//    @Test
+//    void testSaveUpdateTimeStampEqualToZero() {
+//        // Andreas
+//        // Arrange
+//        if (arc.Core.assets == null) {
+//            Core.assets = new arc.assets.AssetManager();
+//        }
+//        // Act
+//        Saves save = new Saves();
+//        try {
+//            Field field = Saves.class.getDeclaredField("lastTimestamp");
+//            field.setAccessible(true);
+//            field.set(save, 1000L);
+//        }
+//        catch (NoSuchFieldException | IllegalAccessException e) {
+//            e.printStackTrace();
+//        }
+//        long timeBeforeUpdate = System.currentTimeMillis();
+//
+//        try {
+//            Thread.sleep(2000);
+//        }
+//        catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        save.update();
+//
+//        long timeAfterUpdate = System.currentTimeMillis();
+//
+//        // Assert
+//        assertTrue(save.getTotalPlaytime() > (timeAfterUpdate - timeBeforeUpdate));
+//
+//    }
+
+//    @Test
+//    void testSaveUpdateWhenStateIsNotPausedAndHasDialog() {
+//        // Andreas B
+//        // Arrange
+//        if (arc.Core.assets == null) {
+//            Core.assets = new arc.assets.AssetManager();
+//        }
+//        // Act
+//        Saves save = new Saves();
+//        try {
+//            Field field = Saves.class.getDeclaredField("lastTimestamp");
+//            field.setAccessible(true);
+//            field.set(save, 1000L);
+//        }
+//        catch (NoSuchFieldException | IllegalAccessException e) {
+//            e.printStackTrace();
+//        }
+//
+//        GameState state = mock(GameState.class);
+//        Scene scene = mock(Scene.class);
+//        when(state.isGame()).thenReturn(true);
+//        when(state.isPaused()).thenReturn(false);
+//        when(scene.hasDialog()).thenReturn(false);
+//        Core.scene = scene;
+//        Vars.state = state;
+//
+//        save.update();
+//
+//        // Assert
+//        assertTrue(save.getTotalPlaytime() > 0);
+//    }
 
 
     void updateBlocks(int times){

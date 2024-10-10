@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Healthc</title>
+  <title>Coverage Report > Shieldc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Healthc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Shieldc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Healthc</td>
+  <td class="name">Shieldc</td>
 </tr>
 
 </table>
@@ -43,68 +43,46 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;import mindustry.annotations.Annotations;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.HealthComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.ShieldComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Healthc extends Entityc, Posc {
+&nbsp;public interface Shieldc extends Entityc, Healthc, Posc {
 &nbsp;  /**
-&nbsp;   * Damage and pierce armor. 
+&nbsp;   * Absorbs health damage. 
 &nbsp;   */
-&nbsp;  void damagePierce(float amount);
-&nbsp;
-&nbsp;  /**
-&nbsp;   * Damage and pierce armor. 
-&nbsp;   */
-&nbsp;  void damagePierce(float amount, boolean withEffect);
+&nbsp;  float shield();
 &nbsp;
 &nbsp;  /**
-&nbsp;   * Heals by a 0-1 fraction of max health. 
+&nbsp;   * Absorbs health damage. 
 &nbsp;   */
-&nbsp;  void healFract(float amount);
+&nbsp;  void shield(float shield);
 &nbsp;
 &nbsp;  /**
-&nbsp;   * Heals by a flat amount. 
+&nbsp;   * Shield opacity. 
 &nbsp;   */
-&nbsp;  void heal(float amount);
+&nbsp;  float shieldAlpha();
 &nbsp;
-&nbsp;  boolean damaged();
+&nbsp;  /**
+&nbsp;   * Shield opacity. 
+&nbsp;   */
+&nbsp;  void shieldAlpha(float shieldAlpha);
 &nbsp;
-&nbsp;  boolean dead();
+&nbsp;  /**
+&nbsp;   * Subtracts an amount from damage. No need to save. 
+&nbsp;   */
+&nbsp;  float armor();
 &nbsp;
-&nbsp;  boolean isValid();
-&nbsp;
-&nbsp;  float health();
-&nbsp;
-&nbsp;  float healthf();
-&nbsp;
-&nbsp;  float hitTime();
-&nbsp;
-&nbsp;  float maxHealth();
-&nbsp;
-&nbsp;  void clampHealth();
+&nbsp;  /**
+&nbsp;   * Subtracts an amount from damage. No need to save. 
+&nbsp;   */
+&nbsp;  void armor(float armor);
 &nbsp;
 &nbsp;  void damage(float amount);
 &nbsp;
-&nbsp;  void damage(float amount, boolean withEffect);
+&nbsp;  void damagePierce(float amount, boolean withEffect);
 &nbsp;
-&nbsp;  void damageContinuous(float amount);
-&nbsp;
-&nbsp;  void damageContinuousPierce(float amount);
-&nbsp;
-&nbsp;  void dead(boolean dead);
-&nbsp;
-&nbsp;  void heal();
-&nbsp;
-&nbsp;  void health(float health);
-&nbsp;
-&nbsp;  void hitTime(float hitTime);
-&nbsp;
-&nbsp;  void kill();
-&nbsp;
-&nbsp;  void killed();
-&nbsp;
-&nbsp;  void maxHealth(float maxHealth);
+&nbsp;  void rawDamage(float amount);
 &nbsp;
 &nbsp;  void update();
 &nbsp;}
@@ -131,7 +109,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Mechc</title>
+  <title>Coverage Report > Legsc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Mechc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Legsc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Mechc</td>
+  <td class="name">Legsc</td>
 </tr>
 
 </table>
@@ -42,37 +42,66 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 &nbsp;import arc.math.geom.Vec2;
 &nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.entities.EntityCollisions;
+&nbsp;import mindustry.entities.Leg;
 &nbsp;import mindustry.world.blocks.environment.Floor;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.MechComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.LegsComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Mechc extends Boundedc, Builderc, Drawc, ElevationMovec, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
+&nbsp;public interface Legsc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
+&nbsp;  /**
+&nbsp;   * @return outwards facing angle of leg at the specified index. 
+&nbsp;   */
+&nbsp;  float legAngle(int index);
+&nbsp;
+&nbsp;  Vec2 curMoveOffset();
+&nbsp;
+&nbsp;  Vec2 legOffset(Vec2 out, int index);
+&nbsp;
 &nbsp;  float baseRotation();
 &nbsp;
-&nbsp;  float walkExtend(boolean scaled);
+&nbsp;  float defaultLegAngle(int index);
 &nbsp;
-&nbsp;  float walkExtension();
+&nbsp;  float moveSpace();
 &nbsp;
-&nbsp;  float walkTime();
+&nbsp;  float totalLength();
+&nbsp;
+&nbsp;  int pathType();
+&nbsp;
+&nbsp;  EntityCollisions.SolidPred solidity();
+&nbsp;
+&nbsp;  Leg[] legs();
 &nbsp;
 &nbsp;  Floor drownFloor();
 &nbsp;
-&nbsp;  void approach(Vec2 vector);
+&nbsp;  Floor lastDeepFloor();
+&nbsp;
+&nbsp;  void add();
 &nbsp;
 &nbsp;  void baseRotation(float baseRotation);
 &nbsp;
-&nbsp;  void moveAt(Vec2 vector, float acceleration);
+&nbsp;  void curMoveOffset(Vec2 curMoveOffset);
 &nbsp;
-&nbsp;  void rotateMove(Vec2 vec);
+&nbsp;  void destroy();
+&nbsp;
+&nbsp;  void lastDeepFloor(Floor lastDeepFloor);
+&nbsp;
+&nbsp;  void legs(Leg[] legs);
+&nbsp;
+&nbsp;  void moveSpace(float moveSpace);
+&nbsp;
+&nbsp;  void resetLegs();
+&nbsp;
+&nbsp;  void resetLegs(float legLength);
+&nbsp;
+&nbsp;  void totalLength(float totalLength);
+&nbsp;
+&nbsp;  void unloaded();
 &nbsp;
 &nbsp;  void update();
-&nbsp;
-&nbsp;  void walkExtension(float walkExtension);
-&nbsp;
-&nbsp;  void walkTime(float walkTime);
 &nbsp;}
 </code>
 </pre>
@@ -97,7 +126,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>
