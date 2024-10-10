@@ -1,0 +1,258 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapProcessorsDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: MapProcessorsDialog (mindustry.editor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapProcessorsDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/78)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.logic.*;
+&nbsp;import mindustry.world.blocks.logic.LogicBlock.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class MapProcessorsDialog extends BaseDialog{
+<b class="nc">&nbsp;    private IconSelectDialog iconSelect = new IconSelectDialog();</b>
+&nbsp;    private TextField search;
+<b class="nc">&nbsp;    private Seq&lt;Building&gt; processors = new Seq&lt;&gt;();</b>
+&nbsp;    private Table list;
+&nbsp;
+&nbsp;    public MapProcessorsDialog(){
+<b class="nc">&nbsp;        super(&quot;@editor.worldprocessors&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(this::setup);</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseButton();</b>
+<b class="nc">&nbsp;        buttons.button(&quot;@add&quot;, Icon.add, () -&gt; {</b>
+<b class="nc">&nbsp;            boolean foundAny = false;</b>
+&nbsp;
+&nbsp;            outer:
+<b class="nc">&nbsp;            for(int y = 0; y &lt; Vars.world.height(); y++){</b>
+<b class="nc">&nbsp;                for(int x = 0; x &lt; Vars.world.width(); x++){</b>
+<b class="nc">&nbsp;                    Tile tile = Vars.world.rawTile(x, y);</b>
+<b class="nc">&nbsp;                    if(!tile.synthetic()){</b>
+<b class="nc">&nbsp;                        foundAny = true;</b>
+<b class="nc">&nbsp;                        tile.setNet(Blocks.worldProcessor, Team.sharded, 0);</b>
+<b class="nc">&nbsp;                        if(ui.editor.isShown()){</b>
+<b class="nc">&nbsp;                            Vars.editor.renderer.updatePoint(x, y);</b>
+&nbsp;                        }
+&nbsp;                        break outer;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!foundAny){</b>
+<b class="nc">&nbsp;                ui.showErrorMessage(&quot;@editor.worldprocessors.nospace&quot;);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                setup();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).size(210f, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.top();</b>
+<b class="nc">&nbsp;        getCell(cont).grow();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.table(s -&gt; {</b>
+<b class="nc">&nbsp;            s.image(Icon.zoom).padRight(8);</b>
+<b class="nc">&nbsp;            search = s.field(null, text -&gt; rebuild()).growX().get();</b>
+<b class="nc">&nbsp;            search.setMessageText(&quot;@players.search&quot;);</b>
+<b class="nc">&nbsp;        }).width(440f).fillX().padBottom(4).row();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;            list = t;</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void rebuild(){
+<b class="nc">&nbsp;        list.clearChildren();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(processors.isEmpty()){</b>
+<b class="nc">&nbsp;            list.add(&quot;@editor.worldprocessors.none&quot;);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Table t = list;</b>
+<b class="nc">&nbsp;            var text = search.getText().toLowerCase();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.defaults().pad(4f);</b>
+<b class="nc">&nbsp;            float h = 50f;</b>
+<b class="nc">&nbsp;            for(var build : processors){</b>
+<b class="nc">&nbsp;                if(build instanceof LogicBuild log &amp;&amp; (text.isEmpty() || (log.tag != null &amp;&amp; log.tag.toLowerCase().contains(text)))){</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.button(log.iconTag == 0 ? Styles.none : new TextureRegionDrawable(Fonts.getLargeIcon(Fonts.unicodeToName(log.iconTag))), Styles.graySquarei, iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                        iconSelect.show(ic -&gt; {</b>
+<b class="nc">&nbsp;                            log.iconTag = (char)ic;</b>
+<b class="nc">&nbsp;                            rebuild();</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                    }).size(h);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.button((log.tag == null ? &quot;&lt;no name&gt;\n&quot; : &quot;[accent]&quot; + log.tag + &quot;\n&quot;) + &quot;[lightgray][[&quot; + log.tile.x + &quot;, &quot; + log.tile.y + &quot;]&quot;, Styles.grayt, () -&gt; {</b>
+&nbsp;                        //TODO: bug: if you edit name inside of the edit dialog, it won&#39;t show up in the list properly
+<b class="nc">&nbsp;                        log.showEditDialog(true);</b>
+<b class="nc">&nbsp;                    }).size(Vars.mobile ? 390f : 450f, h).margin(10f).with(b -&gt; {</b>
+<b class="nc">&nbsp;                        b.getLabel().setAlignment(Align.left, Align.left);</b>
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    t.button(Icon.pencil, Styles.graySquarei, Vars.iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                        ui.showTextInput(&quot;&quot;, &quot;@editor.name&quot;, LogicBlock.maxNameLength, log.tag == null ? &quot;&quot; : log.tag, tag -&gt; {</b>
+&nbsp;                            //bypass configuration and set it directly in case privileged checks mess things up
+<b class="nc">&nbsp;                            log.tag = tag;</b>
+<b class="nc">&nbsp;                            setup();</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                    }).size(h);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(Vars.state.isGame() &amp;&amp; state.isEditor()){</b>
+<b class="nc">&nbsp;                        t.button(Icon.eyeSmall, Styles.graySquarei, Vars.iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                            hide();</b>
+<b class="nc">&nbsp;                            control.input.config.showConfig(build);</b>
+<b class="nc">&nbsp;                            control.input.panCamera(Tmp.v1.set(build));</b>
+<b class="nc">&nbsp;                        }).size(h);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    t.button(Icon.trash, Styles.graySquarei, iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                        ui.showConfirm(&quot;@editor.worldprocessors.delete.confirm&quot;,  () -&gt; {</b>
+<b class="nc">&nbsp;                            boolean surrounded = true;</b>
+<b class="nc">&nbsp;                            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                                Tile other = build.tile.nearby(i);</b>
+<b class="nc">&nbsp;                                if(other != null &amp;&amp; !(other.block().privileged || other.block().isStatic())){</b>
+<b class="nc">&nbsp;                                    surrounded = false;</b>
+<b class="nc">&nbsp;                                    break;</b>
+&nbsp;                                }
+&nbsp;                            }
+<b class="nc">&nbsp;                            if(surrounded){</b>
+<b class="nc">&nbsp;                                build.tile.setNet(build.tile.floor().wall instanceof StaticWall ? build.tile.floor().wall : Blocks.stoneWall);</b>
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                build.tile.setNet(Blocks.air);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                            processors.remove(build);</b>
+<b class="nc">&nbsp;                            rebuild();</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                    }).size(h);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.row();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setup(){
+&nbsp;
+<b class="nc">&nbsp;        processors.clear();</b>
+&nbsp;
+&nbsp;        //scan the entire world for processor (Groups.build can be empty, indexer is probably inaccurate)
+<b class="nc">&nbsp;        Vars.world.tiles.eachTile(t -&gt; {</b>
+<b class="nc">&nbsp;            if(t.isCenter() &amp;&amp; t.block() == Blocks.worldProcessor){</b>
+<b class="nc">&nbsp;                processors.add(t.build);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        rebuild();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,879 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PlacementFragment</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.fragments</a>
+</div>
+
+<h1>Coverage Summary for Class: PlacementFragment (mindustry.ui.fragments)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PlacementFragment</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/50)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/414)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PlacementFragment$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/52)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/417)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.fragments;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.Tooltip.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class PlacementFragment{
+<b class="nc">&nbsp;    final int rowWidth = 4;</b>
+&nbsp;
+<b class="nc">&nbsp;    public Category currentCategory = Category.distribution;</b>
+&nbsp;
+<b class="nc">&nbsp;    Seq&lt;Block&gt; returnArray = new Seq&lt;&gt;(), returnArray2 = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    Seq&lt;Category&gt; returnCatArray = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    boolean[] categoryEmpty = new boolean[Category.all.length];</b>
+<b class="nc">&nbsp;    ObjectMap&lt;Category,Block&gt; selectedBlocks = new ObjectMap&lt;&gt;();</b>
+<b class="nc">&nbsp;    ObjectFloatMap&lt;Category&gt; scrollPositions = new ObjectFloatMap&lt;&gt;();</b>
+&nbsp;    @Nullable Block menuHoverBlock;
+&nbsp;    @Nullable Displayable hover;
+&nbsp;    @Nullable Building lastFlowBuild, nextFlowBuild;
+&nbsp;    @Nullable Object lastDisplayState;
+&nbsp;    @Nullable Team lastTeam;
+&nbsp;    boolean wasHovered;
+&nbsp;    Table blockTable, toggler, topTable, blockCatTable, commandTable;
+&nbsp;    Stack mainStack;
+&nbsp;    ScrollPane blockPane;
+&nbsp;    Runnable rebuildCommand;
+&nbsp;    boolean blockSelectEnd, wasCommandMode;
+&nbsp;    int blockSelectSeq;
+&nbsp;    long blockSelectSeqMillis;
+<b class="nc">&nbsp;    Binding[] blockSelect = {</b>
+&nbsp;        Binding.block_select_01,
+&nbsp;        Binding.block_select_02,
+&nbsp;        Binding.block_select_03,
+&nbsp;        Binding.block_select_04,
+&nbsp;        Binding.block_select_05,
+&nbsp;        Binding.block_select_06,
+&nbsp;        Binding.block_select_07,
+&nbsp;        Binding.block_select_08,
+&nbsp;        Binding.block_select_09,
+&nbsp;        Binding.block_select_10,
+&nbsp;        Binding.block_select_left,
+&nbsp;        Binding.block_select_right,
+&nbsp;        Binding.block_select_up,
+&nbsp;        Binding.block_select_down
+&nbsp;    };
+&nbsp;
+<b class="nc">&nbsp;    public PlacementFragment(){</b>
+<b class="nc">&nbsp;        Events.on(WorldLoadEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                currentCategory = Category.distribution;</b>
+<b class="nc">&nbsp;                control.input.block = null;</b>
+<b class="nc">&nbsp;                rebuild();</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.unitCommandChange, () -&gt; {</b>
+<b class="nc">&nbsp;            if(rebuildCommand != null){</b>
+<b class="nc">&nbsp;                rebuildCommand.run();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(UnlockEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            if(event.content instanceof Block){</b>
+<b class="nc">&nbsp;                rebuild();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ResetEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            selectedBlocks.clear();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.update, () -&gt; {</b>
+&nbsp;            //disable flow updating on previous building so it doesn&#39;t waste CPU
+<b class="nc">&nbsp;            if(lastFlowBuild != null &amp;&amp; lastFlowBuild != nextFlowBuild){</b>
+<b class="nc">&nbsp;                if(lastFlowBuild.flowItems() != null) lastFlowBuild.flowItems().stopFlow();</b>
+<b class="nc">&nbsp;                if(lastFlowBuild.liquids != null) lastFlowBuild.liquids.stopFlow();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            lastFlowBuild = nextFlowBuild;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(nextFlowBuild != null){</b>
+<b class="nc">&nbsp;                if(nextFlowBuild.flowItems() != null) nextFlowBuild.flowItems().updateFlow();</b>
+<b class="nc">&nbsp;                if(nextFlowBuild.liquids != null) nextFlowBuild.liquids.updateFlow();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public Displayable hover(){
+<b class="nc">&nbsp;        return hover;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void rebuild(){
+&nbsp;        //category does not change on rebuild anymore, only on new world load
+<b class="nc">&nbsp;        Group group = toggler.parent;</b>
+<b class="nc">&nbsp;        int index = toggler.getZIndex();</b>
+<b class="nc">&nbsp;        toggler.remove();</b>
+<b class="nc">&nbsp;        build(group);</b>
+<b class="nc">&nbsp;        toggler.setZIndex(index);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean gridUpdate(InputHandler input){
+<b class="nc">&nbsp;        scrollPositions.put(currentCategory, blockPane.getScrollY());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.pick) &amp;&amp; player.isBuilder() &amp;&amp; !Core.scene.hasDialog()){ //mouse eyedropper select</b>
+<b class="nc">&nbsp;            var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);</b>
+&nbsp;
+&nbsp;            //can&#39;t middle click buildings in fog
+<b class="nc">&nbsp;            if(build != null &amp;&amp; build.inFogTo(player.team())){</b>
+<b class="nc">&nbsp;                build = null;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Block tryRecipe = build == null ? null : build instanceof ConstructBuild c ? c.current : build.block;</b>
+<b class="nc">&nbsp;            Object tryConfig = build == null || !build.block.copyConfig ? null : build.config();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(BuildPlan req : player.unit().plans()){</b>
+<b class="nc">&nbsp;                if(!req.breaking &amp;&amp; req.block.bounds(req.x, req.y, Tmp.r1).contains(Core.input.mouseWorld())){</b>
+<b class="nc">&nbsp;                    tryRecipe = req.block;</b>
+<b class="nc">&nbsp;                    tryConfig = req.config;</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if(tryRecipe != null &amp;&amp; tryRecipe.isVisible() &amp;&amp; unlocked(tryRecipe)){</b>
+<b class="nc">&nbsp;                input.block = tryRecipe;</b>
+<b class="nc">&nbsp;                tryRecipe.lastConfig = tryConfig;</b>
+<b class="nc">&nbsp;                currentCategory = input.block.category;</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(ui.chatfrag.shown() || ui.consolefrag.shown() || Core.scene.hasKeyboard()) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; blockSelect.length; i++){</b>
+<b class="nc">&nbsp;            if(Core.input.keyTap(blockSelect[i])){</b>
+<b class="nc">&nbsp;                if(i &gt; 9){ //select block directionally</b>
+<b class="nc">&nbsp;                    Seq&lt;Block&gt; blocks = getUnlockedByCategory(currentCategory);</b>
+<b class="nc">&nbsp;                    Block currentBlock = getSelectedBlock(currentCategory);</b>
+<b class="nc">&nbsp;                    for(int j = 0; j &lt; blocks.size; j++){</b>
+<b class="nc">&nbsp;                        if(blocks.get(j) == currentBlock){</b>
+<b class="nc">&nbsp;                            switch(i){</b>
+&nbsp;                                //left
+<b class="nc">&nbsp;                                case 10 -&gt; j = (j - 1 + blocks.size) % blocks.size;</b>
+&nbsp;                                //right
+<b class="nc">&nbsp;                                case 11 -&gt; j = (j + 1) % blocks.size;</b>
+&nbsp;                                //up
+&nbsp;                                case 12 -&gt; {
+<b class="nc">&nbsp;                                    j = (j &gt; 3 ? j - 4 : blocks.size - blocks.size % 4 + j);</b>
+<b class="nc">&nbsp;                                    j -= (j &lt; blocks.size ? 0 : 4);</b>
+<b class="nc">&nbsp;                                }</b>
+&nbsp;                                //down
+<b class="nc">&nbsp;                                case 13 -&gt; j = (j &lt; blocks.size - 4 ? j + 4 : j % 4);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                            input.block = blocks.get(j);</b>
+<b class="nc">&nbsp;                            selectedBlocks.put(currentCategory, input.block);</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                }else if(blockSelectEnd || Time.timeSinceMillis(blockSelectSeqMillis) &gt; 400){ //1st number of combo, select category</b>
+&nbsp;                    //select only visible categories
+<b class="nc">&nbsp;                    if(!getUnlockedByCategory(Category.all[i]).isEmpty()){</b>
+<b class="nc">&nbsp;                        currentCategory = Category.all[i];</b>
+<b class="nc">&nbsp;                        if(input.block != null){</b>
+<b class="nc">&nbsp;                            input.block = getSelectedBlock(currentCategory);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        blockSelectEnd = false;</b>
+<b class="nc">&nbsp;                        blockSelectSeq = 0;</b>
+<b class="nc">&nbsp;                        blockSelectSeqMillis = Time.millis();</b>
+&nbsp;                    }
+&nbsp;                }else{ //select block
+<b class="nc">&nbsp;                    if(blockSelectSeq == 0){ //2nd number of combo</b>
+<b class="nc">&nbsp;                        blockSelectSeq = i + 1;</b>
+&nbsp;                    }else{ //3rd number of combo
+&nbsp;                        //entering &quot;X,1,0&quot; selects the same block as &quot;X,0&quot;
+<b class="nc">&nbsp;                        i += (blockSelectSeq - (i != 9 ? 0 : 1)) * 10;</b>
+<b class="nc">&nbsp;                        blockSelectEnd = true;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    Seq&lt;Block&gt; blocks = getByCategory(currentCategory);</b>
+<b class="nc">&nbsp;                    if(i &gt;= blocks.size || !unlocked(blocks.get(i))) return true;</b>
+<b class="nc">&nbsp;                    input.block = (i &lt; blocks.size) ? blocks.get(i) : null;</b>
+<b class="nc">&nbsp;                    selectedBlocks.put(currentCategory, input.block);</b>
+<b class="nc">&nbsp;                    blockSelectSeqMillis = Time.millis();</b>
+&nbsp;                }
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.category_prev)){</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+&nbsp;            do{
+<b class="nc">&nbsp;                currentCategory = currentCategory.prev();</b>
+<b class="nc">&nbsp;                i ++;</b>
+<b class="nc">&nbsp;            }while(categoryEmpty[currentCategory.ordinal()] &amp;&amp; i &lt; categoryEmpty.length);</b>
+<b class="nc">&nbsp;            input.block = getSelectedBlock(currentCategory);</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.category_next)){</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+&nbsp;            do{
+<b class="nc">&nbsp;                currentCategory = currentCategory.next();</b>
+<b class="nc">&nbsp;                i ++;</b>
+<b class="nc">&nbsp;            }while(categoryEmpty[currentCategory.ordinal()] &amp;&amp; i &lt; categoryEmpty.length);</b>
+<b class="nc">&nbsp;            input.block = getSelectedBlock(currentCategory);</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.block_info)){</b>
+<b class="nc">&nbsp;            var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);</b>
+<b class="nc">&nbsp;            Block hovering = build == null ? null : build instanceof ConstructBuild c ? c.current : build.block;</b>
+<b class="nc">&nbsp;            Block displayBlock = menuHoverBlock != null ? menuHoverBlock : input.block != null ? input.block : hovering;</b>
+<b class="nc">&nbsp;            if(displayBlock != null &amp;&amp; displayBlock.unlockedNow()){</b>
+<b class="nc">&nbsp;                ui.content.show(displayBlock);</b>
+<b class="nc">&nbsp;                Events.fire(new BlockInfoEvent());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void build(Group parent){
+<b class="nc">&nbsp;        parent.fill(full -&gt; {</b>
+<b class="nc">&nbsp;            toggler = full;</b>
+<b class="nc">&nbsp;            full.bottom().right().visible(() -&gt; ui.hudfrag.shown);</b>
+&nbsp;
+<b class="nc">&nbsp;            full.table(frame -&gt; {</b>
+&nbsp;
+&nbsp;                //rebuilds the category table with the correct recipes
+<b class="nc">&nbsp;                Runnable rebuildCategory = () -&gt; {</b>
+<b class="nc">&nbsp;                    blockTable.clear();</b>
+<b class="nc">&nbsp;                    blockTable.top().margin(5);</b>
+&nbsp;
+<b class="nc">&nbsp;                    int index = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;                    ButtonGroup&lt;ImageButton&gt; group = new ButtonGroup&lt;&gt;();</b>
+<b class="nc">&nbsp;                    group.setMinCheckCount(0);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(Block block : getUnlockedByCategory(currentCategory)){</b>
+<b class="nc">&nbsp;                        if(!unlocked(block)) continue;</b>
+<b class="nc">&nbsp;                        if(index++ % rowWidth == 0){</b>
+<b class="nc">&nbsp;                            blockTable.row();</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        ImageButton button = blockTable.button(new TextureRegionDrawable(block.uiIcon), Styles.selecti, () -&gt; {</b>
+<b class="nc">&nbsp;                            if(unlocked(block)){</b>
+<b class="nc">&nbsp;                                if((Core.input.keyDown(KeyCode.shiftLeft) || Core.input.keyDown(KeyCode.controlLeft)) &amp;&amp; Fonts.getUnicode(block.name) != 0){</b>
+<b class="nc">&nbsp;                                    Core.app.setClipboardText((char)Fonts.getUnicode(block.name) + &quot;&quot;);</b>
+<b class="nc">&nbsp;                                    ui.showInfoFade(&quot;@copied&quot;);</b>
+&nbsp;                                }else{
+<b class="nc">&nbsp;                                    control.input.block = control.input.block == block ? null : block;</b>
+<b class="nc">&nbsp;                                    selectedBlocks.put(currentCategory, control.input.block);</b>
+&nbsp;                                }
+&nbsp;                            }
+<b class="nc">&nbsp;                        }).size(46f).group(group).name(&quot;block-&quot; + block.name).get();</b>
+<b class="nc">&nbsp;                        button.resizeImage(iconMed);</b>
+&nbsp;
+<b class="nc">&nbsp;                        button.update(() -&gt; { //color unplacable things gray</b>
+<b class="nc">&nbsp;                            Building core = player.core();</b>
+<b class="nc">&nbsp;                            Color color = (state.rules.infiniteResources || (core != null &amp;&amp; (core.items.has(block.requirements, state.rules.buildCostMultiplier) || state.rules.infiniteResources))) &amp;&amp; player.isBuilder() ? Color.white : Color.gray;</b>
+<b class="nc">&nbsp;                            button.forEach(elem -&gt; elem.setColor(color));</b>
+<b class="nc">&nbsp;                            button.setChecked(control.input.block == block);</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(!block.isPlaceable()){</b>
+<b class="nc">&nbsp;                                button.forEach(elem -&gt; elem.setColor(Color.darkGray));</b>
+&nbsp;                            }
+&nbsp;                        });
+&nbsp;
+<b class="nc">&nbsp;                        button.hovered(() -&gt; menuHoverBlock = block);</b>
+<b class="nc">&nbsp;                        button.exited(() -&gt; {</b>
+<b class="nc">&nbsp;                            if(menuHoverBlock == block){</b>
+<b class="nc">&nbsp;                                menuHoverBlock = null;</b>
+&nbsp;                            }
+&nbsp;                        });
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                    //add missing elements to even out table size
+<b class="nc">&nbsp;                    if(index &lt; 4){</b>
+<b class="nc">&nbsp;                        for(int i = 0; i &lt; 4-index; i++){</b>
+<b class="nc">&nbsp;                            blockTable.add().size(46f);</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    blockTable.act(0f);</b>
+<b class="nc">&nbsp;                    blockPane.setScrollYForce(scrollPositions.get(currentCategory, 0));</b>
+<b class="nc">&nbsp;                    Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                        blockPane.setScrollYForce(scrollPositions.get(currentCategory, 0));</b>
+<b class="nc">&nbsp;                        blockPane.act(0f);</b>
+<b class="nc">&nbsp;                        blockPane.layout();</b>
+&nbsp;                    });
+&nbsp;                };
+&nbsp;
+&nbsp;                //top table with hover info
+<b class="nc">&nbsp;                frame.table(Tex.buttonEdge2,top -&gt; {</b>
+<b class="nc">&nbsp;                    topTable = top;</b>
+<b class="nc">&nbsp;                    top.add(new Table()).growX().update(topTable -&gt; {</b>
+&nbsp;
+&nbsp;                        //find current hovered thing
+<b class="nc">&nbsp;                        Displayable hovered = hover;</b>
+<b class="nc">&nbsp;                        Block displayBlock = menuHoverBlock != null ? menuHoverBlock : control.input.block;</b>
+<b class="nc">&nbsp;                        Object displayState = displayBlock != null ? displayBlock : hovered;</b>
+<b class="nc">&nbsp;                        boolean isHovered = displayBlock == null; //use hovered thing if displayblock is null</b>
+&nbsp;
+&nbsp;                        //don&#39;t refresh unnecessarily
+&nbsp;                        //refresh only when the hover state changes, or the displayed block changes
+<b class="nc">&nbsp;                        if(wasHovered == isHovered &amp;&amp; lastDisplayState == displayState &amp;&amp; lastTeam == player.team()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                        topTable.clear();</b>
+<b class="nc">&nbsp;                        topTable.top().left().margin(5);</b>
+&nbsp;
+<b class="nc">&nbsp;                        lastDisplayState = displayState;</b>
+<b class="nc">&nbsp;                        wasHovered = isHovered;</b>
+<b class="nc">&nbsp;                        lastTeam = player.team();</b>
+&nbsp;
+&nbsp;                        //show details of selected block, with costs
+<b class="nc">&nbsp;                        if(displayBlock != null){</b>
+&nbsp;
+<b class="nc">&nbsp;                            topTable.table(header -&gt; {</b>
+<b class="nc">&nbsp;                                String keyCombo = &quot;&quot;;</b>
+<b class="nc">&nbsp;                                if(!mobile){</b>
+<b class="nc">&nbsp;                                    Seq&lt;Block&gt; blocks = getByCategory(currentCategory);</b>
+<b class="nc">&nbsp;                                    for(int i = 0; i &lt; blocks.size; i++){</b>
+<b class="nc">&nbsp;                                        if(blocks.get(i) == displayBlock &amp;&amp; (i + 1) / 10 - 1 &lt; blockSelect.length){</b>
+<b class="nc">&nbsp;                                            keyCombo = Core.bundle.format(&quot;placement.blockselectkeys&quot;, Core.keybinds.get(blockSelect[currentCategory.ordinal()]).key.toString())</b>
+<b class="nc">&nbsp;                                                + (i &lt; 10 ? &quot;&quot; : Core.keybinds.get(blockSelect[(i + 1) / 10 - 1]).key.toString() + &quot;,&quot;)</b>
+<b class="nc">&nbsp;                                                + Core.keybinds.get(blockSelect[i % 10]).key.toString() + &quot;]&quot;;</b>
+<b class="nc">&nbsp;                                            break;</b>
+&nbsp;                                        }
+&nbsp;                                    }
+&nbsp;                                }
+<b class="nc">&nbsp;                                final String keyComboFinal = keyCombo;</b>
+<b class="nc">&nbsp;                                header.left();</b>
+<b class="nc">&nbsp;                                header.add(new Image(displayBlock.uiIcon)).size(8 * 4);</b>
+<b class="nc">&nbsp;                                header.labelWrap(() -&gt; !unlocked(displayBlock) ? Core.bundle.get(&quot;block.unknown&quot;) : displayBlock.localizedName + keyComboFinal)</b>
+<b class="nc">&nbsp;                                .left().width(190f).padLeft(5);</b>
+<b class="nc">&nbsp;                                header.add().growX();</b>
+<b class="nc">&nbsp;                                if(unlocked(displayBlock)){</b>
+<b class="nc">&nbsp;                                    header.button(&quot;?&quot;, Styles.flatBordert, () -&gt; {</b>
+<b class="nc">&nbsp;                                        ui.content.show(displayBlock);</b>
+<b class="nc">&nbsp;                                        Events.fire(new BlockInfoEvent());</b>
+<b class="nc">&nbsp;                                    }).size(8 * 5).padTop(-5).padRight(-5).right().grow().name(&quot;blockinfo&quot;);</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).growX().left();</b>
+<b class="nc">&nbsp;                            topTable.row();</b>
+&nbsp;                            //add requirement table
+<b class="nc">&nbsp;                            topTable.table(req -&gt; {</b>
+<b class="nc">&nbsp;                                req.top().left();</b>
+&nbsp;
+<b class="nc">&nbsp;                                for(ItemStack stack : displayBlock.requirements){</b>
+<b class="nc">&nbsp;                                    req.table(line -&gt; {</b>
+<b class="nc">&nbsp;                                        line.left();</b>
+<b class="nc">&nbsp;                                        line.image(stack.item.uiIcon).size(8 * 2);</b>
+<b class="nc">&nbsp;                                        line.add(stack.item.localizedName).maxWidth(140f).fillX().color(Color.lightGray).padLeft(2).left().get().setEllipsis(true);</b>
+<b class="nc">&nbsp;                                        line.labelWrap(() -&gt; {</b>
+<b class="nc">&nbsp;                                            Building core = player.core();</b>
+<b class="nc">&nbsp;                                            int stackamount = Math.round(stack.amount * state.rules.buildCostMultiplier);</b>
+<b class="nc">&nbsp;                                            if(core == null || state.rules.infiniteResources) return &quot;*/&quot; + stackamount;</b>
+&nbsp;
+<b class="nc">&nbsp;                                            int amount = core.items.get(stack.item);</b>
+<b class="nc">&nbsp;                                            String color = (amount &lt; stackamount / 2f ? &quot;[scarlet]&quot; : amount &lt; stackamount ? &quot;[accent]&quot; : &quot;[white]&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                                            return color + UI.formatAmount(amount) + &quot;[white]/&quot; + stackamount;</b>
+<b class="nc">&nbsp;                                        }).padLeft(5);</b>
+<b class="nc">&nbsp;                                    }).left();</b>
+<b class="nc">&nbsp;                                    req.row();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).growX().left().margin(3);</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(!displayBlock.isPlaceable() || !player.isBuilder()){</b>
+<b class="nc">&nbsp;                                topTable.row();</b>
+<b class="nc">&nbsp;                                topTable.table(b -&gt; {</b>
+<b class="nc">&nbsp;                                    b.image(Icon.cancel).padRight(2).color(Color.scarlet);</b>
+<b class="nc">&nbsp;                                    b.add(!player.isBuilder() ? &quot;@unit.nobuild&quot; : !displayBlock.supportsEnv(state.rules.env) ? &quot;@unsupported.environment&quot; : &quot;@banned&quot;).width(190f).wrap();</b>
+<b class="nc">&nbsp;                                    b.left();</b>
+<b class="nc">&nbsp;                                }).padTop(2).left();</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                        }else if(hovered != null){</b>
+&nbsp;                            //show hovered item, whatever that may be
+<b class="nc">&nbsp;                            hovered.display(topTable);</b>
+&nbsp;                        }
+&nbsp;                    });
+<b class="nc">&nbsp;                }).colspan(3).fillX().visible(this::hasInfoBox).touchable(Touchable.enabled).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                frame.image().color(Pal.gray).colspan(3).height(4).growX().row();</b>
+&nbsp;
+<b class="nc">&nbsp;                blockCatTable = new Table();</b>
+<b class="nc">&nbsp;                commandTable = new Table(Tex.pane2);</b>
+<b class="nc">&nbsp;                mainStack = new Stack();</b>
+&nbsp;
+<b class="nc">&nbsp;                mainStack.update(() -&gt; {</b>
+<b class="nc">&nbsp;                    if(control.input.commandMode != wasCommandMode){</b>
+<b class="nc">&nbsp;                        mainStack.clearChildren();</b>
+<b class="nc">&nbsp;                        mainStack.addChild(control.input.commandMode ? commandTable : blockCatTable);</b>
+&nbsp;
+&nbsp;                        //hacky, but forces command table to be same width as blocks
+<b class="nc">&nbsp;                        if(control.input.commandMode){</b>
+<b class="nc">&nbsp;                            commandTable.getCells().peek().width(blockCatTable.getWidth() / Scl.scl(1f));</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        wasCommandMode = control.input.commandMode;</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                frame.add(mainStack).colspan(3).fill();</b>
+&nbsp;
+<b class="nc">&nbsp;                frame.row();</b>
+&nbsp;
+&nbsp;                //for better inset visuals at the bottom
+<b class="nc">&nbsp;                frame.rect((x, y, w, h) -&gt; {</b>
+<b class="nc">&nbsp;                    if(Core.scene.marginBottom &gt; 0){</b>
+<b class="nc">&nbsp;                        Tex.paneLeft.draw(x, 0, w, y);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }).colspan(3).fillX().row();</b>
+&nbsp;
+&nbsp;                //commandTable: commanded units
+&nbsp;                {
+<b class="nc">&nbsp;                    commandTable.touchable = Touchable.enabled;</b>
+<b class="nc">&nbsp;                    commandTable.add(Core.bundle.get(&quot;commandmode.name&quot;)).fill().center().labelAlign(Align.center).row();</b>
+<b class="nc">&nbsp;                    commandTable.image().color(Pal.accent).growX().pad(20f).padTop(0f).padBottom(4f).row();</b>
+<b class="nc">&nbsp;                    commandTable.table(u -&gt; {</b>
+<b class="nc">&nbsp;                        u.left();</b>
+<b class="nc">&nbsp;                        int[] curCount = {0};</b>
+<b class="nc">&nbsp;                        UnitCommand[] currentCommand = {null};</b>
+<b class="nc">&nbsp;                        var commands = new Seq&lt;UnitCommand&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;                        UnitStance[] currentStance = {null};</b>
+<b class="nc">&nbsp;                        var stances = new Seq&lt;UnitStance&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;                        rebuildCommand = () -&gt; {</b>
+<b class="nc">&nbsp;                            u.clearChildren();</b>
+<b class="nc">&nbsp;                            var units = control.input.selectedUnits;</b>
+<b class="nc">&nbsp;                            if(units.size &gt; 0){</b>
+<b class="nc">&nbsp;                                int[] counts = new int[content.units().size];</b>
+<b class="nc">&nbsp;                                for(var unit : units){</b>
+<b class="nc">&nbsp;                                    counts[unit.type.id] ++;</b>
+<b class="nc">&nbsp;                                }</b>
+<b class="nc">&nbsp;                                commands.clear();</b>
+<b class="nc">&nbsp;                                stances.clear();</b>
+<b class="nc">&nbsp;                                boolean firstCommand = false, firstStance = false;</b>
+<b class="nc">&nbsp;                                Table unitlist = u.table().growX().left().get();</b>
+<b class="nc">&nbsp;                                unitlist.left();</b>
+&nbsp;
+<b class="nc">&nbsp;                                int col = 0;</b>
+<b class="nc">&nbsp;                                for(int i = 0; i &lt; counts.length; i++){</b>
+<b class="nc">&nbsp;                                    if(counts[i] &gt; 0){</b>
+<b class="nc">&nbsp;                                        var type = content.unit(i);</b>
+<b class="nc">&nbsp;                                        unitlist.add(StatValues.stack(type, counts[i])).pad(4).with(b -&gt; {</b>
+<b class="nc">&nbsp;                                            b.clearListeners();</b>
+<b class="nc">&nbsp;                                            b.addListener(Tooltips.getInstance().create(type.localizedName, false));</b>
+&nbsp;
+<b class="nc">&nbsp;                                            var listener = new ClickListener();</b>
+&nbsp;
+&nbsp;                                            //left click -&gt; select
+<b class="nc">&nbsp;                                            b.clicked(KeyCode.mouseLeft, () -&gt; {</b>
+<b class="nc">&nbsp;                                                control.input.selectedUnits.removeAll(unit -&gt; unit.type != type);</b>
+<b class="nc">&nbsp;                                                Events.fire(Trigger.unitCommandChange);</b>
+&nbsp;                                            });
+&nbsp;                                            //right click -&gt; remove
+<b class="nc">&nbsp;                                            b.clicked(KeyCode.mouseRight, () -&gt; {</b>
+<b class="nc">&nbsp;                                                control.input.selectedUnits.removeAll(unit -&gt; unit.type == type);</b>
+<b class="nc">&nbsp;                                                Events.fire(Trigger.unitCommandChange);</b>
+&nbsp;                                            });
+&nbsp;
+<b class="nc">&nbsp;                                            b.addListener(listener);</b>
+<b class="nc">&nbsp;                                            b.addListener(new HandCursorListener());</b>
+&nbsp;                                            //gray on hover
+<b class="nc">&nbsp;                                            b.update(() -&gt; ((Group)b.getChildren().first()).getChildren().first().setColor(listener.isOver() ? Color.lightGray : Color.white));</b>
+&nbsp;                                        });
+&nbsp;
+<b class="nc">&nbsp;                                        if(++col % 7 == 0){</b>
+<b class="nc">&nbsp;                                            unitlist.row();</b>
+&nbsp;                                        }
+&nbsp;
+<b class="nc">&nbsp;                                        if(!firstCommand){</b>
+<b class="nc">&nbsp;                                            commands.add(type.commands);</b>
+<b class="nc">&nbsp;                                            firstCommand = true;</b>
+&nbsp;                                        }else{
+&nbsp;                                            //remove commands that this next unit type doesn&#39;t have
+<b class="nc">&nbsp;                                            commands.removeAll(com -&gt; !Structs.contains(type.commands, com));</b>
+&nbsp;                                        }
+&nbsp;
+<b class="nc">&nbsp;                                        if(!firstStance){</b>
+<b class="nc">&nbsp;                                            stances.add(type.stances);</b>
+<b class="nc">&nbsp;                                            firstStance = true;</b>
+&nbsp;                                        }else{
+&nbsp;                                            //remove commands that this next unit type doesn&#39;t have
+<b class="nc">&nbsp;                                            stances.removeAll(st -&gt; !Structs.contains(type.stances, st));</b>
+&nbsp;                                        }
+&nbsp;                                    }
+&nbsp;                                }
+&nbsp;
+&nbsp;                                //list commands
+<b class="nc">&nbsp;                                if(commands.size &gt; 1){</b>
+<b class="nc">&nbsp;                                    u.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                                    u.table(coms -&gt; {</b>
+<b class="nc">&nbsp;                                        coms.left();</b>
+<b class="nc">&nbsp;                                        int scol = 0;</b>
+<b class="nc">&nbsp;                                        for(var command : commands){</b>
+<b class="nc">&nbsp;                                            coms.button(Icon.icons.get(command.icon, Icon.cancel), Styles.clearNoneTogglei, () -&gt; {</b>
+<b class="nc">&nbsp;                                                Call.setUnitCommand(player, units.mapInt(un -&gt; un.id).toArray(), command);</b>
+<b class="nc">&nbsp;                                            }).checked(i -&gt; currentCommand[0] == command).size(50f).tooltip(command.localized(), true);</b>
+&nbsp;
+<b class="nc">&nbsp;                                            if(++scol % 6 == 0) coms.row();</b>
+<b class="nc">&nbsp;                                        }</b>
+&nbsp;
+<b class="nc">&nbsp;                                    }).fillX().padTop(4f).left();</b>
+&nbsp;                                }
+&nbsp;
+&nbsp;                                //list stances
+<b class="nc">&nbsp;                                if(stances.size &gt; 1){</b>
+<b class="nc">&nbsp;                                    u.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                                    if(commands.size &gt; 1){</b>
+<b class="nc">&nbsp;                                        u.add(new Image(Tex.whiteui)).height(3f).color(Pal.gray).pad(7f).growX().row();</b>
+&nbsp;                                    }
+&nbsp;
+<b class="nc">&nbsp;                                    u.table(coms -&gt; {</b>
+<b class="nc">&nbsp;                                        coms.left();</b>
+<b class="nc">&nbsp;                                        int scol = 0;</b>
+<b class="nc">&nbsp;                                        for(var stance : stances){</b>
+&nbsp;
+<b class="nc">&nbsp;                                            coms.button(Icon.icons.get(stance.icon, Icon.cancel), Styles.clearNoneTogglei, () -&gt; {</b>
+<b class="nc">&nbsp;                                                Call.setUnitStance(player, units.mapInt(un -&gt; un.id).toArray(), stance);</b>
+<b class="nc">&nbsp;                                            }).checked(i -&gt; currentStance[0] == stance).size(50f).tooltip(stance.localized(), true);</b>
+&nbsp;
+<b class="nc">&nbsp;                                            if(++scol % 6 == 0) coms.row();</b>
+<b class="nc">&nbsp;                                        }</b>
+<b class="nc">&nbsp;                                    }).fillX().padTop(4f).left();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }else{</b>
+<b class="nc">&nbsp;                                u.add(Core.bundle.get(&quot;commandmode.nounits&quot;)).color(Color.lightGray).growX().center().labelAlign(Align.center).pad(6);</b>
+&nbsp;                            }
+&nbsp;                        };
+&nbsp;
+<b class="nc">&nbsp;                        u.update(() -&gt; {</b>
+&nbsp;                            {
+<b class="nc">&nbsp;                                boolean hadCommand = false, hadStance = false;</b>
+<b class="nc">&nbsp;                                UnitCommand shareCommand = null;</b>
+<b class="nc">&nbsp;                                UnitStance shareStance = null;</b>
+&nbsp;
+&nbsp;                                //find the command that all units have, or null if they do not share one
+<b class="nc">&nbsp;                                for(var unit : control.input.selectedUnits){</b>
+<b class="nc">&nbsp;                                    if(unit.isCommandable()){</b>
+<b class="nc">&nbsp;                                        var nextCommand = unit.command().command;</b>
+&nbsp;
+<b class="nc">&nbsp;                                        if(hadCommand){</b>
+<b class="nc">&nbsp;                                            if(shareCommand != nextCommand){</b>
+<b class="nc">&nbsp;                                                shareCommand = null;</b>
+&nbsp;                                            }
+&nbsp;                                        }else{
+<b class="nc">&nbsp;                                            shareCommand = nextCommand;</b>
+<b class="nc">&nbsp;                                            hadCommand = true;</b>
+&nbsp;                                        }
+&nbsp;
+<b class="nc">&nbsp;                                        var nextStance = unit.command().stance;</b>
+&nbsp;
+<b class="nc">&nbsp;                                        if(hadStance){</b>
+<b class="nc">&nbsp;                                            if(shareStance != nextStance){</b>
+<b class="nc">&nbsp;                                                shareStance = null;</b>
+&nbsp;                                            }
+&nbsp;                                        }else{
+<b class="nc">&nbsp;                                            shareStance = nextStance;</b>
+<b class="nc">&nbsp;                                            hadStance = true;</b>
+&nbsp;                                        }
+&nbsp;                                    }
+<b class="nc">&nbsp;                                }</b>
+&nbsp;
+<b class="nc">&nbsp;                                currentCommand[0] = shareCommand;</b>
+<b class="nc">&nbsp;                                currentStance[0] = shareStance;</b>
+&nbsp;
+<b class="nc">&nbsp;                                int size = control.input.selectedUnits.size;</b>
+<b class="nc">&nbsp;                                if(curCount[0] != size){</b>
+<b class="nc">&nbsp;                                    curCount[0] = size;</b>
+<b class="nc">&nbsp;                                    rebuildCommand.run();</b>
+&nbsp;                                }
+&nbsp;
+&nbsp;                                //not a huge fan of running input logic here, but it&#39;s convenient as the stance arrays are all here...
+<b class="nc">&nbsp;                                for(UnitStance stance : stances){</b>
+&nbsp;                                    //first stance must always be the stop stance
+<b class="nc">&nbsp;                                    if(stance.keybind != null &amp;&amp; Core.input.keyTap(stance.keybind)){</b>
+<b class="nc">&nbsp;                                        Call.setUnitStance(player, control.input.selectedUnits.mapInt(un -&gt; un.id).toArray(), stance);</b>
+&nbsp;                                    }
+<b class="nc">&nbsp;                                }</b>
+&nbsp;
+<b class="nc">&nbsp;                                for(UnitCommand command : commands){</b>
+&nbsp;                                    //first stance must always be the stop stance
+<b class="nc">&nbsp;                                    if(command.keybind != null &amp;&amp; Core.input.keyTap(command.keybind)){</b>
+<b class="nc">&nbsp;                                        Call.setUnitCommand(player, control.input.selectedUnits.mapInt(un -&gt; un.id).toArray(), command);</b>
+&nbsp;                                    }
+<b class="nc">&nbsp;                                }</b>
+&nbsp;                            }
+&nbsp;                        });
+<b class="nc">&nbsp;                        rebuildCommand.run();</b>
+<b class="nc">&nbsp;                    }).grow();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //blockCatTable: all blocks | all categories
+&nbsp;                {
+<b class="nc">&nbsp;                    blockCatTable.table(Tex.pane2, blocksSelect -&gt; {</b>
+<b class="nc">&nbsp;                        blocksSelect.margin(4).marginTop(0);</b>
+<b class="nc">&nbsp;                        blockPane = blocksSelect.pane(blocks -&gt; blockTable = blocks).height(194f).update(pane -&gt; {</b>
+<b class="nc">&nbsp;                            if(pane.hasScroll()){</b>
+<b class="nc">&nbsp;                                Element result = Core.scene.getHoverElement();</b>
+<b class="nc">&nbsp;                                if(result == null || !result.isDescendantOf(pane)){</b>
+<b class="nc">&nbsp;                                    Core.scene.setScrollFocus(null);</b>
+&nbsp;                                }
+&nbsp;                            }
+<b class="nc">&nbsp;                        }).grow().get();</b>
+<b class="nc">&nbsp;                        blockPane.setStyle(Styles.smallPane);</b>
+<b class="nc">&nbsp;                        blocksSelect.row();</b>
+<b class="nc">&nbsp;                        blocksSelect.table(control.input::buildPlacementUI).name(&quot;inputTable&quot;).growX();</b>
+<b class="nc">&nbsp;                    }).fillY().bottom().touchable(Touchable.enabled);</b>
+<b class="nc">&nbsp;                    blockCatTable.table(categories -&gt; {</b>
+<b class="nc">&nbsp;                        categories.bottom();</b>
+<b class="nc">&nbsp;                        categories.add(new Image(Styles.black6){</b>
+&nbsp;                            @Override
+&nbsp;                            public void draw(){
+<b class="nc">&nbsp;                                if(height &lt;= Scl.scl(3f)) return;</b>
+<b class="nc">&nbsp;                                getDrawable().draw(x, y, width, height - Scl.scl(3f));</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }).colspan(2).growX().growY().padTop(-3f).row();</b>
+<b class="nc">&nbsp;                        categories.defaults().size(50f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        ButtonGroup&lt;ImageButton&gt; group = new ButtonGroup&lt;&gt;();</b>
+&nbsp;
+&nbsp;                        //update category empty values
+<b class="nc">&nbsp;                        for(Category cat : Category.all){</b>
+<b class="nc">&nbsp;                            Seq&lt;Block&gt; blocks = getUnlockedByCategory(cat);</b>
+<b class="nc">&nbsp;                            categoryEmpty[cat.ordinal()] = blocks.isEmpty();</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        boolean needsAssign = categoryEmpty[currentCategory.ordinal()];</b>
+&nbsp;
+<b class="nc">&nbsp;                        int f = 0;</b>
+<b class="nc">&nbsp;                        for(Category cat : getCategories()){</b>
+<b class="nc">&nbsp;                            if(f++ % 2 == 0) categories.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(categoryEmpty[cat.ordinal()]){</b>
+<b class="nc">&nbsp;                                categories.image(Styles.black6);</b>
+<b class="nc">&nbsp;                                continue;</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            if(needsAssign){</b>
+<b class="nc">&nbsp;                                currentCategory = cat;</b>
+<b class="nc">&nbsp;                                needsAssign = false;</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            categories.button(ui.getIcon(cat.name()), Styles.clearTogglei, () -&gt; {</b>
+<b class="nc">&nbsp;                                currentCategory = cat;</b>
+<b class="nc">&nbsp;                                if(control.input.block != null){</b>
+<b class="nc">&nbsp;                                    control.input.block = getSelectedBlock(currentCategory);</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                                rebuildCategory.run();</b>
+<b class="nc">&nbsp;                            }).group(group).update(i -&gt; i.setChecked(currentCategory == cat)).name(&quot;category-&quot; + cat.name());</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }).fillY().bottom().touchable(Touchable.enabled);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                mainStack.add(blockCatTable);</b>
+&nbsp;
+<b class="nc">&nbsp;                rebuildCategory.run();</b>
+<b class="nc">&nbsp;                frame.update(() -&gt; {</b>
+<b class="nc">&nbsp;                    if(!control.input.commandMode &amp;&amp; gridUpdate(control.input)){</b>
+<b class="nc">&nbsp;                        rebuildCategory.run();</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            });
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    Seq&lt;Category&gt; getCategories(){
+<b class="nc">&nbsp;        return returnCatArray.clear().addAll(Category.all).sort((c1, c2) -&gt; Boolean.compare(categoryEmpty[c1.ordinal()], categoryEmpty[c2.ordinal()]));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Seq&lt;Block&gt; getByCategory(Category cat){
+<b class="nc">&nbsp;        return returnArray.selectFrom(content.blocks(), block -&gt; block.category == cat &amp;&amp; block.isVisible() &amp;&amp; block.environmentBuildable());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Seq&lt;Block&gt; getUnlockedByCategory(Category cat){
+<b class="nc">&nbsp;        return returnArray2.selectFrom(content.blocks(), block -&gt; block.category == cat &amp;&amp; block.isVisible() &amp;&amp; unlocked(block)).sort((b1, b2) -&gt; Boolean.compare(!b1.isPlaceable(), !b2.isPlaceable()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Block getSelectedBlock(Category cat){
+<b class="nc">&nbsp;        return selectedBlocks.get(cat, () -&gt; getByCategory(cat).find(this::unlocked));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean unlocked(Block block){
+<b class="nc">&nbsp;        return block.unlockedNow() &amp;&amp; block.placeablePlayer &amp;&amp; block.environmentBuildable() &amp;&amp;</b>
+<b class="nc">&nbsp;            block.supportsEnv(state.rules.env); //TODO this hides env unsupported blocks, not always a good thing</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean hasInfoBox(){
+<b class="nc">&nbsp;        hover = hovered();</b>
+<b class="nc">&nbsp;        return control.input.block != null || menuHoverBlock != null || hover != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the thing being hovered over. */
+&nbsp;    @Nullable
+&nbsp;    Displayable hovered(){
+<b class="nc">&nbsp;        Vec2 v = topTable.stageToLocalCoordinates(Core.input.mouse());</b>
+&nbsp;
+&nbsp;        //if the mouse intersects the table or the UI has the mouse, no hovering can occur
+<b class="nc">&nbsp;        if(Core.scene.hasMouse() || topTable.hit(v.x, v.y, false) != null) return null;</b>
+&nbsp;
+&nbsp;        //check for a unit
+<b class="nc">&nbsp;        Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -&gt; !u.isLocal() &amp;&amp; u.displayable());</b>
+&nbsp;        //if cursor has a unit, display it
+<b class="nc">&nbsp;        if(unit != null) return unit;</b>
+&nbsp;
+&nbsp;        //check tile being hovered over
+<b class="nc">&nbsp;        Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);</b>
+<b class="nc">&nbsp;        if(hoverTile != null){</b>
+&nbsp;            //if the tile has a building, display it
+<b class="nc">&nbsp;            if(hoverTile.build != null &amp;&amp; hoverTile.build.displayable() &amp;&amp; !hoverTile.build.inFogTo(player.team())){</b>
+<b class="nc">&nbsp;                return nextFlowBuild = hoverTile.build;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //if the tile has a drop, display the drop
+<b class="nc">&nbsp;            if((hoverTile.drop() != null &amp;&amp; hoverTile.block() == Blocks.air) || hoverTile.wallDrop() != null || hoverTile.floor().liquidDrop != null){</b>
+<b class="nc">&nbsp;                return hoverTile;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

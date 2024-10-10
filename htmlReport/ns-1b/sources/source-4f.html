@@ -1,0 +1,908 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LogicIO</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: LogicIO (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LogicIO</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.2%
+  </span>
+  <span class="absValue">
+    (175/789)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.func.Prov;
+&nbsp;import arc.struct.Seq;
+&nbsp;import mindustry.logic.LStatement;
+&nbsp;import mindustry.logic.LStatements;
+&nbsp;
+<b class="nc">&nbsp;public class LogicIO {</b>
+<b class="fc">&nbsp;  public static Seq&lt;Prov&lt;LStatement&gt;&gt; allStatements = Seq.with(mindustry.logic.LStatements.InvalidStatement::new, mindustry.logic.LStatements.ReadStatement::new, mindustry.logic.LStatements.WriteStatement::new, mindustry.logic.LStatements.DrawStatement::new, mindustry.logic.LStatements.PrintStatement::new, mindustry.logic.LStatements.FormatStatement::new, mindustry.logic.LStatements.DrawFlushStatement::new, mindustry.logic.LStatements.PrintFlushStatement::new, mindustry.logic.LStatements.GetLinkStatement::new, mindustry.logic.LStatements.ControlStatement::new, mindustry.logic.LStatements.RadarStatement::new, mindustry.logic.LStatements.SensorStatement::new, mindustry.logic.LStatements.SetStatement::new, mindustry.logic.LStatements.OperationStatement::new, mindustry.logic.LStatements.WaitStatement::new, mindustry.logic.LStatements.StopStatement::new, mindustry.logic.LStatements.LookupStatement::new, mindustry.logic.LStatements.PackColorStatement::new, mindustry.logic.LStatements.EndStatement::new, mindustry.logic.LStatements.JumpStatement::new, mindustry.logic.LStatements.UnitBindStatement::new, mindustry.logic.LStatements.UnitControlStatement::new, mindustry.logic.LStatements.UnitRadarStatement::new, mindustry.logic.LStatements.UnitLocateStatement::new, mindustry.logic.LStatements.GetBlockStatement::new, mindustry.logic.LStatements.SetBlockStatement::new, mindustry.logic.LStatements.SpawnUnitStatement::new, mindustry.logic.LStatements.ApplyStatusStatement::new, mindustry.logic.LStatements.WeatherSenseStatement::new, mindustry.logic.LStatements.WeatherSetStatement::new, mindustry.logic.LStatements.SpawnWaveStatement::new, mindustry.logic.LStatements.SetRuleStatement::new, mindustry.logic.LStatements.FlushMessageStatement::new, mindustry.logic.LStatements.CutsceneStatement::new, mindustry.logic.LStatements.EffectStatement::new, mindustry.logic.LStatements.ExplosionStatement::new, mindustry.logic.LStatements.SetRateStatement::new, mindustry.logic.LStatements.FetchStatement::new, mindustry.logic.LStatements.SyncStatement::new, mindustry.logic.LStatements.ClientDataStatement::new, mindustry.logic.LStatements.GetFlagStatement::new, mindustry.logic.LStatements.SetFlagStatement::new, mindustry.logic.LStatements.SetPropStatement::new, mindustry.logic.LStatements.PlaySoundStatement::new, mindustry.logic.LStatements.SetMarkerStatement::new, mindustry.logic.LStatements.MakeMarkerStatement::new, mindustry.logic.LStatements.LocalePrintStatement::new);</b>
+&nbsp;
+&nbsp;  public static LStatement read(String[] tokens, int length) {
+<b class="fc">&nbsp;    if(tokens[0].equals(&quot;noop&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.InvalidStatement result = new LStatements.InvalidStatement();</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;read&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.ReadStatement result = new LStatements.ReadStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.output = (tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.target = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.address = (tokens[3]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;write&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.WriteStatement result = new LStatements.WriteStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.input = (tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.target = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.address = (tokens[3]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;draw&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.DrawStatement result = new LStatements.DrawStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.type = mindustry.world.blocks.logic.LogicDisplay.GraphicsType.valueOf(tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.x = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.y = (tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.p1 = (tokens[4]);</b>
+<b class="nc">&nbsp;      if(length &gt; 5) result.p2 = (tokens[5]);</b>
+<b class="nc">&nbsp;      if(length &gt; 6) result.p3 = (tokens[6]);</b>
+<b class="nc">&nbsp;      if(length &gt; 7) result.p4 = (tokens[7]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;print&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.PrintStatement result = new LStatements.PrintStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.value = (tokens[1]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;format&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.FormatStatement result = new LStatements.FormatStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.value = (tokens[1]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;drawflush&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.DrawFlushStatement result = new LStatements.DrawFlushStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.target = (tokens[1]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;printflush&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.PrintFlushStatement result = new LStatements.PrintFlushStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.target = (tokens[1]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;getlink&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.GetLinkStatement result = new LStatements.GetLinkStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.output = (tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.address = (tokens[2]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;control&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.ControlStatement result = new LStatements.ControlStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.type = mindustry.logic.LAccess.valueOf(tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.target = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.p1 = (tokens[3]);</b>
+<b class="fc">&nbsp;      if(length &gt; 4) result.p2 = (tokens[4]);</b>
+<b class="fc">&nbsp;      if(length &gt; 5) result.p3 = (tokens[5]);</b>
+<b class="fc">&nbsp;      if(length &gt; 6) result.p4 = (tokens[6]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;radar&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.RadarStatement result = new LStatements.RadarStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.target1 = mindustry.logic.RadarTarget.valueOf(tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.target2 = mindustry.logic.RadarTarget.valueOf(tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.target3 = mindustry.logic.RadarTarget.valueOf(tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.sort = mindustry.logic.RadarSort.valueOf(tokens[4]);</b>
+<b class="nc">&nbsp;      if(length &gt; 5) result.radar = (tokens[5]);</b>
+<b class="nc">&nbsp;      if(length &gt; 6) result.sortOrder = (tokens[6]);</b>
+<b class="nc">&nbsp;      if(length &gt; 7) result.output = (tokens[7]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;sensor&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.SensorStatement result = new LStatements.SensorStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.to = (tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.from = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.type = (tokens[3]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;set&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.SetStatement result = new LStatements.SetStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.to = (tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.from = (tokens[2]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;op&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.OperationStatement result = new LStatements.OperationStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.op = mindustry.logic.LogicOp.valueOf(tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.dest = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.a = (tokens[3]);</b>
+<b class="fc">&nbsp;      if(length &gt; 4) result.b = (tokens[4]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;wait&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.WaitStatement result = new LStatements.WaitStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.value = (tokens[1]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;stop&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.StopStatement result = new LStatements.StopStatement();</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;lookup&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.LookupStatement result = new LStatements.LookupStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.type = mindustry.ctype.ContentType.valueOf(tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.result = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.id = (tokens[3]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;packcolor&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.PackColorStatement result = new LStatements.PackColorStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.result = (tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.r = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.g = (tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.b = (tokens[4]);</b>
+<b class="nc">&nbsp;      if(length &gt; 5) result.a = (tokens[5]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;end&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.EndStatement result = new LStatements.EndStatement();</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;jump&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.JumpStatement result = new LStatements.JumpStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.destIndex = java.lang.Integer.valueOf(tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.op = mindustry.logic.ConditionOp.valueOf(tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.value = (tokens[3]);</b>
+<b class="fc">&nbsp;      if(length &gt; 4) result.compare = (tokens[4]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;ubind&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.UnitBindStatement result = new LStatements.UnitBindStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.type = (tokens[1]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;ucontrol&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.UnitControlStatement result = new LStatements.UnitControlStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.type = mindustry.logic.LUnitControl.valueOf(tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.p1 = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.p2 = (tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.p3 = (tokens[4]);</b>
+<b class="nc">&nbsp;      if(length &gt; 5) result.p4 = (tokens[5]);</b>
+<b class="nc">&nbsp;      if(length &gt; 6) result.p5 = (tokens[6]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;uradar&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.UnitRadarStatement result = new LStatements.UnitRadarStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.target1 = mindustry.logic.RadarTarget.valueOf(tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.target2 = mindustry.logic.RadarTarget.valueOf(tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.target3 = mindustry.logic.RadarTarget.valueOf(tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.sort = mindustry.logic.RadarSort.valueOf(tokens[4]);</b>
+<b class="nc">&nbsp;      if(length &gt; 5) result.radar = (tokens[5]);</b>
+<b class="nc">&nbsp;      if(length &gt; 6) result.sortOrder = (tokens[6]);</b>
+<b class="nc">&nbsp;      if(length &gt; 7) result.output = (tokens[7]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;ulocate&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.UnitLocateStatement result = new LStatements.UnitLocateStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.locate = mindustry.logic.LLocate.valueOf(tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.flag = mindustry.world.meta.BlockFlag.valueOf(tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.enemy = (tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.ore = (tokens[4]);</b>
+<b class="nc">&nbsp;      if(length &gt; 5) result.outX = (tokens[5]);</b>
+<b class="nc">&nbsp;      if(length &gt; 6) result.outY = (tokens[6]);</b>
+<b class="nc">&nbsp;      if(length &gt; 7) result.outFound = (tokens[7]);</b>
+<b class="nc">&nbsp;      if(length &gt; 8) result.outBuild = (tokens[8]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;getblock&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.GetBlockStatement result = new LStatements.GetBlockStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.layer = mindustry.logic.TileLayer.valueOf(tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.result = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.x = (tokens[3]);</b>
+<b class="fc">&nbsp;      if(length &gt; 4) result.y = (tokens[4]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;setblock&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.SetBlockStatement result = new LStatements.SetBlockStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.layer = mindustry.logic.TileLayer.valueOf(tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.block = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.x = (tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.y = (tokens[4]);</b>
+<b class="nc">&nbsp;      if(length &gt; 5) result.team = (tokens[5]);</b>
+<b class="nc">&nbsp;      if(length &gt; 6) result.rotation = (tokens[6]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;spawn&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.SpawnUnitStatement result = new LStatements.SpawnUnitStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.type = (tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.x = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.y = (tokens[3]);</b>
+<b class="fc">&nbsp;      if(length &gt; 4) result.rotation = (tokens[4]);</b>
+<b class="fc">&nbsp;      if(length &gt; 5) result.team = (tokens[5]);</b>
+<b class="fc">&nbsp;      if(length &gt; 6) result.result = (tokens[6]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;status&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.ApplyStatusStatement result = new LStatements.ApplyStatusStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.clear = java.lang.Boolean.valueOf(tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.effect = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.unit = (tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.duration = (tokens[4]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;weathersense&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.WeatherSenseStatement result = new LStatements.WeatherSenseStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.to = (tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.weather = (tokens[2]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;weatherset&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.WeatherSetStatement result = new LStatements.WeatherSetStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.weather = (tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.state = (tokens[2]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;spawnwave&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.SpawnWaveStatement result = new LStatements.SpawnWaveStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.x = (tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.y = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.natural = (tokens[3]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;setrule&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.SetRuleStatement result = new LStatements.SetRuleStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.rule = mindustry.logic.LogicRule.valueOf(tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.value = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.p1 = (tokens[3]);</b>
+<b class="fc">&nbsp;      if(length &gt; 4) result.p2 = (tokens[4]);</b>
+<b class="fc">&nbsp;      if(length &gt; 5) result.p3 = (tokens[5]);</b>
+<b class="fc">&nbsp;      if(length &gt; 6) result.p4 = (tokens[6]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;message&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.FlushMessageStatement result = new LStatements.FlushMessageStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.type = mindustry.logic.MessageType.valueOf(tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.duration = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.outSuccess = (tokens[3]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;cutscene&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.CutsceneStatement result = new LStatements.CutsceneStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.action = mindustry.logic.CutsceneAction.valueOf(tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.p1 = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.p2 = (tokens[3]);</b>
+<b class="fc">&nbsp;      if(length &gt; 4) result.p3 = (tokens[4]);</b>
+<b class="fc">&nbsp;      if(length &gt; 5) result.p4 = (tokens[5]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;effect&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.EffectStatement result = new LStatements.EffectStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.type = (tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.x = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.y = (tokens[3]);</b>
+<b class="fc">&nbsp;      if(length &gt; 4) result.sizerot = (tokens[4]);</b>
+<b class="fc">&nbsp;      if(length &gt; 5) result.color = (tokens[5]);</b>
+<b class="fc">&nbsp;      if(length &gt; 6) result.data = (tokens[6]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;explosion&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.ExplosionStatement result = new LStatements.ExplosionStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.team = (tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.x = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.y = (tokens[3]);</b>
+<b class="fc">&nbsp;      if(length &gt; 4) result.radius = (tokens[4]);</b>
+<b class="fc">&nbsp;      if(length &gt; 5) result.damage = (tokens[5]);</b>
+<b class="fc">&nbsp;      if(length &gt; 6) result.air = (tokens[6]);</b>
+<b class="fc">&nbsp;      if(length &gt; 7) result.ground = (tokens[7]);</b>
+<b class="fc">&nbsp;      if(length &gt; 8) result.pierce = (tokens[8]);</b>
+<b class="fc">&nbsp;      if(length &gt; 9) result.effect = (tokens[9]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;setrate&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.SetRateStatement result = new LStatements.SetRateStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.amount = (tokens[1]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;fetch&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.FetchStatement result = new LStatements.FetchStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.type = mindustry.logic.FetchType.valueOf(tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.result = (tokens[2]);</b>
+<b class="fc">&nbsp;      if(length &gt; 3) result.team = (tokens[3]);</b>
+<b class="fc">&nbsp;      if(length &gt; 4) result.index = (tokens[4]);</b>
+<b class="fc">&nbsp;      if(length &gt; 5) result.extra = (tokens[5]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;sync&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.SyncStatement result = new LStatements.SyncStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.variable = (tokens[1]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;clientdata&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.ClientDataStatement result = new LStatements.ClientDataStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.channel = (tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.value = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.reliable = (tokens[3]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;getflag&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.GetFlagStatement result = new LStatements.GetFlagStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.result = (tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.flag = (tokens[2]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="fc">&nbsp;    } else if(tokens[0].equals(&quot;setflag&quot;)) {</b>
+<b class="fc">&nbsp;      LStatements.SetFlagStatement result = new LStatements.SetFlagStatement();</b>
+<b class="fc">&nbsp;      if(length &gt; 1) result.flag = (tokens[1]);</b>
+<b class="fc">&nbsp;      if(length &gt; 2) result.value = (tokens[2]);</b>
+<b class="fc">&nbsp;      result.afterRead();</b>
+<b class="fc">&nbsp;      return result;</b>
+<b class="nc">&nbsp;    } else if(tokens[0].equals(&quot;setprop&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.SetPropStatement result = new LStatements.SetPropStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.type = (tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.of = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.value = (tokens[3]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="nc">&nbsp;    } else if(tokens[0].equals(&quot;playsound&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.PlaySoundStatement result = new LStatements.PlaySoundStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.positional = java.lang.Boolean.valueOf(tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.id = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.volume = (tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.pitch = (tokens[4]);</b>
+<b class="nc">&nbsp;      if(length &gt; 5) result.pan = (tokens[5]);</b>
+<b class="nc">&nbsp;      if(length &gt; 6) result.x = (tokens[6]);</b>
+<b class="nc">&nbsp;      if(length &gt; 7) result.y = (tokens[7]);</b>
+<b class="nc">&nbsp;      if(length &gt; 8) result.limit = (tokens[8]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="nc">&nbsp;    } else if(tokens[0].equals(&quot;setmarker&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.SetMarkerStatement result = new LStatements.SetMarkerStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.type = mindustry.logic.LMarkerControl.valueOf(tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.id = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.p1 = (tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.p2 = (tokens[4]);</b>
+<b class="nc">&nbsp;      if(length &gt; 5) result.p3 = (tokens[5]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="nc">&nbsp;    } else if(tokens[0].equals(&quot;makemarker&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.MakeMarkerStatement result = new LStatements.MakeMarkerStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.type = (tokens[1]);</b>
+<b class="nc">&nbsp;      if(length &gt; 2) result.id = (tokens[2]);</b>
+<b class="nc">&nbsp;      if(length &gt; 3) result.x = (tokens[3]);</b>
+<b class="nc">&nbsp;      if(length &gt; 4) result.y = (tokens[4]);</b>
+<b class="nc">&nbsp;      if(length &gt; 5) result.replace = (tokens[5]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+<b class="nc">&nbsp;    } else if(tokens[0].equals(&quot;localeprint&quot;)) {</b>
+<b class="nc">&nbsp;      LStatements.LocalePrintStatement result = new LStatements.LocalePrintStatement();</b>
+<b class="nc">&nbsp;      if(length &gt; 1) result.value = (tokens[1]);</b>
+<b class="nc">&nbsp;      result.afterRead();</b>
+<b class="nc">&nbsp;      return result;</b>
+&nbsp;    }
+<b class="nc">&nbsp;    return null;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void write(Object obj, StringBuilder out) {
+<b class="nc">&nbsp;    if(obj.getClass() == LStatements.InvalidStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;noop&quot;);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.ReadStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;read&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ReadStatement)obj).output);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ReadStatement)obj).target);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ReadStatement)obj).address);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.WriteStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;write&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.WriteStatement)obj).input);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.WriteStatement)obj).target);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.WriteStatement)obj).address);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.DrawStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;draw&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.DrawStatement)obj).type.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.DrawStatement)obj).x);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.DrawStatement)obj).y);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.DrawStatement)obj).p1);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.DrawStatement)obj).p2);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.DrawStatement)obj).p3);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.DrawStatement)obj).p4);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.PrintStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;print&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PrintStatement)obj).value);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.FormatStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;format&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.FormatStatement)obj).value);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.DrawFlushStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;drawflush&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.DrawFlushStatement)obj).target);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.PrintFlushStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;printflush&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PrintFlushStatement)obj).target);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.GetLinkStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;getlink&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.GetLinkStatement)obj).output);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.GetLinkStatement)obj).address);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.ControlStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;control&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ControlStatement)obj).type.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ControlStatement)obj).target);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ControlStatement)obj).p1);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ControlStatement)obj).p2);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ControlStatement)obj).p3);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ControlStatement)obj).p4);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.RadarStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;radar&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.RadarStatement)obj).target1.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.RadarStatement)obj).target2.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.RadarStatement)obj).target3.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.RadarStatement)obj).sort.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.RadarStatement)obj).radar);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.RadarStatement)obj).sortOrder);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.RadarStatement)obj).output);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SensorStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;sensor&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SensorStatement)obj).to);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SensorStatement)obj).from);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SensorStatement)obj).type);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SetStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;set&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetStatement)obj).to);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetStatement)obj).from);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.OperationStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;op&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.OperationStatement)obj).op.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.OperationStatement)obj).dest);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.OperationStatement)obj).a);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.OperationStatement)obj).b);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.WaitStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;wait&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.WaitStatement)obj).value);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.StopStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;stop&quot;);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.LookupStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;lookup&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.LookupStatement)obj).type.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.LookupStatement)obj).result);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.LookupStatement)obj).id);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.PackColorStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;packcolor&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PackColorStatement)obj).result);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PackColorStatement)obj).r);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PackColorStatement)obj).g);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PackColorStatement)obj).b);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PackColorStatement)obj).a);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.EndStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;end&quot;);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.JumpStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;jump&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.JumpStatement)obj).destIndex);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.JumpStatement)obj).op.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.JumpStatement)obj).value);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.JumpStatement)obj).compare);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.UnitBindStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;ubind&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitBindStatement)obj).type);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.UnitControlStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;ucontrol&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitControlStatement)obj).type.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitControlStatement)obj).p1);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitControlStatement)obj).p2);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitControlStatement)obj).p3);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitControlStatement)obj).p4);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitControlStatement)obj).p5);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.UnitRadarStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;uradar&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitRadarStatement)obj).target1.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitRadarStatement)obj).target2.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitRadarStatement)obj).target3.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitRadarStatement)obj).sort.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitRadarStatement)obj).radar);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitRadarStatement)obj).sortOrder);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitRadarStatement)obj).output);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.UnitLocateStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;ulocate&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitLocateStatement)obj).locate.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitLocateStatement)obj).flag.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitLocateStatement)obj).enemy);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitLocateStatement)obj).ore);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitLocateStatement)obj).outX);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitLocateStatement)obj).outY);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitLocateStatement)obj).outFound);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.UnitLocateStatement)obj).outBuild);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.GetBlockStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;getblock&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.GetBlockStatement)obj).layer.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.GetBlockStatement)obj).result);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.GetBlockStatement)obj).x);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.GetBlockStatement)obj).y);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SetBlockStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;setblock&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetBlockStatement)obj).layer.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetBlockStatement)obj).block);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetBlockStatement)obj).x);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetBlockStatement)obj).y);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetBlockStatement)obj).team);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetBlockStatement)obj).rotation);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SpawnUnitStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;spawn&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SpawnUnitStatement)obj).type);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SpawnUnitStatement)obj).x);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SpawnUnitStatement)obj).y);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SpawnUnitStatement)obj).rotation);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SpawnUnitStatement)obj).team);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SpawnUnitStatement)obj).result);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.ApplyStatusStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;status&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ApplyStatusStatement)obj).clear);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ApplyStatusStatement)obj).effect);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ApplyStatusStatement)obj).unit);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ApplyStatusStatement)obj).duration);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.WeatherSenseStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;weathersense&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.WeatherSenseStatement)obj).to);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.WeatherSenseStatement)obj).weather);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.WeatherSetStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;weatherset&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.WeatherSetStatement)obj).weather);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.WeatherSetStatement)obj).state);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SpawnWaveStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;spawnwave&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SpawnWaveStatement)obj).x);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SpawnWaveStatement)obj).y);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SpawnWaveStatement)obj).natural);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SetRuleStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;setrule&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetRuleStatement)obj).rule.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetRuleStatement)obj).value);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetRuleStatement)obj).p1);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetRuleStatement)obj).p2);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetRuleStatement)obj).p3);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetRuleStatement)obj).p4);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.FlushMessageStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;message&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.FlushMessageStatement)obj).type.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.FlushMessageStatement)obj).duration);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.FlushMessageStatement)obj).outSuccess);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.CutsceneStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;cutscene&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.CutsceneStatement)obj).action.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.CutsceneStatement)obj).p1);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.CutsceneStatement)obj).p2);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.CutsceneStatement)obj).p3);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.CutsceneStatement)obj).p4);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.EffectStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;effect&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.EffectStatement)obj).type);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.EffectStatement)obj).x);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.EffectStatement)obj).y);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.EffectStatement)obj).sizerot);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.EffectStatement)obj).color);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.EffectStatement)obj).data);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.ExplosionStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;explosion&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ExplosionStatement)obj).team);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ExplosionStatement)obj).x);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ExplosionStatement)obj).y);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ExplosionStatement)obj).radius);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ExplosionStatement)obj).damage);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ExplosionStatement)obj).air);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ExplosionStatement)obj).ground);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ExplosionStatement)obj).pierce);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ExplosionStatement)obj).effect);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SetRateStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;setrate&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetRateStatement)obj).amount);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.FetchStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;fetch&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.FetchStatement)obj).type.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.FetchStatement)obj).result);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.FetchStatement)obj).team);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.FetchStatement)obj).index);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.FetchStatement)obj).extra);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SyncStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;sync&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SyncStatement)obj).variable);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.ClientDataStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;clientdata&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ClientDataStatement)obj).channel);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ClientDataStatement)obj).value);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.ClientDataStatement)obj).reliable);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.GetFlagStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;getflag&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.GetFlagStatement)obj).result);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.GetFlagStatement)obj).flag);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SetFlagStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;setflag&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetFlagStatement)obj).flag);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetFlagStatement)obj).value);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SetPropStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;setprop&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetPropStatement)obj).type);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetPropStatement)obj).of);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetPropStatement)obj).value);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.PlaySoundStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;playsound&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PlaySoundStatement)obj).positional);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PlaySoundStatement)obj).id);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PlaySoundStatement)obj).volume);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PlaySoundStatement)obj).pitch);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PlaySoundStatement)obj).pan);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PlaySoundStatement)obj).x);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PlaySoundStatement)obj).y);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.PlaySoundStatement)obj).limit);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.SetMarkerStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;setmarker&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetMarkerStatement)obj).type.name());</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetMarkerStatement)obj).id);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetMarkerStatement)obj).p1);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetMarkerStatement)obj).p2);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.SetMarkerStatement)obj).p3);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.MakeMarkerStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;makemarker&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.MakeMarkerStatement)obj).type);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.MakeMarkerStatement)obj).id);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.MakeMarkerStatement)obj).x);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.MakeMarkerStatement)obj).y);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.MakeMarkerStatement)obj).replace);</b>
+<b class="nc">&nbsp;    } else if(obj.getClass() == LStatements.LocalePrintStatement.class) {</b>
+<b class="nc">&nbsp;      out.append(&quot;localeprint&quot;);</b>
+<b class="nc">&nbsp;      out.append(&quot; &quot;);</b>
+<b class="nc">&nbsp;      out.append(((LStatements.LocalePrintStatement)obj).value);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

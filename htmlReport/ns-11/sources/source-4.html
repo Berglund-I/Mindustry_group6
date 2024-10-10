@@ -1,0 +1,543 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapEditor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: MapEditor (mindustry.editor)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapEditor</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/176)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MapEditor$Context</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/41)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/185)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.files.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.editor.DrawOperation.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class MapEditor{</b>
+<b class="nc">&nbsp;    public static final float[] brushSizes = {1, 1.5f, 2, 3, 4, 5, 9, 15, 20};</b>
+&nbsp;
+<b class="nc">&nbsp;    public StringMap tags = new StringMap();</b>
+<b class="nc">&nbsp;    public MapRenderer renderer = new MapRenderer();</b>
+&nbsp;
+<b class="nc">&nbsp;    private final Context context = new Context();</b>
+<b class="nc">&nbsp;    private OperationStack stack = new OperationStack();</b>
+&nbsp;    private DrawOperation currentOp;
+&nbsp;    private boolean loading;
+&nbsp;
+<b class="nc">&nbsp;    public float brushSize = 1;</b>
+&nbsp;    public int rotation;
+<b class="nc">&nbsp;    public Block drawBlock = Blocks.stone;</b>
+<b class="nc">&nbsp;    public Team drawTeam = Team.sharded;</b>
+&nbsp;
+&nbsp;    public boolean isLoading(){
+<b class="nc">&nbsp;        return loading;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beginEdit(int width, int height){
+<b class="nc">&nbsp;        reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        loading = true;</b>
+<b class="nc">&nbsp;        createTiles(width, height);</b>
+<b class="nc">&nbsp;        renderer.resize(width, height);</b>
+<b class="nc">&nbsp;        loading = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beginEdit(Map map){
+<b class="nc">&nbsp;        reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        loading = true;</b>
+<b class="nc">&nbsp;        tags.putAll(map.tags);</b>
+<b class="nc">&nbsp;        if(map.file.parent().parent().name().equals(&quot;1127400&quot;) &amp;&amp; steam){</b>
+<b class="nc">&nbsp;            tags.put(&quot;steamid&quot;,  map.file.parent().name());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        load(() -&gt; MapIO.loadMap(map, context));</b>
+<b class="nc">&nbsp;        renderer.resize(width(), height());</b>
+<b class="nc">&nbsp;        loading = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beginEdit(Pixmap pixmap){
+<b class="nc">&nbsp;        reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        createTiles(pixmap.width, pixmap.height);</b>
+<b class="nc">&nbsp;        load(() -&gt; MapIO.readImage(pixmap, tiles()));</b>
+<b class="nc">&nbsp;        renderer.resize(width(), height());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateRenderer(){
+<b class="nc">&nbsp;        Tiles tiles = world.tiles;</b>
+<b class="nc">&nbsp;        Seq&lt;Building&gt; builds = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; tiles.width * tiles.height; i++){</b>
+<b class="nc">&nbsp;            Tile tile = tiles.geti(i);</b>
+<b class="nc">&nbsp;            var build = tile.build;</b>
+<b class="nc">&nbsp;            if(build != null &amp;&amp; tile.isCenter()){</b>
+<b class="nc">&nbsp;                builds.add(build);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            tiles.seti(i, new EditorTile(tile.x, tile.y, tile.floorID(), tile.overlayID(), build == null ? tile.blockID() : 0));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(var build : builds){</b>
+<b class="nc">&nbsp;            tiles.get(build.tileX(), build.tileY()).setBlock(build.block, build.team, build.rotation, () -&gt; build);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        renderer.resize(width(), height());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void load(Runnable r){
+<b class="nc">&nbsp;        loading = true;</b>
+<b class="nc">&nbsp;        r.run();</b>
+<b class="nc">&nbsp;        loading = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Creates a 2-D array of EditorTiles with stone as the floor block. */
+&nbsp;    private void createTiles(int width, int height){
+<b class="nc">&nbsp;        Tiles tiles = world.resize(width, height);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = 0; x &lt; width; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; height; y++){</b>
+<b class="nc">&nbsp;                tiles.set(x, y, new EditorTile(x, y, Blocks.stone.id, (short)0, (short)0));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map createMap(Fi file){
+<b class="nc">&nbsp;        return new Map(file, width(), height(), new StringMap(tags), true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void reset(){
+<b class="nc">&nbsp;        clearOp();</b>
+<b class="nc">&nbsp;        brushSize = 1;</b>
+<b class="nc">&nbsp;        drawBlock = Blocks.stone;</b>
+<b class="nc">&nbsp;        tags = new StringMap();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Tiles tiles(){
+<b class="nc">&nbsp;        return world.tiles;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Tile tile(int x, int y){
+<b class="nc">&nbsp;        return world.rawTile(x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int width(){
+<b class="nc">&nbsp;        return world.width();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int height(){
+<b class="nc">&nbsp;        return world.height();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBlocksReplace(int x, int y){
+<b class="nc">&nbsp;        drawBlocks(x, y, tile -&gt; tile.block() != Blocks.air || drawBlock.isFloor());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBlocks(int x, int y){
+<b class="nc">&nbsp;        drawBlocks(x, y, false, false, tile -&gt; true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBlocks(int x, int y, Boolf&lt;Tile&gt; tester){
+<b class="nc">&nbsp;        drawBlocks(x, y, false, false, tester);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawBlocks(int x, int y, boolean square, boolean forceOverlay, Boolf&lt;Tile&gt; tester){
+<b class="nc">&nbsp;        if(drawBlock.isMultiblock()){</b>
+<b class="nc">&nbsp;            x = Mathf.clamp(x, (drawBlock.size - 1) / 2, width() - drawBlock.size / 2 - 1);</b>
+<b class="nc">&nbsp;            y = Mathf.clamp(y, (drawBlock.size - 1) / 2, height() - drawBlock.size / 2 - 1);</b>
+<b class="nc">&nbsp;            if(!hasOverlap(x, y)){</b>
+<b class="nc">&nbsp;                tile(x, y).setBlock(drawBlock, drawTeam, rotation);</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            boolean isFloor = drawBlock.isFloor() &amp;&amp; drawBlock != Blocks.air;</b>
+&nbsp;
+<b class="nc">&nbsp;            Cons&lt;Tile&gt; drawer = tile -&gt; {</b>
+<b class="nc">&nbsp;                if(!tester.get(tile)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(isFloor){</b>
+<b class="nc">&nbsp;                    if(forceOverlay){</b>
+<b class="nc">&nbsp;                        tile.setOverlay(drawBlock.asFloor());</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        if(!(drawBlock.asFloor().wallOre &amp;&amp; !tile.block().solid)){</b>
+<b class="nc">&nbsp;                            tile.setFloor(drawBlock.asFloor());</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                }else if(!(tile.block().isMultiblock() &amp;&amp; !drawBlock.isMultiblock())){</b>
+<b class="nc">&nbsp;                    if(drawBlock.rotate &amp;&amp; tile.build != null &amp;&amp; tile.build.rotation != rotation){</b>
+<b class="nc">&nbsp;                        addTileOp(TileOp.get(tile.x, tile.y, (byte)OpType.rotation.ordinal(), (byte)rotation));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    tile.setBlock(drawBlock, drawTeam, rotation);</b>
+&nbsp;                }
+&nbsp;            };
+&nbsp;
+<b class="nc">&nbsp;            if(square){</b>
+<b class="nc">&nbsp;                drawSquare(x, y, drawer);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                drawCircle(x, y, drawer);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean hasOverlap(int x, int y){
+<b class="nc">&nbsp;        Tile tile = world.tile(x, y);</b>
+&nbsp;        //allow direct replacement of blocks of the same size
+<b class="nc">&nbsp;        if(tile != null &amp;&amp; tile.isCenter() &amp;&amp; tile.block() != drawBlock &amp;&amp; tile.block().size == drawBlock.size &amp;&amp; tile.x == x &amp;&amp; tile.y == y){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //else, check for overlap
+<b class="nc">&nbsp;        int offsetx = -(drawBlock.size - 1) / 2;</b>
+<b class="nc">&nbsp;        int offsety = -(drawBlock.size - 1) / 2;</b>
+<b class="nc">&nbsp;        for(int dx = 0; dx &lt; drawBlock.size; dx++){</b>
+<b class="nc">&nbsp;            for(int dy = 0; dy &lt; drawBlock.size; dy++){</b>
+<b class="nc">&nbsp;                int worldx = dx + offsetx + x;</b>
+<b class="nc">&nbsp;                int worldy = dy + offsety + y;</b>
+<b class="nc">&nbsp;                Tile other = world.tile(worldx, worldy);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(other != null &amp;&amp; other.block().isMultiblock()){</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addCliffs(){
+<b class="nc">&nbsp;        for(Tile tile : world.tiles){</b>
+<b class="nc">&nbsp;            if(!tile.block().isStatic() || tile.block() == Blocks.cliff) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            int rotation = 0;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 8; i++){</b>
+<b class="nc">&nbsp;                Tile other = world.tiles.get(tile.x + Geometry.d8[i].x, tile.y + Geometry.d8[i].y);</b>
+<b class="nc">&nbsp;                if(other != null &amp;&amp; !other.block().isStatic()){</b>
+<b class="nc">&nbsp;                    rotation |= (1 &lt;&lt; i);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(rotation != 0){</b>
+<b class="nc">&nbsp;                tile.setBlock(Blocks.cliff);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            tile.data = (byte)rotation;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Tile tile : world.tiles){</b>
+<b class="nc">&nbsp;            if(tile.block() != Blocks.cliff &amp;&amp; tile.block().isStatic()){</b>
+<b class="nc">&nbsp;                tile.setBlock(Blocks.air);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addFloorCliffs(){
+<b class="nc">&nbsp;        for(Tile tile : world.tiles){</b>
+<b class="nc">&nbsp;            if(!tile.floor().hasSurface() || tile.block() == Blocks.cliff) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            int rotation = 0;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 8; i++){</b>
+<b class="nc">&nbsp;                Tile other = world.tiles.get(tile.x + Geometry.d8[i].x, tile.y + Geometry.d8[i].y);</b>
+<b class="nc">&nbsp;                if(other != null &amp;&amp; !other.floor().hasSurface()){</b>
+<b class="nc">&nbsp;                    rotation |= (1 &lt;&lt; i);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(rotation != 0){</b>
+<b class="nc">&nbsp;                tile.setBlock(Blocks.cliff);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            tile.data = (byte)rotation;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawCircle(int x, int y, Cons&lt;Tile&gt; drawer){
+<b class="nc">&nbsp;        int clamped = (int)brushSize;</b>
+<b class="nc">&nbsp;        for(int rx = -clamped; rx &lt;= clamped; rx++){</b>
+<b class="nc">&nbsp;            for(int ry = -clamped; ry &lt;= clamped; ry++){</b>
+<b class="nc">&nbsp;                if(Mathf.within(rx, ry, brushSize - 0.5f + 0.0001f)){</b>
+<b class="nc">&nbsp;                    int wx = x + rx, wy = y + ry;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(wx &lt; 0 || wy &lt; 0 || wx &gt;= width() || wy &gt;= height()){</b>
+<b class="nc">&nbsp;                        continue;</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    drawer.get(tile(wx, wy));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawSquare(int x, int y, Cons&lt;Tile&gt; drawer){
+<b class="nc">&nbsp;        int clamped = (int)brushSize;</b>
+<b class="nc">&nbsp;        for(int rx = -clamped; rx &lt;= clamped; rx++){</b>
+<b class="nc">&nbsp;            for(int ry = -clamped; ry &lt;= clamped; ry++){</b>
+<b class="nc">&nbsp;                int wx = x + rx, wy = y + ry;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(wx &lt; 0 || wy &lt; 0 || wx &gt;= width() || wy &gt;= height()){</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                drawer.get(tile(wx, wy));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resize(int width, int height, int shiftX, int shiftY){
+<b class="nc">&nbsp;        clearOp();</b>
+&nbsp;
+<b class="nc">&nbsp;        Tiles previous = world.tiles;</b>
+<b class="nc">&nbsp;        int offsetX = (width() - width) / 2 - shiftX, offsetY = (height() - height) / 2 - shiftY;</b>
+<b class="nc">&nbsp;        loading = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        world.clearBuildings();</b>
+&nbsp;
+<b class="nc">&nbsp;        Tiles tiles = world.tiles = new Tiles(width, height);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = 0; x &lt; width; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; height; y++){</b>
+<b class="nc">&nbsp;                int px = offsetX + x, py = offsetY + y;</b>
+<b class="nc">&nbsp;                if(previous.in(px, py)){</b>
+<b class="nc">&nbsp;                    tiles.set(x, y, previous.getn(px, py));</b>
+<b class="nc">&nbsp;                    Tile tile = tiles.getn(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Object config = null;</b>
+&nbsp;
+&nbsp;                    //fetch the old config first, configs can be relative to block position (tileX/tileY) before those are reassigned
+<b class="nc">&nbsp;                    if(tile.build != null &amp;&amp; tile.isCenter()){</b>
+<b class="nc">&nbsp;                        config = tile.build.config();</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    tile.x = (short)x;</b>
+<b class="nc">&nbsp;                    tile.y = (short)y;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(tile.build != null &amp;&amp; tile.isCenter()){</b>
+<b class="nc">&nbsp;                        tile.build.x = x * tilesize + tile.block().offset;</b>
+<b class="nc">&nbsp;                        tile.build.y = y * tilesize + tile.block().offset;</b>
+&nbsp;
+&nbsp;                        //shift links to account for map resize
+<b class="nc">&nbsp;                        if(config != null){</b>
+<b class="nc">&nbsp;                            Object out = BuildPlan.pointConfig(tile.block(), config, p -&gt; {</b>
+<b class="nc">&nbsp;                                if(!tile.build.block.ignoreResizeConfig){</b>
+<b class="nc">&nbsp;                                    p.sub(offsetX, offsetY);</b>
+&nbsp;                                }
+&nbsp;                            });
+<b class="nc">&nbsp;                            if(out != config){</b>
+<b class="nc">&nbsp;                                tile.build.configureAny(out);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                }else{</b>
+<b class="nc">&nbsp;                    tiles.set(x, y, new EditorTile(x, y, Blocks.stone.id, (short)0, (short)0));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        renderer.resize(width, height);</b>
+<b class="nc">&nbsp;        loading = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clearOp(){
+<b class="nc">&nbsp;        stack.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void undo(){
+<b class="nc">&nbsp;        if(stack.canUndo()){</b>
+<b class="nc">&nbsp;            stack.undo();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void redo(){
+<b class="nc">&nbsp;        if(stack.canRedo()){</b>
+<b class="nc">&nbsp;            stack.redo();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canUndo(){
+<b class="nc">&nbsp;        return stack.canUndo();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canRedo(){
+<b class="nc">&nbsp;        return stack.canRedo();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void flushOp(){
+<b class="nc">&nbsp;        if(currentOp == null || currentOp.isEmpty()) return;</b>
+<b class="nc">&nbsp;        stack.add(currentOp);</b>
+<b class="nc">&nbsp;        currentOp = null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addTileOp(long data){
+<b class="nc">&nbsp;        if(loading) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(currentOp == null) currentOp = new DrawOperation();</b>
+<b class="nc">&nbsp;        currentOp.addOperation(data);</b>
+&nbsp;
+<b class="nc">&nbsp;        renderer.updatePoint(TileOp.x(data), TileOp.y(data));</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    class Context implements WorldContext{</b>
+&nbsp;        @Override
+&nbsp;        public Tile tile(int index){
+<b class="nc">&nbsp;            return world.tiles.geti(index);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void resize(int width, int height){
+<b class="nc">&nbsp;            world.resize(width, height);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Tile create(int x, int y, int floorID, int overlayID, int wallID){
+<b class="nc">&nbsp;            Tile tile = new EditorTile(x, y, floorID, overlayID, wallID);</b>
+<b class="nc">&nbsp;            tiles().set(x, y, tile);</b>
+<b class="nc">&nbsp;            return tile;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean isGenerating(){
+<b class="nc">&nbsp;            return world.isGenerating();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void begin(){
+<b class="nc">&nbsp;            world.beginMapLoad();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void end(){
+<b class="nc">&nbsp;            world.endMapLoad();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

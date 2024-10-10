@@ -1,0 +1,190 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > VelComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: VelComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">VelComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class VelComp implements Posc{</b>
+&nbsp;    @Import float x, y;
+&nbsp;
+<b class="nc">&nbsp;    @SyncLocal Vec2 vel = new Vec2();</b>
+&nbsp;
+<b class="nc">&nbsp;    transient float drag = 0f;</b>
+&nbsp;
+&nbsp;    //velocity needs to be called first, as it affects delta and lastPosition
+&nbsp;    @MethodPriority(-1)
+&nbsp;    @Override
+&nbsp;    public void update(){
+&nbsp;        //do not update velocity on the client at all, unless it&#39;s non-interpolated
+&nbsp;        //velocity conflicts with interpolation.
+<b class="nc">&nbsp;        if(!net.client() || isLocal()){</b>
+<b class="nc">&nbsp;            float px = x, py = y;</b>
+<b class="nc">&nbsp;            move(vel.x * Time.delta, vel.y * Time.delta);</b>
+<b class="nc">&nbsp;            if(Mathf.equal(px, x)) vel.x = 0;</b>
+<b class="nc">&nbsp;            if(Mathf.equal(py, y)) vel.y = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            vel.scl(Math.max(1f - drag * Time.delta, 0));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return function to use for check solid state. if null, no checking is done. */
+&nbsp;    @Nullable
+&nbsp;    SolidPred solidity(){
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this entity can move through a location*/
+&nbsp;    boolean canPass(int tileX, int tileY){
+<b class="nc">&nbsp;        SolidPred s = solidity();</b>
+<b class="nc">&nbsp;        return s == null || !s.solid(tileX, tileY);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this entity can exist on its current location*/
+&nbsp;    boolean canPassOn(){
+<b class="nc">&nbsp;        return canPass(tileX(), tileY());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean moving(){
+<b class="nc">&nbsp;        return !vel.isZero(0.01f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void move(Vec2 v){
+<b class="nc">&nbsp;        move(v.x, v.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void move(float cx, float cy){
+<b class="nc">&nbsp;        SolidPred check = solidity();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(check != null){</b>
+<b class="nc">&nbsp;            collisions.move(self(), cx, cy, check);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            x += cx;</b>
+<b class="nc">&nbsp;            y += cy;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void velAddNet(Vec2 v){
+<b class="nc">&nbsp;        vel.add(v);</b>
+<b class="nc">&nbsp;        if(isRemote()){</b>
+<b class="nc">&nbsp;            x += v.x;</b>
+<b class="nc">&nbsp;            y += v.y;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void velAddNet(float vx, float vy){
+<b class="nc">&nbsp;        vel.add(vx, vy);</b>
+<b class="nc">&nbsp;        if(isRemote()){</b>
+<b class="nc">&nbsp;            x += vx;</b>
+<b class="nc">&nbsp;            y += vy;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

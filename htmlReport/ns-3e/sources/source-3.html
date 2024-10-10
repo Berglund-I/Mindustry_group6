@@ -1,0 +1,223 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Constructor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.payloads</a>
+</div>
+
+<h1>Coverage Summary for Class: Constructor (mindustry.world.blocks.payloads)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Constructor</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (9/15)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Constructor$ConstructorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (6/15)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (5/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (15/30)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.payloads;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Configurable BlockProducer variant. */
+&nbsp;public class Constructor extends BlockProducer{
+&nbsp;    /** Empty seq for no filter. */
+<b class="fc">&nbsp;    public Seq&lt;Block&gt; filter = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    public int minBlockSize = 1, maxBlockSize = 2;</b>
+&nbsp;
+&nbsp;    public Constructor(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        size = 3;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        clearOnDoubleTap = true;</b>
+&nbsp;
+<b class="fc">&nbsp;        configClear((ConstructorBuild tile) -&gt; tile.recipe = null);</b>
+<b class="fc">&nbsp;        config(Block.class, (ConstructorBuild tile, Block block) -&gt; {</b>
+<b class="nc">&nbsp;            if(tile.recipe != block) tile.progress = 0f;</b>
+<b class="nc">&nbsp;            if(canProduce(block)){</b>
+<b class="nc">&nbsp;                tile.recipe = block;</b>
+&nbsp;            }
+&nbsp;        });
+<b class="fc">&nbsp;        configClear((ConstructorBuild tile) -&gt; tile.recipe = null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.output, &quot;@x@ ~ @x@&quot;, minBlockSize, minBlockSize, maxBlockSize, maxBlockSize);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canProduce(Block b){
+<b class="nc">&nbsp;        return b.isVisible() &amp;&amp; b.size &gt;= minBlockSize &amp;&amp; b.size &lt;= maxBlockSize &amp;&amp; !(b instanceof CoreBlock) &amp;&amp; !state.rules.isBanned(b) &amp;&amp; b.environmentBuildable() &amp;&amp; (filter.isEmpty() || filter.contains(b));</b>
+&nbsp;    }
+&nbsp;    
+<b class="fc">&nbsp;    public class ConstructorBuild extends BlockProducerBuild{</b>
+&nbsp;        public @Nullable Block recipe;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public @Nullable Block recipe(){
+<b class="fc">&nbsp;            return recipe;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            ItemSelection.buildTable(Constructor.this, table, filter.isEmpty() ? content.blocks().select(Constructor.this::canProduce) : filter, () -&gt; recipe, this::configure, selectionRows, selectionColumns);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Object config(){
+<b class="nc">&nbsp;            return recipe;</b>
+&nbsp;        }
+&nbsp;        
+&nbsp;        @Override
+&nbsp;        public void drawSelect(){
+<b class="nc">&nbsp;            if(recipe != null){</b>
+<b class="nc">&nbsp;                float dx = x - size * tilesize/2f, dy = y + size * tilesize/2f;</b>
+<b class="nc">&nbsp;                TextureRegion icon = recipe.uiIcon;</b>
+<b class="nc">&nbsp;                Draw.mixcol(Color.darkGray, 1f);</b>
+&nbsp;                //Fixes size because modded content icons are not scaled
+<b class="nc">&nbsp;                Draw.rect(icon, dx - 0.7f, dy - 1f, Draw.scl * Draw.xscl * 24f, Draw.scl * Draw.yscl * 24f);</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+<b class="nc">&nbsp;                Draw.rect(icon, dx, dy, Draw.scl * Draw.xscl * 24f, Draw.scl * Draw.yscl * 24f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.s(recipe == null ? -1 : recipe.id);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            recipe = Vars.content.block(read.s());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

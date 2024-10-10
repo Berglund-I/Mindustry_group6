@@ -1,0 +1,280 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PausedDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: PausedDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PausedDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/95)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.editor.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class PausedDialog extends BaseDialog{
+<b class="nc">&nbsp;    private MapProcessorsDialog processors = new MapProcessorsDialog();</b>
+<b class="nc">&nbsp;    private SaveDialog save = new SaveDialog();</b>
+<b class="nc">&nbsp;    private LoadDialog load = new LoadDialog();</b>
+<b class="nc">&nbsp;    private CustomRulesDialog rulesDialog = new CustomRulesDialog();</b>
+&nbsp;
+&nbsp;    public PausedDialog(){
+<b class="nc">&nbsp;        super(&quot;@menu&quot;);</b>
+<b class="nc">&nbsp;        shouldPause = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        clearChildren();</b>
+<b class="nc">&nbsp;        add(titleTable).growX().row();</b>
+&nbsp;
+<b class="nc">&nbsp;        stack(cont, new Table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.bottom().left();</b>
+<b class="nc">&nbsp;            t.button(Icon.book, () -&gt; {</b>
+<b class="nc">&nbsp;                Rules toEdit = Vars.state.rules.copy();</b>
+<b class="nc">&nbsp;                rulesDialog.show(toEdit, () -&gt; state.rules.copy());</b>
+<b class="nc">&nbsp;                rulesDialog.hidden(() -&gt; {</b>
+&nbsp;                    //apply rule changes only once it is hidden
+<b class="nc">&nbsp;                    Vars.state.rules = toEdit;</b>
+<b class="nc">&nbsp;                    Call.setRules(toEdit);</b>
+&nbsp;                });
+<b class="nc">&nbsp;            }).size(70f).tooltip(&quot;@customize&quot;).visible(() -&gt; state.rules.allowEditRules &amp;&amp; (net.server() || !net.active()));</b>
+<b class="nc">&nbsp;        })).grow().row();</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(this::rebuild);</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseListener();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void rebuild(){
+<b class="nc">&nbsp;        cont.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        update(() -&gt; {</b>
+<b class="nc">&nbsp;            if(state.isMenu() &amp;&amp; isShown()){</b>
+<b class="nc">&nbsp;                hide();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        if(!mobile){</b>
+<b class="nc">&nbsp;            float dw = 220f;</b>
+<b class="nc">&nbsp;            cont.defaults().width(dw).height(55).pad(5f);</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.button(&quot;@objective&quot;, Icon.info, () -&gt; ui.fullText.show(&quot;@objective&quot;, state.rules.sector.preset.description))</b>
+<b class="nc">&nbsp;            .visible(() -&gt; state.rules.sector != null &amp;&amp; state.rules.sector.preset != null &amp;&amp; state.rules.sector.preset.description != null).padTop(-60f);</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.button(&quot;@abandon&quot;, Icon.cancel, () -&gt; ui.planet.abandonSectorConfirm(state.rules.sector, this::hide)).padTop(-60f)</b>
+<b class="nc">&nbsp;            .disabled(b -&gt; net.client()).visible(() -&gt; state.rules.sector != null).row();</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.button(&quot;@back&quot;, Icon.left, this::hide).name(&quot;back&quot;);</b>
+<b class="nc">&nbsp;            cont.button(&quot;@settings&quot;, Icon.settings, ui.settings::show).name(&quot;settings&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!state.isCampaign() &amp;&amp; !state.isEditor()){</b>
+<b class="nc">&nbsp;                cont.row();</b>
+<b class="nc">&nbsp;                cont.button(&quot;@savegame&quot;, Icon.save, save::show);</b>
+<b class="nc">&nbsp;                cont.button(&quot;@loadgame&quot;, Icon.upload, load::show).disabled(b -&gt; net.active());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            cont.row();</b>
+&nbsp;
+&nbsp;            //the button runs out of space when the editor button is added, so use the mobile text
+<b class="nc">&nbsp;            cont.button(state.isEditor() ? &quot;@hostserver.mobile&quot; : &quot;@hostserver&quot;, Icon.host, () -&gt; {</b>
+<b class="nc">&nbsp;                if(net.server() &amp;&amp; steam){</b>
+<b class="nc">&nbsp;                    platform.inviteFriends();</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    ui.host.show();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }).disabled(b -&gt; !((steam &amp;&amp; net.server()) || !net.active())).colspan(state.isEditor() ? 1 : 2).width(state.isEditor() ? dw : dw * 2 + 10f)</b>
+<b class="nc">&nbsp;                .update(e -&gt; e.setText(net.server() &amp;&amp; steam ? &quot;@invitefriends&quot; : state.isEditor() ? &quot;@hostserver.mobile&quot; : &quot;@hostserver&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(state.isEditor()){</b>
+<b class="nc">&nbsp;                cont.button(&quot;@editor.worldprocessors&quot;, Icon.logic, () -&gt; {</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                    processors.show();</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.button(&quot;@quit&quot;, Icon.exit, this::showQuitConfirm).colspan(2).width(dw + 10f).update(s -&gt; s.setText(control.saves.getCurrent() != null &amp;&amp; control.saves.getCurrent().isAutosave() ? &quot;@save.quit&quot; : &quot;@quit&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            cont.defaults().size(130f).pad(5);</b>
+<b class="nc">&nbsp;            cont.buttonRow(&quot;@back&quot;, Icon.play, this::hide);</b>
+<b class="nc">&nbsp;            cont.buttonRow(&quot;@settings&quot;, Icon.settings, ui.settings::show);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!state.isCampaign() &amp;&amp; !state.isEditor()){</b>
+<b class="nc">&nbsp;                cont.buttonRow(&quot;@save&quot;, Icon.save, save::show);</b>
+&nbsp;
+<b class="nc">&nbsp;                cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                cont.buttonRow(&quot;@load&quot;, Icon.download, load::show).disabled(b -&gt; net.active());</b>
+<b class="nc">&nbsp;            }else if(state.isCampaign()){</b>
+<b class="nc">&nbsp;                cont.buttonRow(&quot;@research&quot;, Icon.tree, ui.research::show);</b>
+&nbsp;
+<b class="nc">&nbsp;                cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                cont.buttonRow(&quot;@planetmap&quot;, Icon.map, () -&gt; {</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                    ui.planet.show();</b>
+&nbsp;                });
+&nbsp;            }else{
+<b class="nc">&nbsp;                cont.row();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            cont.buttonRow(&quot;@hostserver.mobile&quot;, Icon.host, ui.host::show).disabled(b -&gt; net.active());</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.buttonRow(&quot;@quit&quot;, Icon.exit, this::showQuitConfirm).update(s -&gt; {</b>
+<b class="nc">&nbsp;                s.setText(control.saves.getCurrent() != null &amp;&amp; control.saves.getCurrent().isAutosave() ? &quot;@save.quit&quot; : &quot;@quit&quot;);</b>
+<b class="nc">&nbsp;                s.getLabelCell().growX().wrap();</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void showQuitConfirm(){
+<b class="nc">&nbsp;        Runnable quit = () -&gt; {</b>
+<b class="nc">&nbsp;            runExitSave();</b>
+<b class="nc">&nbsp;            hide();</b>
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        if(confirmExit){</b>
+<b class="nc">&nbsp;            ui.showConfirm(&quot;@confirm&quot;, &quot;@quit.confirm&quot;, quit);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            quit.run();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean checkPlaytest(){
+<b class="nc">&nbsp;        if(state.playtestingMap != null){</b>
+&nbsp;            //no exit save here
+<b class="nc">&nbsp;            var testing = state.playtestingMap;</b>
+<b class="nc">&nbsp;            logic.reset();</b>
+<b class="nc">&nbsp;            ui.editor.resumeAfterPlaytest(testing);</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void runExitSave(){
+<b class="nc">&nbsp;        boolean wasClient = net.client();</b>
+<b class="nc">&nbsp;        if(net.client()) netClient.disconnectQuietly();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.isEditor() &amp;&amp; !wasClient){</b>
+<b class="nc">&nbsp;            ui.editor.resumeEditing();</b>
+&nbsp;            return;
+<b class="nc">&nbsp;        }else if(checkPlaytest()){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(control.saves.getCurrent() == null || !control.saves.getCurrent().isAutosave() || wasClient || state.gameOver || disableSave){</b>
+<b class="nc">&nbsp;            logic.reset();</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ui.loadAnd(&quot;@saving&quot;, () -&gt; {</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                control.saves.getCurrent().save();</b>
+<b class="nc">&nbsp;            }catch(Throwable e){</b>
+<b class="nc">&nbsp;                e.printStackTrace();</b>
+<b class="nc">&nbsp;                ui.showException(&quot;[accent]&quot; + Core.bundle.get(&quot;savefail&quot;), e);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;            logic.reset();</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

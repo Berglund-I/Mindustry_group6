@@ -1,0 +1,199 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Predict</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities</a>
+</div>
+
+<h1>Coverage Summary for Class: Predict (mindustry.entities)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Predict</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/40)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Class for predicting shoot angles based on velocities of targets.
+&nbsp; */
+<b class="nc">&nbsp;public class Predict{</b>
+<b class="nc">&nbsp;    private static final Vec2 vec = new Vec2();</b>
+<b class="nc">&nbsp;    private static final Vec2 vresult = new Vec2();</b>
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Calculates of intercept of a stationary and moving target. Do not call from multiple threads!
+&nbsp;     * @param srcx X of shooter
+&nbsp;     * @param srcy Y of shooter
+&nbsp;     * @param dstx X of target
+&nbsp;     * @param dsty Y of target
+&nbsp;     * @param dstvx X velocity of target (subtract shooter X velocity if needed)
+&nbsp;     * @param dstvy Y velocity of target (subtract shooter Y velocity if needed)
+&nbsp;     * @param v speed of bullet
+&nbsp;     * @return the intercept location
+&nbsp;     */
+&nbsp;    public static Vec2 intercept(float srcx, float srcy, float dstx, float dsty, float dstvx, float dstvy, float v){
+<b class="nc">&nbsp;        dstvx /= Time.delta;</b>
+<b class="nc">&nbsp;        dstvy /= Time.delta;</b>
+<b class="nc">&nbsp;        float tx = dstx - srcx,</b>
+<b class="nc">&nbsp;        ty = dsty - srcy;</b>
+&nbsp;
+&nbsp;        // Get quadratic equation components
+<b class="nc">&nbsp;        float a = dstvx * dstvx + dstvy * dstvy - v * v;</b>
+<b class="nc">&nbsp;        float b = 2 * (dstvx * tx + dstvy * ty);</b>
+<b class="nc">&nbsp;        float c = tx * tx + ty * ty;</b>
+&nbsp;
+&nbsp;        // Solve quadratic
+<b class="nc">&nbsp;        Vec2 ts = quad(a, b, c);</b>
+&nbsp;
+&nbsp;        // Find smallest positive solution
+<b class="nc">&nbsp;        Vec2 sol = vresult.set(dstx, dsty);</b>
+<b class="nc">&nbsp;        if(ts != null){</b>
+<b class="nc">&nbsp;            float t0 = ts.x, t1 = ts.y;</b>
+<b class="nc">&nbsp;            float t = Math.min(t0, t1);</b>
+<b class="nc">&nbsp;            if(t &lt; 0) t = Math.max(t0, t1);</b>
+<b class="nc">&nbsp;            if(t &gt; 0){</b>
+<b class="nc">&nbsp;                sol.set(dstx + dstvx * t, dsty + dstvy * t);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return sol;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Vec2 intercept(Position src, Position dst, float v){
+<b class="nc">&nbsp;        return intercept(src, dst, 0, 0, v);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Vec2 intercept(Position src, Position dst, float offsetx, float offsety, float v){
+<b class="nc">&nbsp;        float ddx = 0, ddy = 0;</b>
+<b class="nc">&nbsp;        if(dst instanceof Hitboxc h){</b>
+<b class="nc">&nbsp;            ddx += h.deltaX();</b>
+<b class="nc">&nbsp;            ddy += h.deltaY();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(src instanceof Hitboxc h){</b>
+<b class="nc">&nbsp;            ddx -= h.deltaX();</b>
+<b class="nc">&nbsp;            ddy -= h.deltaY();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return intercept(src.getX(), src.getY(), dst.getX() + offsetx, dst.getY() + offsety, ddx, ddy, v);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * See {@link #intercept(float, float, float, float, float, float, float)}.
+&nbsp;     */
+&nbsp;    public static Vec2 intercept(Hitboxc src, Hitboxc dst, float v){
+<b class="nc">&nbsp;        return intercept(src.getX(), src.getY(), dst.getX(), dst.getY(), dst.deltaX() - src.deltaX()/(2f* Time.delta), dst.deltaY() - src.deltaX()/(2f* Time.delta), v);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Vec2 quad(float a, float b, float c){
+<b class="nc">&nbsp;        Vec2 sol = null;</b>
+<b class="nc">&nbsp;        if(Math.abs(a) &lt; 1e-6){</b>
+<b class="nc">&nbsp;            if(Math.abs(b) &lt; 1e-6){</b>
+<b class="nc">&nbsp;                sol = Math.abs(c) &lt; 1e-6 ? vec.set(0, 0) : null;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                vec.set(-c / b, -c / b);</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            float disc = b * b - 4 * a * c;</b>
+<b class="nc">&nbsp;            if(disc &gt;= 0){</b>
+<b class="nc">&nbsp;                disc = Mathf.sqrt(disc);</b>
+<b class="nc">&nbsp;                a = 2 * a;</b>
+<b class="nc">&nbsp;                sol = vec.set((-b - disc) / a, (-b + disc) / a);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return sol;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

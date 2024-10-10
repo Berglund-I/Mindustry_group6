@@ -1,0 +1,829 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Voronoi</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: Voronoi (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Voronoi</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/349)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Voronoi$Edge</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Voronoi$GraphEdge</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Voronoi$Halfedge</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Voronoi$Site</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/357)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;//TODO in dire need of cleanup
+<b class="nc">&nbsp;public class Voronoi{</b>
+&nbsp;    private final static int LE = 0;
+&nbsp;    private final static int RE = 1;
+&nbsp;
+&nbsp;    //TODO make local
+&nbsp;    int siteidx;
+&nbsp;    Site[] sites;
+&nbsp;    int nsites;
+&nbsp;    float borderMinX, borderMaxX, borderMinY, borderMaxY;
+&nbsp;    float ymin;
+&nbsp;    float deltay;
+<b class="nc">&nbsp;    int nvertices = 0;</b>
+&nbsp;    int nedges;
+&nbsp;    Site bottomsite;
+&nbsp;    int PQcount;
+&nbsp;    int PQmin;
+&nbsp;    int PQhashsize;
+&nbsp;    Halfedge[] PQhash;
+&nbsp;    int ELhashsize;
+&nbsp;    Halfedge[] ELhash;
+&nbsp;    Seq&lt;GraphEdge&gt; allEdges;
+<b class="nc">&nbsp;    float minDistanceBetweenSites = 1f;</b>
+&nbsp;
+&nbsp;    public static Seq&lt;GraphEdge&gt; generate(Vec2[] values, float minX, float maxX, float minY, float maxY){
+<b class="nc">&nbsp;        return new Voronoi().generateVoronoi(values, minX, maxX, minY, maxY);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Seq&lt;GraphEdge&gt; generateVoronoi(Vec2[] values, float minX, float maxX, float minY, float maxY){
+<b class="nc">&nbsp;        allEdges = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        nsites = values.length;</b>
+&nbsp;
+<b class="nc">&nbsp;        float sn = (float)nsites + 4;</b>
+<b class="nc">&nbsp;        int rtsites = (int)Math.sqrt(sn);</b>
+&nbsp;
+<b class="nc">&nbsp;        sites = new Site[nsites];</b>
+<b class="nc">&nbsp;        Vec2 first = values[0];</b>
+<b class="nc">&nbsp;        float xmin = first.x;</b>
+<b class="nc">&nbsp;        ymin = first.y;</b>
+<b class="nc">&nbsp;        float xmax = first.x;</b>
+<b class="nc">&nbsp;        float ymax = first.y;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; nsites; i++){</b>
+<b class="nc">&nbsp;            sites[i] = new Site();</b>
+<b class="nc">&nbsp;            sites[i].coord.set(values[i]);</b>
+<b class="nc">&nbsp;            sites[i].sitenbr = i;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(values[i].x &lt; xmin){</b>
+<b class="nc">&nbsp;                xmin = values[i].x;</b>
+<b class="nc">&nbsp;            }else if(values[i].x &gt; xmax){</b>
+<b class="nc">&nbsp;                xmax = values[i].x;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(values[i].y &lt; ymin){</b>
+<b class="nc">&nbsp;                ymin = values[i].y;</b>
+<b class="nc">&nbsp;            }else if(values[i].y &gt; ymax){</b>
+<b class="nc">&nbsp;                ymax = values[i].y;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Arrays.sort(sites, (p1, p2) -&gt; {</b>
+<b class="nc">&nbsp;            Vec2 s1 = p1.coord, s2 = p2.coord;</b>
+<b class="nc">&nbsp;            if(s1.y &lt; s2.y){</b>
+<b class="nc">&nbsp;                return (-1);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(s1.y &gt; s2.y){</b>
+<b class="nc">&nbsp;                return (1);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return Float.compare(s1.x, s2.x);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        deltay = ymax - ymin;</b>
+<b class="nc">&nbsp;        float deltax = xmax - xmin;</b>
+&nbsp;
+&nbsp;        // Check bounding box inputs - if mins are bigger than maxes, swap them
+&nbsp;        float temp;
+<b class="nc">&nbsp;        if(minX &gt; maxX){</b>
+<b class="nc">&nbsp;            temp = minX;</b>
+<b class="nc">&nbsp;            minX = maxX;</b>
+<b class="nc">&nbsp;            maxX = temp;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(minY &gt; maxY){</b>
+<b class="nc">&nbsp;            temp = minY;</b>
+<b class="nc">&nbsp;            minY = maxY;</b>
+<b class="nc">&nbsp;            maxY = temp;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        borderMinX = minX;</b>
+<b class="nc">&nbsp;        borderMinY = minY;</b>
+<b class="nc">&nbsp;        borderMaxX = maxX;</b>
+<b class="nc">&nbsp;        borderMaxY = maxY;</b>
+&nbsp;
+<b class="nc">&nbsp;        siteidx = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        PQcount = 0;</b>
+<b class="nc">&nbsp;        PQmin = 0;</b>
+<b class="nc">&nbsp;        PQhashsize = 4 * rtsites;</b>
+<b class="nc">&nbsp;        PQhash = new Halfedge[PQhashsize];</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i2 = 0; i2 &lt; PQhashsize; i2 += 1){</b>
+<b class="nc">&nbsp;            PQhash[i2] = new Halfedge();</b>
+&nbsp;        }
+&nbsp;        int i1;
+<b class="nc">&nbsp;        ELhashsize = 2 * rtsites;</b>
+<b class="nc">&nbsp;        ELhash = new Halfedge[ELhashsize];</b>
+&nbsp;
+<b class="nc">&nbsp;        for(i1 = 0; i1 &lt; ELhashsize; i1 += 1){</b>
+<b class="nc">&nbsp;            ELhash[i1] = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Halfedge ELleftend = newHe(null, 0);</b>
+<b class="nc">&nbsp;        Halfedge ELrightend = newHe(null, 0);</b>
+<b class="nc">&nbsp;        ELleftend.ELleft = null;</b>
+<b class="nc">&nbsp;        ELleftend.ELright = ELrightend;</b>
+<b class="nc">&nbsp;        ELrightend.ELleft = ELleftend;</b>
+<b class="nc">&nbsp;        ELrightend.ELright = null;</b>
+<b class="nc">&nbsp;        ELhash[0] = ELleftend;</b>
+<b class="nc">&nbsp;        ELhash[ELhashsize - 1] = ELrightend;</b>
+&nbsp;
+<b class="nc">&nbsp;        bottomsite = next();</b>
+<b class="nc">&nbsp;        Site newsite = next();</b>
+&nbsp;        Halfedge lbnd;
+<b class="nc">&nbsp;        Vec2 newintstar = null;</b>
+&nbsp;        Edge e;
+&nbsp;        while(true){
+<b class="nc">&nbsp;            if(PQcount != 0){</b>
+<b class="nc">&nbsp;                Vec2 answer = new Vec2();</b>
+&nbsp;
+<b class="nc">&nbsp;                while(PQhash[PQmin].PQnext == null){</b>
+<b class="nc">&nbsp;                    PQmin += 1;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                answer.x = PQhash[PQmin].PQnext.vertex.coord.x;</b>
+<b class="nc">&nbsp;                answer.y = PQhash[PQmin].PQnext.ystar;</b>
+<b class="nc">&nbsp;                newintstar = (answer);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            Halfedge rbnd;
+&nbsp;            Halfedge bisector;
+&nbsp;            Site p;
+&nbsp;            Site bot;
+&nbsp;
+<b class="nc">&nbsp;            if(newsite != null &amp;&amp; (PQcount == 0 || newsite.coord.y &lt; newintstar.y || (newsite.coord.y == newintstar.y &amp;&amp; newsite.coord.x &lt; newintstar.x))){</b>
+<b class="nc">&nbsp;                int bucket = (int)(((newsite.coord).x - xmin) / deltax * ELhashsize);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(bucket &lt; 0){</b>
+<b class="nc">&nbsp;                    bucket = 0;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                if(bucket &gt;= ELhashsize){</b>
+<b class="nc">&nbsp;                    bucket = ELhashsize - 1;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Halfedge he = getHash(bucket);</b>
+<b class="nc">&nbsp;                if(he == null){</b>
+<b class="nc">&nbsp;                    for(int i = 1; i &lt; ELhashsize; i += 1){</b>
+<b class="nc">&nbsp;                        if((he = getHash(bucket - i)) != null){</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        if((he = getHash(bucket + i)) != null){</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;                if(he == ELleftend || (he != ELrightend &amp;&amp; right(he, (newsite.coord)))){</b>
+&nbsp;                    do{
+<b class="nc">&nbsp;                        he = he.ELright;</b>
+<b class="nc">&nbsp;                    }while(he != ELrightend &amp;&amp; right(he, (newsite.coord)));</b>
+<b class="nc">&nbsp;                    he = he.ELleft;</b>
+&nbsp;                }else{
+&nbsp;                    do{
+<b class="nc">&nbsp;                        he = he.ELleft;</b>
+<b class="nc">&nbsp;                    }while(he != ELleftend &amp;&amp; !right(he, (newsite.coord)));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(bucket &gt; 0 &amp;&amp; bucket &lt; ELhashsize - 1){</b>
+<b class="nc">&nbsp;                    ELhash[bucket] = he;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                lbnd = he;</b>
+<b class="nc">&nbsp;                rbnd = lbnd.ELright;</b>
+&nbsp;
+<b class="nc">&nbsp;                bot = rightreg(lbnd);</b>
+<b class="nc">&nbsp;                e = bisect(bot, newsite);</b>
+&nbsp;
+<b class="nc">&nbsp;                bisector = newHe(e, LE);</b>
+<b class="nc">&nbsp;                insert(lbnd, bisector);</b>
+&nbsp;
+<b class="nc">&nbsp;                if((p = intersect(lbnd, bisector)) != null){</b>
+<b class="nc">&nbsp;                    pqdelete(lbnd);</b>
+<b class="nc">&nbsp;                    pqinsert(lbnd, p, p.coord.dst(newsite.coord));</b>
+&nbsp;                }
+<b class="nc">&nbsp;                lbnd = bisector;</b>
+<b class="nc">&nbsp;                bisector = newHe(e, RE);</b>
+<b class="nc">&nbsp;                insert(lbnd, bisector);</b>
+&nbsp;
+<b class="nc">&nbsp;                if((p = intersect(bisector, rbnd)) != null){</b>
+<b class="nc">&nbsp;                    pqinsert(bisector, p, p.coord.dst(newsite.coord));</b>
+&nbsp;                }
+<b class="nc">&nbsp;                newsite = next();</b>
+<b class="nc">&nbsp;            }else if(!(PQcount == 0)){</b>
+&nbsp;                Halfedge curr;
+&nbsp;
+<b class="nc">&nbsp;                curr = PQhash[PQmin].PQnext;</b>
+<b class="nc">&nbsp;                PQhash[PQmin].PQnext = curr.PQnext;</b>
+<b class="nc">&nbsp;                PQcount -= 1;</b>
+<b class="nc">&nbsp;                lbnd = (curr);</b>
+<b class="nc">&nbsp;                Halfedge llbnd = lbnd.ELleft;</b>
+<b class="nc">&nbsp;                rbnd = lbnd.ELright;</b>
+<b class="nc">&nbsp;                Halfedge rrbnd = (rbnd.ELright);</b>
+<b class="nc">&nbsp;                bot = leftReg(lbnd);</b>
+<b class="nc">&nbsp;                Site top = rightreg(rbnd);</b>
+&nbsp;
+<b class="nc">&nbsp;                Site v = lbnd.vertex;</b>
+<b class="nc">&nbsp;                v.sitenbr = nvertices;</b>
+<b class="nc">&nbsp;                nvertices += 1;</b>
+<b class="nc">&nbsp;                endpoint(lbnd.ELedge, lbnd.ELpm, v);</b>
+<b class="nc">&nbsp;                endpoint(rbnd.ELedge, rbnd.ELpm, v);</b>
+<b class="nc">&nbsp;                delete(lbnd);</b>
+<b class="nc">&nbsp;                pqdelete(rbnd);</b>
+<b class="nc">&nbsp;                delete(rbnd);</b>
+<b class="nc">&nbsp;                int pm = LE;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(bot.coord.y &gt; top.coord.y){</b>
+<b class="nc">&nbsp;                    Site temp1 = bot;</b>
+<b class="nc">&nbsp;                    bot = top;</b>
+<b class="nc">&nbsp;                    top = temp1;</b>
+<b class="nc">&nbsp;                    pm = RE;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                e = bisect(bot, top);</b>
+<b class="nc">&nbsp;                bisector = newHe(e, pm);</b>
+<b class="nc">&nbsp;                insert(llbnd, bisector);</b>
+<b class="nc">&nbsp;                endpoint(e, RE - pm, v);</b>
+&nbsp;
+<b class="nc">&nbsp;                if((p = intersect(llbnd, bisector)) != null){</b>
+<b class="nc">&nbsp;                    pqdelete(llbnd);</b>
+<b class="nc">&nbsp;                    pqinsert(llbnd, p, p.coord.dst(bot.coord));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if((p = intersect(bisector, rrbnd)) != null){</b>
+<b class="nc">&nbsp;                    pqinsert(bisector, p, p.coord.dst(bot.coord));</b>
+&nbsp;                }
+&nbsp;            }else{
+&nbsp;                break;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        for(lbnd = (ELleftend.ELright); lbnd != ELrightend; lbnd = (lbnd.ELright)){</b>
+<b class="nc">&nbsp;            e = lbnd.ELedge;</b>
+<b class="nc">&nbsp;            clipLine(e);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return allEdges;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Site next(){
+<b class="nc">&nbsp;        return siteidx &lt; nsites ? sites[siteidx ++] : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Edge bisect(Site s1, Site s2){
+<b class="nc">&nbsp;        Edge newedge = new Edge();</b>
+&nbsp;
+&nbsp;        // store the sites that this edge is bisecting
+<b class="nc">&nbsp;        newedge.reg[0] = s1;</b>
+<b class="nc">&nbsp;        newedge.reg[1] = s2;</b>
+&nbsp;        // to begin with, there are no endpoints on the bisector - it goes to
+&nbsp;        // infinity
+<b class="nc">&nbsp;        newedge.ep[0] = null;</b>
+<b class="nc">&nbsp;        newedge.ep[1] = null;</b>
+&nbsp;
+&nbsp;        // get the difference in x dist between the sites
+<b class="nc">&nbsp;        float dx = s2.coord.x - s1.coord.x;</b>
+<b class="nc">&nbsp;        float dy = s2.coord.y - s1.coord.y;</b>
+&nbsp;        // make sure that the difference in positive
+<b class="nc">&nbsp;        float adx = dx &gt; 0 ? dx : -dx;</b>
+<b class="nc">&nbsp;        float ady = dy &gt; 0 ? dy : -dy;</b>
+<b class="nc">&nbsp;        newedge.c = s1.coord.x * dx + s1.coord.y * dy + (dx * dx + dy * dy) * 0.5f;// get the slope of the line</b>
+&nbsp;
+<b class="nc">&nbsp;        if(adx &gt; ady){</b>
+<b class="nc">&nbsp;            newedge.a = 1.0f;</b>
+<b class="nc">&nbsp;            newedge.b = dy / dx;</b>
+<b class="nc">&nbsp;            newedge.c /= dx;// set formula of line, with x fixed to 1</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            newedge.b = 1.0f;</b>
+<b class="nc">&nbsp;            newedge.a = dx / dy;</b>
+<b class="nc">&nbsp;            newedge.c /= dy;// set formula of line, with y fixed to 1</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        newedge.edgenbr = nedges;</b>
+&nbsp;
+<b class="nc">&nbsp;        nedges += 1;</b>
+<b class="nc">&nbsp;        return newedge;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private int pqbucket(Halfedge he){
+&nbsp;        int bucket;
+&nbsp;
+<b class="nc">&nbsp;        bucket = (int)((he.ystar - ymin) / deltay * PQhashsize);</b>
+<b class="nc">&nbsp;        if(bucket &lt; 0){</b>
+<b class="nc">&nbsp;            bucket = 0;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(bucket &gt;= PQhashsize){</b>
+<b class="nc">&nbsp;            bucket = PQhashsize - 1;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(bucket &lt; PQmin){</b>
+<b class="nc">&nbsp;            PQmin = bucket;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return bucket;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // push the HalfEdge into the ordered linked list of vertices
+&nbsp;    private void pqinsert(Halfedge he, Site v, float offset){
+&nbsp;        Halfedge last, next;
+&nbsp;
+<b class="nc">&nbsp;        he.vertex = v;</b>
+<b class="nc">&nbsp;        he.ystar = v.coord.y + offset;</b>
+<b class="nc">&nbsp;        last = PQhash[pqbucket(he)];</b>
+<b class="nc">&nbsp;        while((next = last.PQnext) != null</b>
+&nbsp;        &amp;&amp; (he.ystar &gt; next.ystar || (he.ystar == next.ystar &amp;&amp; v.coord.x &gt; next.vertex.coord.x))){
+<b class="nc">&nbsp;            last = next;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        he.PQnext = last.PQnext;</b>
+<b class="nc">&nbsp;        last.PQnext = he;</b>
+<b class="nc">&nbsp;        PQcount += 1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // remove the HalfEdge from the list of vertices
+&nbsp;    private void pqdelete(Halfedge he){
+&nbsp;        Halfedge last;
+&nbsp;
+<b class="nc">&nbsp;        if(he.vertex != null){</b>
+<b class="nc">&nbsp;            last = PQhash[pqbucket(he)];</b>
+<b class="nc">&nbsp;            while(last.PQnext != he){</b>
+<b class="nc">&nbsp;                last = last.PQnext;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            last.PQnext = he.PQnext;</b>
+<b class="nc">&nbsp;            PQcount -= 1;</b>
+<b class="nc">&nbsp;            he.vertex = null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Halfedge newHe(Edge e, int pm){
+<b class="nc">&nbsp;        Halfedge answer = new Halfedge();</b>
+<b class="nc">&nbsp;        answer.ELedge = e;</b>
+<b class="nc">&nbsp;        answer.ELpm = pm;</b>
+<b class="nc">&nbsp;        answer.PQnext = null;</b>
+<b class="nc">&nbsp;        answer.vertex = null;</b>
+<b class="nc">&nbsp;        return answer;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Site leftReg(Halfedge he){
+<b class="nc">&nbsp;        if(he.ELedge == null){</b>
+<b class="nc">&nbsp;            return bottomsite;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return he.ELpm == LE ? he.ELedge.reg[LE] : he.ELedge.reg[RE];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void insert(Halfedge lb, Halfedge newHe){
+<b class="nc">&nbsp;        newHe.ELleft = lb;</b>
+<b class="nc">&nbsp;        newHe.ELright = lb.ELright;</b>
+<b class="nc">&nbsp;        lb.ELright.ELleft = newHe;</b>
+<b class="nc">&nbsp;        lb.ELright = newHe;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /*
+&nbsp;     * This delete routine can&#39;t reclaim node, since pointers from hash table
+&nbsp;     * may be present.
+&nbsp;     */
+&nbsp;    private void delete(Halfedge he){
+<b class="nc">&nbsp;        he.ELleft.ELright = he.ELright;</b>
+<b class="nc">&nbsp;        he.ELright.ELleft = he.ELleft;</b>
+<b class="nc">&nbsp;        he.deleted = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /* Get entry from hash table, pruning any deleted nodes */
+&nbsp;    private Halfedge getHash(int b){
+&nbsp;        Halfedge he;
+&nbsp;
+<b class="nc">&nbsp;        if(b &lt; 0 || b &gt;= ELhashsize){</b>
+<b class="nc">&nbsp;            return (null);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        he = ELhash[b];</b>
+<b class="nc">&nbsp;        if(he == null || !he.deleted){</b>
+<b class="nc">&nbsp;            return (he);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /* Hash table points to deleted half edge. Patch as necessary. */
+<b class="nc">&nbsp;        ELhash[b] = null;</b>
+<b class="nc">&nbsp;        return (null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void clipLine(Edge e){
+&nbsp;        float pxmin, pxmax, pymin, pymax;
+&nbsp;        Site s1, s2;
+&nbsp;        float x1, x2, y1, y2;
+&nbsp;
+<b class="nc">&nbsp;        x1 = e.reg[0].coord.x;</b>
+<b class="nc">&nbsp;        x2 = e.reg[1].coord.x;</b>
+<b class="nc">&nbsp;        y1 = e.reg[0].coord.y;</b>
+<b class="nc">&nbsp;        y2 = e.reg[1].coord.y;</b>
+&nbsp;
+&nbsp;        // if the distance between the two points this line was created from is
+&nbsp;        // less than the square root of 2, then ignore it
+<b class="nc">&nbsp;        if(Math.sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))) &lt; minDistanceBetweenSites){</b>
+&nbsp;            return;
+&nbsp;        }
+<b class="nc">&nbsp;        pxmin = borderMinX;</b>
+<b class="nc">&nbsp;        pxmax = borderMaxX;</b>
+<b class="nc">&nbsp;        pymin = borderMinY;</b>
+<b class="nc">&nbsp;        pymax = borderMaxY;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(e.a == 1.0 &amp;&amp; e.b &gt;= 0.0){</b>
+<b class="nc">&nbsp;            s1 = e.ep[1];</b>
+<b class="nc">&nbsp;            s2 = e.ep[0];</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            s1 = e.ep[0];</b>
+<b class="nc">&nbsp;            s2 = e.ep[1];</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(e.a == 1.0){</b>
+<b class="nc">&nbsp;            y1 = pymin;</b>
+<b class="nc">&nbsp;            if(s1 != null &amp;&amp; s1.coord.y &gt; pymin){</b>
+<b class="nc">&nbsp;                y1 = s1.coord.y;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(y1 &gt; pymax){</b>
+<b class="nc">&nbsp;                y1 = pymax;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            x1 = e.c - e.b * y1;</b>
+<b class="nc">&nbsp;            y2 = pymax;</b>
+<b class="nc">&nbsp;            if(s2 != null &amp;&amp; s2.coord.y &lt; pymax){</b>
+<b class="nc">&nbsp;                y2 = s2.coord.y;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(y2 &lt; pymin){</b>
+<b class="nc">&nbsp;                y2 = pymin;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            x2 = (e.c) - (e.b) * y2;</b>
+<b class="nc">&nbsp;            if(((x1 &gt; pxmax) &amp; (x2 &gt; pxmax)) | ((x1 &lt; pxmin) &amp; (x2 &lt; pxmin))){</b>
+&nbsp;                return;
+&nbsp;            }
+<b class="nc">&nbsp;            if(x1 &gt; pxmax){</b>
+<b class="nc">&nbsp;                x1 = pxmax;</b>
+<b class="nc">&nbsp;                y1 = (e.c - x1) / e.b;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(x1 &lt; pxmin){</b>
+<b class="nc">&nbsp;                x1 = pxmin;</b>
+<b class="nc">&nbsp;                y1 = (e.c - x1) / e.b;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(x2 &gt; pxmax){</b>
+<b class="nc">&nbsp;                x2 = pxmax;</b>
+<b class="nc">&nbsp;                y2 = (e.c - x2) / e.b;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(x2 &lt; pxmin){</b>
+<b class="nc">&nbsp;                x2 = pxmin;</b>
+<b class="nc">&nbsp;                y2 = (e.c - x2) / e.b;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            x1 = pxmin;</b>
+<b class="nc">&nbsp;            if(s1 != null &amp;&amp; s1.coord.x &gt; pxmin){</b>
+<b class="nc">&nbsp;                x1 = s1.coord.x;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(x1 &gt; pxmax){</b>
+<b class="nc">&nbsp;                x1 = pxmax;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            y1 = e.c - e.a * x1;</b>
+<b class="nc">&nbsp;            x2 = pxmax;</b>
+<b class="nc">&nbsp;            if(s2 != null &amp;&amp; s2.coord.x &lt; pxmax){</b>
+<b class="nc">&nbsp;                x2 = s2.coord.x;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(x2 &lt; pxmin){</b>
+<b class="nc">&nbsp;                x2 = pxmin;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            y2 = e.c - e.a * x2;</b>
+<b class="nc">&nbsp;            if(((y1 &gt; pymax) &amp; (y2 &gt; pymax)) | ((y1 &lt; pymin) &amp; (y2 &lt; pymin))){</b>
+&nbsp;                return;
+&nbsp;            }
+<b class="nc">&nbsp;            if(y1 &gt; pymax){</b>
+<b class="nc">&nbsp;                y1 = pymax;</b>
+<b class="nc">&nbsp;                x1 = (e.c - y1) / e.a;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(y1 &lt; pymin){</b>
+<b class="nc">&nbsp;                y1 = pymin;</b>
+<b class="nc">&nbsp;                x1 = (e.c - y1) / e.a;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(y2 &gt; pymax){</b>
+<b class="nc">&nbsp;                y2 = pymax;</b>
+<b class="nc">&nbsp;                x2 = (e.c - y2) / e.a;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(y2 &lt; pymin){</b>
+<b class="nc">&nbsp;                y2 = pymin;</b>
+<b class="nc">&nbsp;                x2 = (e.c - y2) / e.a;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        GraphEdge newEdge = new GraphEdge();</b>
+<b class="nc">&nbsp;        allEdges.add(newEdge);</b>
+<b class="nc">&nbsp;        newEdge.x1 = x1;</b>
+<b class="nc">&nbsp;        newEdge.y1 = y1;</b>
+<b class="nc">&nbsp;        newEdge.x2 = x2;</b>
+<b class="nc">&nbsp;        newEdge.y2 = y2;</b>
+&nbsp;
+<b class="nc">&nbsp;        newEdge.site1 = e.reg[0].sitenbr;</b>
+<b class="nc">&nbsp;        newEdge.site2 = e.reg[1].sitenbr;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void endpoint(Edge e, int lr, Site s){
+<b class="nc">&nbsp;        e.ep[lr] = s;</b>
+<b class="nc">&nbsp;        if(e.ep[RE - lr] == null){</b>
+&nbsp;            return;
+&nbsp;        }
+<b class="nc">&nbsp;        clipLine(e);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean right(Halfedge el, Vec2 p){
+<b class="nc">&nbsp;        Edge e = el.ELedge;</b>
+<b class="nc">&nbsp;        Site topsite = e.reg[1];</b>
+<b class="nc">&nbsp;        boolean rightOf = p.x &gt; topsite.coord.x;</b>
+<b class="nc">&nbsp;        if(rightOf &amp;&amp; el.ELpm == LE){</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(!rightOf &amp;&amp; el.ELpm == RE){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean above;
+<b class="nc">&nbsp;        if(e.a == 1.0){</b>
+<b class="nc">&nbsp;            float dyp = p.y - topsite.coord.y;</b>
+<b class="nc">&nbsp;            float dxp = p.x - topsite.coord.x;</b>
+<b class="nc">&nbsp;            boolean fast = false;</b>
+<b class="nc">&nbsp;            if((!rightOf &amp; (e.b &lt; 0.0)) | (rightOf &amp; (e.b &gt;= 0.0))){</b>
+<b class="nc">&nbsp;                above = dyp &gt;= e.b * dxp;</b>
+<b class="nc">&nbsp;                fast = above;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                above = p.x + p.y * e.b &gt; e.c;</b>
+<b class="nc">&nbsp;                if(e.b &lt; 0.0){</b>
+<b class="nc">&nbsp;                    above = !above;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                if(!above){</b>
+<b class="nc">&nbsp;                    fast = true;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            if(!fast){</b>
+<b class="nc">&nbsp;                float dxs = topsite.coord.x - (e.reg[0]).coord.x;</b>
+<b class="nc">&nbsp;                above = e.b * (dxp * dxp - dyp * dyp) &lt; dxs * dyp</b>
+&nbsp;                * (1.0 + 2.0 * dxp / dxs + e.b * e.b);
+<b class="nc">&nbsp;                if(e.b &lt; 0.0){</b>
+<b class="nc">&nbsp;                    above = !above;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            float yl = e.c - e.a * p.x;</b>
+<b class="nc">&nbsp;            float t1 = p.y - yl;</b>
+<b class="nc">&nbsp;            float t2 = p.x - topsite.coord.x;</b>
+<b class="nc">&nbsp;            float t3 = yl - topsite.coord.y;</b>
+<b class="nc">&nbsp;            above = t1 * t1 &gt; t2 * t2 + t3 * t3;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return ((el.ELpm == LE) == above);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Site rightreg(Halfedge he){
+<b class="nc">&nbsp;        if(he.ELedge == null) return bottomsite;</b>
+&nbsp;
+<b class="nc">&nbsp;        return (he.ELpm == LE ? he.ELedge.reg[RE] : he.ELedge.reg[LE]);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Site intersect(Halfedge el1, Halfedge el2){
+&nbsp;        Edge e1, e2, e;
+&nbsp;        Halfedge el;
+&nbsp;        float d, xint, yint;
+&nbsp;        boolean right_of_site;
+&nbsp;        Site v;
+&nbsp;
+<b class="nc">&nbsp;        e1 = el1.ELedge;</b>
+<b class="nc">&nbsp;        e2 = el2.ELedge;</b>
+<b class="nc">&nbsp;        if(e1 == null || e2 == null){</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(e1.reg[1] == e2.reg[1]){</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        d = e1.a * e2.b - e1.b * e2.a;</b>
+<b class="nc">&nbsp;        if(-1.0e-10 &lt; d &amp;&amp; d &lt; 1.0e-10){</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        xint = (e1.c * e2.b - e2.c * e1.b) / d;</b>
+<b class="nc">&nbsp;        yint = (e2.c * e1.a - e1.c * e2.a) / d;</b>
+&nbsp;
+<b class="nc">&nbsp;        if((e1.reg[1].coord.y &lt; e2.reg[1].coord.y)</b>
+&nbsp;        || (e1.reg[1].coord.y == e2.reg[1].coord.y &amp;&amp; e1.reg[1].coord.x &lt; e2.reg[1].coord.x)){
+<b class="nc">&nbsp;            el = el1;</b>
+<b class="nc">&nbsp;            e = e1;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            el = el2;</b>
+<b class="nc">&nbsp;            e = e2;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        right_of_site = xint &gt;= e.reg[1].coord.x;</b>
+<b class="nc">&nbsp;        if((right_of_site &amp;&amp; el.ELpm == LE)</b>
+&nbsp;        || (!right_of_site &amp;&amp; el.ELpm == RE)){
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        v = new Site();</b>
+<b class="nc">&nbsp;        v.coord.x = xint;</b>
+<b class="nc">&nbsp;        v.coord.y = yint;</b>
+<b class="nc">&nbsp;        return (v);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static class Site{</b>
+<b class="nc">&nbsp;        Vec2 coord = new Vec2();</b>
+&nbsp;        int sitenbr;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static class Halfedge{</b>
+&nbsp;        Halfedge ELleft, ELright;
+&nbsp;        Edge ELedge;
+&nbsp;        boolean deleted;
+&nbsp;        int ELpm;
+&nbsp;        Site vertex;
+&nbsp;        float ystar;
+&nbsp;        Halfedge PQnext;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static class GraphEdge{</b>
+&nbsp;        public float x1, y1, x2, y2;
+&nbsp;
+&nbsp;        public int site1, site2;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static class Edge{</b>
+<b class="nc">&nbsp;        float a = 0, b = 0, c = 0;</b>
+<b class="nc">&nbsp;        Site[] ep = new Site[2];</b>
+<b class="nc">&nbsp;        Site[] reg = new Site[2];</b>
+&nbsp;        int edgenbr;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

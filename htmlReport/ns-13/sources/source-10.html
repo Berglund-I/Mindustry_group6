@@ -1,0 +1,180 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnitSpawnAbility</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.abilities</a>
+</div>
+
+<h1>Coverage Summary for Class: UnitSpawnAbility (mindustry.entities.abilities)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnitSpawnAbility</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (2/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (8/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.abilities;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class UnitSpawnAbility extends Ability{
+&nbsp;    public UnitType unit;
+<b class="fc">&nbsp;    public float spawnTime = 60f, spawnX, spawnY;</b>
+<b class="fc">&nbsp;    public Effect spawnEffect = Fx.spawn;</b>
+&nbsp;    public boolean parentizeEffects;
+&nbsp;
+&nbsp;    protected float timer;
+&nbsp;
+<b class="fc">&nbsp;    public UnitSpawnAbility(UnitType unit, float spawnTime, float spawnX, float spawnY){</b>
+<b class="fc">&nbsp;        this.unit = unit;</b>
+<b class="fc">&nbsp;        this.spawnTime = spawnTime;</b>
+<b class="fc">&nbsp;        this.spawnX = spawnX;</b>
+<b class="fc">&nbsp;        this.spawnY = spawnY;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public UnitSpawnAbility(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void addStats(Table t){
+<b class="nc">&nbsp;        super.addStats(t);</b>
+<b class="nc">&nbsp;        t.add(abilityStat(&quot;buildtime&quot;, Strings.autoFixed(spawnTime / 60f, 2)));</b>
+<b class="nc">&nbsp;        t.row();</b>
+<b class="nc">&nbsp;        t.add((unit.hasEmoji() ? unit.emoji() : &quot;&quot;) + &quot;[stat]&quot; + unit.localizedName);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(Unit unit){
+<b class="nc">&nbsp;        timer += Time.delta * state.rules.unitBuildSpeed(unit.team);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(timer &gt;= spawnTime &amp;&amp; Units.canCreate(unit.team, this.unit)){</b>
+<b class="nc">&nbsp;            float x = unit.x + Angles.trnsx(unit.rotation, spawnY, spawnX), y = unit.y + Angles.trnsy(unit.rotation, spawnY, spawnX);</b>
+<b class="nc">&nbsp;            spawnEffect.at(x, y, 0f, parentizeEffects ? unit : null);</b>
+<b class="nc">&nbsp;            Unit u = this.unit.create(unit.team);</b>
+<b class="nc">&nbsp;            u.set(x, y);</b>
+<b class="nc">&nbsp;            u.rotation = unit.rotation;</b>
+<b class="nc">&nbsp;            Events.fire(new UnitCreateEvent(u, null, unit));</b>
+<b class="nc">&nbsp;            if(!Vars.net.client()){</b>
+<b class="nc">&nbsp;                u.add();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            timer = 0f;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Unit unit){
+<b class="nc">&nbsp;        if(Units.canCreate(unit.team, this.unit)){</b>
+<b class="nc">&nbsp;            Draw.draw(Draw.z(), () -&gt; {</b>
+<b class="nc">&nbsp;                float x = unit.x + Angles.trnsx(unit.rotation, spawnY, spawnX), y = unit.y + Angles.trnsy(unit.rotation, spawnY, spawnX);</b>
+<b class="nc">&nbsp;                Drawf.construct(x, y, this.unit.fullIcon, unit.rotation - 90, timer / spawnTime, 1f, timer);</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String localized(){
+<b class="nc">&nbsp;        return Core.bundle.format(&quot;ability.unitspawn&quot;, unit.localizedName);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

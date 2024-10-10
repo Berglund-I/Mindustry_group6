@@ -1,0 +1,294 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SpawnGroup</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.game</a>
+</div>
+
+<h1>Coverage Summary for Class: SpawnGroup (mindustry.game)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SpawnGroup</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.3%
+  </span>
+  <span class="absValue">
+    (7/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    74.3%
+  </span>
+  <span class="absValue">
+    (55/74)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.game;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import arc.util.serialization.Json.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.io.versions.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * A spawn group defines spawn information for a specific type of unit, with optional extra information like
+&nbsp; * weapon equipped, ammo used, and status effects.
+&nbsp; * Each spawn group can have multiple sub-groups spawned in different areas of the map.
+&nbsp; */
+&nbsp;public class SpawnGroup implements JsonSerializable, Cloneable{
+&nbsp;    public static final int never = Integer.MAX_VALUE;
+&nbsp;
+&nbsp;    /** The unit type spawned */
+<b class="fc">&nbsp;    public UnitType type = UnitTypes.dagger;</b>
+&nbsp;    /** When this spawn should end */
+<b class="fc">&nbsp;    public int end = never;</b>
+&nbsp;    /** When this spawn should start */
+&nbsp;    public int begin;
+&nbsp;    /** The spacing, in waves, of spawns. For example, 2 = spawns every other wave */
+<b class="fc">&nbsp;    public int spacing = 1;</b>
+&nbsp;    /** Maximum amount of units that spawn */
+<b class="fc">&nbsp;    public int max = 40;</b>
+&nbsp;    /** How many waves need to pass before the amount of units spawned increases by 1 */
+<b class="fc">&nbsp;    public float unitScaling = never;</b>
+&nbsp;    /** Shield points that this unit has. */
+<b class="fc">&nbsp;    public float shields = 0f;</b>
+&nbsp;    /** How much shields get increased by per wave. */
+<b class="fc">&nbsp;    public float shieldScaling = 0f;</b>
+&nbsp;    /** Amount of enemies spawned initially, with no scaling */
+<b class="fc">&nbsp;    public int unitAmount = 1;</b>
+&nbsp;    /** If not -1, the unit will only spawn in spawnpoints with these packed coordinates. */
+<b class="fc">&nbsp;    public int spawn = -1;</b>
+&nbsp;    /** Seq of payloads that this unit will spawn with. */
+&nbsp;    public @Nullable Seq&lt;UnitType&gt; payloads;
+&nbsp;    /** Status effect applied to the spawned unit. Null to disable. */
+&nbsp;    public @Nullable StatusEffect effect;
+&nbsp;    /** Items this unit spawns with. Null to disable. */
+&nbsp;    public @Nullable ItemStack items;
+&nbsp;
+<b class="fc">&nbsp;    public SpawnGroup(UnitType type){</b>
+<b class="fc">&nbsp;        this.type = type;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public SpawnGroup(){</b>
+&nbsp;        //serialization use only
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canSpawn(int position){
+<b class="nc">&nbsp;        return spawn == -1 || spawn == position;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return amount of units spawned on a specific wave. */
+&nbsp;    public int getSpawned(int wave){
+<b class="fc">&nbsp;        if(spacing == 0) spacing = 1;</b>
+<b class="fc">&nbsp;        if(wave &lt; begin || wave &gt; end || (wave - begin) % spacing != 0){</b>
+<b class="fc">&nbsp;            return 0;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return Math.min(unitAmount + (int)(((wave - begin) / spacing) / unitScaling), max);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return amount of shields each unit has at a specific wave. */
+&nbsp;    public float getShield(int wave){
+<b class="fc">&nbsp;        return Math.max(shields + shieldScaling*(wave - begin), 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Creates a unit, and assigns correct values based on this group&#39;s data.
+&nbsp;     * This method does not add() the unit.
+&nbsp;     */
+&nbsp;    public Unit createUnit(Team team, int wave){
+<b class="fc">&nbsp;        Unit unit = type.create(team);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(effect != null){</b>
+<b class="fc">&nbsp;            unit.apply(effect, 999999f);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(items != null){</b>
+<b class="nc">&nbsp;            unit.addItem(items.item, items.amount);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        unit.shield = getShield(wave);</b>
+&nbsp;
+&nbsp;        //load up spawn payloads
+<b class="fc">&nbsp;        if(payloads != null &amp;&amp; unit instanceof Payloadc pay){</b>
+<b class="nc">&nbsp;            for(var type : payloads){</b>
+<b class="nc">&nbsp;                if(type == null) continue;</b>
+<b class="nc">&nbsp;                Unit payload = type.create(unit.team);</b>
+<b class="nc">&nbsp;                pay.pickup(payload);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return unit;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void write(Json json){
+<b class="fc">&nbsp;        if(type == null) type = UnitTypes.dagger;</b>
+<b class="fc">&nbsp;        json.writeValue(&quot;type&quot;, type.name);</b>
+<b class="fc">&nbsp;        if(begin != 0) json.writeValue(&quot;begin&quot;, begin);</b>
+<b class="fc">&nbsp;        if(end != never) json.writeValue(&quot;end&quot;, end);</b>
+<b class="fc">&nbsp;        if(spacing != 1) json.writeValue(&quot;spacing&quot;, spacing);</b>
+<b class="fc">&nbsp;        if(max != 40) json.writeValue(&quot;max&quot;, max);</b>
+<b class="fc">&nbsp;        if(unitScaling != never) json.writeValue(&quot;scaling&quot;, unitScaling);</b>
+<b class="fc">&nbsp;        if(shields != 0) json.writeValue(&quot;shields&quot;, shields);</b>
+<b class="fc">&nbsp;        if(shieldScaling != 0) json.writeValue(&quot;shieldScaling&quot;, shieldScaling);</b>
+<b class="fc">&nbsp;        if(unitAmount != 1) json.writeValue(&quot;amount&quot;, unitAmount);</b>
+<b class="fc">&nbsp;        if(effect != null) json.writeValue(&quot;effect&quot;, effect.name);</b>
+<b class="fc">&nbsp;        if(spawn != -1) json.writeValue(&quot;spawn&quot;, spawn);</b>
+<b class="fc">&nbsp;        if(payloads != null &amp;&amp; payloads.any()) json.writeValue(&quot;payloads&quot;, payloads.map(u -&gt; u.name).toArray(String.class));</b>
+<b class="fc">&nbsp;        if(items != null &amp;&amp; items.amount &gt; 0) json.writeValue(&quot;items&quot;, items);</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void read(Json json, JsonValue data){
+<b class="fc">&nbsp;        String tname = data.getString(&quot;type&quot;, &quot;dagger&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        type = content.unit(LegacyIO.unitMap.get(tname, tname));</b>
+<b class="fc">&nbsp;        if(type == null || type.internal) type = UnitTypes.dagger;</b>
+<b class="fc">&nbsp;        begin = data.getInt(&quot;begin&quot;, 0);</b>
+<b class="fc">&nbsp;        end = data.getInt(&quot;end&quot;, never);</b>
+<b class="fc">&nbsp;        spacing = data.getInt(&quot;spacing&quot;, 1);</b>
+<b class="fc">&nbsp;        max = data.getInt(&quot;max&quot;, 40);</b>
+<b class="fc">&nbsp;        unitScaling = data.getFloat(&quot;scaling&quot;, never);</b>
+<b class="fc">&nbsp;        shields = data.getFloat(&quot;shields&quot;, 0);</b>
+<b class="fc">&nbsp;        shieldScaling = data.getFloat(&quot;shieldScaling&quot;, 0);</b>
+<b class="fc">&nbsp;        unitAmount = data.getInt(&quot;amount&quot;, 1);</b>
+<b class="fc">&nbsp;        spawn = data.getInt(&quot;spawn&quot;, -1);</b>
+<b class="fc">&nbsp;        if(data.has(&quot;payloads&quot;)) payloads = Seq.with(json.readValue(String[].class, data.get(&quot;payloads&quot;))).map(content::unit).removeAll(t -&gt; t == null);</b>
+<b class="fc">&nbsp;        if(data.has(&quot;items&quot;)) items = json.readValue(ItemStack.class, data.get(&quot;items&quot;));</b>
+&nbsp;
+&nbsp;
+&nbsp;        //old boss effect ID
+<b class="fc">&nbsp;        if(data.has(&quot;effect&quot;) &amp;&amp; data.get(&quot;effect&quot;).isNumber() &amp;&amp; data.getInt(&quot;effect&quot;, -1) == 8){</b>
+<b class="fc">&nbsp;            effect = StatusEffects.boss;</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            effect = content.statusEffect(data.has(&quot;effect&quot;) &amp;&amp; data.get(&quot;effect&quot;).isString() ? data.getString(&quot;effect&quot;, &quot;none&quot;) : &quot;none&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return &quot;SpawnGroup{&quot; +</b>
+&nbsp;        &quot;type=&quot; + type +
+&nbsp;        &quot;, end=&quot; + end +
+&nbsp;        &quot;, begin=&quot; + begin +
+&nbsp;        &quot;, spacing=&quot; + spacing +
+&nbsp;        &quot;, max=&quot; + max +
+&nbsp;        &quot;, unitScaling=&quot; + unitScaling +
+&nbsp;        &quot;, unitAmount=&quot; + unitAmount +
+&nbsp;        &quot;, effect=&quot; + effect +
+&nbsp;        &quot;, items=&quot; + items +
+&nbsp;        &#39;}&#39;;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SpawnGroup copy(){
+&nbsp;        try{
+<b class="nc">&nbsp;            return (SpawnGroup)clone();</b>
+<b class="nc">&nbsp;        }catch(CloneNotSupportedException how){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;If you see this, what did you even do?&quot;, how);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean equals(Object o){
+<b class="nc">&nbsp;        if(this == o) return true;</b>
+<b class="nc">&nbsp;        if(o == null || getClass() != o.getClass()) return false;</b>
+<b class="nc">&nbsp;        SpawnGroup group = (SpawnGroup)o;</b>
+<b class="nc">&nbsp;        return end == group.end &amp;&amp; begin == group.begin &amp;&amp; spacing == group.spacing &amp;&amp; max == group.max</b>
+<b class="nc">&nbsp;            &amp;&amp; Float.compare(group.unitScaling, unitScaling) == 0 &amp;&amp; Float.compare(group.shields, shields) == 0</b>
+<b class="nc">&nbsp;            &amp;&amp; Float.compare(group.shieldScaling, shieldScaling) == 0 &amp;&amp; unitAmount == group.unitAmount &amp;&amp;</b>
+<b class="nc">&nbsp;            type == group.type &amp;&amp; effect == group.effect &amp;&amp; Structs.eq(items, group.items);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int hashCode(){
+<b class="nc">&nbsp;        return Arrays.hashCode(new Object[]{type, end, begin, spacing, max, unitScaling, shields, shieldScaling, unitAmount, effect, items});</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

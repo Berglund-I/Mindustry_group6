@@ -1,0 +1,886 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapEditorDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: MapEditorDialog (mindustry.editor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapEditorDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/65)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/428)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.actions.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.GameState.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.MapObjectives.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class MapEditorDialog extends Dialog implements Disposable{
+&nbsp;    private MapView view;
+&nbsp;    private MapInfoDialog infoDialog;
+&nbsp;    private MapLoadDialog loadDialog;
+&nbsp;    private MapResizeDialog resizeDialog;
+&nbsp;    private MapGenerateDialog generateDialog;
+&nbsp;    private SectorGenerateDialog sectorGenDialog;
+&nbsp;    private MapPlayDialog playtestDialog;
+&nbsp;    private ScrollPane pane;
+&nbsp;    private BaseDialog menu;
+&nbsp;    private Table blockSelection;
+&nbsp;    private Rules lastSavedRules;
+<b class="nc">&nbsp;    private boolean saved = false; //currently never read</b>
+<b class="nc">&nbsp;    private boolean shownWithMap = false;</b>
+<b class="nc">&nbsp;    private Seq&lt;Block&gt; blocksOut = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public MapEditorDialog(){
+<b class="nc">&nbsp;        super(&quot;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        background(Styles.black);</b>
+&nbsp;
+<b class="nc">&nbsp;        view = new MapView();</b>
+<b class="nc">&nbsp;        infoDialog = new MapInfoDialog();</b>
+<b class="nc">&nbsp;        generateDialog = new MapGenerateDialog(true);</b>
+<b class="nc">&nbsp;        sectorGenDialog = new SectorGenerateDialog();</b>
+<b class="nc">&nbsp;        playtestDialog = new MapPlayDialog();</b>
+&nbsp;
+<b class="nc">&nbsp;        menu = new BaseDialog(&quot;@menu&quot;);</b>
+<b class="nc">&nbsp;        menu.addCloseButton();</b>
+&nbsp;
+<b class="nc">&nbsp;        float swidth = 180f;</b>
+&nbsp;
+<b class="nc">&nbsp;        menu.cont.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.defaults().size(swidth, 60f).padBottom(5).padRight(5).padLeft(5);</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@editor.savemap&quot;, Icon.save, this::save);</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@editor.mapinfo&quot;, Icon.pencil, () -&gt; {</b>
+<b class="nc">&nbsp;                infoDialog.show();</b>
+<b class="nc">&nbsp;                menu.hide();</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@editor.generate&quot;, Icon.terrain, () -&gt; {</b>
+<b class="nc">&nbsp;                generateDialog.show(generateDialog::applyToEditor);</b>
+<b class="nc">&nbsp;                menu.hide();</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@editor.resize&quot;, Icon.resize, () -&gt; {</b>
+<b class="nc">&nbsp;                resizeDialog.show();</b>
+<b class="nc">&nbsp;                menu.hide();</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@editor.import&quot;, Icon.download, () -&gt; createDialog(&quot;@editor.import&quot;,</b>
+<b class="nc">&nbsp;                &quot;@editor.importmap&quot;, &quot;@editor.importmap.description&quot;, Icon.download, (Runnable)loadDialog::show,</b>
+&nbsp;                &quot;@editor.importfile&quot;, &quot;@editor.importfile.description&quot;, Icon.file, (Runnable)() -&gt;
+<b class="nc">&nbsp;                platform.showFileChooser(true, mapExtension, file -&gt; ui.loadAnd(() -&gt; {</b>
+<b class="nc">&nbsp;                    maps.tryCatchMapError(() -&gt; {</b>
+<b class="nc">&nbsp;                        if(MapIO.isImage(file)){</b>
+<b class="nc">&nbsp;                            ui.showInfo(&quot;@editor.errorimage&quot;);</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            editor.beginEdit(MapIO.createMap(file, true));</b>
+&nbsp;                        }
+&nbsp;                    });
+&nbsp;                })),
+&nbsp;
+&nbsp;                &quot;@editor.importimage&quot;, &quot;@editor.importimage.description&quot;, Icon.fileImage, (Runnable)() -&gt;
+<b class="nc">&nbsp;                platform.showFileChooser(true, &quot;png&quot;, file -&gt;</b>
+<b class="nc">&nbsp;                ui.loadAnd(() -&gt; {</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        Pixmap pixmap = new Pixmap(file);</b>
+<b class="nc">&nbsp;                        editor.beginEdit(pixmap);</b>
+<b class="nc">&nbsp;                        pixmap.dispose();</b>
+<b class="nc">&nbsp;                    }catch(Exception e){</b>
+<b class="nc">&nbsp;                        ui.showException(&quot;@editor.errorload&quot;, e);</b>
+<b class="nc">&nbsp;                        Log.err(e);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                })))
+&nbsp;            );
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@editor.export&quot;, Icon.upload, () -&gt; createDialog(&quot;@editor.export&quot;,</b>
+&nbsp;            &quot;@editor.exportfile&quot;, &quot;@editor.exportfile.description&quot;, Icon.file,
+<b class="nc">&nbsp;                (Runnable)() -&gt; platform.export(editor.tags.get(&quot;name&quot;, &quot;unknown&quot;), mapExtension, file -&gt; MapIO.writeMap(file, editor.createMap(file))),</b>
+&nbsp;            &quot;@editor.exportimage&quot;, &quot;@editor.exportimage.description&quot;, Icon.fileImage,
+<b class="nc">&nbsp;                (Runnable)() -&gt; platform.export(editor.tags.get(&quot;name&quot;, &quot;unknown&quot;), &quot;png&quot;, file -&gt; {</b>
+<b class="nc">&nbsp;                    Pixmap out = MapIO.writeImage(editor.tiles());</b>
+<b class="nc">&nbsp;                    file.writePng(out);</b>
+<b class="nc">&nbsp;                    out.dispose();</b>
+&nbsp;                })));
+&nbsp;
+<b class="nc">&nbsp;            t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@editor.ingame&quot;, Icon.right, this::editInGame);</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@editor.playtest&quot;, Icon.play, this::playtest);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        menu.cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(steam){</b>
+<b class="nc">&nbsp;            menu.cont.button(&quot;@editor.publish.workshop&quot;, Icon.link, () -&gt; {</b>
+<b class="nc">&nbsp;                Map builtin = maps.all().find(m -&gt; m.name().equals(editor.tags.get(&quot;name&quot;, &quot;&quot;).trim()));</b>
+&nbsp;
+<b class="nc">&nbsp;                if(editor.tags.containsKey(&quot;steamid&quot;) &amp;&amp; builtin != null &amp;&amp; !builtin.custom){</b>
+<b class="nc">&nbsp;                    platform.viewListingID(editor.tags.get(&quot;steamid&quot;));</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Map map = save();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(editor.tags.containsKey(&quot;steamid&quot;) &amp;&amp; map != null){</b>
+<b class="nc">&nbsp;                    platform.viewListing(map);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(map == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(map.tags.get(&quot;description&quot;, &quot;&quot;).length() &lt; 4){</b>
+<b class="nc">&nbsp;                    ui.showErrorMessage(&quot;@editor.nodescription&quot;);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(!Structs.contains(Gamemode.all, g -&gt; g.valid(map))){</b>
+<b class="nc">&nbsp;                    ui.showErrorMessage(&quot;@map.nospawn&quot;);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                platform.publish(map);</b>
+<b class="nc">&nbsp;            }).padTop(-3).size(swidth * 2f + 10, 60f).update(b -&gt;</b>
+<b class="nc">&nbsp;                b.setText(editor.tags.containsKey(&quot;steamid&quot;) ?</b>
+<b class="nc">&nbsp;                    editor.tags.get(&quot;author&quot;, &quot;&quot;).equals(steamPlayerName) ? &quot;@workshop.listing&quot; : &quot;@view.workshop&quot; :</b>
+<b class="nc">&nbsp;                &quot;@editor.publish.workshop&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;            menu.cont.row();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //wip feature
+<b class="nc">&nbsp;        if(experimental){</b>
+<b class="nc">&nbsp;            menu.cont.button(&quot;@editor.sectorgenerate&quot;, Icon.terrain, () -&gt; {</b>
+<b class="nc">&nbsp;                menu.hide();</b>
+<b class="nc">&nbsp;                sectorGenDialog.show();</b>
+<b class="nc">&nbsp;            }).padTop(!steam ? -3 : 1).size(swidth * 2f + 10, 60f);</b>
+<b class="nc">&nbsp;            menu.cont.row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        menu.cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        menu.cont.button(&quot;@quit&quot;, Icon.exit, () -&gt; {</b>
+<b class="nc">&nbsp;            tryExit();</b>
+<b class="nc">&nbsp;            menu.hide();</b>
+<b class="nc">&nbsp;        }).padTop(!steam &amp;&amp; !experimental ? -3 : 1).size(swidth * 2f + 10, 60f);</b>
+&nbsp;
+<b class="nc">&nbsp;        resizeDialog = new MapResizeDialog((width, height, shiftX, shiftY) -&gt; {</b>
+<b class="nc">&nbsp;            if(!(editor.width() == width &amp;&amp; editor.height() == height &amp;&amp; shiftX == 0 &amp;&amp; shiftY == 0)){</b>
+<b class="nc">&nbsp;                ui.loadAnd(() -&gt; {</b>
+<b class="nc">&nbsp;                    editor.resize(width, height, shiftX, shiftY);</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        loadDialog = new MapLoadDialog(map -&gt; ui.loadAnd(() -&gt; {</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                editor.beginEdit(map);</b>
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                ui.showException(&quot;@editor.errorload&quot;, e);</b>
+<b class="nc">&nbsp;                Log.err(e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }));
+&nbsp;
+<b class="nc">&nbsp;        setFillParent(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        clearChildren();</b>
+<b class="nc">&nbsp;        margin(0);</b>
+&nbsp;
+<b class="nc">&nbsp;        update(() -&gt; {</b>
+<b class="nc">&nbsp;            if(hasKeyboard()){</b>
+<b class="nc">&nbsp;                doInput();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        shown(() -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;            saved = true;</b>
+<b class="nc">&nbsp;            if(!Core.settings.getBool(&quot;landscape&quot;)) platform.beginForceLandscape();</b>
+<b class="nc">&nbsp;            editor.clearOp();</b>
+<b class="nc">&nbsp;            Core.scene.setScrollFocus(view);</b>
+<b class="nc">&nbsp;            if(!shownWithMap){</b>
+&nbsp;                //clear units, rules and other unnecessary stuff
+<b class="nc">&nbsp;                logic.reset();</b>
+<b class="nc">&nbsp;                state.rules = new Rules();</b>
+<b class="nc">&nbsp;                editor.beginEdit(200, 200);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            shownWithMap = false;</b>
+&nbsp;
+<b class="nc">&nbsp;            Time.runTask(10f, platform::updateRPC);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        hidden(() -&gt; {</b>
+<b class="nc">&nbsp;            editor.clearOp();</b>
+<b class="nc">&nbsp;            platform.updateRPC();</b>
+<b class="nc">&nbsp;            if(!Core.settings.getBool(&quot;landscape&quot;)) platform.endForceLandscape();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        shown(this::build);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resumeEditing(){
+<b class="nc">&nbsp;        state.set(State.menu);</b>
+<b class="nc">&nbsp;        shownWithMap = true;</b>
+<b class="nc">&nbsp;        show();</b>
+<b class="nc">&nbsp;        state.rules = (lastSavedRules == null ? new Rules() : lastSavedRules);</b>
+<b class="nc">&nbsp;        lastSavedRules = null;</b>
+<b class="nc">&nbsp;        saved = false;</b>
+<b class="nc">&nbsp;        editor.renderer.updateAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void editInGame(){
+<b class="nc">&nbsp;        menu.hide();</b>
+<b class="nc">&nbsp;        ui.loadAnd(() -&gt; {</b>
+<b class="nc">&nbsp;            lastSavedRules = state.rules;</b>
+<b class="nc">&nbsp;            hide();</b>
+&nbsp;            //only reset the player; logic.reset() will clear entities, which we do not want
+<b class="nc">&nbsp;            state.teams = new Teams();</b>
+<b class="nc">&nbsp;            player.reset();</b>
+<b class="nc">&nbsp;            state.rules = Gamemode.editor.apply(lastSavedRules.copy());</b>
+<b class="nc">&nbsp;            state.rules.limitMapArea = false;</b>
+<b class="nc">&nbsp;            state.rules.sector = null;</b>
+<b class="nc">&nbsp;            state.rules.fog = false;</b>
+<b class="nc">&nbsp;            state.map = new Map(StringMap.of(</b>
+&nbsp;                &quot;name&quot;, &quot;Editor Playtesting&quot;,
+<b class="nc">&nbsp;                &quot;width&quot;, editor.width(),</b>
+<b class="nc">&nbsp;                &quot;height&quot;, editor.height()</b>
+&nbsp;            ));
+<b class="nc">&nbsp;            world.endMapLoad();</b>
+<b class="nc">&nbsp;            player.set(world.width() * tilesize/2f, world.height() * tilesize/2f);</b>
+<b class="nc">&nbsp;            player.clearUnit();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(var unit : Groups.unit){</b>
+<b class="nc">&nbsp;                if(unit.spawnedByCore){</b>
+<b class="nc">&nbsp;                    unit.remove();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            Groups.build.clear();</b>
+<b class="nc">&nbsp;            Groups.weather.clear();</b>
+<b class="nc">&nbsp;            logic.play();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(player.team().core() == null){</b>
+<b class="nc">&nbsp;                player.set(world.width() * tilesize/2f, world.height() * tilesize/2f);</b>
+<b class="nc">&nbsp;                var unit = (state.rules.hasEnv(Env.scorching) ? UnitTypes.evoke : UnitTypes.alpha).spawn(player.team(), player.x, player.y);</b>
+<b class="nc">&nbsp;                unit.spawnedByCore = true;</b>
+<b class="nc">&nbsp;                player.unit(unit);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            player.checkSpawn();</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resumeAfterPlaytest(Map map){
+<b class="nc">&nbsp;        beginEditMap(map.file);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void playtest(){
+<b class="nc">&nbsp;        menu.hide();</b>
+<b class="nc">&nbsp;        Map map = save();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(map != null){</b>
+&nbsp;            //skip dialog, play immediately when shift clicked
+<b class="nc">&nbsp;            if(Core.input.shift()){</b>
+<b class="nc">&nbsp;                hide();</b>
+&nbsp;                //auto pick best fit
+<b class="nc">&nbsp;                control.playMap(map, map.applyRules(</b>
+<b class="nc">&nbsp;                    Gamemode.survival.valid(map) ? Gamemode.survival :</b>
+<b class="nc">&nbsp;                    Gamemode.attack.valid(map) ? Gamemode.attack :</b>
+<b class="nc">&nbsp;                    Gamemode.sandbox), true</b>
+&nbsp;                );
+&nbsp;            }else{
+<b class="nc">&nbsp;                playtestDialog.playListener = this::hide;</b>
+<b class="nc">&nbsp;                playtestDialog.show(map, true);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Map save(){
+<b class="nc">&nbsp;        boolean isEditor = state.rules.editor;</b>
+<b class="nc">&nbsp;        state.rules.editor = false;</b>
+<b class="nc">&nbsp;        state.rules.objectiveFlags.clear();</b>
+<b class="nc">&nbsp;        state.rules.objectives.each(MapObjective::reset);</b>
+<b class="nc">&nbsp;        String name = editor.tags.get(&quot;name&quot;, &quot;&quot;).trim();</b>
+<b class="nc">&nbsp;        editor.tags.put(&quot;rules&quot;, JsonIO.write(state.rules));</b>
+<b class="nc">&nbsp;        editor.tags.remove(&quot;width&quot;);</b>
+<b class="nc">&nbsp;        editor.tags.remove(&quot;height&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        player.clearUnit();</b>
+&nbsp;
+&nbsp;        //remove player unit
+<b class="nc">&nbsp;        Unit unit = Groups.unit.find(u -&gt; u.spawnedByCore);</b>
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            unit.remove();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Map returned = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(name.isEmpty()){</b>
+<b class="nc">&nbsp;            infoDialog.show();</b>
+<b class="nc">&nbsp;            Core.app.post(() -&gt; ui.showErrorMessage(&quot;@editor.save.noname&quot;));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Map map = maps.all().find(m -&gt; m.name().equals(name));</b>
+<b class="nc">&nbsp;            if(map != null &amp;&amp; !map.custom &amp;&amp; !map.workshop){</b>
+<b class="nc">&nbsp;                handleSaveBuiltin(map);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                boolean workshop = false;</b>
+&nbsp;                //try to preserve Steam ID
+<b class="nc">&nbsp;                if(map != null &amp;&amp; map.tags.containsKey(&quot;steamid&quot;)){</b>
+<b class="nc">&nbsp;                    editor.tags.put(&quot;steamid&quot;, map.tags.get(&quot;steamid&quot;));</b>
+<b class="nc">&nbsp;                    workshop = true;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                returned = maps.saveMap(editor.tags);</b>
+<b class="nc">&nbsp;                if(workshop){</b>
+<b class="nc">&nbsp;                    returned.workshop = workshop;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                ui.showInfoFade(&quot;@editor.saved&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        menu.hide();</b>
+<b class="nc">&nbsp;        saved = true;</b>
+<b class="nc">&nbsp;        state.rules.editor = isEditor;</b>
+<b class="nc">&nbsp;        return returned;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when a built-in map save is attempted.*/
+&nbsp;    protected void handleSaveBuiltin(Map map){
+<b class="nc">&nbsp;        ui.showErrorMessage(&quot;@editor.save.overwrite&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Argument format:
+&nbsp;     * 0) button name
+&nbsp;     * 1) description
+&nbsp;     * 2) icon name
+&nbsp;     * 3) listener
+&nbsp;     */
+&nbsp;    private void createDialog(String title, Object... arguments){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(title);</b>
+&nbsp;
+<b class="nc">&nbsp;        float h = 90f;</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.defaults().size(360f, h).padBottom(5).padRight(5).padLeft(5);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; arguments.length; i += 4){</b>
+<b class="nc">&nbsp;            String name = (String)arguments[i];</b>
+<b class="nc">&nbsp;            String description = (String)arguments[i + 1];</b>
+<b class="nc">&nbsp;            Drawable iconname = (Drawable)arguments[i + 2];</b>
+<b class="nc">&nbsp;            Runnable listenable = (Runnable)arguments[i + 3];</b>
+&nbsp;
+<b class="nc">&nbsp;            TextButton button = dialog.cont.button(name, () -&gt; {</b>
+<b class="nc">&nbsp;                listenable.run();</b>
+<b class="nc">&nbsp;                dialog.hide();</b>
+<b class="nc">&nbsp;                menu.hide();</b>
+<b class="nc">&nbsp;            }).left().margin(0).get();</b>
+&nbsp;
+<b class="nc">&nbsp;            button.clearChildren();</b>
+<b class="nc">&nbsp;            button.image(iconname).padLeft(10);</b>
+<b class="nc">&nbsp;            button.table(t -&gt; {</b>
+<b class="nc">&nbsp;                t.add(name).growX().wrap();</b>
+<b class="nc">&nbsp;                t.row();</b>
+<b class="nc">&nbsp;                t.add(description).color(Color.gray).growX().wrap();</b>
+<b class="nc">&nbsp;            }).growX().pad(10f).padLeft(5);</b>
+&nbsp;
+<b class="nc">&nbsp;            button.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            dialog.cont.row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Dialog show(){
+<b class="nc">&nbsp;        return super.show(Core.scene, Actions.sequence(Actions.alpha(1f)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void hide(){
+<b class="nc">&nbsp;        super.hide(Actions.sequence(Actions.alpha(0f)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+<b class="nc">&nbsp;        editor.renderer.dispose();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beginEditMap(Fi file){
+<b class="nc">&nbsp;        ui.loadAnd(() -&gt; {</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                shownWithMap = true;</b>
+<b class="nc">&nbsp;                editor.beginEdit(MapIO.createMap(file, true));</b>
+<b class="nc">&nbsp;                show();</b>
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                Log.err(e);</b>
+<b class="nc">&nbsp;                ui.showException(&quot;@editor.errorload&quot;, e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public MapView getView(){
+<b class="nc">&nbsp;        return view;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public MapGenerateDialog getGenerateDialog(){
+<b class="nc">&nbsp;        return generateDialog;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resetSaved(){
+<b class="nc">&nbsp;        saved = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasPane(){
+<b class="nc">&nbsp;        return Core.scene.getScrollFocus() == pane || Core.scene.getKeyboardFocus() != this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void build(){
+<b class="nc">&nbsp;        float size = mobile ? 50f : 58f;</b>
+&nbsp;
+<b class="nc">&nbsp;        clearChildren();</b>
+<b class="nc">&nbsp;        table(cont -&gt; {</b>
+<b class="nc">&nbsp;            cont.left();</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.table(mid -&gt; {</b>
+<b class="nc">&nbsp;                mid.top();</b>
+&nbsp;
+<b class="nc">&nbsp;                Table tools = new Table().top();</b>
+&nbsp;
+<b class="nc">&nbsp;                ButtonGroup&lt;ImageButton&gt; group = new ButtonGroup&lt;&gt;();</b>
+<b class="nc">&nbsp;                Table[] lastTable = {null};</b>
+&nbsp;
+<b class="nc">&nbsp;                Cons&lt;EditorTool&gt; addTool = tool -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;                    ImageButton button = new ImageButton(ui.getIcon(tool.name()), Styles.squareTogglei);</b>
+<b class="nc">&nbsp;                    button.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;                        view.setTool(tool);</b>
+<b class="nc">&nbsp;                        if(lastTable[0] != null){</b>
+<b class="nc">&nbsp;                            lastTable[0].remove();</b>
+&nbsp;                        }
+&nbsp;                    });
+<b class="nc">&nbsp;                    button.update(() -&gt; button.setChecked(view.getTool() == tool));</b>
+<b class="nc">&nbsp;                    group.add(button);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(tool.altModes.length &gt; 0){</b>
+<b class="nc">&nbsp;                        button.clicked(l -&gt; {</b>
+<b class="nc">&nbsp;                            if(!mobile){</b>
+&nbsp;                                //desktop: rightclick
+<b class="nc">&nbsp;                                l.setButton(KeyCode.mouseRight);</b>
+&nbsp;                            }
+&nbsp;                        }, e -&gt; {
+&nbsp;                            //need to double tap
+<b class="nc">&nbsp;                            if(mobile &amp;&amp; e.getTapCount() &lt; 2){</b>
+&nbsp;                                return;
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            if(lastTable[0] != null){</b>
+<b class="nc">&nbsp;                                lastTable[0].remove();</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            Table table = new Table(Styles.black9);</b>
+<b class="nc">&nbsp;                            table.defaults().size(300f, 70f);</b>
+&nbsp;
+<b class="nc">&nbsp;                            for(int i = 0; i &lt; tool.altModes.length; i++){</b>
+<b class="nc">&nbsp;                                int mode = i;</b>
+<b class="nc">&nbsp;                                String name = tool.altModes[i];</b>
+&nbsp;
+<b class="nc">&nbsp;                                table.button(b -&gt; {</b>
+<b class="nc">&nbsp;                                    b.left();</b>
+<b class="nc">&nbsp;                                    b.marginLeft(6);</b>
+<b class="nc">&nbsp;                                    b.setStyle(Styles.flatTogglet);</b>
+<b class="nc">&nbsp;                                    b.add(Core.bundle.get(&quot;toolmode.&quot; + name)).left();</b>
+<b class="nc">&nbsp;                                    b.row();</b>
+<b class="nc">&nbsp;                                    b.add(Core.bundle.get(&quot;toolmode.&quot; + name + &quot;.description&quot;)).color(Color.lightGray).left();</b>
+&nbsp;                                }, () -&gt; {
+<b class="nc">&nbsp;                                    tool.mode = (tool.mode == mode ? -1 : mode);</b>
+<b class="nc">&nbsp;                                    table.remove();</b>
+<b class="nc">&nbsp;                                }).update(b -&gt; b.setChecked(tool.mode == mode));</b>
+<b class="nc">&nbsp;                                table.row();</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            table.update(() -&gt; {</b>
+<b class="nc">&nbsp;                                Vec2 v = button.localToStageCoordinates(Tmp.v1.setZero());</b>
+<b class="nc">&nbsp;                                table.setPosition(v.x, v.y, Align.topLeft);</b>
+<b class="nc">&nbsp;                                if(!isShown()){</b>
+<b class="nc">&nbsp;                                    table.remove();</b>
+<b class="nc">&nbsp;                                    lastTable[0] = null;</b>
+&nbsp;                                }
+&nbsp;                            });
+&nbsp;
+<b class="nc">&nbsp;                            table.pack();</b>
+<b class="nc">&nbsp;                            table.act(Core.graphics.getDeltaTime());</b>
+&nbsp;
+<b class="nc">&nbsp;                            addChild(table);</b>
+<b class="nc">&nbsp;                            lastTable[0] = table;</b>
+&nbsp;                        });
+&nbsp;                    }
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;                    Label mode = new Label(&quot;&quot;);</b>
+<b class="nc">&nbsp;                    mode.setColor(Pal.remove);</b>
+<b class="nc">&nbsp;                    mode.update(() -&gt; mode.setText(tool.mode == -1 ? &quot;&quot; : &quot;M&quot; + (tool.mode + 1) + &quot; &quot;));</b>
+<b class="nc">&nbsp;                    mode.setAlignment(Align.bottomRight, Align.bottomRight);</b>
+<b class="nc">&nbsp;                    mode.touchable = Touchable.disabled;</b>
+&nbsp;
+<b class="nc">&nbsp;                    tools.stack(button, mode);</b>
+&nbsp;                };
+&nbsp;
+<b class="nc">&nbsp;                tools.defaults().size(size, size);</b>
+&nbsp;
+<b class="nc">&nbsp;                tools.button(Icon.menu, Styles.flati, menu::show);</b>
+&nbsp;
+<b class="nc">&nbsp;                ImageButton grid = tools.button(Icon.grid, Styles.squareTogglei, () -&gt; view.setGrid(!view.isGrid())).get();</b>
+&nbsp;
+<b class="nc">&nbsp;                addTool.get(EditorTool.zoom);</b>
+&nbsp;
+<b class="nc">&nbsp;                tools.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                ImageButton undo = tools.button(Icon.undo, Styles.flati, editor::undo).get();</b>
+<b class="nc">&nbsp;                ImageButton redo = tools.button(Icon.redo, Styles.flati, editor::redo).get();</b>
+&nbsp;
+<b class="nc">&nbsp;                addTool.get(EditorTool.pick);</b>
+&nbsp;
+<b class="nc">&nbsp;                tools.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                undo.setDisabled(() -&gt; !editor.canUndo());</b>
+<b class="nc">&nbsp;                redo.setDisabled(() -&gt; !editor.canRedo());</b>
+&nbsp;
+<b class="nc">&nbsp;                undo.update(() -&gt; undo.getImage().setColor(undo.isDisabled() ? Color.gray : Color.white));</b>
+<b class="nc">&nbsp;                redo.update(() -&gt; redo.getImage().setColor(redo.isDisabled() ? Color.gray : Color.white));</b>
+<b class="nc">&nbsp;                grid.update(() -&gt; grid.setChecked(view.isGrid()));</b>
+&nbsp;
+<b class="nc">&nbsp;                addTool.get(EditorTool.line);</b>
+<b class="nc">&nbsp;                addTool.get(EditorTool.pencil);</b>
+<b class="nc">&nbsp;                addTool.get(EditorTool.eraser);</b>
+&nbsp;
+<b class="nc">&nbsp;                tools.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                addTool.get(EditorTool.fill);</b>
+<b class="nc">&nbsp;                addTool.get(EditorTool.spray);</b>
+&nbsp;
+<b class="nc">&nbsp;                ImageButton rotate = tools.button(Icon.right, Styles.flati, () -&gt; editor.rotation = (editor.rotation + 1) % 4).get();</b>
+<b class="nc">&nbsp;                rotate.getImage().update(() -&gt; {</b>
+<b class="nc">&nbsp;                    rotate.getImage().setRotation(editor.rotation * 90);</b>
+<b class="nc">&nbsp;                    rotate.getImage().setOrigin(Align.center);</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                tools.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                tools.table(Tex.underline, t -&gt; t.add(&quot;@editor.teams&quot;))</b>
+<b class="nc">&nbsp;                .colspan(3).height(40).width(size * 3f + 3f).padBottom(3);</b>
+&nbsp;
+<b class="nc">&nbsp;                tools.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                ButtonGroup&lt;ImageButton&gt; teamgroup = new ButtonGroup&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;                int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;                for(Team team : Team.baseTeams){</b>
+<b class="nc">&nbsp;                    ImageButton button = new ImageButton(Tex.whiteui, Styles.clearNoneTogglei);</b>
+<b class="nc">&nbsp;                    button.margin(4f);</b>
+<b class="nc">&nbsp;                    button.getImageCell().grow();</b>
+<b class="nc">&nbsp;                    button.getStyle().imageUpColor = team.color;</b>
+<b class="nc">&nbsp;                    button.clicked(() -&gt; editor.drawTeam = team);</b>
+<b class="nc">&nbsp;                    button.update(() -&gt; button.setChecked(editor.drawTeam == team));</b>
+<b class="nc">&nbsp;                    teamgroup.add(button);</b>
+<b class="nc">&nbsp;                    tools.add(button);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(i++ % 3 == 2) tools.row();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                mid.add(tools).top().padBottom(-6);</b>
+&nbsp;
+<b class="nc">&nbsp;                mid.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                mid.table(Tex.underline, t -&gt; {</b>
+<b class="nc">&nbsp;                    Slider slider = new Slider(0, MapEditor.brushSizes.length - 1, 1, false);</b>
+<b class="nc">&nbsp;                    slider.moved(f -&gt; editor.brushSize = MapEditor.brushSizes[(int)f]);</b>
+<b class="nc">&nbsp;                    for(int j = 0; j &lt; MapEditor.brushSizes.length; j++){</b>
+<b class="nc">&nbsp;                        if(MapEditor.brushSizes[j] == editor.brushSize){</b>
+<b class="nc">&nbsp;                            slider.setValue(j);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    var label = new Label(&quot;@editor.brush&quot;);</b>
+<b class="nc">&nbsp;                    label.setAlignment(Align.center);</b>
+<b class="nc">&nbsp;                    label.touchable = Touchable.disabled;</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.top().stack(slider, label).width(size * 3f - 20).padTop(4f);</b>
+<b class="nc">&nbsp;                    t.row();</b>
+<b class="nc">&nbsp;                }).padTop(5).growX().top();</b>
+&nbsp;
+<b class="nc">&nbsp;                mid.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!mobile){</b>
+<b class="nc">&nbsp;                    mid.table(t -&gt; {</b>
+<b class="nc">&nbsp;                        t.button(&quot;@editor.center&quot;, Icon.move, Styles.flatt, view::center).growX().margin(9f);</b>
+<b class="nc">&nbsp;                    }).growX().top();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                mid.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                mid.table(t -&gt; {</b>
+<b class="nc">&nbsp;                    t.button(&quot;@editor.cliffs&quot;, Icon.terrain, Styles.flatt, editor::addCliffs).growX().margin(9f);</b>
+<b class="nc">&nbsp;                }).growX().top();</b>
+<b class="nc">&nbsp;            }).margin(0).left().growY();</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;            cont.table(t -&gt; t.add(view).grow()).grow();</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.table(this::addBlockSelection).right().growY();</b>
+&nbsp;
+<b class="nc">&nbsp;        }).grow();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void doInput(){
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.ctrl()){</b>
+&nbsp;            //alt mode select
+<b class="nc">&nbsp;            for(int i = 0; i &lt; view.getTool().altModes.length; i++){</b>
+<b class="nc">&nbsp;                if(i + 1 &lt; KeyCode.numbers.length &amp;&amp; Core.input.keyTap(KeyCode.numbers[i + 1])){</b>
+<b class="nc">&nbsp;                    view.getTool().mode = i;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            for(EditorTool tool : EditorTool.all){</b>
+<b class="nc">&nbsp;                if(Core.input.keyTap(tool.key)){</b>
+<b class="nc">&nbsp;                    view.setTool(tool);</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(KeyCode.escape)){</b>
+<b class="nc">&nbsp;            if(!menu.isShown()){</b>
+<b class="nc">&nbsp;                menu.show();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(KeyCode.r)){</b>
+<b class="nc">&nbsp;            editor.rotation = Mathf.mod(editor.rotation + 1, 4);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(KeyCode.e)){</b>
+<b class="nc">&nbsp;            editor.rotation = Mathf.mod(editor.rotation - 1, 4);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //ctrl keys (undo, redo, save)
+<b class="nc">&nbsp;        if(Core.input.ctrl()){</b>
+<b class="nc">&nbsp;            if(Core.input.keyTap(KeyCode.z)){</b>
+<b class="nc">&nbsp;                editor.undo();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Core.input.keyTap(KeyCode.y)){</b>
+<b class="nc">&nbsp;                editor.redo();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Core.input.keyTap(KeyCode.s)){</b>
+<b class="nc">&nbsp;                save();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Core.input.keyTap(KeyCode.g)){</b>
+<b class="nc">&nbsp;                view.setGrid(!view.isGrid());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void tryExit(){
+<b class="nc">&nbsp;        ui.showConfirm(&quot;@confirm&quot;, &quot;@editor.unsaved&quot;, this::hide);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void addBlockSelection(Table cont){
+<b class="nc">&nbsp;        blockSelection = new Table();</b>
+<b class="nc">&nbsp;        pane = new ScrollPane(blockSelection);</b>
+<b class="nc">&nbsp;        pane.setFadeScrollBars(false);</b>
+<b class="nc">&nbsp;        pane.setOverscroll(true, false);</b>
+<b class="nc">&nbsp;        pane.exited(() -&gt; {</b>
+<b class="nc">&nbsp;            if(pane.hasScroll()){</b>
+<b class="nc">&nbsp;                Core.scene.setScrollFocus(view);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        cont.table(search -&gt; {</b>
+<b class="nc">&nbsp;            search.image(Icon.zoom).padRight(8);</b>
+<b class="nc">&nbsp;            search.field(&quot;&quot;, this::rebuildBlockSelection).growX()</b>
+<b class="nc">&nbsp;            .name(&quot;editor/search&quot;).maxTextLength(maxNameLength).get().setMessageText(&quot;@players.search&quot;);</b>
+<b class="nc">&nbsp;        }).growX().pad(-2).padLeft(6f);</b>
+<b class="nc">&nbsp;        cont.row();</b>
+<b class="nc">&nbsp;        cont.table(Tex.underline, extra -&gt; extra.labelWrap(() -&gt; editor.drawBlock.localizedName).width(200f).center()).growX();</b>
+<b class="nc">&nbsp;        cont.row();</b>
+<b class="nc">&nbsp;        cont.add(pane).expandY().top().left();</b>
+&nbsp;
+<b class="nc">&nbsp;        rebuildBlockSelection(&quot;&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void rebuildBlockSelection(String searchText){
+<b class="nc">&nbsp;        blockSelection.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        blocksOut.clear();</b>
+<b class="nc">&nbsp;        blocksOut.addAll(Vars.content.blocks());</b>
+<b class="nc">&nbsp;        blocksOut.sort((b1, b2) -&gt; {</b>
+<b class="nc">&nbsp;            int core = -Boolean.compare(b1 instanceof CoreBlock, b2 instanceof CoreBlock);</b>
+<b class="nc">&nbsp;            if(core != 0) return core;</b>
+<b class="nc">&nbsp;            int synth = Boolean.compare(b1.synthetic(), b2.synthetic());</b>
+<b class="nc">&nbsp;            if(synth != 0) return synth;</b>
+<b class="nc">&nbsp;            int ore = Boolean.compare(b1 instanceof OverlayFloor, b2 instanceof OverlayFloor);</b>
+<b class="nc">&nbsp;            if(ore != 0) return ore;</b>
+<b class="nc">&nbsp;            return Integer.compare(b1.id, b2.id);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Block block : blocksOut){</b>
+<b class="nc">&nbsp;            TextureRegion region = block.uiIcon;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!Core.atlas.isFound(region) || !block.inEditor</b>
+&nbsp;                    || block.buildVisibility == BuildVisibility.debugOnly
+<b class="nc">&nbsp;                    || (!searchText.isEmpty() &amp;&amp; !block.localizedName.toLowerCase().contains(searchText.toLowerCase()))</b>
+<b class="nc">&nbsp;            ) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            ImageButton button = new ImageButton(Tex.whiteui, Styles.squareTogglei);</b>
+<b class="nc">&nbsp;            button.getStyle().imageUp = new TextureRegionDrawable(region);</b>
+<b class="nc">&nbsp;            button.clicked(() -&gt; editor.drawBlock = block);</b>
+<b class="nc">&nbsp;            button.resizeImage(8 * 4f);</b>
+<b class="nc">&nbsp;            button.update(() -&gt; button.setChecked(editor.drawBlock == block));</b>
+<b class="nc">&nbsp;            blockSelection.add(button).size(50f).tooltip(block.localizedName);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(i == 0) editor.drawBlock = block;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(++i % 4 == 0){</b>
+<b class="nc">&nbsp;                blockSelection.row();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(i == 0){</b>
+<b class="nc">&nbsp;            blockSelection.add(&quot;@none.found&quot;).padLeft(54f).padTop(10f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

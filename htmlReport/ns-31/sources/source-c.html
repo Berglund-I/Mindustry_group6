@@ -1,0 +1,427 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PlayerListFragment</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.fragments</a>
+</div>
+
+<h1>Coverage Summary for Class: PlayerListFragment (mindustry.ui.fragments)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PlayerListFragment</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/151)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PlayerListFragment$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PlayerListFragment$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/164)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.fragments;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.ImageButton.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class PlayerListFragment{</b>
+<b class="nc">&nbsp;    public Table content = new Table().marginRight(13f).marginLeft(13f);</b>
+<b class="nc">&nbsp;    private boolean visible = false;</b>
+<b class="nc">&nbsp;    private Interval timer = new Interval();</b>
+&nbsp;    private TextField search;
+<b class="nc">&nbsp;    private Seq&lt;Player&gt; players = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public void build(Group parent){
+<b class="nc">&nbsp;        content.name = &quot;players&quot;;</b>
+<b class="nc">&nbsp;        parent.fill(cont -&gt; {</b>
+<b class="nc">&nbsp;            cont.name = &quot;playerlist&quot;;</b>
+<b class="nc">&nbsp;            cont.visible(() -&gt; visible);</b>
+<b class="nc">&nbsp;            cont.update(() -&gt; {</b>
+<b class="nc">&nbsp;                if(!(net.active() &amp;&amp; state.isGame())){</b>
+<b class="nc">&nbsp;                    visible = false;</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(visible &amp;&amp; timer.get(20)){</b>
+<b class="nc">&nbsp;                    rebuild();</b>
+<b class="nc">&nbsp;                    content.pack();</b>
+<b class="nc">&nbsp;                    content.act(Core.graphics.getDeltaTime());</b>
+&nbsp;                    //hacky
+<b class="nc">&nbsp;                    Core.scene.act(0f);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            cont.table(Tex.buttonTrans, pane -&gt; {</b>
+<b class="nc">&nbsp;                pane.label(() -&gt; Core.bundle.format(Groups.player.size() == 1 ? &quot;players.single&quot; : &quot;players&quot;, Groups.player.size()));</b>
+<b class="nc">&nbsp;                pane.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                search = pane.field(null, text -&gt; rebuild()).grow().pad(8).name(&quot;search&quot;).maxTextLength(maxNameLength).get();</b>
+<b class="nc">&nbsp;                search.setMessageText(Core.bundle.get(&quot;players.search&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;                pane.row();</b>
+<b class="nc">&nbsp;                pane.pane(content).grow().scrollX(false);</b>
+<b class="nc">&nbsp;                pane.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                pane.table(menu -&gt; {</b>
+<b class="nc">&nbsp;                    menu.defaults().growX().height(50f).fillY();</b>
+<b class="nc">&nbsp;                    menu.name = &quot;menu&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;                    menu.button(&quot;@server.bans&quot;, ui.bans::show).disabled(b -&gt; net.client());</b>
+<b class="nc">&nbsp;                    menu.button(&quot;@server.admins&quot;, ui.admins::show).disabled(b -&gt; net.client());</b>
+<b class="nc">&nbsp;                    menu.button(&quot;@close&quot;, this::toggle);</b>
+<b class="nc">&nbsp;                }).margin(0f).pad(10f).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;            }).touchable(Touchable.enabled).margin(14f).minWidth(360f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        rebuild();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void rebuild(){
+<b class="nc">&nbsp;        boolean allowTeamSwitch = !state.isCampaign() &amp;&amp; (state.rules.pvp || state.rules.infiniteResources);</b>
+&nbsp;
+<b class="nc">&nbsp;        content.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        float h = 50f;</b>
+<b class="nc">&nbsp;        boolean found = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        players.clear();</b>
+<b class="nc">&nbsp;        Groups.player.copy(players);</b>
+&nbsp;
+<b class="nc">&nbsp;        players.sort(Structs.comps(Structs.comparing(Player::team), Structs.comparingBool(p -&gt; !p.admin)));</b>
+<b class="nc">&nbsp;        if(search.getText().length() &gt; 0){</b>
+<b class="nc">&nbsp;            players.retainAll(p -&gt; Strings.stripColors(p.name().toLowerCase()).contains(search.getText().toLowerCase()));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(var user : players){</b>
+<b class="nc">&nbsp;            found = true;</b>
+<b class="nc">&nbsp;            NetConnection connection = user.con;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(connection == null &amp;&amp; net.server() &amp;&amp; !user.isLocal()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            Table button = new Table();</b>
+<b class="nc">&nbsp;            button.left();</b>
+<b class="nc">&nbsp;            button.margin(5).marginBottom(10);</b>
+&nbsp;
+<b class="nc">&nbsp;            ClickListener listener = new ClickListener();</b>
+&nbsp;
+<b class="nc">&nbsp;            Table iconTable = new Table(){</b>
+&nbsp;                @Override
+&nbsp;                public void draw(){
+<b class="nc">&nbsp;                    super.draw();</b>
+<b class="nc">&nbsp;                    Draw.colorMul(user.team().color, listener.isOver() ? 1.3f : 1f);</b>
+<b class="nc">&nbsp;                    Draw.alpha(parentAlpha);</b>
+<b class="nc">&nbsp;                    Lines.stroke(Scl.scl(4f));</b>
+<b class="nc">&nbsp;                    Lines.rect(x, y, width, height);</b>
+<b class="nc">&nbsp;                    Draw.reset();</b>
+&nbsp;                }
+&nbsp;            };
+&nbsp;
+<b class="nc">&nbsp;            boolean clickable = !(state.rules.fog &amp;&amp; state.rules.pvp &amp;&amp; user.team() != player.team());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(clickable){</b>
+<b class="nc">&nbsp;                iconTable.addListener(listener);</b>
+<b class="nc">&nbsp;                iconTable.addListener(new HandCursorListener());</b>
+&nbsp;            }
+<b class="nc">&nbsp;            iconTable.margin(8);</b>
+<b class="nc">&nbsp;            iconTable.add(new Image(user.icon()).setScaling(Scaling.bounded)).grow();</b>
+<b class="nc">&nbsp;            iconTable.name = user.name();</b>
+<b class="nc">&nbsp;            iconTable.touchable = Touchable.enabled;</b>
+&nbsp;
+<b class="nc">&nbsp;            iconTable.tapped(() -&gt; {</b>
+<b class="nc">&nbsp;                if(!user.dead() &amp;&amp; clickable){</b>
+<b class="nc">&nbsp;                    Core.camera.position.set(user.unit());</b>
+<b class="nc">&nbsp;                    ui.showInfoFade(Core.bundle.format(&quot;viewplayer&quot;, user.name), 1f);</b>
+<b class="nc">&nbsp;                    if(control.input instanceof DesktopInput input){</b>
+<b class="nc">&nbsp;                        input.panning = true;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            button.add(iconTable).size(h);</b>
+<b class="nc">&nbsp;            button.labelWrap(&quot;[#&quot; + user.color().toString().toUpperCase() + &quot;]&quot; + user.name()).style(Styles.outlineLabel).width(170f).pad(10);</b>
+<b class="nc">&nbsp;            button.add().grow();</b>
+&nbsp;
+<b class="nc">&nbsp;            button.background(Tex.underline);</b>
+&nbsp;
+<b class="nc">&nbsp;            button.image(Icon.admin).visible(() -&gt; user.admin &amp;&amp; !(!user.isLocal() &amp;&amp; net.server())).padRight(5).get().updateVisibility();</b>
+&nbsp;
+<b class="nc">&nbsp;            var ustyle = new ImageButtonStyle(){{</b>
+<b class="nc">&nbsp;                down = Styles.none;</b>
+<b class="nc">&nbsp;                up = Styles.none;</b>
+<b class="nc">&nbsp;                imageDownColor = Pal.accent;</b>
+<b class="nc">&nbsp;                imageUpColor = Color.white;</b>
+<b class="nc">&nbsp;                imageOverColor = Color.lightGray;</b>
+&nbsp;            }};
+&nbsp;
+<b class="nc">&nbsp;            if(net.server() || (player.admin &amp;&amp; (!user.admin || user == player))){</b>
+<b class="nc">&nbsp;                button.add().growY();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(allowTeamSwitch || user != player){</b>
+<b class="nc">&nbsp;                    button.button(Icon.menu, ustyle, () -&gt; {</b>
+<b class="nc">&nbsp;                        var dialog = new BaseDialog(user.coloredName());</b>
+&nbsp;
+<b class="nc">&nbsp;                        dialog.title.setColor(Color.white);</b>
+<b class="nc">&nbsp;                        dialog.titleTable.remove();</b>
+&nbsp;
+<b class="nc">&nbsp;                        dialog.closeOnBack();</b>
+&nbsp;
+<b class="nc">&nbsp;                        var bstyle = Styles.defaultt;</b>
+&nbsp;
+<b class="nc">&nbsp;                        dialog.cont.add(user.coloredName()).row();</b>
+<b class="nc">&nbsp;                        dialog.cont.image(Tex.whiteui, Pal.accent).fillX().height(3f).pad(4f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        dialog.cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;                            t.defaults().size(220f, 55f).pad(3f);</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(user != player){</b>
+<b class="nc">&nbsp;                                t.button(&quot;@player.ban&quot;, Icon.hammer, bstyle, () -&gt; {</b>
+<b class="nc">&nbsp;                                    ui.showConfirm(&quot;@confirm&quot;, Core.bundle.format(&quot;confirmban&quot;,  user.name()), () -&gt; Call.adminRequest(user, AdminAction.ban, null));</b>
+<b class="nc">&nbsp;                                    dialog.hide();</b>
+<b class="nc">&nbsp;                                }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                                t.button(&quot;@player.kick&quot;, Icon.cancel, bstyle, () -&gt; {</b>
+<b class="nc">&nbsp;                                    ui.showConfirm(&quot;@confirm&quot;, Core.bundle.format(&quot;confirmkick&quot;,  user.name()), () -&gt; Call.adminRequest(user, AdminAction.kick, null));</b>
+<b class="nc">&nbsp;                                    dialog.hide();</b>
+<b class="nc">&nbsp;                                }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                                t.button(&quot;@player.trace&quot;, Icon.zoom, bstyle, () -&gt; {</b>
+<b class="nc">&nbsp;                                    Call.adminRequest(user, AdminAction.trace, null);</b>
+<b class="nc">&nbsp;                                    dialog.hide();</b>
+<b class="nc">&nbsp;                                }).row();</b>
+&nbsp;                            }
+&nbsp;
+&nbsp;                            //there&#39;s generally no reason to team switch outside PvP or sandbox, and it&#39;s basically an easy way to cheat
+<b class="nc">&nbsp;                            if(allowTeamSwitch){</b>
+<b class="nc">&nbsp;                                t.button(&quot;@player.team&quot;, Icon.redo, bstyle, () -&gt; {</b>
+<b class="nc">&nbsp;                                    var teamSelect = new BaseDialog(Core.bundle.get(&quot;player.team&quot;) + &quot;: &quot; + user.name);</b>
+<b class="nc">&nbsp;                                    teamSelect.setFillParent(false);</b>
+&nbsp;
+<b class="nc">&nbsp;                                    var group = new ButtonGroup&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;                                    int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;                                    for(Team team : Team.baseTeams){</b>
+<b class="nc">&nbsp;                                        var b = new ImageButton(Tex.whiteui, Styles.clearNoneTogglei);</b>
+<b class="nc">&nbsp;                                        b.margin(4f);</b>
+<b class="nc">&nbsp;                                        b.getImageCell().grow();</b>
+<b class="nc">&nbsp;                                        b.getStyle().imageUpColor = team.color;</b>
+<b class="nc">&nbsp;                                        b.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;                                            Call.adminRequest(user, AdminAction.switchTeam, team);</b>
+<b class="nc">&nbsp;                                            teamSelect.hide();</b>
+&nbsp;                                        });
+<b class="nc">&nbsp;                                        teamSelect.cont.add(b).size(50f).checked(a -&gt; user.team() == team).group(group);</b>
+&nbsp;
+<b class="nc">&nbsp;                                        if(i++ % 3 == 2) teamSelect.cont.row();</b>
+&nbsp;                                    }
+&nbsp;
+<b class="nc">&nbsp;                                    teamSelect.addCloseButton();</b>
+<b class="nc">&nbsp;                                    teamSelect.show();</b>
+&nbsp;
+<b class="nc">&nbsp;                                    dialog.hide();</b>
+<b class="nc">&nbsp;                                }).row();</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            if(!net.client() &amp;&amp; !user.isLocal()){</b>
+<b class="nc">&nbsp;                                t.button(&quot;@player.admin&quot;, Icon.admin, Styles.togglet, () -&gt; {</b>
+<b class="nc">&nbsp;                                    dialog.hide();</b>
+<b class="nc">&nbsp;                                    String id = user.uuid();</b>
+&nbsp;
+<b class="nc">&nbsp;                                    if(user.admin){</b>
+<b class="nc">&nbsp;                                        ui.showConfirm(&quot;@confirm&quot;, Core.bundle.format(&quot;confirmunadmin&quot;,  user.name()), () -&gt; {</b>
+<b class="nc">&nbsp;                                            netServer.admins.unAdminPlayer(id);</b>
+<b class="nc">&nbsp;                                            user.admin = false;</b>
+&nbsp;                                        });
+&nbsp;                                    }else{
+<b class="nc">&nbsp;                                        ui.showConfirm(&quot;@confirm&quot;, Core.bundle.format(&quot;confirmadmin&quot;,  user.name()), () -&gt; {</b>
+<b class="nc">&nbsp;                                            netServer.admins.adminPlayer(id, user.usid());</b>
+<b class="nc">&nbsp;                                            user.admin = true;</b>
+&nbsp;                                        });
+&nbsp;                                    }
+<b class="nc">&nbsp;                                }).checked(b -&gt; user.admin).row();</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        dialog.cont.button(&quot;@back&quot;, Icon.left, dialog::hide).padTop(-1f).size(220f, 55f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        dialog.show();</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;                    }).size(h);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(!user.isLocal() &amp;&amp; !user.admin &amp;&amp; net.client() &amp;&amp; Groups.player.size() &gt;= 3 &amp;&amp; player.team() == user.team()){ //votekick</b>
+<b class="nc">&nbsp;                button.add().growY();</b>
+&nbsp;
+<b class="nc">&nbsp;                button.button(Icon.hammer, ustyle,</b>
+<b class="nc">&nbsp;                    () -&gt; ui.showTextInput(&quot;@votekick.reason&quot;, Core.bundle.format(&quot;votekick.reason.message&quot;, user.name()), &quot;&quot;,</b>
+<b class="nc">&nbsp;                    reason -&gt; Call.sendChatMessage(&quot;/votekick #&quot; + user.id + &quot; &quot; + reason)))</b>
+<b class="nc">&nbsp;                .size(h);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            content.add(button).width(350f).height(h + 14);</b>
+<b class="nc">&nbsp;            content.row();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!found){</b>
+<b class="nc">&nbsp;            content.add(Core.bundle.format(&quot;players.notfound&quot;)).padBottom(6).width(350f).maxHeight(h + 14);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        content.marginBottom(5);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void toggle(){
+<b class="nc">&nbsp;        visible = !visible;</b>
+<b class="nc">&nbsp;        if(visible){</b>
+<b class="nc">&nbsp;            rebuild();</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Core.scene.setKeyboardFocus(null);</b>
+<b class="nc">&nbsp;            search.clearText();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

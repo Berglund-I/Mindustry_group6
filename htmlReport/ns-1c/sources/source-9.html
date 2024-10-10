@@ -1,0 +1,145 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > InverseKinematics</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: InverseKinematics (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InverseKinematics</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;
+<b class="nc">&nbsp;public class InverseKinematics{</b>
+<b class="nc">&nbsp;    private static final Vec2[] mat1 = {new Vec2(), new Vec2()}, mat2 = {new Vec2(), new Vec2()};</b>
+<b class="nc">&nbsp;    private static final Vec2 temp = new Vec2(), temp2 = new Vec2(), at1 = new Vec2();</b>
+&nbsp;
+&nbsp;    public static boolean solve(float lengthA, float lengthB, Vec2 end, boolean side, Vec2 result){
+<b class="nc">&nbsp;        at1.set(end).rotate(side ? 1 : -1).setLength(lengthA + lengthB).add(end.x / 2f, end.y / 2f);</b>
+<b class="nc">&nbsp;        return solve(lengthA, lengthB, end, at1, result);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     inputs:
+&nbsp;
+&nbsp;     @param lengthA first line segment length
+&nbsp;     @param lengthB second line segment length
+&nbsp;     @param end length of the endpoint you want to reach
+&nbsp;     @param attractor direction you want the result to be closer to (since there are usually 2 solutions)
+&nbsp;
+&nbsp;     output:
+&nbsp;
+&nbsp;     @param result a point in-between (0, 0) and (end) such that (0, 0).dst(result) == lengthA and result.dst(end) == lengthB - or in basic terms, the position of a joint between (0, 0) and end where the two lengths of segments are lengthA and lengthB
+&nbsp;     @return whether IK succeeded (this can fail if end is too far, for example)
+&nbsp;     */
+&nbsp;    public static boolean solve(float lengthA, float lengthB, Vec2 end, Vec2 attractor, Vec2 result){
+<b class="nc">&nbsp;        Vec2 axis = mat2[0].set(end).nor();</b>
+<b class="nc">&nbsp;        mat2[1].set(attractor).sub(temp2.set(axis).scl(attractor.dot(axis))).nor();</b>
+<b class="nc">&nbsp;        mat1[0].set(mat2[0].x, mat2[1].x);</b>
+<b class="nc">&nbsp;        mat1[1].set(mat2[0].y, mat2[1].y);</b>
+<b class="nc">&nbsp;        result.set(mat2[0].dot(end), mat2[1].dot(end));</b>
+<b class="nc">&nbsp;        float len = result.len();</b>
+<b class="nc">&nbsp;        float dist = Math.max(0, Math.min(lengthA, (len + (lengthA * lengthA - lengthB * lengthB) / len) / 2));</b>
+<b class="nc">&nbsp;        Vec2 src = temp.set(dist, Mathf.sqrt(lengthA * lengthA - dist * dist));</b>
+<b class="nc">&nbsp;        result.set(mat1[0].dot(src), mat1[1].dot(src));</b>
+&nbsp;
+<b class="nc">&nbsp;        return dist &gt; 0 &amp;&amp; dist &lt; lengthA;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

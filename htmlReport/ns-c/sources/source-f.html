@@ -1,0 +1,343 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Weathers</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.content</a>
+</div>
+
+<h1>Coverage Summary for Class: Weathers (mindustry.content)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Weathers</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.7%
+  </span>
+  <span class="absValue">
+    (6/7)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Weathers$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (11/11)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Weathers$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Weathers$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (18/18)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Weathers$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (20/20)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Weathers$5</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (19/19)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Weathers$6</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (12/12)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (7/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    98.9%
+  </span>
+  <span class="absValue">
+    (92/93)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.content;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.type.weather.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+<b class="nc">&nbsp;public class Weathers{</b>
+&nbsp;    public static Weather
+&nbsp;    rain,
+&nbsp;    snow,
+&nbsp;    sandstorm,
+&nbsp;    sporestorm,
+&nbsp;    fog,
+&nbsp;    suspendParticles;
+&nbsp;
+&nbsp;    public static void load(){
+<b class="fc">&nbsp;        snow = new ParticleWeather(&quot;snowing&quot;){{</b>
+<b class="fc">&nbsp;            particleRegion = &quot;particle&quot;;</b>
+<b class="fc">&nbsp;            sizeMax = 13f;</b>
+<b class="fc">&nbsp;            sizeMin = 2.6f;</b>
+<b class="fc">&nbsp;            density = 1200f;</b>
+<b class="fc">&nbsp;            attrs.set(Attribute.light, -0.15f);</b>
+&nbsp;
+<b class="fc">&nbsp;            sound = Sounds.windhowl;</b>
+<b class="fc">&nbsp;            soundVol = 0f;</b>
+<b class="fc">&nbsp;            soundVolOscMag = 1.5f;</b>
+<b class="fc">&nbsp;            soundVolOscScl = 1100f;</b>
+<b class="fc">&nbsp;            soundVolMin = 0.02f;</b>
+&nbsp;        }};
+&nbsp;
+<b class="fc">&nbsp;        rain = new RainWeather(&quot;rain&quot;){{</b>
+<b class="fc">&nbsp;            attrs.set(Attribute.light, -0.2f);</b>
+<b class="fc">&nbsp;            attrs.set(Attribute.water, 0.2f);</b>
+<b class="fc">&nbsp;            status = StatusEffects.wet;</b>
+<b class="fc">&nbsp;            sound = Sounds.rain;</b>
+<b class="fc">&nbsp;            soundVol = 0.25f;</b>
+&nbsp;        }};
+&nbsp;
+<b class="fc">&nbsp;        sandstorm = new ParticleWeather(&quot;sandstorm&quot;){{</b>
+<b class="fc">&nbsp;            color = noiseColor = Color.valueOf(&quot;f7cba4&quot;);</b>
+<b class="fc">&nbsp;            particleRegion = &quot;particle&quot;;</b>
+<b class="fc">&nbsp;            drawNoise = true;</b>
+<b class="fc">&nbsp;            useWindVector = true;</b>
+<b class="fc">&nbsp;            sizeMax = 140f;</b>
+<b class="fc">&nbsp;            sizeMin = 70f;</b>
+<b class="fc">&nbsp;            minAlpha = 0f;</b>
+<b class="fc">&nbsp;            maxAlpha = 0.2f;</b>
+<b class="fc">&nbsp;            density = 1500f;</b>
+<b class="fc">&nbsp;            baseSpeed = 5.4f;</b>
+<b class="fc">&nbsp;            attrs.set(Attribute.light, -0.1f);</b>
+<b class="fc">&nbsp;            attrs.set(Attribute.water, -0.1f);</b>
+<b class="fc">&nbsp;            opacityMultiplier = 0.35f;</b>
+<b class="fc">&nbsp;            force = 0.1f;</b>
+<b class="fc">&nbsp;            sound = Sounds.wind;</b>
+<b class="fc">&nbsp;            soundVol = 0.8f;</b>
+<b class="fc">&nbsp;            duration = 7f * Time.toMinutes;</b>
+&nbsp;        }};
+&nbsp;
+<b class="fc">&nbsp;        sporestorm = new ParticleWeather(&quot;sporestorm&quot;){{</b>
+<b class="fc">&nbsp;            color = noiseColor = Color.valueOf(&quot;7457ce&quot;);</b>
+<b class="fc">&nbsp;            particleRegion = &quot;circle-small&quot;;</b>
+<b class="fc">&nbsp;            drawNoise = true;</b>
+<b class="fc">&nbsp;            statusGround = false;</b>
+<b class="fc">&nbsp;            useWindVector = true;</b>
+<b class="fc">&nbsp;            sizeMax = 5f;</b>
+<b class="fc">&nbsp;            sizeMin = 2.5f;</b>
+<b class="fc">&nbsp;            minAlpha = 0.1f;</b>
+<b class="fc">&nbsp;            maxAlpha = 0.8f;</b>
+<b class="fc">&nbsp;            density = 2000f;</b>
+<b class="fc">&nbsp;            baseSpeed = 4.3f;</b>
+<b class="fc">&nbsp;            attrs.set(Attribute.spores, 1f);</b>
+<b class="fc">&nbsp;            attrs.set(Attribute.light, -0.15f);</b>
+<b class="fc">&nbsp;            status = StatusEffects.sporeSlowed;</b>
+<b class="fc">&nbsp;            opacityMultiplier = 0.5f;</b>
+<b class="fc">&nbsp;            force = 0.1f;</b>
+<b class="fc">&nbsp;            sound = Sounds.wind;</b>
+<b class="fc">&nbsp;            soundVol = 0.7f;</b>
+<b class="fc">&nbsp;            duration = 7f * Time.toMinutes;</b>
+&nbsp;        }};
+&nbsp;
+<b class="fc">&nbsp;        fog = new ParticleWeather(&quot;fog&quot;){{</b>
+<b class="fc">&nbsp;            duration = 15f * Time.toMinutes;</b>
+<b class="fc">&nbsp;            noiseLayers = 3;</b>
+<b class="fc">&nbsp;            noiseLayerSclM = 0.8f;</b>
+<b class="fc">&nbsp;            noiseLayerAlphaM = 0.7f;</b>
+<b class="fc">&nbsp;            noiseLayerSpeedM = 2f;</b>
+<b class="fc">&nbsp;            noiseLayerSclM = 0.6f;</b>
+<b class="fc">&nbsp;            baseSpeed = 0.05f;</b>
+<b class="fc">&nbsp;            color = noiseColor = Color.grays(0.4f);</b>
+<b class="fc">&nbsp;            noiseScale = 1100f;</b>
+<b class="fc">&nbsp;            noisePath = &quot;fog&quot;;</b>
+<b class="fc">&nbsp;            drawParticles = false;</b>
+<b class="fc">&nbsp;            drawNoise = true;</b>
+<b class="fc">&nbsp;            useWindVector = false;</b>
+<b class="fc">&nbsp;            xspeed = 1f;</b>
+<b class="fc">&nbsp;            yspeed = 0.01f;</b>
+<b class="fc">&nbsp;            attrs.set(Attribute.light, -0.3f);</b>
+<b class="fc">&nbsp;            attrs.set(Attribute.water, 0.05f);</b>
+<b class="fc">&nbsp;            opacityMultiplier = 0.47f;</b>
+&nbsp;        }};
+&nbsp;
+<b class="fc">&nbsp;        suspendParticles = new ParticleWeather(&quot;suspend-particles&quot;){{</b>
+<b class="fc">&nbsp;            color = noiseColor = Color.valueOf(&quot;a7c1fa&quot;);</b>
+<b class="fc">&nbsp;            particleRegion = &quot;particle&quot;;</b>
+<b class="fc">&nbsp;            statusGround = false;</b>
+<b class="fc">&nbsp;            useWindVector = true;</b>
+<b class="fc">&nbsp;            hidden = true;</b>
+<b class="fc">&nbsp;            sizeMax = 4f;</b>
+<b class="fc">&nbsp;            sizeMin = 1.4f;</b>
+<b class="fc">&nbsp;            minAlpha = 0.5f;</b>
+<b class="fc">&nbsp;            maxAlpha = 1f;</b>
+<b class="fc">&nbsp;            density = 10000f;</b>
+<b class="fc">&nbsp;            baseSpeed = 0.03f;</b>
+&nbsp;        }};
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

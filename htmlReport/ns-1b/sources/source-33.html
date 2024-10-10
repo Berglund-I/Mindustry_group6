@@ -1,0 +1,146 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > FieldIndex</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: FieldIndex (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FieldIndex</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;/**
+&nbsp; * Bits used: 48 / 64
+&nbsp; * &lt;br&gt;  pos [0..32]
+&nbsp; * &lt;br&gt;  costId [32..40]
+&nbsp; * &lt;br&gt;  team [40..48]
+&nbsp; */
+<b class="nc">&nbsp;public final class FieldIndex {</b>
+&nbsp;  public static final long bitMaskPos = (long)(0b0000000000000000000000000000000011111111111111111111111111111111L);
+&nbsp;
+&nbsp;  public static final long bitMaskCostId = (long)(0b0000000000000000000000001111111100000000000000000000000000000000L);
+&nbsp;
+&nbsp;  public static final long bitMaskTeam = (long)(0b0000000000000000111111110000000000000000000000000000000000000000L);
+&nbsp;
+&nbsp;  public static int pos(long fieldindex) {
+<b class="nc">&nbsp;    return (int)((fieldindex &gt;&gt;&gt; 0) &amp; 0b0000000000000000000000000000000011111111111111111111111111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long pos(long fieldindex, int value) {
+<b class="nc">&nbsp;    return (long)((fieldindex &amp; (~0b0000000000000000000000000000000011111111111111111111111111111111L)) | ((long)value &lt;&lt; 0L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int costId(long fieldindex) {
+<b class="nc">&nbsp;    return (int)((fieldindex &gt;&gt;&gt; 32) &amp; 0b0000000000000000000000000000000000000000000000000000000011111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long costId(long fieldindex, int value) {
+<b class="nc">&nbsp;    return (long)((fieldindex &amp; (~0b0000000000000000000000001111111100000000000000000000000000000000L)) | ((long)value &lt;&lt; 32L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static int team(long fieldindex) {
+<b class="nc">&nbsp;    return (int)((fieldindex &gt;&gt;&gt; 40) &amp; 0b0000000000000000000000000000000000000000000000000000000011111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long team(long fieldindex, int value) {
+<b class="nc">&nbsp;    return (long)((fieldindex &amp; (~0b0000000000000000111111110000000000000000000000000000000000000000L)) | ((long)value &lt;&lt; 40L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long get(int pos, int costId, int team) {
+<b class="nc">&nbsp;    return (long)((((long)pos &lt;&lt; 0L) &amp; 0b0000000000000000000000000000000011111111111111111111111111111111L) | (((long)costId &lt;&lt; 32L) &amp; 0b0000000000000000000000001111111100000000000000000000000000000000L) | (((long)team &lt;&lt; 40L) &amp; 0b0000000000000000111111110000000000000000000000000000000000000000L));</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

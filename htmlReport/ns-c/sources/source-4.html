@@ -1,0 +1,2710 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Fx</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.content</a>
+</div>
+
+<h1>Coverage Summary for Class: Fx (mindustry.content)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Fx</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.5%
+  </span>
+  <span class="absValue">
+    (2/406)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.9%
+  </span>
+  <span class="absValue">
+    (287/1605)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.content;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.units.UnitAssembler.*;
+&nbsp;
+&nbsp;import static arc.graphics.g2d.Draw.rect;
+&nbsp;import static arc.graphics.g2d.Draw.*;
+&nbsp;import static arc.graphics.g2d.Lines.*;
+&nbsp;import static arc.math.Angles.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Fx{</b>
+<b class="fc">&nbsp;    public static final Rand rand = new Rand();</b>
+<b class="fc">&nbsp;    public static final Vec2 v = new Vec2();</b>
+&nbsp;
+&nbsp;    public static final Effect
+&nbsp;
+<b class="fc">&nbsp;    none = new Effect(0, 0f, e -&gt; {}),</b>
+&nbsp;    
+<b class="fc">&nbsp;    blockCrash = new Effect(90f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Block block)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        alpha(e.fin() + 0.5f);</b>
+<b class="nc">&nbsp;        float offset = Mathf.lerp(0f, 180f, e.fout());</b>
+<b class="nc">&nbsp;        color(0f, 0f, 0f, 0.44f);</b>
+<b class="nc">&nbsp;        rect(block.fullIcon, e.x - offset * 4f, e.y, (float)block.size * 8f, (float)block.size * 8f);</b>
+<b class="nc">&nbsp;        color(Color.white);</b>
+<b class="nc">&nbsp;        rect(block.fullIcon, e.x + offset, e.y + offset * 5f, (float)block.size * 8f, (float)block.size * 8f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    trailFade = new Effect(400f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Trail trail)) return;</b>
+&nbsp;        //lifetime is how many frames it takes to fade out the trail
+<b class="nc">&nbsp;        e.lifetime = trail.length * 1.4f;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!state.isPaused()){</b>
+<b class="nc">&nbsp;            trail.shorten();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        trail.drawCap(e.color, e.rotation);</b>
+<b class="nc">&nbsp;        trail.draw(e.color, e.rotation);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    unitSpawn = new Effect(30f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof UnitType unit)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        TextureRegion region = unit.fullIcon;</b>
+&nbsp;
+<b class="nc">&nbsp;        float scl = (1f + e.fout() * 2f) * region.scl();</b>
+&nbsp;
+<b class="nc">&nbsp;        alpha(e.fout());</b>
+<b class="nc">&nbsp;        mixcol(Color.white, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        rect(region, e.x, e.y, 180f);</b>
+&nbsp;
+<b class="nc">&nbsp;        reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        alpha(e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        rect(region, e.x, e.y, region.width * scl, region.height * scl, e.rotation - 90);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    unitCapKill = new Effect(80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.scarlet);</b>
+<b class="nc">&nbsp;        alpha(e.fout(Interp.pow4Out));</b>
+&nbsp;
+<b class="nc">&nbsp;        float size = 10f + e.fout(Interp.pow10In) * 25f;</b>
+<b class="nc">&nbsp;        Draw.rect(Icon.warning.getRegion(), e.x, e.y, size, size);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    unitEnvKill = new Effect(80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.scarlet);</b>
+<b class="nc">&nbsp;        alpha(e.fout(Interp.pow4Out));</b>
+&nbsp;
+<b class="nc">&nbsp;        float size = 10f + e.fout(Interp.pow10In) * 25f;</b>
+<b class="nc">&nbsp;        Draw.rect(Icon.cancel.getRegion(), e.x, e.y, size, size);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    unitControl = new Effect(30f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Unit select)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean block = select instanceof BlockUnitc;</b>
+&nbsp;
+<b class="nc">&nbsp;        mixcol(Pal.accent, 1f);</b>
+<b class="nc">&nbsp;        alpha(e.fout());</b>
+<b class="nc">&nbsp;        rect(block ? ((BlockUnitc)select).tile().block.fullIcon : select.type.fullIcon, select.x, select.y, block ? 0f : select.rotation - 90f);</b>
+<b class="nc">&nbsp;        alpha(1f);</b>
+<b class="nc">&nbsp;        Lines.stroke(e.fslope());</b>
+<b class="nc">&nbsp;        Lines.square(select.x, select.y, e.fout() * select.hitSize * 2f, 45);</b>
+<b class="nc">&nbsp;        Lines.stroke(e.fslope() * 2f);</b>
+<b class="nc">&nbsp;        Lines.square(select.x, select.y, e.fout() * select.hitSize * 3f, 45f);</b>
+<b class="nc">&nbsp;        reset();</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    unitDespawn = new Effect(100f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Unit select) || select.type == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float scl = e.fout(Interp.pow2Out);</b>
+<b class="nc">&nbsp;        float p = Draw.scl;</b>
+<b class="nc">&nbsp;        Draw.scl *= scl;</b>
+&nbsp;
+<b class="nc">&nbsp;        mixcol(Pal.accent, 1f);</b>
+<b class="nc">&nbsp;        rect(select.type.fullIcon, select.x, select.y, select.rotation - 90f);</b>
+<b class="nc">&nbsp;        reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.scl = p;</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    unitSpirit = new Effect(17f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Position to)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.v1.set(e.x, e.y).interpolate(Tmp.v2.set(to), e.fin(), Interp.pow2In);</b>
+<b class="nc">&nbsp;        float x = Tmp.v1.x, y = Tmp.v1.y;</b>
+<b class="nc">&nbsp;        float size = 2.5f * e.fin();</b>
+&nbsp;
+<b class="nc">&nbsp;        Fill.square(x, y, 1.5f * size, 45f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.v1.set(e.x, e.y).interpolate(Tmp.v2.set(to), e.fin(), Interp.pow5In);</b>
+<b class="nc">&nbsp;        x = Tmp.v1.x;</b>
+<b class="nc">&nbsp;        y = Tmp.v1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;        Fill.square(x, y, size, 45f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    itemTransfer = new Effect(12f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Position to)) return;</b>
+<b class="nc">&nbsp;        Tmp.v1.set(e.x, e.y).interpolate(Tmp.v2.set(to), e.fin(), Interp.pow3)</b>
+<b class="nc">&nbsp;        .add(Tmp.v2.sub(e.x, e.y).nor().rotate90(1).scl(Mathf.randomSeedRange(e.id, 1f) * e.fslope() * 10f));</b>
+<b class="nc">&nbsp;        float x = Tmp.v1.x, y = Tmp.v1.y;</b>
+<b class="nc">&nbsp;        float size = 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        Fill.circle(x, y, e.fslope() * 3f * size);</b>
+&nbsp;
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        Fill.circle(x, y, e.fslope() * 1.5f * size);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    pointBeam = new Effect(25f, 300f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Position pos)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(e.color, e.fout());</b>
+<b class="nc">&nbsp;        Lines.stroke(1.5f);</b>
+<b class="nc">&nbsp;        Lines.line(e.x, e.y, pos.getX(), pos.getY());</b>
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, pos.getX(), pos.getY(), 20f, e.color, 0.6f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    pointHit = new Effect(8f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() + 0.2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.fin() * 6f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    lightning = new Effect(10f, 500f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Seq)) return;</b>
+<b class="nc">&nbsp;        Seq&lt;Vec2&gt; lines = e.data();</b>
+&nbsp;
+<b class="nc">&nbsp;        stroke(3f * e.fout());</b>
+<b class="nc">&nbsp;        color(e.color, Color.white, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; lines.size - 1; i++){</b>
+<b class="nc">&nbsp;            Vec2 cur = lines.get(i);</b>
+<b class="nc">&nbsp;            Vec2 next = lines.get(i + 1);</b>
+&nbsp;
+<b class="nc">&nbsp;            Lines.line(cur.x, cur.y, next.x, next.y, false);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(Vec2 p : lines){</b>
+<b class="nc">&nbsp;            Fill.circle(p.x, p.y, Lines.getStroke() / 2f);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    coreBuildShockwave = new Effect(120, 500f, e -&gt; {</b>
+<b class="nc">&nbsp;        e.lifetime = e.rotation;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.command);</b>
+<b class="nc">&nbsp;        stroke(e.fout(Interp.pow5Out) * 4f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.fin() * e.rotation * 2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    coreBuildBlock = new Effect(80f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Block block)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        mixcol(Pal.accent, 1f);</b>
+<b class="nc">&nbsp;        alpha(e.fout());</b>
+<b class="nc">&nbsp;        rect(block.fullIcon, e.x, e.y);</b>
+<b class="fc">&nbsp;    }).layer(Layer.turret - 5f),</b>
+&nbsp;
+<b class="fc">&nbsp;    pointShockwave = new Effect(20, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.finpow() * e.rotation);</b>
+<b class="nc">&nbsp;        randLenVectors(e.id + 1, 8, 1f + 23f * e.finpow(), (x, y) -&gt;</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + e.fout() * 3f));</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    moveCommand = new Effect(20, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.command);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 5f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 6f + e.fin() * 2f);</b>
+<b class="fc">&nbsp;    }).layer(Layer.overlayUI),</b>
+&nbsp;
+<b class="fc">&nbsp;    attackCommand = new Effect(20, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.remove);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 5f);</b>
+<b class="nc">&nbsp;        poly(e.x, e.y, 4, 7f + e.fin() * 2f);</b>
+<b class="fc">&nbsp;    }).layer(Layer.overlayUI),</b>
+&nbsp;
+<b class="fc">&nbsp;    commandSend = new Effect(28, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.command);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 4f + e.finpow() * e.rotation);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    upgradeCore = new Effect(120f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Block block)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        mixcol(Tmp.c1.set(Color.white).lerp(Pal.accent, e.fin()), 1f);</b>
+<b class="nc">&nbsp;        alpha(e.fout());</b>
+<b class="nc">&nbsp;        rect(block.fullIcon, e.x, e.y);</b>
+<b class="fc">&nbsp;    }).layer(Layer.turret - 5f),</b>
+&nbsp;
+<b class="fc">&nbsp;    upgradeCoreBloom = new Effect(80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        stroke(4f * e.fout());</b>
+<b class="nc">&nbsp;        Lines.square(e.x, e.y, tilesize / 2f * e.rotation + 2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    placeBlock = new Effect(16, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        stroke(3f - e.fin() * 2f);</b>
+<b class="nc">&nbsp;        Lines.square(e.x, e.y, tilesize / 2f * e.rotation + e.fin() * 3f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    coreLaunchConstruct = new Effect(35, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        stroke(4f - e.fin() * 3f);</b>
+<b class="nc">&nbsp;        Lines.square(e.x, e.y, tilesize / 2f * e.rotation * 1.2f + e.fin() * 5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 5 + (int)(e.rotation * 5), e.rotation * 3f + (tilesize * e.rotation) * e.finpow() * 1.5f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Lines.lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + e.fout() * (4f + e.rotation));</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    tapBlock = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        stroke(3f - e.fin() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 4f + (tilesize / 1.5f * e.rotation) * e.fin());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    breakBlock = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.remove);</b>
+<b class="nc">&nbsp;        stroke(3f - e.fin() * 2f);</b>
+<b class="nc">&nbsp;        Lines.square(e.x, e.y, tilesize / 2f * e.rotation + e.fin() * 3f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 3 + (int)(e.rotation * 3), e.rotation * 2f + (tilesize * e.rotation) * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, 1f + e.fout() * (3f + e.rotation));</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    payloadDeposit = new Effect(30f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof YeetData data)) return;</b>
+<b class="nc">&nbsp;        Tmp.v1.set(e.x, e.y).lerp(data.target, e.finpow());</b>
+<b class="nc">&nbsp;        float x = Tmp.v1.x, y = Tmp.v1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;        scl(e.fout(Interp.pow3Out) * 1.05f);</b>
+<b class="nc">&nbsp;        if(data.item instanceof Block block){</b>
+<b class="nc">&nbsp;            Drawf.squareShadow(x, y, block.size * tilesize * 1.85f, 1f);</b>
+<b class="nc">&nbsp;        }else if(data.item instanceof UnitType unit){</b>
+<b class="nc">&nbsp;            unit.drawSoftShadow(e.x, e.y, e.rotation, 1f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        mixcol(Pal.accent, e.fin());</b>
+<b class="nc">&nbsp;        rect(data.item.fullIcon, x, y, data.item instanceof Block ? 0f : e.rotation - 90f);</b>
+<b class="fc">&nbsp;    }).layer(Layer.flyingUnitLow - 5f),</b>
+&nbsp;
+<b class="fc">&nbsp;    select = new Effect(23, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 3f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 3f + e.fin() * 14f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    smoke = new Effect(100, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.gray, Pal.darkishGray, e.fin());</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, (7f - e.fin() * 7f)/2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    fallSmoke = new Effect(110, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.gray, Color.darkGray, e.rotation);</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.fout() * 3.5f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    unitWreck = new Effect(200f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof TextureRegion reg)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.mixcol(Pal.rubble, 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        float vel = e.fin(Interp.pow5Out) * 2f * Mathf.randomSeed(e.id, 1f);</b>
+<b class="nc">&nbsp;        float totalRot = Mathf.randomSeed(e.id + 1, 10f);</b>
+<b class="nc">&nbsp;        Tmp.v1.trns(Mathf.randomSeed(e.id + 2, 360f), vel);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(Mathf.lerp(Layer.flyingUnitLow, Layer.debris, e.fin()));</b>
+<b class="nc">&nbsp;        Draw.alpha(e.fout(Interp.pow5Out));</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.rect(reg, e.x + Tmp.v1.x, e.y + Tmp.v1.y, e.rotation - 90 + totalRot * e.fin(Interp.pow5Out));</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    rocketSmoke = new Effect(120, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.gray);</b>
+<b class="nc">&nbsp;        alpha(Mathf.clamp(e.fout()*1.6f - Interp.pow3In.apply(e.rotation)*1.2f));</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, (1f + 6f * e.rotation) - e.fin()*2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    rocketSmokeLarge = new Effect(220, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.gray);</b>
+<b class="nc">&nbsp;        alpha(Mathf.clamp(e.fout()*1.6f - Interp.pow3In.apply(e.rotation)*1.2f));</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, (1f + 6f * e.rotation * 1.3f) - e.fin()*2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    magmasmoke = new Effect(110, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.gray);</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.fslope() * 6f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    spawn = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        stroke(2f * e.fout());</b>
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        Lines.poly(e.x, e.y, 4, 5f + e.fin() * 12f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    unitAssemble = new Effect(70, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof UnitType type)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        alpha(e.fout());</b>
+<b class="nc">&nbsp;        mixcol(Pal.accent, e.fout());</b>
+<b class="nc">&nbsp;        rect(type.fullIcon, e.x, e.y, e.rotation);</b>
+<b class="fc">&nbsp;    }).layer(Layer.flyingUnit + 5f),</b>
+&nbsp;
+<b class="fc">&nbsp;    padlaunch = new Effect(10, e -&gt; {</b>
+<b class="nc">&nbsp;        stroke(4f * e.fout());</b>
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        Lines.poly(e.x, e.y, 4, 5f + e.fin() * 60f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    breakProp = new Effect(23, e -&gt; {</b>
+<b class="nc">&nbsp;        float scl = Math.max(e.rotation, 1);</b>
+<b class="nc">&nbsp;        color(Tmp.c1.set(e.color).mul(1.1f));</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, 19f * e.finpow() * scl, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 3.5f * scl + 0.3f);</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }).layer(Layer.debris),</b>
+&nbsp;
+<b class="fc">&nbsp;    unitDrop = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightishGray);</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 9, 3 + 20f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.4f);</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }).layer(Layer.debris),</b>
+&nbsp;
+<b class="fc">&nbsp;    unitLand = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Tmp.c1.set(e.color).mul(1.1f));</b>
+&nbsp;        //TODO doesn&#39;t respect rotation / size
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, 17f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.3f);</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }).layer(Layer.debris),</b>
+&nbsp;
+<b class="fc">&nbsp;    unitDust = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Tmp.c1.set(e.color).mul(1.3f));</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 3, 8f * e.finpow(), e.rotation, 30f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 3f + 0.3f);</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }).layer(Layer.debris),</b>
+&nbsp;
+<b class="fc">&nbsp;    unitLandSmall = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Tmp.c1.set(e.color).mul(1.1f));</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, (int)(6 * e.rotation), 12f * e.finpow() * e.rotation, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 3f + 0.1f);</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }).layer(Layer.debris),</b>
+&nbsp;
+<b class="fc">&nbsp;    unitPickup = new Effect(18, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightishGray);</b>
+<b class="nc">&nbsp;        stroke(e.fin() * 2f);</b>
+<b class="nc">&nbsp;        Lines.poly(e.x, e.y, 4, 13f * e.fout());</b>
+<b class="fc">&nbsp;    }).layer(Layer.debris),</b>
+&nbsp;
+<b class="fc">&nbsp;    crawlDust = new Effect(35, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Tmp.c1.set(e.color).mul(1.6f));</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 10f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fslope() * 4f + 0.3f);</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }).layer(Layer.debris),</b>
+&nbsp;
+<b class="fc">&nbsp;    landShock = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lancerLaser);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 3f);</b>
+<b class="nc">&nbsp;        Lines.poly(e.x, e.y, 12, 20f * e.fout());</b>
+<b class="fc">&nbsp;    }).layer(Layer.debris),</b>
+&nbsp;
+<b class="fc">&nbsp;    pickup = new Effect(18, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightishGray);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.spikes(e.x, e.y, 1f + e.fin() * 6f, e.fout() * 4f, 6);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    sparkExplosion = new Effect(30f, 160f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 3f);</b>
+<b class="nc">&nbsp;        float circleRad = 6f + e.finpow() * e.rotation;</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, circleRad);</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 16; i++){</b>
+<b class="nc">&nbsp;            float angle = rand.random(360f);</b>
+<b class="nc">&nbsp;            float lenRand = rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;            Lines.lineAngle(e.x, e.y, angle, e.foutpow() * e.rotation * 0.8f * rand.random(1f, 0.6f) + 2f, e.finpow() * e.rotation * 1.2f * lenRand + 6f);</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    titanExplosion = new Effect(30f, 160f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 3f);</b>
+<b class="nc">&nbsp;        float circleRad = 6f + e.finpow() * 60f;</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, circleRad);</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 16; i++){</b>
+<b class="nc">&nbsp;            float angle = rand.random(360f);</b>
+<b class="nc">&nbsp;            float lenRand = rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;            Lines.lineAngle(e.x, e.y, angle, e.foutpow() * 50f * rand.random(1f, 0.6f) + 2f, e.finpow() * 70f * lenRand + 6f);</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    titanSmoke = new Effect(300f, 300f, b -&gt; {</b>
+<b class="nc">&nbsp;        float intensity = 3f;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(b.color, 0.7f);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            rand.setSeed(b.id*2 + i);</b>
+<b class="nc">&nbsp;            float lenScl = rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;            int fi = i;</b>
+<b class="nc">&nbsp;            b.scaled(b.lifetime * lenScl, e -&gt; {</b>
+<b class="nc">&nbsp;                randLenVectors(e.id + fi - 1, e.fin(Interp.pow10Out), (int)(2.9f * intensity), 22f * intensity, (x, y, in, out) -&gt; {</b>
+<b class="nc">&nbsp;                    float fout = e.fout(Interp.pow5Out) * rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;                    float rad = fout * ((2f + intensity) * 2.35f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Fill.circle(e.x + x, e.y + y, rad);</b>
+<b class="nc">&nbsp;                    Drawf.light(e.x + x, e.y + y, rad * 2.5f, b.color, 0.5f);</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    missileTrailSmoke = new Effect(180f, 300f, b -&gt; {</b>
+<b class="nc">&nbsp;        float intensity = 2f;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(b.color, 0.7f);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            rand.setSeed(b.id*2 + i);</b>
+<b class="nc">&nbsp;            float lenScl = rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;            int fi = i;</b>
+<b class="nc">&nbsp;            b.scaled(b.lifetime * lenScl, e -&gt; {</b>
+<b class="nc">&nbsp;                randLenVectors(e.id + fi - 1, e.fin(Interp.pow10Out), (int)(2.9f * intensity), 13f * intensity, (x, y, in, out) -&gt; {</b>
+<b class="nc">&nbsp;                    float fout = e.fout(Interp.pow5Out) * rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;                    float rad = fout * ((2f + intensity) * 2.35f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Fill.circle(e.x + x, e.y + y, rad);</b>
+<b class="nc">&nbsp;                    Drawf.light(e.x + x, e.y + y, rad * 2.5f, b.color, 0.5f);</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;        }
+<b class="fc">&nbsp;    }).layer(Layer.bullet - 1f),</b>
+&nbsp;
+<b class="fc">&nbsp;    neoplasmSplat = new Effect(400f, 300f, b -&gt; {</b>
+<b class="nc">&nbsp;        float intensity = 3f;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.neoplasm1);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            rand.setSeed(b.id*2 + i);</b>
+<b class="nc">&nbsp;            float lenScl = rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;            int fi = i;</b>
+<b class="nc">&nbsp;            b.scaled(b.lifetime * lenScl, e -&gt; {</b>
+<b class="nc">&nbsp;                randLenVectors(e.id + fi - 1, e.fin(Interp.pow10Out), (int)(5f * intensity), 22f * intensity, (x, y, in, out) -&gt; {</b>
+<b class="nc">&nbsp;                    float fout = e.fout(Interp.pow5Out) * rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;                    float rad = fout * ((2f + intensity) * 1.35f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Fill.circle(e.x + x, e.y + y, rad);</b>
+<b class="nc">&nbsp;                    Drawf.light(e.x + x, e.y + y, rad * 2.5f, b.color, 0.5f);</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;        }
+<b class="fc">&nbsp;    }).layer(Layer.bullet - 2f),</b>
+&nbsp;
+<b class="fc">&nbsp;    scatheExplosion = new Effect(60f, 160f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 5f);</b>
+<b class="nc">&nbsp;        float circleRad = 6f + e.finpow() * 60f;</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, circleRad);</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 16; i++){</b>
+<b class="nc">&nbsp;            float angle = rand.random(360f);</b>
+<b class="nc">&nbsp;            float lenRand = rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;            Tmp.v1.trns(angle, circleRad);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int s : Mathf.signs){</b>
+<b class="nc">&nbsp;                Drawf.tri(e.x + Tmp.v1.x, e.y + Tmp.v1.y, e.foutpow() * 40f, e.fout() * 30f * lenRand + 6f, angle + 90f + s * 90f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    scatheLight = new Effect(60f, 160f, e -&gt; {</b>
+<b class="nc">&nbsp;        float circleRad = 6f + e.finpow() * 60f;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(e.color, e.foutpow());</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, circleRad);</b>
+<b class="fc">&nbsp;    }).layer(Layer.bullet + 2f),</b>
+&nbsp;
+<b class="fc">&nbsp;    scatheSlash = new Effect(40f, 160f, e -&gt; {</b>
+<b class="nc">&nbsp;        Draw.color(e.color);</b>
+<b class="nc">&nbsp;        for(int s : Mathf.signs){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, e.fout() * 25f, e.foutpow() * 66f + 6f, e.rotation + s * 90f);</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    dynamicSpikes = new Effect(40f, 100f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        float circleRad = 4f + e.finpow() * e.rotation;</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, circleRad);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 6f, e.rotation * 1.5f * e.fout(), i*90);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        color();</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 3f, e.rotation * 1.45f / 3f * e.fout(), i*90);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, circleRad * 1.6f, Pal.heal, e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    greenBomb = new Effect(40f, 100f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        float circleRad = 4f + e.finpow() * 65f;</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, circleRad);</b>
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 6f, 100f * e.fout(), i*90);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        color();</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 3f, 35f * e.fout(), i*90);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, circleRad * 1.6f, Pal.heal, e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    greenLaserCharge = new Effect(80f, 100f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        stroke(e.fin() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 4f + e.fout() * 100f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.fin() * 20);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 20, 40f * e.fout(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fin() * 5f);</b>
+<b class="nc">&nbsp;            Drawf.light(e.x + x, e.y + y, e.fin() * 15f, Pal.heal, 0.7f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color();</b>
+&nbsp;
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.fin() * 10);</b>
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, e.fin() * 20f, Pal.heal, 0.7f);</b>
+<b class="fc">&nbsp;    }).followParent(true).rotWithParent(true),</b>
+&nbsp;
+<b class="fc">&nbsp;    greenLaserChargeSmall = new Effect(40f, 100f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        stroke(e.fin() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.fout() * 50f);</b>
+<b class="fc">&nbsp;    }).followParent(true).rotWithParent(true),</b>
+&nbsp;
+<b class="fc">&nbsp;    greenCloud = new Effect(80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, e.fin(), 7, 9f, (x, y, fin, fout) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 5f * fout);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    healWaveDynamic = new Effect(22, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 4f + e.finpow() * e.rotation);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    healWave = new Effect(22, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 4f + e.finpow() * 60f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    heal = new Effect(11, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 2f + e.finpow() * 7f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    dynamicWave = new Effect(22, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, 0.7f);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 4f + e.finpow() * e.rotation);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shieldWave = new Effect(22, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, 0.7f);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 4f + e.finpow() * 60f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shieldApply = new Effect(11, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, 0.7f);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 2f + e.finpow() * 7f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    disperseTrail = new Effect(13, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+<b class="nc">&nbsp;        stroke(0.6f + e.fout() * 1.7f);</b>
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 2; i++){</b>
+<b class="nc">&nbsp;            float rot = e.rotation + rand.range(15f) + 180f;</b>
+<b class="nc">&nbsp;            v.trns(rot, rand.random(e.fin() * 27f));</b>
+<b class="nc">&nbsp;            lineAngle(e.x + v.x, e.y + v.y, rot, e.fout() * rand.random(2f, 7f) + 1.5f);</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;    hitBulletSmall = new Effect(14, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Pal.lightOrange, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(7f, s -&gt; {</b>
+<b class="nc">&nbsp;            stroke(0.5f + s.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, s.fin() * 5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        stroke(0.5f + e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, e.fin() * 15f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 3 + 1f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 20f, Pal.lightOrange, 0.6f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitBulletColor = new Effect(14, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(7f, s -&gt; {</b>
+<b class="nc">&nbsp;            stroke(0.5f + s.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, s.fin() * 5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        stroke(0.5f + e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, e.fin() * 15f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 3 + 1f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 20f, e.color, 0.6f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitSquaresColor = new Effect(14, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(7f, s -&gt; {</b>
+<b class="nc">&nbsp;            stroke(0.5f + s.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, s.fin() * 5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        stroke(0.5f + e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, e.fin() * 17f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() * 3.2f, ang);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 20f, e.color, 0.6f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitFuse = new Effect(14, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Pal.surge, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(7f, s -&gt; {</b>
+<b class="nc">&nbsp;            stroke(0.5f + s.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, s.fin() * 7f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        stroke(0.5f + e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, e.fin() * 15f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 3 + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitBulletBig = new Effect(13, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Pal.lightOrange, e.fin());</b>
+<b class="nc">&nbsp;        stroke(0.5f + e.fout() * 1.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 8, e.finpow() * 30f, e.rotation, 50f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 4 + 1.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitFlameSmall = new Effect(14, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightFlame, Pal.darkFlame, e.fin());</b>
+<b class="nc">&nbsp;        stroke(0.5f + e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 1f + e.fin() * 15f, e.rotation, 50f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 3 + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitFlamePlasma = new Effect(14, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Pal.heal, e.fin());</b>
+<b class="nc">&nbsp;        stroke(0.5f + e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 1f + e.fin() * 15f, e.rotation, 50f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 3 + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitLiquid = new Effect(16, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, 1f + e.fin() * 15f, e.rotation, 60f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;    
+<b class="fc">&nbsp;    hitLaserBlast = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 8, e.finpow() * 17f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 4 + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitEmpSpark = new Effect(40, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.6f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 18, e.finpow() * 27f, e.rotation, 360f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 6 + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitLancer = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 8, e.finpow() * 17f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 4 + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitBeam = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, e.finpow() * 18f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 4 + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitFlameBeam = new Effect(19, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 7, e.finpow() * 11f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 2 + 0.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitMeltdown = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.meltdownHit);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, e.finpow() * 18f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 4 + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitMeltHeal = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, e.finpow() * 18f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 4 + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    instBomb = new Effect(15f, 100f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.bulletYellowBack);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 4f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 4f + e.finpow() * 20f);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 6f, 80f * e.fout(), i*90 + 45);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        color();</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 3f, 30f * e.fout(), i*90 + 45);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 150f, Pal.bulletYellowBack, 0.9f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    instTrail = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 2; i++){</b>
+<b class="nc">&nbsp;            color(i == 0 ? Pal.bulletYellowBack : Pal.bulletYellow);</b>
+&nbsp;
+<b class="nc">&nbsp;            float m = i == 0 ? 1f : 0.5f;</b>
+&nbsp;
+<b class="nc">&nbsp;            float rot = e.rotation + 180f;</b>
+<b class="nc">&nbsp;            float w = 15f * e.fout() * m;</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, w, (30f + Mathf.randomSeedRange(e.id, 15f)) * m, rot);</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, w, 10f * m, rot + 180f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 60f, Pal.bulletYellowBack, 0.6f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    instShoot = new Effect(24f, e -&gt; {</b>
+<b class="nc">&nbsp;        e.scaled(10f, b -&gt; {</b>
+<b class="nc">&nbsp;            color(Color.white, Pal.bulletYellowBack, b.fin());</b>
+<b class="nc">&nbsp;            stroke(b.fout() * 3f + 0.2f);</b>
+<b class="nc">&nbsp;            Lines.circle(b.x, b.y, b.fin() * 50f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.bulletYellowBack);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 13f * e.fout(), 85f, e.rotation + 90f * i);</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 13f * e.fout(), 50f, e.rotation + 20f * i);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 180f, Pal.bulletYellowBack, 0.9f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    instHit = new Effect(20f, 200f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.bulletYellowBack);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 2; i++){</b>
+<b class="nc">&nbsp;            color(i == 0 ? Pal.bulletYellowBack : Pal.bulletYellow);</b>
+&nbsp;
+<b class="nc">&nbsp;            float m = i == 0 ? 1f : 0.5f;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int j = 0; j &lt; 5; j++){</b>
+<b class="nc">&nbsp;                float rot = e.rotation + Mathf.randomSeedRange(e.id + j, 50f);</b>
+<b class="nc">&nbsp;                float w = 23f * e.fout() * m;</b>
+<b class="nc">&nbsp;                Drawf.tri(e.x, e.y, w, (80f + Mathf.randomSeedRange(e.id + j, 40f)) * m, rot);</b>
+<b class="nc">&nbsp;                Drawf.tri(e.x, e.y, w, 20f * m, rot + 180f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(10f, c -&gt; {</b>
+<b class="nc">&nbsp;            color(Pal.bulletYellow);</b>
+<b class="nc">&nbsp;            stroke(c.fout() * 2f + 0.2f);</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, c.fin() * 30f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(12f, c -&gt; {</b>
+<b class="nc">&nbsp;            color(Pal.bulletYellowBack);</b>
+<b class="nc">&nbsp;            randLenVectors(e.id, 25, 5f + e.fin() * 80f, e.rotation, 60f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;                Fill.square(e.x + x, e.y + y, c.fout() * 3f, 45f);</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitLaser = new Effect(8, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Pal.heal, e.fin());</b>
+<b class="nc">&nbsp;        stroke(0.5f + e.fout());</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.fin() * 5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 23f, Pal.heal, e.fout() * 0.7f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    hitLaserColor = new Effect(8, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+<b class="nc">&nbsp;        stroke(0.5f + e.fout());</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.fin() * 5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 23f, e.color, e.fout() * 0.7f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    despawn = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lighterOrange, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 7, e.fin() * 7f, e.rotation, 40f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 2 + 1f);</b>
+&nbsp;        });
+&nbsp;
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    airBubble = new Effect(100f, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 1, e.fin() * 12f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            rect(renderer.bubbles[Math.min((int)(renderer.bubbles.length * Mathf.curveMargin(e.fin(), 0.11f, 0.06f)), renderer.bubbles.length - 1)], e.x + x, e.y + y);</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }).layer(Layer.flyingUnitLow + 1),</b>
+&nbsp;
+<b class="fc">&nbsp;    flakExplosion = new Effect(20, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.bulletYellow);</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(6, i -&gt; {</b>
+<b class="nc">&nbsp;            stroke(3f * i.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, 3f + i.fin() * 10f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, 2f + 23f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 3f + 0.5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.lighterOrange);</b>
+<b class="nc">&nbsp;        stroke(e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id + 1, 4, 1f + 23f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + e.fout() * 3f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 50f, Pal.lighterOrange, 0.8f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    plasticExplosion = new Effect(24, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.plastaniumFront);</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(7, i -&gt; {</b>
+<b class="nc">&nbsp;            stroke(3f * i.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, 3f + i.fin() * 24f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 7, 2f + 28f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.plastaniumBack);</b>
+<b class="nc">&nbsp;        stroke(e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id + 1, 4, 1f + 25f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + e.fout() * 3f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 50f, Pal.plastaniumBack, 0.8f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    plasticExplosionFlak = new Effect(28, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.plastaniumFront);</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(7, i -&gt; {</b>
+<b class="nc">&nbsp;            stroke(3f * i.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, 3f + i.fin() * 34f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 7, 2f + 30f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.plastaniumBack);</b>
+<b class="nc">&nbsp;        stroke(e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id + 1, 4, 1f + 30f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + e.fout() * 3f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    blastExplosion = new Effect(22, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.missileYellow);</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(6, i -&gt; {</b>
+<b class="nc">&nbsp;            stroke(3f * i.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, 3f + i.fin() * 15f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, 2f + 23f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.missileYellowBack);</b>
+<b class="nc">&nbsp;        stroke(e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id + 1, 4, 1f + 23f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + e.fout() * 3f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 45f, Pal.missileYellowBack, 0.8f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    sapExplosion = new Effect(25, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.sapBullet);</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(6, i -&gt; {</b>
+<b class="nc">&nbsp;            stroke(3f * i.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, 3f + i.fin() * 80f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 9, 2f + 70 * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.sapBulletBack);</b>
+<b class="nc">&nbsp;        stroke(e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id + 1, 8, 1f + 60f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + e.fout() * 3f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 90f, Pal.sapBulletBack, 0.8f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    massiveExplosion = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.missileYellow);</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(7, i -&gt; {</b>
+<b class="nc">&nbsp;            stroke(3f * i.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, 4f + i.fin() * 30f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 8, 2f + 30f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.missileYellowBack);</b>
+<b class="nc">&nbsp;        stroke(e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id + 1, 6, 1f + 29f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + e.fout() * 4f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 50f, Pal.missileYellowBack, 0.8f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    artilleryTrail = new Effect(50, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.rotation * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    incendTrail = new Effect(50, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange);</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.rotation * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    missileTrail = new Effect(50, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.rotation * e.fout());</b>
+<b class="fc">&nbsp;    }).layer(Layer.bullet - 0.001f), //below bullets</b>
+&nbsp;
+<b class="fc">&nbsp;    missileTrailShort = new Effect(22, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.rotation * e.fout());</b>
+<b class="fc">&nbsp;    }).layer(Layer.bullet - 0.001f),</b>
+&nbsp;
+<b class="fc">&nbsp;    colorTrail = new Effect(50, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.rotation * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    absorb = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        stroke(2f * e.fout());</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 5f * e.fout());</b>
+&nbsp;    }),
+&nbsp;    
+<b class="fc">&nbsp;    forceShrink = new Effect(20, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, e.fout());</b>
+<b class="nc">&nbsp;        if(renderer.animateShields){</b>
+<b class="nc">&nbsp;            Fill.poly(e.x, e.y, 6, e.rotation * e.fout());</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            stroke(1.5f);</b>
+<b class="nc">&nbsp;            Draw.alpha(0.09f);</b>
+<b class="nc">&nbsp;            Fill.poly(e.x, e.y, 6, e.rotation * e.fout());</b>
+<b class="nc">&nbsp;            Draw.alpha(1f);</b>
+<b class="nc">&nbsp;            Lines.poly(e.x, e.y, 6, e.rotation * e.fout());</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }).layer(Layer.shields),</b>
+&nbsp;
+<b class="fc">&nbsp;    flakExplosionBig = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.bulletYellowBack);</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(6, i -&gt; {</b>
+<b class="nc">&nbsp;            stroke(3f * i.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, 3f + i.fin() * 25f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, 2f + 23f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.bulletYellow);</b>
+<b class="nc">&nbsp;        stroke(e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id + 1, 4, 1f + 23f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + e.fout() * 3f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 60f, Pal.bulletYellowBack, 0.7f * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    burning = new Effect(35f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightFlame, Pal.darkFlame, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 3, 2f + e.fin() * 7f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.1f + e.fout() * 1.4f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    fireRemove = new Effect(70f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(Fire.regions[0] == null) return;</b>
+<b class="nc">&nbsp;        alpha(e.fout());</b>
+<b class="nc">&nbsp;        rect(Fire.regions[((int)(e.rotation + e.fin() * Fire.frames)) % Fire.frames], e.x + Mathf.randomSeedRange((int)e.y, 2), e.y + Mathf.randomSeedRange((int)e.x, 2));</b>
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 50f + Mathf.absin(5f, 5f), Pal.lightFlame, 0.6f  * e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    fire = new Effect(50f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightFlame, Pal.darkFlame, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 2f + e.fin() * 9f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.2f + e.fslope() * 1.5f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color();</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 20f * e.fslope(), Pal.lightFlame, 0.5f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    fireHit = new Effect(35f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightFlame, Pal.darkFlame, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 3, 2f + e.fin() * 10f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.2f + e.fout() * 1.6f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color();</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    fireSmoke = new Effect(35f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 1, 2f + e.fin() * 7f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.2f + e.fslope() * 1.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+&nbsp;    //TODO needs a lot of work
+<b class="fc">&nbsp;    neoplasmHeal = new Effect(120f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.neoplasm1, Pal.neoplasm2, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 1, e.fin() * 3f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.2f + e.fslope() * 2f);</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }).followParent(true).rotWithParent(true).layer(Layer.bullet - 2),</b>
+&nbsp;
+<b class="fc">&nbsp;    steam = new Effect(35f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.lightGray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 2f + e.fin() * 7f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.2f + e.fslope() * 1.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    ventSteam = new Effect(140f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, Pal.vent2, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        alpha(e.fslope() * 0.78f);</b>
+&nbsp;
+<b class="nc">&nbsp;        float length = 3f + e.finpow() * 10f;</b>
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; rand.random(3, 5); i++){</b>
+<b class="nc">&nbsp;            v.trns(rand.random(360f), rand.random(length));</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + v.x, e.y + v.y, rand.random(1.2f, 3.5f) + e.fslope() * 1.1f);</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }).layer(Layer.darkness - 1),</b>
+&nbsp;
+<b class="fc">&nbsp;    drillSteam = new Effect(220f, e -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;        float length = 3f + e.finpow() * 20f;</b>
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 13; i++){</b>
+<b class="nc">&nbsp;            v.trns(rand.random(360f), rand.random(length));</b>
+<b class="nc">&nbsp;            float sizer = rand.random(1.3f, 3.7f);</b>
+&nbsp;
+<b class="nc">&nbsp;            e.scaled(e.lifetime * rand.random(0.5f, 1f), b -&gt; {</b>
+<b class="nc">&nbsp;                color(Color.gray, b.fslope() * 0.93f);</b>
+&nbsp;
+<b class="nc">&nbsp;                Fill.circle(e.x + v.x, e.y + v.y, sizer + b.fslope() * 1.2f);</b>
+&nbsp;            });
+&nbsp;        }
+<b class="fc">&nbsp;    }).startDelay(30f),</b>
+&nbsp;
+<b class="fc">&nbsp;    fluxVapor = new Effect(140f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        alpha(e.fout() * 0.7f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 3f + e.finpow() * 10f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.6f + e.fin() * 5f);</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }).layer(Layer.bullet - 1f),</b>
+&nbsp;
+<b class="fc">&nbsp;    vapor = new Effect(110f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        alpha(e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 3, 2f + e.finpow() * 11f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.6f + e.fin() * 5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    vaporSmall = new Effect(50f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        alpha(e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 4, 2f + e.finpow() * 5f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 1f + e.fin() * 4f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    fireballsmoke = new Effect(25f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 1, 2f + e.fin() * 7f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.2f + e.fout() * 1.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    ballfire = new Effect(25f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightFlame, Pal.darkFlame, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 2f + e.fin() * 7f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.2f + e.fout() * 1.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    freezing = new Effect(40f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Liquids.cryofluid.color);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 1f + e.fin() * 2f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 1.2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    melting = new Effect(40f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Liquids.slag.color, Color.white, e.fout() / 5f + Mathf.randomSeedRange(e.id, 0.12f));</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 1f + e.fin() * 3f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, .2f + e.fout() * 1.2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    wet = new Effect(80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Liquids.water.color);</b>
+<b class="nc">&nbsp;        alpha(Mathf.clamp(e.fin() * 2f));</b>
+&nbsp;
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    muddy = new Effect(80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.muddy);</b>
+<b class="nc">&nbsp;        alpha(Mathf.clamp(e.fin() * 2f));</b>
+&nbsp;
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.fout());</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    sapped = new Effect(40f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.sap);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 1f + e.fin() * 2f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fslope() * 1.1f, 45f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    electrified = new Effect(40f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 1f + e.fin() * 2f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fslope() * 1.1f, 45f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    sporeSlowed = new Effect(40f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.spore);</b>
+&nbsp;
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, e.fslope() * 1.1f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    oily = new Effect(42f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Liquids.oil.color);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 1f + e.fin() * 2f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout());</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    overdriven = new Effect(20f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 1f + e.fin() * 2f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() * 2.3f + 0.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    overclocked = new Effect(50f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+&nbsp;
+<b class="nc">&nbsp;        Fill.square(e.x, e.y, e.fslope() * 2f, 45f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    dropItem = new Effect(20f, e -&gt; {</b>
+<b class="nc">&nbsp;        float length = 20f * e.finpow();</b>
+<b class="nc">&nbsp;        float size = 7f * e.fout();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!(e.data instanceof Item item)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        rect(item.fullIcon, e.x + trnsx(e.rotation, length), e.y + trnsy(e.rotation, length), size, size);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shockwave = new Effect(10f, 80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Color.lightGray, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f + 0.2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.fin() * 28f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    bigShockwave = new Effect(10f, 80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Color.lightGray, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 3f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.fin() * 50f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    spawnShockwave = new Effect(20f, 400f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Color.lightGray, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 3f + 0.5f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.fin() * (e.rotation + 50f));</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    explosion = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        e.scaled(7, i -&gt; {</b>
+<b class="nc">&nbsp;            stroke(3f * i.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, 3f + i.fin() * 10f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, 2f + 19f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 3f + 0.5f);</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x / 2f, e.y + y / 2f, e.fout());</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.lighterOrange, Pal.lightOrange, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;        stroke(1.5f * e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id + 1, 8, 1f + 23f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + e.fout() * 3f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    dynamicExplosion = new Effect(30, 500f, b -&gt; {</b>
+<b class="nc">&nbsp;        float intensity = b.rotation;</b>
+<b class="nc">&nbsp;        float baseLifetime = 26f + intensity * 15f;</b>
+<b class="nc">&nbsp;        b.lifetime = 43f + intensity * 35f;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;        //TODO awful borders with linear filtering here
+<b class="nc">&nbsp;        alpha(0.9f);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            rand.setSeed(b.id*2 + i);</b>
+<b class="nc">&nbsp;            float lenScl = rand.random(0.4f, 1f);</b>
+<b class="nc">&nbsp;            int fi = i;</b>
+<b class="nc">&nbsp;            b.scaled(b.lifetime * lenScl, e -&gt; {</b>
+<b class="nc">&nbsp;                randLenVectors(e.id + fi - 1, e.fin(Interp.pow10Out), (int)(3f * intensity), 14f * intensity, (x, y, in, out) -&gt; {</b>
+<b class="nc">&nbsp;                    float fout = e.fout(Interp.pow5Out) * rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;                    Fill.circle(e.x + x, e.y + y, fout * ((2f + intensity) * 1.8f));</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        b.scaled(baseLifetime, e -&gt; {</b>
+<b class="nc">&nbsp;            e.scaled(5 + intensity * 2.5f, i -&gt; {</b>
+<b class="nc">&nbsp;                stroke((3.1f + intensity/5f) * i.fout());</b>
+<b class="nc">&nbsp;                Lines.circle(e.x, e.y, (3f + i.fin() * 14f) * intensity);</b>
+<b class="nc">&nbsp;                Drawf.light(e.x, e.y, i.fin() * 14f * 2f * intensity, Color.white, 0.9f * e.fout());</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            color(Pal.lighterOrange, Pal.lightOrange, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;            stroke((1.7f * e.fout()) * (1f + (intensity - 1f) / 2f));</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.effect + 0.001f);</b>
+<b class="nc">&nbsp;            randLenVectors(e.id + 1, e.finpow() + 0.001f, (int)(9 * intensity), 40f * intensity, (x, y, in, out) -&gt; {</b>
+<b class="nc">&nbsp;                lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + out * 4 * (3f + intensity));</b>
+<b class="nc">&nbsp;                Drawf.light(e.x + x, e.y + y, (out * 4 * (3f + intensity)) * 3.5f, Draw.getColor(), 0.8f);</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    reactorExplosion = new Effect(30, 500f, b -&gt; {</b>
+<b class="nc">&nbsp;        float intensity = 6.8f;</b>
+<b class="nc">&nbsp;        float baseLifetime = 25f + intensity * 11f;</b>
+<b class="nc">&nbsp;        b.lifetime = 50f + intensity * 65f;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.reactorPurple2);</b>
+<b class="nc">&nbsp;        alpha(0.7f);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            rand.setSeed(b.id*2 + i);</b>
+<b class="nc">&nbsp;            float lenScl = rand.random(0.4f, 1f);</b>
+<b class="nc">&nbsp;            int fi = i;</b>
+<b class="nc">&nbsp;            b.scaled(b.lifetime * lenScl, e -&gt; {</b>
+<b class="nc">&nbsp;                randLenVectors(e.id + fi - 1, e.fin(Interp.pow10Out), (int)(2.9f * intensity), 22f * intensity, (x, y, in, out) -&gt; {</b>
+<b class="nc">&nbsp;                    float fout = e.fout(Interp.pow5Out) * rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;                    float rad = fout * ((2f + intensity) * 2.35f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Fill.circle(e.x + x, e.y + y, rad);</b>
+<b class="nc">&nbsp;                    Drawf.light(e.x + x, e.y + y, rad * 2.5f, Pal.reactorPurple, 0.5f);</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        b.scaled(baseLifetime, e -&gt; {</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+<b class="nc">&nbsp;            e.scaled(5 + intensity * 2f, i -&gt; {</b>
+<b class="nc">&nbsp;                stroke((3.1f + intensity/5f) * i.fout());</b>
+<b class="nc">&nbsp;                Lines.circle(e.x, e.y, (3f + i.fin() * 14f) * intensity);</b>
+<b class="nc">&nbsp;                Drawf.light(e.x, e.y, i.fin() * 14f * 2f * intensity, Color.white, 0.9f * e.fout());</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            color(Pal.lighterOrange, Pal.reactorPurple, e.fin());</b>
+<b class="nc">&nbsp;            stroke((2f * e.fout()));</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.effect + 0.001f);</b>
+<b class="nc">&nbsp;            randLenVectors(e.id + 1, e.finpow() + 0.001f, (int)(8 * intensity), 28f * intensity, (x, y, in, out) -&gt; {</b>
+<b class="nc">&nbsp;                lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + out * 4 * (4f + intensity));</b>
+<b class="nc">&nbsp;                Drawf.light(e.x + x, e.y + y, (out * 4 * (3f + intensity)) * 3.5f, Draw.getColor(), 0.8f);</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    impactReactorExplosion = new Effect(30, 500f, b -&gt; {</b>
+<b class="nc">&nbsp;        float intensity = 8f;</b>
+<b class="nc">&nbsp;        float baseLifetime = 25f + intensity * 15f;</b>
+<b class="nc">&nbsp;        b.lifetime = 50f + intensity * 64f;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.lighterOrange);</b>
+<b class="nc">&nbsp;        alpha(0.8f);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 5; i++){</b>
+<b class="nc">&nbsp;            rand.setSeed(b.id*2 + i);</b>
+<b class="nc">&nbsp;            float lenScl = rand.random(0.25f, 1f);</b>
+<b class="nc">&nbsp;            int fi = i;</b>
+<b class="nc">&nbsp;            b.scaled(b.lifetime * lenScl, e -&gt; {</b>
+<b class="nc">&nbsp;                randLenVectors(e.id + fi - 1, e.fin(Interp.pow10Out), (int)(2.8f * intensity), 25f * intensity, (x, y, in, out) -&gt; {</b>
+<b class="nc">&nbsp;                    float fout = e.fout(Interp.pow5Out) * rand.random(0.5f, 1f);</b>
+<b class="nc">&nbsp;                    float rad = fout * ((2f + intensity) * 2.35f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Fill.circle(e.x + x, e.y + y, rad);</b>
+<b class="nc">&nbsp;                    Drawf.light(e.x + x, e.y + y, rad * 2.6f, Pal.lighterOrange, 0.7f);</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        b.scaled(baseLifetime, e -&gt; {</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+<b class="nc">&nbsp;            e.scaled(5 + intensity * 2f, i -&gt; {</b>
+<b class="nc">&nbsp;                stroke((3.1f + intensity/5f) * i.fout());</b>
+<b class="nc">&nbsp;                Lines.circle(e.x, e.y, (3f + i.fin() * 14f) * intensity);</b>
+<b class="nc">&nbsp;                Drawf.light(e.x, e.y, i.fin() * 14f * 2f * intensity, Color.white, 0.9f * e.fout());</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            color(Color.white, Pal.lighterOrange, e.fin());</b>
+<b class="nc">&nbsp;            stroke((2f * e.fout()));</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.effect + 0.001f);</b>
+<b class="nc">&nbsp;            randLenVectors(e.id + 1, e.finpow() + 0.001f, (int)(8 * intensity), 30f * intensity, (x, y, in, out) -&gt; {</b>
+<b class="nc">&nbsp;                lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 1f + out * 4 * (4f + intensity));</b>
+<b class="nc">&nbsp;                Drawf.light(e.x + x, e.y + y, (out * 4 * (3f + intensity)) * 3.5f, Draw.getColor(), 0.8f);</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    blockExplosionSmoke = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, 4f + 30f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 3f);</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x / 2f, e.y + y / 2f, e.fout());</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    smokePuff = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, 4f + 30f * e.finpow(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 3f);</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x / 2f, e.y + y / 2f, e.fout());</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmall = new Effect(8, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lighterOrange, Pal.lightOrange, e.fin());</b>
+<b class="nc">&nbsp;        float w = 1f + 5 * e.fout();</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 15f * e.fout(), e.rotation);</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 3f * e.fout(), e.rotation + 180f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmallColor = new Effect(8, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;        float w = 1f + 5 * e.fout();</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 15f * e.fout(), e.rotation);</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 3f * e.fout(), e.rotation + 180f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootHeal = new Effect(8, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        float w = 1f + 5 * e.fout();</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 17f * e.fout(), e.rotation);</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 4f * e.fout(), e.rotation + 180f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootHealYellow = new Effect(8, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightTrail);</b>
+<b class="nc">&nbsp;        float w = 1f + 5 * e.fout();</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 17f * e.fout(), e.rotation);</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 4f * e.fout(), e.rotation + 180f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmallSmoke = new Effect(20f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lighterOrange, Color.lightGray, Color.gray, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, e.finpow() * 6f, e.rotation, 20f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 1.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootBig = new Effect(9, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lighterOrange, Pal.lightOrange, e.fin());</b>
+<b class="nc">&nbsp;        float w = 1.2f + 7 * e.fout();</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 25f * e.fout(), e.rotation);</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 4f * e.fout(), e.rotation + 180f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootBig2 = new Effect(10, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;        float w = 1.2f + 8 * e.fout();</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 29f * e.fout(), e.rotation);</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 5f * e.fout(), e.rotation + 180f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootBigColor = new Effect(11, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;        float w = 1.2f +9 * e.fout();</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 32f * e.fout(), e.rotation);</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 3f * e.fout(), e.rotation + 180f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootTitan = new Effect(10, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange, e.color, e.fin());</b>
+<b class="nc">&nbsp;        float w = 1.3f + 10 * e.fout();</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 35f * e.fout(), e.rotation);</b>
+<b class="nc">&nbsp;        Drawf.tri(e.x, e.y, w, 6f * e.fout(), e.rotation + 180f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootBigSmoke = new Effect(17f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lighterOrange, Color.lightGray, Color.gray, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 8, e.finpow() * 19f, e.rotation, 10f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 2f + 0.2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootBigSmoke2 = new Effect(18f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange, Color.lightGray, Color.gray, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 9, e.finpow() * 23f, e.rotation, 20f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 2.4f + 0.2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmokeDisperse = new Effect(25f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange, Color.white, Color.gray, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 9, e.finpow() * 29f, e.rotation, 18f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 2.2f + 0.1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmokeSquare = new Effect(20f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 6; i++){</b>
+<b class="nc">&nbsp;            float rot = e.rotation + rand.range(22f);</b>
+<b class="nc">&nbsp;            v.trns(rot, rand.random(e.finpow() * 21f));</b>
+<b class="nc">&nbsp;            Fill.poly(e.x + v.x, e.y + v.y, 4, e.fout() * 2f + 0.2f, rand.random(360f));</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmokeSquareSparse = new Effect(30f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 2; i++){</b>
+<b class="nc">&nbsp;            float rot = e.rotation + rand.range(30f);</b>
+<b class="nc">&nbsp;            v.trns(rot, rand.random(e.finpow() * 27f));</b>
+<b class="nc">&nbsp;            Fill.poly(e.x + v.x, e.y + v.y, 4, e.fout() * 3.8f + 0.2f, rand.random(360f));</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmokeSquareBig = new Effect(32f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 13; i++){</b>
+<b class="nc">&nbsp;            float rot = e.rotation + rand.range(26f);</b>
+<b class="nc">&nbsp;            v.trns(rot, rand.random(e.finpow() * 30f));</b>
+<b class="nc">&nbsp;            Fill.poly(e.x + v.x, e.y + v.y, 4, e.fout() * 4f + 0.2f, rand.random(360f));</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmokeTitan = new Effect(70f, e -&gt; {</b>
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 13; i++){</b>
+<b class="nc">&nbsp;            v.trns(e.rotation + rand.range(30f), rand.random(e.finpow() * 40f));</b>
+<b class="nc">&nbsp;            e.scaled(e.lifetime * rand.random(0.3f, 1f), b -&gt; {</b>
+<b class="nc">&nbsp;                color(e.color, Pal.lightishGray, b.fin());</b>
+<b class="nc">&nbsp;                Fill.circle(e.x + v.x, e.y + v.y, b.fout() * 3.4f + 0.3f);</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmokeSmite = new Effect(70f, e -&gt; {</b>
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 13; i++){</b>
+<b class="nc">&nbsp;            float a = e.rotation + rand.range(30f);</b>
+<b class="nc">&nbsp;            v.trns(a, rand.random(e.finpow() * 50f));</b>
+<b class="nc">&nbsp;            e.scaled(e.lifetime * rand.random(0.3f, 1f), b -&gt; {</b>
+<b class="nc">&nbsp;                color(e.color);</b>
+<b class="nc">&nbsp;                Lines.stroke(b.fout() * 3f + 0.5f);</b>
+<b class="nc">&nbsp;                Lines.lineAngle(e.x + v.x, e.y + v.y, a, b.fout() * 8f + 0.4f);</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmokeMissile = new Effect(130f, 300f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.redLight);</b>
+<b class="nc">&nbsp;        alpha(0.5f);</b>
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 35; i++){</b>
+<b class="nc">&nbsp;            v.trns(e.rotation + 180f + rand.range(21f), rand.random(e.finpow() * 90f)).add(rand.range(3f), rand.range(3f));</b>
+<b class="nc">&nbsp;            e.scaled(e.lifetime * rand.random(0.2f, 1f), b -&gt; {</b>
+<b class="nc">&nbsp;                Fill.circle(e.x + v.x, e.y + v.y, b.fout() * 9f + 0.3f);</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    regenParticle = new Effect(100f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.regen);</b>
+&nbsp;
+<b class="nc">&nbsp;        Fill.square(e.x, e.y, e.fslope() * 1.5f + 0.14f, 45f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    regenSuppressParticle = new Effect(35f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, Color.white, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.4f + 0.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 4, 17f * e.fin(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fslope() * 3f + 0.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    regenSuppressSeek = new Effect(140f, e -&gt; {</b>
+<b class="nc">&nbsp;        e.lifetime = Mathf.randomSeed(e.id, 120f, 200f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!(e.data instanceof Position to)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.v2.set(to).sub(e.x, e.y).nor().rotate90(1).scl(Mathf.randomSeedRange(e.id, 1f) * 50f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.bz2.set(Tmp.v1.set(e.x, e.y), Tmp.v2.add(e.x, e.y), Tmp.v3.set(to));</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.bz2.valueAt(Tmp.v4, e.fout());</b>
+&nbsp;
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        Fill.circle(Tmp.v4.x, Tmp.v4.y, e.fslope() * 2f + 0.1f);</b>
+<b class="fc">&nbsp;    }).followParent(false).rotWithParent(false),</b>
+&nbsp;
+<b class="fc">&nbsp;    surgeCruciSmoke = new Effect(160f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.slagOrange);</b>
+<b class="nc">&nbsp;        alpha(0.6f);</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 3; i++){</b>
+<b class="nc">&nbsp;            float len = rand.random(6f), rot = rand.range(40f) + e.rotation;</b>
+&nbsp;
+<b class="nc">&nbsp;            e.scaled(e.lifetime * rand.random(0.3f, 1f), b -&gt; {</b>
+<b class="nc">&nbsp;                v.trns(rot, len * b.finpow());</b>
+<b class="nc">&nbsp;                Fill.circle(e.x + v.x, e.y + v.y, 2f * b.fslope() + 0.2f);</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    neoplasiaSmoke = new Effect(280f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.neoplasmMid);</b>
+<b class="nc">&nbsp;        alpha(0.6f);</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 6; i++){</b>
+<b class="nc">&nbsp;            float len = rand.random(10f), rot = rand.range(120f) + e.rotation;</b>
+&nbsp;
+<b class="nc">&nbsp;            e.scaled(e.lifetime * rand.random(0.3f, 1f), b -&gt; {</b>
+<b class="nc">&nbsp;                v.trns(rot, len * b.finpow());</b>
+<b class="nc">&nbsp;                Fill.circle(e.x + v.x, e.y + v.y, 3.3f * b.fslope() + 0.2f);</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    heatReactorSmoke = new Effect(180f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 5; i++){</b>
+<b class="nc">&nbsp;            float len = rand.random(6f), rot = rand.range(50f) + e.rotation;</b>
+&nbsp;
+<b class="nc">&nbsp;            e.scaled(e.lifetime * rand.random(0.3f, 1f), b -&gt; {</b>
+<b class="nc">&nbsp;                alpha(0.9f * b.fout());</b>
+<b class="nc">&nbsp;                v.trns(rot, len * b.finpow());</b>
+<b class="nc">&nbsp;                Fill.circle(e.x + v.x, e.y + v.y, 2.4f * b.fin() + 0.6f);</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    circleColorSpark = new Effect(21f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.1f + 0.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 9, 27f * e.fin(), 9f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fslope() * 5f + 0.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    colorSpark = new Effect(21f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.1f + 0.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, 27f * e.fin(), e.rotation, 9f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fslope() * 5f + 0.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    colorSparkBig = new Effect(25f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.3f + 0.7f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 8, 41f * e.fin(), e.rotation, 10f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fslope() * 6f + 0.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    randLifeSpark = new Effect(24f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.5f + 0.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 15; i++){</b>
+<b class="nc">&nbsp;            float ang = e.rotation + rand.range(9f), len = rand.random(90f * e.finpow());</b>
+<b class="nc">&nbsp;            e.scaled(e.lifetime * rand.random(0.5f, 1f), p -&gt; {</b>
+<b class="nc">&nbsp;                v.trns(ang, len);</b>
+<b class="nc">&nbsp;                lineAngle(e.x + v.x, e.y + v.y, ang, p.fout() * 7f + 0.5f);</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootPayloadDriver = new Effect(30f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        Lines.stroke(0.5f + 0.5f*e.fout());</b>
+<b class="nc">&nbsp;        float spread = 9f;</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 20; i++){</b>
+<b class="nc">&nbsp;            float ang = e.rotation + rand.range(17f);</b>
+<b class="nc">&nbsp;            v.trns(ang, rand.random(e.fin() * 55f));</b>
+<b class="nc">&nbsp;            Lines.lineAngle(e.x + v.x + rand.range(spread), e.y + v.y + rand.range(spread), ang, e.fout() * 5f * rand.random(1f) + 1f);</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootSmallFlame = new Effect(32f, 80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightFlame, Pal.darkFlame, Color.gray, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 8, e.finpow() * 60f, e.rotation, 10f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.65f + e.fout() * 1.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootPyraFlame = new Effect(33f, 80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightPyraFlame, Pal.darkPyraFlame, Color.gray, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 10, e.finpow() * 70f, e.rotation, 10f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.65f + e.fout() * 1.6f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shootLiquid = new Effect(15f, 80f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, e.finpow() * 15f, e.rotation, 11f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.5f + e.fout() * 2.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    casing1 = new Effect(30f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange, Color.lightGray, Pal.lightishGray, e.fin());</b>
+<b class="nc">&nbsp;        alpha(e.fout(0.3f));</b>
+<b class="nc">&nbsp;        float rot = Math.abs(e.rotation) + 90f;</b>
+<b class="nc">&nbsp;        int i = -Mathf.sign(e.rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;        float len = (2f + e.finpow() * 6f) * i;</b>
+<b class="nc">&nbsp;        float lr = rot + e.fin() * 30f * i;</b>
+<b class="nc">&nbsp;        Fill.rect(</b>
+<b class="nc">&nbsp;            e.x + trnsx(lr, len) + Mathf.randomSeedRange(e.id + i + 7, 3f * e.fin()),</b>
+<b class="nc">&nbsp;            e.y + trnsy(lr, len) + Mathf.randomSeedRange(e.id + i + 8, 3f * e.fin()),</b>
+<b class="nc">&nbsp;            1f, 2f, rot + e.fin() * 50f * i</b>
+&nbsp;        );
+&nbsp;
+<b class="fc">&nbsp;    }).layer(Layer.bullet),</b>
+&nbsp;
+<b class="fc">&nbsp;    casing2 = new Effect(34f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange, Color.lightGray, Pal.lightishGray, e.fin());</b>
+<b class="nc">&nbsp;        alpha(e.fout(0.5f));</b>
+<b class="nc">&nbsp;        float rot = Math.abs(e.rotation) + 90f;</b>
+<b class="nc">&nbsp;        int i = -Mathf.sign(e.rotation);</b>
+<b class="nc">&nbsp;        float len = (2f + e.finpow() * 10f) * i;</b>
+<b class="nc">&nbsp;        float lr = rot + e.fin() * 20f * i;</b>
+<b class="nc">&nbsp;        rect(Core.atlas.find(&quot;casing&quot;),</b>
+<b class="nc">&nbsp;            e.x + trnsx(lr, len) + Mathf.randomSeedRange(e.id + i + 7, 3f * e.fin()),</b>
+<b class="nc">&nbsp;            e.y + trnsy(lr, len) + Mathf.randomSeedRange(e.id + i + 8, 3f * e.fin()),</b>
+<b class="nc">&nbsp;            2f, 3f, rot + e.fin() * 50f * i</b>
+&nbsp;        );
+<b class="fc">&nbsp;    }).layer(Layer.bullet),</b>
+&nbsp;
+<b class="fc">&nbsp;    casing3 = new Effect(40f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange, Pal.lightishGray, Pal.lightishGray, e.fin());</b>
+<b class="nc">&nbsp;        alpha(e.fout(0.5f));</b>
+<b class="nc">&nbsp;        float rot = Math.abs(e.rotation) + 90f;</b>
+<b class="nc">&nbsp;        int i = -Mathf.sign(e.rotation);</b>
+<b class="nc">&nbsp;        float len = (4f + e.finpow() * 9f) * i;</b>
+<b class="nc">&nbsp;        float lr = rot + Mathf.randomSeedRange(e.id + i + 6, 20f * e.fin()) * i;</b>
+&nbsp;
+<b class="nc">&nbsp;        rect(Core.atlas.find(&quot;casing&quot;),</b>
+<b class="nc">&nbsp;            e.x + trnsx(lr, len) + Mathf.randomSeedRange(e.id + i + 7, 3f * e.fin()),</b>
+<b class="nc">&nbsp;            e.y + trnsy(lr, len) + Mathf.randomSeedRange(e.id + i + 8, 3f * e.fin()),</b>
+&nbsp;            2.5f, 4f,
+<b class="nc">&nbsp;            rot + e.fin() * 50f * i</b>
+&nbsp;        );
+<b class="fc">&nbsp;    }).layer(Layer.bullet),</b>
+&nbsp;
+<b class="fc">&nbsp;    casing4 = new Effect(45f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange, Pal.lightishGray, Pal.lightishGray, e.fin());</b>
+<b class="nc">&nbsp;        alpha(e.fout(0.5f));</b>
+<b class="nc">&nbsp;        float rot = Math.abs(e.rotation) + 90f;</b>
+<b class="nc">&nbsp;        int i = -Mathf.sign(e.rotation);</b>
+<b class="nc">&nbsp;        float len = (4f + e.finpow() * 9f) * i;</b>
+<b class="nc">&nbsp;        float lr = rot + Mathf.randomSeedRange(e.id + i + 6, 20f * e.fin()) * i;</b>
+&nbsp;
+<b class="nc">&nbsp;        rect(Core.atlas.find(&quot;casing&quot;),</b>
+<b class="nc">&nbsp;        e.x + trnsx(lr, len) + Mathf.randomSeedRange(e.id + i + 7, 3f * e.fin()),</b>
+<b class="nc">&nbsp;        e.y + trnsy(lr, len) + Mathf.randomSeedRange(e.id + i + 8, 3f * e.fin()),</b>
+&nbsp;        3f, 6f,
+<b class="nc">&nbsp;        rot + e.fin() * 50f * i</b>
+&nbsp;        );
+<b class="fc">&nbsp;    }).layer(Layer.bullet),</b>
+&nbsp;
+<b class="fc">&nbsp;    casing2Double = new Effect(34f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange, Color.lightGray, Pal.lightishGray, e.fin());</b>
+<b class="nc">&nbsp;        alpha(e.fout(0.5f));</b>
+<b class="nc">&nbsp;        float rot = Math.abs(e.rotation) + 90f;</b>
+<b class="nc">&nbsp;        for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;            float len = (2f + e.finpow() * 10f) * i;</b>
+<b class="nc">&nbsp;            float lr = rot + e.fin() * 20f * i;</b>
+<b class="nc">&nbsp;            rect(Core.atlas.find(&quot;casing&quot;),</b>
+<b class="nc">&nbsp;            e.x + trnsx(lr, len) + Mathf.randomSeedRange(e.id + i + 7, 3f * e.fin()),</b>
+<b class="nc">&nbsp;            e.y + trnsy(lr, len) + Mathf.randomSeedRange(e.id + i + 8, 3f * e.fin()),</b>
+<b class="nc">&nbsp;            2f, 3f, rot + e.fin() * 50f * i</b>
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }).layer(Layer.bullet),</b>
+&nbsp;
+<b class="fc">&nbsp;    casing3Double = new Effect(40f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lightOrange, Pal.lightishGray, Pal.lightishGray, e.fin());</b>
+<b class="nc">&nbsp;        alpha(e.fout(0.5f));</b>
+<b class="nc">&nbsp;        float rot = Math.abs(e.rotation) + 90f;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;            float len = (4f + e.finpow() * 9f) * i;</b>
+<b class="nc">&nbsp;            float lr = rot + Mathf.randomSeedRange(e.id + i + 6, 20f * e.fin()) * i;</b>
+&nbsp;
+<b class="nc">&nbsp;            rect(Core.atlas.find(&quot;casing&quot;),</b>
+<b class="nc">&nbsp;            e.x + trnsx(lr, len) + Mathf.randomSeedRange(e.id + i + 7, 3f * e.fin()),</b>
+<b class="nc">&nbsp;            e.y + trnsy(lr, len) + Mathf.randomSeedRange(e.id + i + 8, 3f * e.fin()),</b>
+&nbsp;            2.5f, 4f,
+<b class="nc">&nbsp;            rot + e.fin() * 50f * i</b>
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }).layer(Layer.bullet),</b>
+&nbsp;
+<b class="fc">&nbsp;    railShoot = new Effect(24f, e -&gt; {</b>
+<b class="nc">&nbsp;        e.scaled(10f, b -&gt; {</b>
+<b class="nc">&nbsp;            color(Color.white, Color.lightGray, b.fin());</b>
+<b class="nc">&nbsp;            stroke(b.fout() * 3f + 0.2f);</b>
+<b class="nc">&nbsp;            Lines.circle(b.x, b.y, b.fin() * 50f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.orangeSpark);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 13f * e.fout(), 85f, e.rotation + 90f * i);</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    railTrail = new Effect(16f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.orangeSpark);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 10f * e.fout(), 24f, e.rotation + 90 + 90f * i);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(e.x, e.y, 60f * e.fout(), Pal.orangeSpark, 0.5f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    railHit = new Effect(18f, 200f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.orangeSpark);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 10f * e.fout(), 60f, e.rotation + 140f * i);</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    lancerLaserShoot = new Effect(21f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lancerLaser);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x, e.y, 4f * e.fout(), 29f, e.rotation + 90f * i);</b>
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    lancerLaserShootSmoke = new Effect(26f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white);</b>
+<b class="nc">&nbsp;        float length = !(e.data instanceof Float) ? 70f : (Float)e.data;</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 7, length, e.rotation, 0f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fout() * 9f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    lancerLaserCharge = new Effect(38f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lancerLaser);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 14, 1f + 20f * e.fout(), e.rotation, 120f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fslope() * 3f + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    lancerLaserChargeBegin = new Effect(60f, e -&gt; {</b>
+<b class="nc">&nbsp;        float margin = 1f - Mathf.curve(e.fin(), 0.9f);</b>
+<b class="nc">&nbsp;        float fin = Math.min(margin, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        color(Pal.lancerLaser);</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, fin * 3f);</b>
+&nbsp;
+<b class="nc">&nbsp;        color();</b>
+<b class="nc">&nbsp;        Fill.circle(e.x, e.y, fin * 2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    lightningCharge = new Effect(38f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.lancerLaser);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, 1f + 20f * e.fout(), e.rotation, 120f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Drawf.tri(e.x + x, e.y + y, e.fslope() * 3f + 1, e.fslope() * 3f + 1, Mathf.angle(x, y));</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    sparkShoot = new Effect(12f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, e.color, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.2f + 0.6f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 7, 25f * e.finpow(), e.rotation, 3f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fslope() * 5f + 0.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    lightningShoot = new Effect(12f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Pal.lancerLaser, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.2f + 0.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 7, 25f * e.finpow(), e.rotation, 50f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fin() * 5f + 2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    thoriumShoot = new Effect(12f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Pal.thoriumPink, e.fin());</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.2f + 0.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 7, 25f * e.finpow(), e.rotation, 50f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fin() * 5f + 2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    reactorsmoke = new Effect(17, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 4, e.fin() * 8f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float size = 1f + e.fout() * 5f;</b>
+<b class="nc">&nbsp;            color(Color.lightGray, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, size/2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    redgeneratespark = new Effect(90, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.redSpark);</b>
+<b class="nc">&nbsp;        alpha(e.fslope());</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 2; i++){</b>
+<b class="nc">&nbsp;            v.trns(rand.random(360f), rand.random(e.finpow() * 9f)).add(e.x, e.y);</b>
+<b class="nc">&nbsp;            Fill.circle(v.x, v.y, rand.random(1.4f, 2.4f));</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }).layer(Layer.bullet - 1f),</b>
+&nbsp;
+<b class="fc">&nbsp;    turbinegenerate = new Effect(100, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.vent);</b>
+<b class="nc">&nbsp;        alpha(e.fslope() * 0.8f);</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 3; i++){</b>
+<b class="nc">&nbsp;            v.trns(rand.random(360f), rand.random(e.finpow() * 14f)).add(e.x, e.y);</b>
+<b class="nc">&nbsp;            Fill.circle(v.x, v.y, rand.random(1.4f, 3.4f));</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }).layer(Layer.bullet - 1f),</b>
+&nbsp;
+<b class="fc">&nbsp;    generatespark = new Effect(18, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, e.fin() * 8f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Pal.orangeSpark, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 4f /2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    fuelburn = new Effect(23, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, e.fin() * 9f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Color.lightGray, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    incinerateSlag = new Effect(34, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 4, e.finpow() * 5f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Pal.slagOrange, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 1.7f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    coreBurn = new Effect(23, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, e.fin() * 9f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float len = e.fout() * 4f;</b>
+<b class="nc">&nbsp;            color(Pal.accent, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, len/2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    plasticburn = new Effect(40, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, 3f + e.fin() * 5f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Pal.plasticBurn, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout());</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    conveyorPoof = new Effect(35, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.plasticBurn, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 4, 3f + e.fin() * 4f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() * 1.11f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    pulverize = new Effect(40, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, 3f + e.fin() * 8f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Pal.stoneGray);</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() * 2f + 0.5f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    pulverizeRed = new Effect(40, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, 3f + e.fin() * 8f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Pal.redDust, Pal.stoneGray, e.fin());</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() * 2f + 0.5f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    pulverizeSmall = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 3, e.fin() * 5f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Pal.stoneGray);</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() + 0.5f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    pulverizeMedium = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 5, 3f + e.fin() * 8f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Pal.stoneGray);</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() + 0.5f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    producesmoke = new Effect(12, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 8, 4f + e.fin() * 18f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Color.white, Pal.accent, e.fin());</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, 1f + e.fout() * 3f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    artilleryTrailSmoke = new Effect(50, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 13; i++){</b>
+<b class="nc">&nbsp;            float fin = e.fin() / rand.random(0.5f, 1f), fout = 1f - fin, angle = rand.random(360f), len = rand.random(0.5f, 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(fin &lt;= 1f){</b>
+<b class="nc">&nbsp;                Tmp.v1.trns(angle, fin * 24f * len);</b>
+&nbsp;
+<b class="nc">&nbsp;                alpha((0.5f - Math.abs(fin - 0.5f)) * 2f);</b>
+<b class="nc">&nbsp;                Fill.circle(e.x + Tmp.v1.x, e.y + Tmp.v1.y, 0.5f + fout * 4f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    smokeCloud = new Effect(70, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, e.fin(), 30, 30f, (x, y, fin, fout) -&gt; {</b>
+<b class="nc">&nbsp;            color(Color.gray);</b>
+<b class="nc">&nbsp;            alpha((0.5f - Math.abs(fin - 0.5f)) * 2f);</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, 0.5f + fout * 4f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    smeltsmoke = new Effect(15, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, 4f + e.fin() * 5f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Color.white, e.color, e.fin());</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, 0.5f + e.fout() * 2f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    coalSmeltsmoke = new Effect(40f, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 0.2f + e.fin(), 4, 6.3f, (x, y, fin, out) -&gt; {</b>
+<b class="nc">&nbsp;            color(Color.darkGray, Pal.coalBlack, e.finpowdown());</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, out * 2f + 0.35f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    formsmoke = new Effect(40, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, 5f + e.fin() * 8f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            color(Pal.plasticSmoke, Color.lightGray, e.fin());</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, 0.2f + e.fout() * 2f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    blastsmoke = new Effect(26, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 12, 1f + e.fin() * 23f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float size = 2f + e.fout() * 6f;</b>
+<b class="nc">&nbsp;            color(Color.lightGray, Color.darkGray, e.fin());</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, size/2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    lava = new Effect(18, e -&gt; {</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 3, 1f + e.fin() * 10f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float size = e.fslope() * 4f;</b>
+<b class="nc">&nbsp;            color(Color.orange, Color.gray, e.fin());</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, size/2f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    dooropen = new Effect(10, e -&gt; {</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.6f);</b>
+<b class="nc">&nbsp;        Lines.square(e.x, e.y, e.rotation * tilesize / 2f + e.fin() * 2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    doorclose = new Effect(10, e -&gt; {</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.6f);</b>
+<b class="nc">&nbsp;        Lines.square(e.x, e.y, e.rotation * tilesize / 2f + e.fout() * 2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    dooropenlarge = new Effect(10, e -&gt; {</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.6f);</b>
+<b class="nc">&nbsp;        Lines.square(e.x, e.y, tilesize + e.fin() * 2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    doorcloselarge = new Effect(10, e -&gt; {</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.6f);</b>
+<b class="nc">&nbsp;        Lines.square(e.x, e.y, tilesize + e.fout() * 2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    generate = new Effect(11, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.orange, Color.yellow, e.fin());</b>
+<b class="nc">&nbsp;        stroke(1f);</b>
+<b class="nc">&nbsp;        Lines.spikes(e.x, e.y, e.fin() * 5f, 2, 8);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    mineWallSmall = new Effect(50, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, Color.darkGray, e.fin());</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, e.fin() * 6f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.circle(e.x + x, e.y + y, e.fout() + 0.5f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    mineSmall = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, Color.lightGray, e.fin());</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 3, e.fin() * 5f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() + 0.5f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    mine = new Effect(20, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, Color.lightGray, e.fin());</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, 3f + e.fin() * 6f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() * 2f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    mineBig = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, Color.lightGray, e.fin());</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 6, 4f + e.fin() * 8f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() * 2f + 0.2f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    mineHuge = new Effect(40, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, Color.lightGray, e.fin());</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 8, 5f + e.fin() * 10f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() * 2f + 0.5f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    mineImpact = new Effect(90, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, Color.lightGray, e.fin());</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 12, 5f + e.finpow() * 22f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() * 2.5f + 0.5f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    mineImpactWave = new Effect(50f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+&nbsp;
+<b class="nc">&nbsp;        stroke(e.fout() * 1.5f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 12, 4f + e.finpow() * e.rotation, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fout() * 5 + 1f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(30f, b -&gt; {</b>
+<b class="nc">&nbsp;            Lines.stroke(5f * b.fout());</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, b.finpow() * 28f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    payloadReceive = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Color.white, Pal.accent, e.fin());</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 12, 7f + e.fin() * 13f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Fill.square(e.x + x, e.y + y, e.fout() * 2.1f + 0.5f, 45);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    teleportActivate = new Effect(50, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(8f, e2 -&gt; {</b>
+<b class="nc">&nbsp;            stroke(e2.fout() * 4f);</b>
+<b class="nc">&nbsp;            Lines.circle(e2.x, e2.y, 4f + e2.fin() * 27f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 30, 4f + 40f * e.fin(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fin() * 4f + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    teleport = new Effect(60, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fin() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 7f + e.fout() * 8f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 20, 6f + 20f * e.fout(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fin() * 4f + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    teleportOut = new Effect(20, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 7f + e.fin() * 8f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 20, 4f + 20f * e.fin(), (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fslope() * 4f + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    ripple = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        e.lifetime = 30f*e.rotation;</b>
+&nbsp;
+<b class="nc">&nbsp;        color(Tmp.c1.set(e.color).mul(1.5f));</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 1.4f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, (2f + e.fin() * 4f) * e.rotation);</b>
+<b class="fc">&nbsp;    }).layer(Layer.debris),</b>
+&nbsp;
+<b class="fc">&nbsp;    bubble = new Effect(20, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Tmp.c1.set(e.color).shiftValue(0.1f));</b>
+<b class="nc">&nbsp;        stroke(e.fout() + 0.2f);</b>
+<b class="nc">&nbsp;        randLenVectors(e.id, 2, e.rotation * 0.9f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            Lines.circle(e.x + x, e.y + y, 1f + e.fin() * 3f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    launch = new Effect(28, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.command);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, 4f + e.finpow() * 120f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    launchPod = new Effect(50, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.engine);</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(25f, f -&gt; {</b>
+<b class="nc">&nbsp;            stroke(f.fout() * 2f);</b>
+<b class="nc">&nbsp;            Lines.circle(e.x, e.y, 4f + f.finpow() * 30f);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        randLenVectors(e.id, 24, e.finpow() * 50f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;            float ang = Mathf.angle(x, y);</b>
+<b class="nc">&nbsp;            lineAngle(e.x + x, e.y + y, ang, e.fout() * 4 + 1f);</b>
+&nbsp;        });
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    healWaveMend = new Effect(40, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fout() * 2f);</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.finpow() * e.rotation);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    overdriveWave = new Effect(50, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(e.fout());</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, e.finpow() * e.rotation);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    healBlock = new Effect(20, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.heal);</b>
+<b class="nc">&nbsp;        stroke(2f * e.fout() + 0.5f);</b>
+<b class="nc">&nbsp;        Lines.square(e.x, e.y, 1f + (e.fin() * e.rotation * tilesize / 2f - 1f));</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    healBlockFull = new Effect(20, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Block block)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        mixcol(e.color, 1f);</b>
+<b class="nc">&nbsp;        alpha(e.fout());</b>
+<b class="nc">&nbsp;        Draw.rect(block.fullIcon, e.x, e.y);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    rotateBlock = new Effect(30, e -&gt; {</b>
+<b class="nc">&nbsp;        color(Pal.accent);</b>
+<b class="nc">&nbsp;        alpha(e.fout() * 1);</b>
+<b class="nc">&nbsp;        Fill.square(e.x, e.y, e.rotation * tilesize / 2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    lightBlock = new Effect(60, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        alpha(e.fout() * 1);</b>
+<b class="nc">&nbsp;        Fill.square(e.x, e.y, e.rotation * tilesize / 2f);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    overdriveBlockFull = new Effect(60, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        alpha(e.fslope() * 0.4f);</b>
+<b class="nc">&nbsp;        Fill.square(e.x, e.y, e.rotation * tilesize);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    shieldBreak = new Effect(40, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color);</b>
+<b class="nc">&nbsp;        stroke(3f * e.fout());</b>
+<b class="nc">&nbsp;        if(e.data instanceof ForceFieldAbility ab){</b>
+<b class="nc">&nbsp;            Lines.poly(e.x, e.y, ab.sides, e.rotation + e.fin(), ab.rotation);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Lines.poly(e.x, e.y, 6, e.rotation + e.fin());</b>
+<b class="fc">&nbsp;    }).followParent(true),</b>
+&nbsp;
+<b class="fc">&nbsp;    arcShieldBreak = new Effect(40, e -&gt; {</b>
+<b class="nc">&nbsp;        Lines.stroke(3 * e.fout(), e.color);</b>
+<b class="nc">&nbsp;        if(e.data instanceof Unit u){</b>
+<b class="nc">&nbsp;            ShieldArcAbility ab = (ShieldArcAbility) Structs.find(u.abilities, a -&gt; a instanceof ShieldArcAbility);</b>
+<b class="nc">&nbsp;            if(ab != null){</b>
+<b class="nc">&nbsp;                Vec2 pos = Tmp.v1.set(ab.x, ab.y).rotate(u.rotation - 90f).add(u);</b>
+<b class="nc">&nbsp;                Lines.arc(pos.x, pos.y, ab.radius + ab.width/2, ab.angle / 360f, u.rotation + ab.angleOffset - ab.angle / 2f);</b>
+<b class="nc">&nbsp;                Lines.arc(pos.x, pos.y, ab.radius - ab.width/2, ab.angle / 360f, u.rotation + ab.angleOffset - ab.angle / 2f);</b>
+<b class="nc">&nbsp;                for(int i : Mathf.signs){</b>
+&nbsp;                    float
+<b class="nc">&nbsp;                            px = pos.x + Angles.trnsx(u.rotation + ab.angleOffset - ab.angle / 2f * i, ab.radius + ab.width / 2),</b>
+<b class="nc">&nbsp;                            py = pos.y + Angles.trnsy(u.rotation + ab.angleOffset - ab.angle / 2f * i, ab.radius + ab.width / 2),</b>
+<b class="nc">&nbsp;                            px1 = pos.x + Angles.trnsx(u.rotation + ab.angleOffset - ab.angle / 2f * i, ab.radius - ab.width / 2),</b>
+<b class="nc">&nbsp;                            py1 = pos.y + Angles.trnsy(u.rotation + ab.angleOffset - ab.angle / 2f * i, ab.radius - ab.width / 2);</b>
+<b class="nc">&nbsp;                    Lines.line(px, py, px1, py1);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;    }).followParent(true),</b>
+&nbsp;
+<b class="fc">&nbsp;    coreLandDust = new Effect(100f, e -&gt; {</b>
+<b class="nc">&nbsp;        color(e.color, e.fout(0.1f));</b>
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;        Tmp.v1.trns(e.rotation, e.finpow() * 90f * rand.random(0.2f, 1f));</b>
+<b class="nc">&nbsp;        Fill.circle(e.x + Tmp.v1.x, e.y + Tmp.v1.y, 8f * rand.random(0.6f, 1f) * e.fout(0.2f));</b>
+<b class="fc">&nbsp;    }).layer(Layer.groundUnit + 1f),</b>
+&nbsp;
+<b class="fc">&nbsp;    unitShieldBreak = new Effect(35, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Unit unit)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float radius = unit.hitSize() * 1.3f;</b>
+&nbsp;
+<b class="nc">&nbsp;        e.scaled(16f, c -&gt; {</b>
+<b class="nc">&nbsp;            color(e.color, 0.9f);</b>
+<b class="nc">&nbsp;            stroke(c.fout() * 2f + 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            randLenVectors(e.id, (int)(radius * 1.2f), radius/2f + c.finpow() * radius*1.25f, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;                lineAngle(c.x + x, c.y + y, Mathf.angle(x, y), c.fout() * 5 + 1f);</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        color(e.color, e.fout() * 0.9f);</b>
+<b class="nc">&nbsp;        stroke(e.fout());</b>
+<b class="nc">&nbsp;        Lines.circle(e.x, e.y, radius);</b>
+&nbsp;    }),
+&nbsp;
+<b class="fc">&nbsp;    chainLightning = new Effect(20f, 300f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Position p)) return;</b>
+<b class="nc">&nbsp;        float tx = p.getX(), ty = p.getY(), dst = Mathf.dst(e.x, e.y, tx, ty);</b>
+<b class="nc">&nbsp;        Tmp.v1.set(p).sub(e.x, e.y).nor();</b>
+&nbsp;
+<b class="nc">&nbsp;        float normx = Tmp.v1.x, normy = Tmp.v1.y;</b>
+<b class="nc">&nbsp;        float range = 6f;</b>
+<b class="nc">&nbsp;        int links = Mathf.ceil(dst / range);</b>
+<b class="nc">&nbsp;        float spacing = dst / links;</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(2.5f * e.fout());</b>
+<b class="nc">&nbsp;        Draw.color(Color.white, e.color, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.beginLine();</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.linePoint(e.x, e.y);</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; links; i++){</b>
+&nbsp;            float nx, ny;
+<b class="nc">&nbsp;            if(i == links - 1){</b>
+<b class="nc">&nbsp;                nx = tx;</b>
+<b class="nc">&nbsp;                ny = ty;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                float len = (i + 1) * spacing;</b>
+<b class="nc">&nbsp;                Tmp.v1.setToRandomDirection(rand).scl(range/2f);</b>
+<b class="nc">&nbsp;                nx = e.x + normx * len + Tmp.v1.x;</b>
+<b class="nc">&nbsp;                ny = e.y + normy * len + Tmp.v1.y;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Lines.linePoint(nx, ny);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Lines.endLine();</b>
+<b class="fc">&nbsp;    }).followParent(false).rotWithParent(false),</b>
+&nbsp;
+<b class="fc">&nbsp;    chainEmp = new Effect(30f, 300f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Position p)) return;</b>
+<b class="nc">&nbsp;        float tx = p.getX(), ty = p.getY(), dst = Mathf.dst(e.x, e.y, tx, ty);</b>
+<b class="nc">&nbsp;        Tmp.v1.set(p).sub(e.x, e.y).nor();</b>
+&nbsp;
+<b class="nc">&nbsp;        float normx = Tmp.v1.x, normy = Tmp.v1.y;</b>
+<b class="nc">&nbsp;        float range = 6f;</b>
+<b class="nc">&nbsp;        int links = Mathf.ceil(dst / range);</b>
+<b class="nc">&nbsp;        float spacing = dst / links;</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(4f * e.fout());</b>
+<b class="nc">&nbsp;        Draw.color(Color.white, e.color, e.fin());</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.beginLine();</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.linePoint(e.x, e.y);</b>
+&nbsp;
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; links; i++){</b>
+&nbsp;            float nx, ny;
+<b class="nc">&nbsp;            if(i == links - 1){</b>
+<b class="nc">&nbsp;                nx = tx;</b>
+<b class="nc">&nbsp;                ny = ty;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                float len = (i + 1) * spacing;</b>
+<b class="nc">&nbsp;                Tmp.v1.setToRandomDirection(rand).scl(range/2f);</b>
+<b class="nc">&nbsp;                nx = e.x + normx * len + Tmp.v1.x;</b>
+<b class="nc">&nbsp;                ny = e.y + normy * len + Tmp.v1.y;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Lines.linePoint(nx, ny);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Lines.endLine();</b>
+<b class="fc">&nbsp;    }).followParent(false).rotWithParent(false),</b>
+&nbsp;
+<b class="fc">&nbsp;    legDestroy = new Effect(90f, 100f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof LegDestroyData data)) return;</b>
+<b class="nc">&nbsp;        rand.setSeed(e.id);</b>
+&nbsp;
+<b class="nc">&nbsp;        e.lifetime = rand.random(70f, 130f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.v1.trns(rand.random(360f), rand.random(data.region.width / 8f) * e.finpow());</b>
+<b class="nc">&nbsp;        float ox = Tmp.v1.x, oy = Tmp.v1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;        alpha(e.foutpowdown());</b>
+&nbsp;
+<b class="nc">&nbsp;        stroke(data.region.height * scl);</b>
+<b class="nc">&nbsp;        line(data.region, data.a.x + ox, data.a.y + oy, data.b.x + ox, data.b.y + oy, false);</b>
+<b class="fc">&nbsp;    }).layer(Layer.groundUnit + 5f),</b>
+&nbsp;
+<b class="fc">&nbsp;    debugLine = new Effect(90f, 1000000000000f, e -&gt; {</b>
+<b class="nc">&nbsp;       if(!(e.data instanceof Vec2[] vec)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;       Draw.color(e.color);</b>
+<b class="nc">&nbsp;       Lines.stroke(2f);</b>
+&nbsp;
+<b class="nc">&nbsp;       if(vec.length == 2){</b>
+<b class="nc">&nbsp;           Lines.line(vec[0].x, vec[0].y, vec[1].x, vec[1].y);</b>
+&nbsp;       }else{
+<b class="nc">&nbsp;           Lines.beginLine();</b>
+<b class="nc">&nbsp;           for(Vec2 v : vec)</b>
+<b class="nc">&nbsp;               Lines.linePoint(v.x, v.y);</b>
+<b class="nc">&nbsp;           Lines.endLine();</b>
+&nbsp;       }
+&nbsp;
+<b class="nc">&nbsp;       Draw.reset();</b>
+&nbsp;    }),
+<b class="fc">&nbsp;    debugRect = new Effect(90f, 1000000000000f, e -&gt; {</b>
+<b class="nc">&nbsp;        if(!(e.data instanceof Rect rect)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(e.color);</b>
+<b class="nc">&nbsp;        Lines.stroke(2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Lines.rect(rect);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    });
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,162 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LiquidBridge</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.liquid</a>
+</div>
+
+<h1>Coverage Summary for Class: LiquidBridge (mindustry.world.blocks.liquid)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LiquidBridge</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (7/7)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LiquidBridge$LiquidBridgeBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    81.8%
+  </span>
+  <span class="absValue">
+    (9/11)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.liquid;
+&nbsp;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.blocks.distribution.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class LiquidBridge extends ItemBridge{
+&nbsp;
+&nbsp;    public LiquidBridge(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        hasItems = false;</b>
+<b class="fc">&nbsp;        hasLiquids = true;</b>
+<b class="fc">&nbsp;        outputsLiquid = true;</b>
+<b class="fc">&nbsp;        canOverdrive = false;</b>
+<b class="fc">&nbsp;        group = BlockGroup.liquids;</b>
+<b class="fc">&nbsp;        envEnabled = Env.any;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class LiquidBridgeBuild extends ItemBridgeBuild{</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTransport(Building other){
+<b class="nc">&nbsp;            if(warmup &gt;= 0.25f){</b>
+<b class="nc">&nbsp;                moved |= moveLiquid(other, liquids.current()) &gt; 0.05f;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void doDump(){
+<b class="fc">&nbsp;            dumpLiquid(liquids.current(), 1f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

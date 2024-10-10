@@ -1,0 +1,1456 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ContentParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.mod</a>
+</div>
+
+<h1>Coverage Summary for Class: ContentParser (mindustry.mod)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ContentParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    81.6%
+  </span>
+  <span class="absValue">
+    (40/49)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.9%
+  </span>
+  <span class="absValue">
+    (272/462)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ContentParser$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    64%
+  </span>
+  <span class="absValue">
+    (16/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    69.6%
+  </span>
+  <span class="absValue">
+    (135/194)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ContentParser$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76%
+  </span>
+  <span class="absValue">
+    (38/50)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ContentParser$FieldParser</td>
+  </tr>
+  <tr>
+    <td class="name">ContentParser$ParseListener</td>
+  </tr>
+  <tr>
+    <td class="name">ContentParser$TypeParser</td>
+  </tr>
+  <tr>
+    <td class="name">ContentParser$UnitReq</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    75.6%
+  </span>
+  <span class="absValue">
+    (59/78)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.8%
+  </span>
+  <span class="absValue">
+    (445/709)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.mod;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.assets.*;
+&nbsp;import arc.assets.loaders.MusicLoader.*;
+&nbsp;import arc.assets.loaders.SoundLoader.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import arc.util.serialization.Json.*;
+&nbsp;import arc.util.serialization.Jval.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.content.TechTree.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.Units.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.effect.*;
+&nbsp;import mindustry.entities.part.*;
+&nbsp;import mindustry.entities.part.DrawPart.*;
+&nbsp;import mindustry.entities.pattern.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Objectives.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.graphics.g3d.*;
+&nbsp;import mindustry.graphics.g3d.PlanetGrid.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.maps.generators.*;
+&nbsp;import mindustry.maps.planet.*;
+&nbsp;import mindustry.mod.Mods.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.type.ammo.*;
+&nbsp;import mindustry.type.weather.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.units.*;
+&nbsp;import mindustry.world.blocks.units.UnitFactory.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.draw.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import java.lang.reflect.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;unchecked&quot;)
+<b class="fc">&nbsp;public class ContentParser{</b>
+&nbsp;    private static final boolean ignoreUnknownFields = true;
+<b class="fc">&nbsp;    private static final ContentType[] typesToSearch = {ContentType.block, ContentType.item, ContentType.unit, ContentType.liquid, ContentType.planet};</b>
+&nbsp;
+<b class="fc">&nbsp;    ObjectMap&lt;Class&lt;?&gt;, ContentType&gt; contentTypes = new ObjectMap&lt;&gt;();</b>
+<b class="fc">&nbsp;    ObjectSet&lt;Class&lt;?&gt;&gt; implicitNullable = ObjectSet.with(TextureRegion.class, TextureRegion[].class, TextureRegion[][].class, TextureRegion[][][].class);</b>
+<b class="fc">&nbsp;    Seq&lt;ParseListener&gt; listeners = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    ObjectMap&lt;Class&lt;?&gt;, FieldParser&gt; classParsers = new ObjectMap&lt;&gt;(){{</b>
+<b class="fc">&nbsp;        put(Effect.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            if(data.isString()){</b>
+<b class="fc">&nbsp;                return field(Fx.class, data);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if(data.isArray()){</b>
+<b class="fc">&nbsp;                return new MultiEffect(parser.readValue(Effect[].class, data));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            Class&lt;? extends Effect&gt; bc = resolve(data.getString(&quot;type&quot;, &quot;&quot;), ParticleEffect.class);</b>
+<b class="fc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;            Effect result = make(bc);</b>
+<b class="fc">&nbsp;            readFields(result, data);</b>
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(Sortf.class, (type, data) -&gt; field(UnitSorts.class, data));</b>
+<b class="fc">&nbsp;        put(Interp.class, (type, data) -&gt; field(Interp.class, data));</b>
+<b class="fc">&nbsp;        put(Blending.class, (type, data) -&gt; field(Blending.class, data));</b>
+<b class="fc">&nbsp;        put(CacheLayer.class, (type, data) -&gt; field(CacheLayer.class, data));</b>
+<b class="fc">&nbsp;        put(Attribute.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            String attr = data.asString();</b>
+<b class="fc">&nbsp;            if(Attribute.exists(attr)) return Attribute.get(attr);</b>
+<b class="fc">&nbsp;            return Attribute.add(attr);</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(BuildVisibility.class, (type, data) -&gt; field(BuildVisibility.class, data));</b>
+<b class="fc">&nbsp;        put(Schematic.class, (type, data) -&gt; {</b>
+<b class="nc">&nbsp;            Object result = fieldOpt(Loadouts.class, data);</b>
+<b class="nc">&nbsp;            if(result != null){</b>
+<b class="nc">&nbsp;                return result;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                String str = data.asString();</b>
+<b class="nc">&nbsp;                if(str.startsWith(Vars.schematicBaseStart)){</b>
+<b class="nc">&nbsp;                    return Schematics.readBase64(str);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    return Schematics.read(Vars.tree.get(&quot;schematics/&quot; + str + &quot;.&quot; + Vars.schematicExtension));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+<b class="fc">&nbsp;        put(Color.class, (type, data) -&gt; Color.valueOf(data.asString()));</b>
+<b class="fc">&nbsp;        put(StatusEffect.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            if(data.isString()){</b>
+<b class="fc">&nbsp;                StatusEffect result = locate(ContentType.status, data.asString());</b>
+<b class="fc">&nbsp;                if(result != null) return result;</b>
+<b class="nc">&nbsp;                throw new IllegalArgumentException(&quot;Unknown status effect: &#39;&quot; + data.asString() + &quot;&#39;&quot;);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            StatusEffect effect = new StatusEffect(currentMod.name + &quot;-&quot; + data.getString(&quot;name&quot;));</b>
+<b class="fc">&nbsp;            effect.minfo.mod = currentMod;</b>
+<b class="fc">&nbsp;            readFields(effect, data);</b>
+<b class="fc">&nbsp;            return effect;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(UnitCommand.class, (type, data) -&gt; {</b>
+<b class="nc">&nbsp;            if(data.isString()){</b>
+<b class="nc">&nbsp;               var cmd = content.unitCommand(data.asString());</b>
+<b class="nc">&nbsp;               if(cmd != null){</b>
+<b class="nc">&nbsp;                   return cmd;</b>
+&nbsp;               }else{
+<b class="nc">&nbsp;                   throw new IllegalArgumentException(&quot;Unknown unit command name: &quot; + data.asString());</b>
+&nbsp;               }
+&nbsp;            }else{
+<b class="nc">&nbsp;                throw new IllegalArgumentException(&quot;Unit commands must be strings.&quot;);</b>
+&nbsp;            }
+&nbsp;        });
+<b class="fc">&nbsp;        put(UnitStance.class, (type, data) -&gt; {</b>
+<b class="nc">&nbsp;            if(data.isString()){</b>
+<b class="nc">&nbsp;                var cmd = content.unitStance(data.asString());</b>
+<b class="nc">&nbsp;                if(cmd != null){</b>
+<b class="nc">&nbsp;                    return cmd;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    throw new IllegalArgumentException(&quot;Unknown unit stance name: &quot; + data.asString());</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="nc">&nbsp;                throw new IllegalArgumentException(&quot;Unit stances must be strings.&quot;);</b>
+&nbsp;            }
+&nbsp;        });
+<b class="fc">&nbsp;        put(BulletType.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            if(data.isString()){</b>
+<b class="nc">&nbsp;                return field(Bullets.class, data);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            Class&lt;?&gt; bc = resolve(data.getString(&quot;type&quot;, &quot;&quot;), BasicBulletType.class);</b>
+<b class="fc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;            BulletType result = (BulletType)make(bc);</b>
+<b class="fc">&nbsp;            readFields(result, data);</b>
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(MassDriverBolt.class, (type, data) -&gt; {</b>
+<b class="nc">&nbsp;            MassDriverBolt result = (MassDriverBolt)make(MassDriverBolt.class);</b>
+<b class="nc">&nbsp;            readFields(result, data);</b>
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(AmmoType.class, (type, data) -&gt; {</b>
+&nbsp;            //string -&gt; item
+&nbsp;            //if liquid ammo support is added, this should scan for liquids as well
+<b class="fc">&nbsp;            if(data.isString()) return new ItemAmmoType(find(ContentType.item, data.asString()));</b>
+&nbsp;            //number -&gt; power
+<b class="fc">&nbsp;            if(data.isNumber()) return new PowerAmmoType(data.asFloat());</b>
+&nbsp;
+<b class="fc">&nbsp;            var bc = resolve(data.getString(&quot;type&quot;, &quot;&quot;), ItemAmmoType.class);</b>
+<b class="fc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;            AmmoType result = make(bc);</b>
+<b class="fc">&nbsp;            readFields(result, data);</b>
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(DrawBlock.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            if(data.isString()){</b>
+&nbsp;                //try to instantiate
+<b class="fc">&nbsp;                return make(resolve(data.asString()));</b>
+&nbsp;            }
+&nbsp;            //array is shorthand for DrawMulti
+<b class="fc">&nbsp;            if(data.isArray()){</b>
+<b class="fc">&nbsp;                return new DrawMulti(parser.readValue(DrawBlock[].class, data));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            var bc = resolve(data.getString(&quot;type&quot;, &quot;&quot;), DrawDefault.class);</b>
+<b class="fc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;            DrawBlock result = make(bc);</b>
+<b class="fc">&nbsp;            readFields(result, data);</b>
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(ShootPattern.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            var bc = resolve(data.getString(&quot;type&quot;, &quot;&quot;), ShootPattern.class);</b>
+<b class="fc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;            var result = make(bc);</b>
+<b class="fc">&nbsp;            readFields(result, data);</b>
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(DrawPart.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            Class&lt;?&gt; bc = resolve(data.getString(&quot;type&quot;, &quot;&quot;), RegionPart.class);</b>
+<b class="fc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;            var result = make(bc);</b>
+<b class="fc">&nbsp;            readFields(result, data);</b>
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        });
+&nbsp;        //TODO this is untested
+<b class="fc">&nbsp;        put(PartProgress.class, (type, data) -&gt; {</b>
+&nbsp;            //simple case: it&#39;s a string or number constant
+<b class="fc">&nbsp;            if(data.isString()) return field(PartProgress.class, data.asString());</b>
+<b class="fc">&nbsp;            if(data.isNumber()) return PartProgress.constant(data.asFloat());</b>
+&nbsp;
+<b class="fc">&nbsp;            if(!data.has(&quot;type&quot;)){</b>
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;PartProgress object need a &#39;type&#39; string field. Check the PartProgress class for a list of constants.&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            PartProgress base = (PartProgress)field(PartProgress.class, data.getString(&quot;type&quot;));</b>
+&nbsp;
+&nbsp;            JsonValue opval =
+<b class="fc">&nbsp;                data.has(&quot;operation&quot;) ? data.get(&quot;operation&quot;) :</b>
+<b class="fc">&nbsp;                data.has(&quot;op&quot;) ? data.get(&quot;op&quot;) : null;</b>
+&nbsp;
+&nbsp;            //no singular operation, check for multi-operation
+<b class="fc">&nbsp;            if(opval == null){</b>
+&nbsp;                JsonValue opsVal =
+<b class="fc">&nbsp;                    data.has(&quot;operations&quot;) ? data.get(&quot;operations&quot;) :</b>
+<b class="fc">&nbsp;                    data.has(&quot;ops&quot;) ? data.get(&quot;ops&quot;) : null;</b>
+&nbsp;
+<b class="fc">&nbsp;                if(opsVal != null){</b>
+<b class="fc">&nbsp;                    if(!opsVal.isArray()) throw new RuntimeException(&quot;Chained PartProgress operations must be an array.&quot;);</b>
+<b class="fc">&nbsp;                    int i = 0;</b>
+&nbsp;                    while(true){
+<b class="fc">&nbsp;                        JsonValue val = opsVal.get(i);</b>
+<b class="fc">&nbsp;                        if(val == null) break;</b>
+<b class="fc">&nbsp;                        JsonValue op = val.has(&quot;operation&quot;) ? val.get(&quot;operation&quot;) :</b>
+<b class="fc">&nbsp;                            val.has(&quot;op&quot;) ? val.get(&quot;op&quot;) : null;</b>
+&nbsp;
+<b class="fc">&nbsp;                        base = parseProgressOp(base, op.asString(), val);</b>
+<b class="fc">&nbsp;                        i++;</b>
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                return base;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //this is the name of the method to call
+<b class="fc">&nbsp;            String op = opval.asString();</b>
+&nbsp;
+<b class="fc">&nbsp;            return parseProgressOp(base, op, data);</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(PlanetGenerator.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            var result = new AsteroidGenerator(); //only one type for now</b>
+<b class="fc">&nbsp;            readFields(result, data);</b>
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(Mat3D.class, (type, data) -&gt; {</b>
+<b class="nc">&nbsp;            if(data == null) return new Mat3D();</b>
+&nbsp;
+&nbsp;            //transform x y z format
+<b class="nc">&nbsp;            if(data.has(&quot;x&quot;) &amp;&amp; data.has(&quot;y&quot;) &amp;&amp; data.has(&quot;z&quot;)){</b>
+<b class="nc">&nbsp;                return new Mat3D().translate(data.getFloat(&quot;x&quot;, 0f), data.getFloat(&quot;y&quot;, 0f), data.getFloat(&quot;z&quot;, 0f));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //transform array format
+<b class="nc">&nbsp;            if(data.isArray() &amp;&amp; data.size == 3){</b>
+<b class="nc">&nbsp;                return new Mat3D().setToTranslation(new Vec3(data.asFloatArray()));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Mat3D mat = new Mat3D();</b>
+&nbsp;
+&nbsp;            //TODO this is kinda bad
+<b class="nc">&nbsp;            for(var val : data){</b>
+<b class="nc">&nbsp;                switch(val.name){</b>
+<b class="nc">&nbsp;                    case &quot;translate&quot;, &quot;trans&quot; -&gt; mat.translate(parser.readValue(Vec3.class, data));</b>
+<b class="nc">&nbsp;                    case &quot;scale&quot;, &quot;scl&quot; -&gt; mat.scale(parser.readValue(Vec3.class, data));</b>
+<b class="nc">&nbsp;                    case &quot;rotate&quot;, &quot;rot&quot; -&gt; mat.rotate(parser.readValue(Vec3.class, data), data.getFloat(&quot;degrees&quot;, 0f));</b>
+<b class="nc">&nbsp;                    case &quot;multiply&quot;, &quot;mul&quot; -&gt; mat.mul(parser.readValue(Mat3D.class, data));</b>
+<b class="nc">&nbsp;                    case &quot;x&quot;, &quot;y&quot;, &quot;z&quot; -&gt; {}</b>
+<b class="nc">&nbsp;                    default -&gt; throw new RuntimeException(&quot;Unknown matrix transformation: &#39;&quot; + val.name + &quot;&#39;&quot;);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return mat;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(Vec3.class, (type, data) -&gt; {</b>
+<b class="nc">&nbsp;            if(data.isArray()) return new Vec3(data.asFloatArray());</b>
+<b class="nc">&nbsp;            return new Vec3(data.getFloat(&quot;x&quot;, 0f), data.getFloat(&quot;y&quot;, 0f), data.getFloat(&quot;z&quot;, 0f));</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(Sound.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            if(data.isArray()) return new RandomSound(parser.readValue(Sound[].class, data));</b>
+&nbsp;
+<b class="fc">&nbsp;            var field = fieldOpt(Sounds.class, data);</b>
+<b class="fc">&nbsp;            return field != null ? field : Vars.tree.loadSound(data.asString());</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(Music.class, (type, data) -&gt; {</b>
+<b class="nc">&nbsp;            var field = fieldOpt(Musics.class, data);</b>
+&nbsp;
+<b class="nc">&nbsp;            return field != null ? field : Vars.tree.loadMusic(data.asString());</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(Objectives.Objective.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            if(data.isString()){</b>
+<b class="fc">&nbsp;                var cont = locateAny(data.asString());</b>
+<b class="fc">&nbsp;                if(cont == null) throw new IllegalArgumentException(&quot;Unknown objective content: &quot; + data.asString());</b>
+<b class="fc">&nbsp;                return new Research((UnlockableContent)cont);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            var oc = resolve(data.getString(&quot;type&quot;, &quot;&quot;), SectorComplete.class);</b>
+<b class="fc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;            Objectives.Objective obj = make(oc);</b>
+<b class="fc">&nbsp;            readFields(obj, data);</b>
+<b class="fc">&nbsp;            return obj;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(Ability.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            Class&lt;? extends Ability&gt; oc = resolve(data.getString(&quot;type&quot;, &quot;&quot;));</b>
+<b class="fc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;            Ability obj = make(oc);</b>
+<b class="fc">&nbsp;            readFields(obj, data);</b>
+<b class="fc">&nbsp;            return obj;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(Weapon.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            var oc = resolve(data.getString(&quot;type&quot;, &quot;&quot;), Weapon.class);</b>
+<b class="fc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;            var weapon = make(oc);</b>
+<b class="fc">&nbsp;            readFields(weapon, data);</b>
+<b class="fc">&nbsp;            weapon.name = currentMod.name + &quot;-&quot; + weapon.name;</b>
+<b class="fc">&nbsp;            return weapon;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(Consume.class, (type, data) -&gt; {</b>
+<b class="nc">&nbsp;            var oc = resolve(data.getString(&quot;type&quot;, &quot;&quot;), Consume.class);</b>
+<b class="nc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="nc">&nbsp;            var consume = make(oc);</b>
+<b class="nc">&nbsp;            readFields(consume, data);</b>
+<b class="nc">&nbsp;            return consume;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(ConsumeLiquidBase.class, (type, data) -&gt; {</b>
+<b class="fc">&nbsp;            var oc = resolve(data.getString(&quot;type&quot;, &quot;&quot;), ConsumeLiquidBase.class);</b>
+<b class="fc">&nbsp;            data.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;            var consume = make(oc);</b>
+<b class="fc">&nbsp;            readFields(consume, data);</b>
+<b class="fc">&nbsp;            return consume;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        put(Team.class, (type, data) -&gt; {</b>
+<b class="nc">&nbsp;            if(data.isString()){</b>
+<b class="nc">&nbsp;                Team out = Structs.find(Team.baseTeams, t -&gt; t.name.equals(data.asString()));</b>
+<b class="nc">&nbsp;                if(out == null) throw new IllegalArgumentException(&quot;Unknown team: &quot; + data.asString());</b>
+<b class="nc">&nbsp;                return out;</b>
+<b class="nc">&nbsp;            }else if(data.isNumber()){</b>
+<b class="nc">&nbsp;                if(data.asInt() &gt;= Team.all.length || data.asInt() &lt; 0){</b>
+<b class="nc">&nbsp;                    throw new IllegalArgumentException(&quot;Unknown team: &quot; + data.asString());</b>
+&nbsp;                }
+<b class="nc">&nbsp;                return Team.get(data.asInt());</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                throw new IllegalArgumentException(&quot;Unknown team: &quot; + data.asString() + &quot;. Team must either be a string or a number.&quot;);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }};
+&nbsp;    /** Stores things that need to be parsed fully, e.g. reading fields of content.
+&nbsp;     * This is done to accommodate binding of content names first.*/
+<b class="fc">&nbsp;    private Seq&lt;Runnable&gt; reads = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private Seq&lt;Runnable&gt; postreads = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private ObjectSet&lt;Object&gt; toBeParsed = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+&nbsp;    LoadedMod currentMod;
+&nbsp;    Content currentContent;
+&nbsp;
+<b class="fc">&nbsp;    private Json parser = new Json(){</b>
+&nbsp;        @Override
+&nbsp;        public &lt;T&gt; T readValue(Class&lt;T&gt; type, Class elementType, JsonValue jsonData, Class keyType){
+<b class="fc">&nbsp;            T t = internalRead(type, elementType, jsonData, keyType);</b>
+<b class="fc">&nbsp;            if(t != null &amp;&amp; !Reflect.isWrapper(t.getClass()) &amp;&amp; (type == null || !type.isPrimitive())){</b>
+<b class="fc">&nbsp;                checkNullFields(t);</b>
+<b class="fc">&nbsp;                listeners.each(hook -&gt; hook.parsed(type, jsonData, t));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            return t;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private &lt;T&gt; T internalRead(Class&lt;T&gt; type, Class elementType, JsonValue jsonData, Class keyType){
+<b class="fc">&nbsp;            if(type != null){</b>
+<b class="fc">&nbsp;                if(classParsers.containsKey(type)){</b>
+&nbsp;                    try{
+<b class="fc">&nbsp;                        return (T)classParsers.get(type).parse(type, jsonData);</b>
+<b class="nc">&nbsp;                    }catch(Exception e){</b>
+<b class="nc">&nbsp;                        throw new RuntimeException(e);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //try to parse env bits
+<b class="fc">&nbsp;                if((type == int.class || type == Integer.class) &amp;&amp; jsonData.isArray()){</b>
+<b class="nc">&nbsp;                    int value = 0;</b>
+<b class="nc">&nbsp;                    for(var str : jsonData){</b>
+<b class="nc">&nbsp;                        if(!str.isString()) throw new SerializationException(&quot;Integer bitfield values must all be strings. Found: &quot; + str);</b>
+<b class="nc">&nbsp;                        String field = str.asString();</b>
+<b class="nc">&nbsp;                        value |= Reflect.&lt;Integer&gt;get(Env.class, field);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    return (T)(Integer)value;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //try to parse &quot;item/amount&quot; syntax
+<b class="fc">&nbsp;                if(type == ItemStack.class &amp;&amp; jsonData.isString() &amp;&amp; jsonData.asString().contains(&quot;/&quot;)){</b>
+<b class="fc">&nbsp;                    String[] split = jsonData.asString().split(&quot;/&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;                    return (T)fromJson(ItemStack.class, &quot;{item: &quot; + split[0] + &quot;, amount: &quot; + split[1] + &quot;}&quot;);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //try to parse &quot;payloaditem/amount&quot; syntax
+<b class="fc">&nbsp;                if(type == PayloadStack.class &amp;&amp; jsonData.isString() &amp;&amp; jsonData.asString().contains(&quot;/&quot;)){</b>
+<b class="fc">&nbsp;                    String[] split = jsonData.asString().split(&quot;/&quot;);</b>
+<b class="fc">&nbsp;                    int number = Strings.parseInt(split[1], 1);</b>
+<b class="fc">&nbsp;                    UnlockableContent cont = content.unit(split[0]) == null ? content.block(split[0]) : content.unit(split[0]);</b>
+&nbsp;
+<b class="fc">&nbsp;                    return (T)new PayloadStack(cont == null ? Blocks.router : cont, number);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //try to parse &quot;liquid/amount&quot; syntax
+<b class="fc">&nbsp;                if(jsonData.isString() &amp;&amp; jsonData.asString().contains(&quot;/&quot;)){</b>
+<b class="fc">&nbsp;                    String[] split = jsonData.asString().split(&quot;/&quot;);</b>
+<b class="fc">&nbsp;                    if(type == LiquidStack.class){</b>
+<b class="fc">&nbsp;                        return (T)fromJson(LiquidStack.class, &quot;{liquid: &quot; + split[0] + &quot;, amount: &quot; + split[1] + &quot;}&quot;);</b>
+<b class="fc">&nbsp;                    }else if(type == ConsumeLiquid.class){</b>
+<b class="fc">&nbsp;                        return (T)fromJson(ConsumeLiquid.class, &quot;{liquid: &quot; + split[0] + &quot;, amount: &quot; + split[1] + &quot;}&quot;);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                //try to parse Rect as array
+<b class="fc">&nbsp;                if(type == Rect.class &amp;&amp; jsonData.isArray() &amp;&amp; jsonData.size == 4){</b>
+<b class="nc">&nbsp;                    return (T)new Rect(jsonData.get(0).asFloat(), jsonData.get(1).asFloat(), jsonData.get(2).asFloat(), jsonData.get(3).asFloat());</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //search across different content types to find one by name
+<b class="fc">&nbsp;                if(type == UnlockableContent.class){</b>
+<b class="fc">&nbsp;                    for(ContentType c : typesToSearch){</b>
+<b class="fc">&nbsp;                        T found = (T)locate(c, jsonData.asString());</b>
+<b class="fc">&nbsp;                        if(found != null){</b>
+<b class="fc">&nbsp;                            return found;</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    throw new IllegalArgumentException(&quot;\&quot;&quot; + jsonData.name + &quot;\&quot;: No content found with name &#39;&quot; + jsonData.asString() + &quot;&#39;.&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(Content.class.isAssignableFrom(type)){</b>
+<b class="fc">&nbsp;                    ContentType ctype = contentTypes.getThrow(type, () -&gt; new IllegalArgumentException(&quot;No content type for class: &quot; + type.getSimpleName()));</b>
+<b class="fc">&nbsp;                    String prefix = currentMod != null ? currentMod.name + &quot;-&quot; : &quot;&quot;;</b>
+<b class="fc">&nbsp;                    T one = (T)Vars.content.getByName(ctype, prefix + jsonData.asString());</b>
+<b class="fc">&nbsp;                    if(one != null) return one;</b>
+<b class="fc">&nbsp;                    T two = (T)Vars.content.getByName(ctype, jsonData.asString());</b>
+&nbsp;
+<b class="fc">&nbsp;                    if(two != null) return two;</b>
+<b class="nc">&nbsp;                    throw new IllegalArgumentException(&quot;\&quot;&quot; + jsonData.name + &quot;\&quot;: No &quot; + ctype + &quot; found with name &#39;&quot; + jsonData.asString() + &quot;&#39;.\nMake sure &#39;&quot; + jsonData.asString() + &quot;&#39; is spelled correctly, and that it really exists!\nThis may also occur because its file failed to parse.&quot;);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            return super.readValue(type, elementType, jsonData, keyType);</b>
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+<b class="fc">&nbsp;    private ObjectMap&lt;ContentType, TypeParser&lt;?&gt;&gt; parsers = ObjectMap.of(</b>
+&nbsp;        ContentType.block, (TypeParser&lt;Block&gt;)(mod, name, value) -&gt; {
+<b class="fc">&nbsp;            readBundle(ContentType.block, name, value);</b>
+&nbsp;
+&nbsp;            Block block;
+&nbsp;
+<b class="fc">&nbsp;            if(locate(ContentType.block, name) != null){</b>
+<b class="fc">&nbsp;                if(value.has(&quot;type&quot;)){</b>
+<b class="nc">&nbsp;                    Log.warn(&quot;Warning: &#39;&quot; + currentMod.name + &quot;-&quot; + name + &quot;&#39; re-declares a type. This will be interpreted as a new block. If you wish to override a vanilla block, omit the &#39;type&#39; section, as vanilla block `type`s cannot be changed.&quot;);</b>
+<b class="nc">&nbsp;                    block = make(resolve(value.getString(&quot;type&quot;, &quot;&quot;), Block.class), mod + &quot;-&quot; + name);</b>
+&nbsp;                }else{
+<b class="fc">&nbsp;                    block = locate(ContentType.block, name);</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="fc">&nbsp;                block = make(resolve(value.getString(&quot;type&quot;, &quot;&quot;), Block.class), mod + &quot;-&quot; + name);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            currentContent = block;</b>
+&nbsp;
+<b class="fc">&nbsp;            read(() -&gt; {</b>
+<b class="fc">&nbsp;                if(value.has(&quot;consumes&quot;) &amp;&amp; value.get(&quot;consumes&quot;).isObject()){</b>
+<b class="fc">&nbsp;                    for(JsonValue child : value.get(&quot;consumes&quot;)){</b>
+<b class="fc">&nbsp;                        switch(child.name){</b>
+&nbsp;                            case &quot;remove&quot; -&gt; {
+<b class="nc">&nbsp;                                String[] values = child.isString() ? new String[]{child.asString()} : child.asStringArray();</b>
+<b class="nc">&nbsp;                                for(String type : values){</b>
+<b class="nc">&nbsp;                                    Class&lt;?&gt; consumeType = resolve(&quot;Consume&quot; + Strings.capitalize(type), Consume.class);</b>
+<b class="nc">&nbsp;                                    if(consumeType != Consume.class){</b>
+<b class="nc">&nbsp;                                        block.removeConsumers(b -&gt; consumeType.isAssignableFrom(b.getClass()));</b>
+&nbsp;                                    }else{
+<b class="nc">&nbsp;                                        Log.warn(&quot;Unknown consumer type &#39;@&#39; (Class: @) in consume: remove.&quot;, type, &quot;Consume&quot; + Strings.capitalize(type));</b>
+&nbsp;                                    }
+&nbsp;                                }
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                            case &quot;item&quot; -&gt; block.consumeItem(find(ContentType.item, child.asString()));</b>
+<b class="nc">&nbsp;                            case &quot;itemCharged&quot; -&gt; block.consume((Consume)parser.readValue(ConsumeItemCharged.class, child));</b>
+<b class="fc">&nbsp;                            case &quot;itemFlammable&quot; -&gt; block.consume((Consume)parser.readValue(ConsumeItemFlammable.class, child));</b>
+<b class="nc">&nbsp;                            case &quot;itemRadioactive&quot; -&gt; block.consume((Consume)parser.readValue(ConsumeItemRadioactive.class, child));</b>
+<b class="nc">&nbsp;                            case &quot;itemExplosive&quot; -&gt; block.consume((Consume)parser.readValue(ConsumeItemExplosive.class, child));</b>
+<b class="nc">&nbsp;                            case &quot;itemList&quot; -&gt; block.consume((Consume)parser.readValue(ConsumeItemList.class, child));</b>
+<b class="nc">&nbsp;                            case &quot;itemExplode&quot; -&gt; block.consume((Consume)parser.readValue(ConsumeItemExplode.class, child));</b>
+<b class="fc">&nbsp;                            case &quot;items&quot; -&gt; block.consume(child.isArray() ?</b>
+<b class="fc">&nbsp;                                    new ConsumeItems(parser.readValue(ItemStack[].class, child)) :</b>
+<b class="fc">&nbsp;                                    parser.readValue(ConsumeItems.class, child));</b>
+<b class="nc">&nbsp;                            case &quot;liquidFlammable&quot; -&gt; block.consume((Consume)parser.readValue(ConsumeLiquidFlammable.class, child));</b>
+<b class="fc">&nbsp;                            case &quot;liquid&quot; -&gt; block.consume((Consume)parser.readValue(ConsumeLiquid.class, child));</b>
+<b class="fc">&nbsp;                            case &quot;liquids&quot; -&gt; block.consume(child.isArray() ?</b>
+<b class="fc">&nbsp;                                    new ConsumeLiquids(parser.readValue(LiquidStack[].class, child)) :</b>
+<b class="fc">&nbsp;                                    parser.readValue(ConsumeLiquids.class, child));</b>
+<b class="fc">&nbsp;                            case &quot;coolant&quot; -&gt; block.consume((Consume)parser.readValue(ConsumeCoolant.class, child));</b>
+&nbsp;                            case &quot;power&quot; -&gt; {
+<b class="fc">&nbsp;                                if(child.isNumber()){</b>
+<b class="fc">&nbsp;                                    block.consumePower(child.asFloat());</b>
+&nbsp;                                }else{
+<b class="nc">&nbsp;                                    block.consume((Consume)parser.readValue(ConsumePower.class, child));</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }</b>
+<b class="fc">&nbsp;                            case &quot;powerBuffered&quot; -&gt; block.consumePowerBuffered(child.asFloat());</b>
+<b class="nc">&nbsp;                            default -&gt; throw new IllegalArgumentException(&quot;Unknown consumption type: &#39;&quot; + child.name + &quot;&#39; for block &#39;&quot; + block.name + &quot;&#39;.&quot;);</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                    value.remove(&quot;consumes&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                readFields(block, value, true);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(block.size &gt; maxBlockSize){</b>
+<b class="nc">&nbsp;                    throw new IllegalArgumentException(&quot;Blocks cannot be larger than &quot; + maxBlockSize);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //make block visible by default if there are requirements and no visibility set
+<b class="fc">&nbsp;                if(value.has(&quot;requirements&quot;) &amp;&amp; block.buildVisibility == BuildVisibility.hidden){</b>
+<b class="fc">&nbsp;                    block.buildVisibility = BuildVisibility.shown;</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="fc">&nbsp;            return block;</b>
+&nbsp;        },
+&nbsp;        ContentType.unit, (TypeParser&lt;UnitType&gt;)(mod, name, value) -&gt; {
+<b class="fc">&nbsp;            readBundle(ContentType.unit, name, value);</b>
+&nbsp;
+&nbsp;            UnitType unit;
+<b class="fc">&nbsp;            if(locate(ContentType.unit, name) == null){</b>
+&nbsp;
+<b class="fc">&nbsp;                unit = make(resolve(value.getString(&quot;template&quot;, &quot;&quot;), UnitType.class), mod + &quot;-&quot; + name);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(value.has(&quot;template&quot;)){</b>
+<b class="fc">&nbsp;                    value.remove(&quot;template&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                var typeVal = value.get(&quot;type&quot;);</b>
+<b class="fc">&nbsp;                if(unit.constructor == null || typeVal != null){</b>
+<b class="fc">&nbsp;                    if(typeVal != null &amp;&amp; !typeVal.isString()){</b>
+<b class="nc">&nbsp;                        throw new RuntimeException(&quot;Unit &#39;&quot; + name + &quot;&#39; has an incorrect type. Types must be strings.&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    unit.constructor = unitType(typeVal);</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }else{</b>
+<b class="fc">&nbsp;                unit = locate(ContentType.unit, name);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            currentContent = unit;</b>
+&nbsp;            //TODO test this!
+<b class="fc">&nbsp;            read(() -&gt; {</b>
+&nbsp;                //add reconstructor type
+<b class="fc">&nbsp;                if(value.has(&quot;requirements&quot;)){</b>
+<b class="nc">&nbsp;                    JsonValue rec = value.remove(&quot;requirements&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                    UnitReq req = parser.readValue(UnitReq.class, rec);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(req.block instanceof Reconstructor r){</b>
+<b class="nc">&nbsp;                        if(req.previous != null){</b>
+<b class="nc">&nbsp;                            r.upgrades.add(new UnitType[]{req.previous, unit});</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }else if(req.block instanceof UnitFactory f){</b>
+<b class="nc">&nbsp;                        f.plans.add(new UnitPlan(unit, req.time, req.requirements));</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        throw new IllegalArgumentException(&quot;Missing a valid &#39;block&#39; in &#39;requirements&#39;&quot;);</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(value.has(&quot;controller&quot;) || value.has(&quot;aiController&quot;)){</b>
+<b class="fc">&nbsp;                    unit.aiController = supply(resolve(value.getString(&quot;controller&quot;, value.getString(&quot;aiController&quot;, &quot;&quot;)), FlyingAI.class));</b>
+<b class="fc">&nbsp;                    value.remove(&quot;controller&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(value.has(&quot;defaultController&quot;)){</b>
+<b class="fc">&nbsp;                    var sup = supply(resolve(value.getString(&quot;defaultController&quot;), FlyingAI.class));</b>
+<b class="fc">&nbsp;                    unit.controller = u -&gt; sup.get();</b>
+<b class="fc">&nbsp;                    value.remove(&quot;defaultController&quot;);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //read extra default waves
+<b class="fc">&nbsp;                if(value.has(&quot;waves&quot;)){</b>
+<b class="nc">&nbsp;                    JsonValue waves = value.remove(&quot;waves&quot;);</b>
+<b class="nc">&nbsp;                    SpawnGroup[] groups = parser.readValue(SpawnGroup[].class, waves);</b>
+<b class="nc">&nbsp;                    for(SpawnGroup group : groups){</b>
+<b class="nc">&nbsp;                        group.type = unit;</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Vars.waves.get().addAll(groups);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                readFields(unit, value, true);</b>
+&nbsp;            });
+&nbsp;
+<b class="fc">&nbsp;            return unit;</b>
+&nbsp;        },
+&nbsp;        ContentType.weather, (TypeParser&lt;Weather&gt;)(mod, name, value) -&gt; {
+&nbsp;            Weather item;
+<b class="fc">&nbsp;            if(locate(ContentType.weather, name) != null){</b>
+<b class="nc">&nbsp;                item = locate(ContentType.weather, name);</b>
+<b class="nc">&nbsp;                readBundle(ContentType.weather, name, value);</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                readBundle(ContentType.weather, name, value);</b>
+<b class="fc">&nbsp;                item = make(resolve(getType(value), ParticleWeather.class), mod + &quot;-&quot; + name);</b>
+<b class="fc">&nbsp;                value.remove(&quot;type&quot;);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            currentContent = item;</b>
+<b class="fc">&nbsp;            read(() -&gt; readFields(item, value));</b>
+<b class="fc">&nbsp;            return item;</b>
+&nbsp;        },
+<b class="fc">&nbsp;        ContentType.item, parser(ContentType.item, Item::new),</b>
+&nbsp;        ContentType.liquid, (TypeParser&lt;Liquid&gt;)(mod, name, value) -&gt; {
+&nbsp;            Liquid liquid;
+<b class="fc">&nbsp;            if(locate(ContentType.liquid, name) != null){</b>
+<b class="nc">&nbsp;                liquid = locate(ContentType.liquid, name);</b>
+<b class="nc">&nbsp;                readBundle(ContentType.liquid, name, value);</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                readBundle(ContentType.liquid, name, value);</b>
+<b class="fc">&nbsp;                liquid = make(resolve(value.getString(&quot;type&quot;, null), Liquid.class), mod + &quot;-&quot; + name);</b>
+<b class="fc">&nbsp;                value.remove(&quot;type&quot;);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            currentContent = liquid;</b>
+<b class="fc">&nbsp;            read(() -&gt; readFields(liquid, value));</b>
+<b class="fc">&nbsp;            return liquid;</b>
+&nbsp;        },
+<b class="fc">&nbsp;        ContentType.status, parser(ContentType.status, StatusEffect::new),</b>
+&nbsp;        ContentType.sector, (TypeParser&lt;SectorPreset&gt;)(mod, name, value) -&gt; {
+<b class="fc">&nbsp;            if(value.isString()){</b>
+<b class="nc">&nbsp;                return locate(ContentType.sector, name);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(!value.has(&quot;sector&quot;) || !value.get(&quot;sector&quot;).isNumber()) throw new RuntimeException(&quot;SectorPresets must have a sector number.&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            SectorPreset out = new SectorPreset(mod + &quot;-&quot; + name, currentMod);</b>
+&nbsp;
+<b class="fc">&nbsp;            currentContent = out;</b>
+<b class="fc">&nbsp;            read(() -&gt; {</b>
+<b class="fc">&nbsp;                Planet planet = locate(ContentType.planet, value.getString(&quot;planet&quot;, &quot;serpulo&quot;));</b>
+&nbsp;
+<b class="fc">&nbsp;                if(planet == null) throw new RuntimeException(&quot;Planet &#39;&quot; + value.getString(&quot;planet&quot;) + &quot;&#39; not found.&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;                out.initialize(planet, value.getInt(&quot;sector&quot;, 0));</b>
+&nbsp;
+<b class="fc">&nbsp;                value.remove(&quot;sector&quot;);</b>
+<b class="fc">&nbsp;                value.remove(&quot;planet&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;                readFields(out, value);</b>
+&nbsp;            });
+<b class="fc">&nbsp;            return out;</b>
+&nbsp;        },
+&nbsp;        ContentType.planet, (TypeParser&lt;Planet&gt;)(mod, name, value) -&gt; {
+<b class="fc">&nbsp;            if(value.isString()) return locate(ContentType.planet, name);</b>
+&nbsp;
+<b class="fc">&nbsp;            Planet parent = locate(ContentType.planet, value.getString(&quot;parent&quot;, &quot;&quot;));</b>
+<b class="fc">&nbsp;            Planet planet = new Planet(mod + &quot;-&quot; + name, parent, value.getFloat(&quot;radius&quot;, 1f), value.getInt(&quot;sectorSize&quot;, 0));</b>
+&nbsp;
+<b class="fc">&nbsp;            if(value.has(&quot;mesh&quot;)){</b>
+<b class="fc">&nbsp;                var mesh = value.get(&quot;mesh&quot;);</b>
+<b class="fc">&nbsp;                if(!mesh.isObject() &amp;&amp; !mesh.isArray()) throw new RuntimeException(&quot;Meshes must be objects.&quot;);</b>
+<b class="fc">&nbsp;                value.remove(&quot;mesh&quot;);</b>
+<b class="fc">&nbsp;                planet.meshLoader = () -&gt; {</b>
+&nbsp;                    //don&#39;t crash, just log an error
+&nbsp;                    try{
+<b class="nc">&nbsp;                        return parseMesh(planet, mesh);</b>
+<b class="nc">&nbsp;                    }catch(Exception e){</b>
+<b class="nc">&nbsp;                        Log.err(e);</b>
+<b class="nc">&nbsp;                        return new ShaderSphereMesh(planet, Shaders.unlit, 2);</b>
+&nbsp;                    }
+&nbsp;                };
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(value.has(&quot;cloudMesh&quot;)){</b>
+<b class="fc">&nbsp;                var mesh = value.get(&quot;cloudMesh&quot;);</b>
+<b class="fc">&nbsp;                if(!mesh.isObject() &amp;&amp; !mesh.isArray()) throw new RuntimeException(&quot;Meshes must be objects.&quot;);</b>
+<b class="fc">&nbsp;                value.remove(&quot;cloudMesh&quot;);</b>
+<b class="fc">&nbsp;                planet.cloudMeshLoader = () -&gt; {</b>
+&nbsp;                    //don&#39;t crash, just log an error
+&nbsp;                    try{
+<b class="nc">&nbsp;                        return parseMesh(planet, mesh);</b>
+<b class="nc">&nbsp;                    }catch(Exception e){</b>
+<b class="nc">&nbsp;                        Log.err(e);</b>
+<b class="nc">&nbsp;                        return null;</b>
+&nbsp;                    }
+&nbsp;                };
+&nbsp;            }
+&nbsp;
+&nbsp;            //always one sector right now...
+<b class="fc">&nbsp;            planet.sectors.add(new Sector(planet, Ptile.empty));</b>
+&nbsp;
+<b class="fc">&nbsp;            currentContent = planet;</b>
+<b class="fc">&nbsp;            read(() -&gt; readFields(planet, value));</b>
+<b class="fc">&nbsp;            return planet;</b>
+&nbsp;        },
+&nbsp;        ContentType.team, (TypeParser&lt;TeamEntry&gt;)(mod, name, value) -&gt; {
+&nbsp;            TeamEntry entry;
+&nbsp;            Team team;
+<b class="nc">&nbsp;            if(value.has(&quot;team&quot;)){</b>
+<b class="nc">&nbsp;                team = (Team)classParsers.get(Team.class).parse(Team.class, value.get(&quot;team&quot;));</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;Team field missing.&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            value.remove(&quot;team&quot;);</b>
+&nbsp;            
+<b class="nc">&nbsp;            if(locate(ContentType.team, name) != null){</b>
+<b class="nc">&nbsp;                entry = locate(ContentType.team, name);</b>
+<b class="nc">&nbsp;                readBundle(ContentType.team, name, value);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                readBundle(ContentType.team, name, value);</b>
+<b class="nc">&nbsp;                entry = new TeamEntry(mod + &quot;-&quot; + name, team);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            currentContent = entry;</b>
+<b class="nc">&nbsp;            read(() -&gt; readFields(entry, value));</b>
+<b class="nc">&nbsp;            return entry;</b>
+&nbsp;        }
+&nbsp;    );
+&nbsp;
+&nbsp;    private Prov&lt;Unit&gt; unitType(JsonValue value){
+<b class="fc">&nbsp;        if(value == null) return UnitEntity::create;</b>
+<b class="fc">&nbsp;        return switch(value.asString()){</b>
+<b class="fc">&nbsp;            case &quot;flying&quot; -&gt; UnitEntity::create;</b>
+<b class="nc">&nbsp;            case &quot;mech&quot; -&gt; MechUnit::create;</b>
+<b class="fc">&nbsp;            case &quot;legs&quot; -&gt; LegsUnit::create;</b>
+<b class="fc">&nbsp;            case &quot;naval&quot; -&gt; UnitWaterMove::create;</b>
+<b class="fc">&nbsp;            case &quot;payload&quot; -&gt; PayloadUnit::create;</b>
+<b class="fc">&nbsp;            case &quot;missile&quot; -&gt; TimedKillUnit::create;</b>
+<b class="fc">&nbsp;            case &quot;tank&quot; -&gt; TankUnit::create;</b>
+<b class="nc">&nbsp;            case &quot;hover&quot; -&gt; ElevationMoveUnit::create;</b>
+<b class="fc">&nbsp;            case &quot;tether&quot; -&gt; BuildingTetherPayloadUnit::create;</b>
+<b class="nc">&nbsp;            case &quot;crawl&quot; -&gt; CrawlUnit::create;</b>
+<b class="nc">&nbsp;            default -&gt; throw new RuntimeException(&quot;Invalid unit type: &#39;&quot; + value + &quot;&#39;. Must be &#39;flying/mech/legs/naval/payload/missile/tether/crawl&#39;.&quot;);</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getString(JsonValue value, String key){
+<b class="fc">&nbsp;        if(value.has(key)){</b>
+<b class="fc">&nbsp;            return value.getString(key);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;You are missing a \&quot;&quot; + key + &quot;\&quot;. It must be added before the file can be parsed.&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getType(JsonValue value){
+<b class="fc">&nbsp;        return getString(value, &quot;type&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;T extends Content&gt; T find(ContentType type, String name){
+<b class="fc">&nbsp;        Content c = Vars.content.getByName(type, name);</b>
+<b class="fc">&nbsp;        if(c == null) c = Vars.content.getByName(type, currentMod.name + &quot;-&quot; + name);</b>
+<b class="fc">&nbsp;        if(c == null) throw new IllegalArgumentException(&quot;No &quot; + type + &quot; found with name &#39;&quot; + name + &quot;&#39;&quot;);</b>
+<b class="fc">&nbsp;        return (T)c;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;T extends Content&gt; TypeParser&lt;T&gt; parser(ContentType type, Func&lt;String, T&gt; constructor){
+<b class="fc">&nbsp;        return (mod, name, value) -&gt; {</b>
+&nbsp;            T item;
+<b class="fc">&nbsp;            if(locate(type, name) != null){</b>
+<b class="fc">&nbsp;                item = (T)locate(type, name);</b>
+<b class="fc">&nbsp;                readBundle(type, name, value);</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                readBundle(type, name, value);</b>
+<b class="fc">&nbsp;                item = constructor.get(mod + &quot;-&quot; + name);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            currentContent = item;</b>
+<b class="fc">&nbsp;            read(() -&gt; readFields(item, value));</b>
+<b class="fc">&nbsp;            return item;</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    private void readBundle(ContentType type, String name, JsonValue value){
+<b class="fc">&nbsp;        UnlockableContent cont = locate(type, name) instanceof UnlockableContent ? locate(type, name) : null;</b>
+&nbsp;
+<b class="fc">&nbsp;        String entryName = cont == null ? type + &quot;.&quot; + currentMod.name + &quot;-&quot; + name + &quot;.&quot; : type + &quot;.&quot; + cont.name + &quot;.&quot;;</b>
+<b class="fc">&nbsp;        I18NBundle bundle = Core.bundle;</b>
+<b class="fc">&nbsp;        while(bundle.getParent() != null) bundle = bundle.getParent();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(value.has(&quot;name&quot;)){</b>
+<b class="nc">&nbsp;            if(!Core.bundle.has(entryName + &quot;name&quot;)){</b>
+<b class="nc">&nbsp;                bundle.getProperties().put(entryName + &quot;name&quot;, value.getString(&quot;name&quot;));</b>
+<b class="nc">&nbsp;                if(cont != null) cont.localizedName = value.getString(&quot;name&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            value.remove(&quot;name&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(value.has(&quot;description&quot;)){</b>
+<b class="fc">&nbsp;            if(!Core.bundle.has(entryName + &quot;description&quot;)){</b>
+<b class="nc">&nbsp;                bundle.getProperties().put(entryName + &quot;description&quot;, value.getString(&quot;description&quot;));</b>
+<b class="nc">&nbsp;                if(cont != null) cont.description = value.getString(&quot;description&quot;);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            value.remove(&quot;description&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Call to read a content&#39;s extra info later.*/
+&nbsp;    private void read(Runnable run){
+<b class="fc">&nbsp;        Content cont = currentContent;</b>
+<b class="fc">&nbsp;        LoadedMod mod = currentMod;</b>
+<b class="fc">&nbsp;        reads.add(() -&gt; {</b>
+<b class="fc">&nbsp;            this.currentMod = mod;</b>
+<b class="fc">&nbsp;            this.currentContent = cont;</b>
+<b class="fc">&nbsp;            run.run();</b>
+&nbsp;
+&nbsp;            //check nulls after parsing
+<b class="fc">&nbsp;            if(cont != null){</b>
+<b class="fc">&nbsp;                toBeParsed.remove(cont);</b>
+<b class="fc">&nbsp;                checkNullFields(cont);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void init(){
+<b class="fc">&nbsp;        for(ContentType type : ContentType.all){</b>
+<b class="fc">&nbsp;            Seq&lt;Content&gt; arr = Vars.content.getBy(type);</b>
+<b class="fc">&nbsp;            if(!arr.isEmpty()){</b>
+<b class="fc">&nbsp;                Class&lt;?&gt; c = arr.first().getClass();</b>
+&nbsp;                //get base content class, skipping intermediates
+<b class="fc">&nbsp;                while(!(c.getSuperclass() == Content.class || c.getSuperclass() == UnlockableContent.class || Modifier.isAbstract(c.getSuperclass().getModifiers()))){</b>
+<b class="fc">&nbsp;                    c = c.getSuperclass();</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                contentTypes.put(c, type);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void attempt(Runnable run){
+&nbsp;        try{
+<b class="fc">&nbsp;            run.run();</b>
+<b class="nc">&nbsp;        }catch(Throwable t){</b>
+<b class="nc">&nbsp;            Log.err(t);</b>
+&nbsp;            //don&#39;t overwrite double errors
+<b class="nc">&nbsp;            markError(currentContent, t);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void finishParsing(){
+<b class="fc">&nbsp;        reads.each(this::attempt);</b>
+<b class="fc">&nbsp;        postreads.each(this::attempt);</b>
+<b class="fc">&nbsp;        reads.clear();</b>
+<b class="fc">&nbsp;        postreads.clear();</b>
+<b class="fc">&nbsp;        toBeParsed.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Parses content from a json file.
+&nbsp;     * @param name the name of the file without its extension
+&nbsp;     * @param json the json to parse
+&nbsp;     * @param type the type of content this is
+&nbsp;     * @param file file that this content is being parsed from
+&nbsp;     * @return the content that was parsed
+&nbsp;     */
+&nbsp;    public Content parse(LoadedMod mod, String name, String json, Fi file, ContentType type) throws Exception{
+<b class="fc">&nbsp;        if(contentTypes.isEmpty()){</b>
+<b class="fc">&nbsp;            init();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //remove extra # characters to make it valid json... apparently some people have *unquoted* # characters in their json
+<b class="fc">&nbsp;        if(file.extension().equals(&quot;json&quot;)){</b>
+<b class="nc">&nbsp;            json = json.replace(&quot;#&quot;, &quot;\\#&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        currentMod = mod;</b>
+&nbsp;
+<b class="fc">&nbsp;        JsonValue value = parser.fromJson(null, Jval.read(json).toString(Jformat.plain));</b>
+&nbsp;
+<b class="fc">&nbsp;        if(!parsers.containsKey(type)){</b>
+<b class="nc">&nbsp;            throw new SerializationException(&quot;No parsers for content type &#39;&quot; + type + &quot;&#39;&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        boolean located = locate(type, name) != null;</b>
+<b class="fc">&nbsp;        Content c = parsers.get(type).parse(mod.name, name, value);</b>
+<b class="fc">&nbsp;        c.minfo.sourceFile = file;</b>
+<b class="fc">&nbsp;        toBeParsed.add(c);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(!located){</b>
+<b class="fc">&nbsp;            c.minfo.mod = mod;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return c;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void markError(Content content, LoadedMod mod, Fi file, Throwable error){
+<b class="nc">&nbsp;        Log.err(&quot;Error for @ / @:\n@\n&quot;, content, file, Strings.getStackTrace(error));</b>
+&nbsp;
+<b class="nc">&nbsp;        content.minfo.mod = mod;</b>
+<b class="nc">&nbsp;        content.minfo.sourceFile = file;</b>
+<b class="nc">&nbsp;        content.minfo.error = makeError(error, file);</b>
+<b class="nc">&nbsp;        content.minfo.baseError = error;</b>
+<b class="nc">&nbsp;        if(mod != null){</b>
+<b class="nc">&nbsp;            mod.erroredContent.add(content);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void markError(Content content, Throwable error){
+<b class="nc">&nbsp;        if(content.minfo != null &amp;&amp; !content.hasErrored()){</b>
+<b class="nc">&nbsp;            markError(content, content.minfo.mod, content.minfo.sourceFile, error);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String makeError(Throwable t, Fi file){
+<b class="nc">&nbsp;        StringBuilder builder = new StringBuilder();</b>
+<b class="nc">&nbsp;        builder.append(&quot;[lightgray]&quot;).append(&quot;File: &quot;).append(file.name()).append(&quot;[]\n\n&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(t.getMessage() != null &amp;&amp; t instanceof JsonParseException){</b>
+<b class="nc">&nbsp;            builder.append(&quot;[accent][[JsonParse][] &quot;).append(&quot;:\n&quot;).append(t.getMessage());</b>
+<b class="nc">&nbsp;        }else if(t instanceof NullPointerException){</b>
+<b class="nc">&nbsp;            builder.append(Strings.neatError(t));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Seq&lt;Throwable&gt; causes = Strings.getCauses(t);</b>
+<b class="nc">&nbsp;            for(Throwable e : causes){</b>
+<b class="nc">&nbsp;                builder.append(&quot;[accent][[&quot;).append(e.getClass().getSimpleName().replace(&quot;Exception&quot;, &quot;&quot;))</b>
+<b class="nc">&nbsp;                .append(&quot;][] &quot;)</b>
+<b class="nc">&nbsp;                .append(e.getMessage() != null ?</b>
+<b class="nc">&nbsp;                e.getMessage().replace(&quot;mindustry.&quot;, &quot;&quot;).replace(&quot;arc.&quot;, &quot;&quot;) : &quot;&quot;).append(&quot;\n&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return builder.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;T extends MappableContent&gt; T locate(ContentType type, String name){
+<b class="fc">&nbsp;        T first = Vars.content.getByName(type, name); //try vanilla replacement</b>
+<b class="fc">&nbsp;        return first != null ? first : Vars.content.getByName(type, currentMod.name + &quot;-&quot; + name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;T extends MappableContent&gt; T locateAny(String name){
+<b class="fc">&nbsp;        for(ContentType t : ContentType.all){</b>
+<b class="fc">&nbsp;            var out = locate(t, name);</b>
+<b class="fc">&nbsp;            if(out != null){</b>
+<b class="fc">&nbsp;                return (T)out;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private GenericMesh[] parseMeshes(Planet planet, JsonValue array){
+<b class="nc">&nbsp;        var res = new GenericMesh[array.size];</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; array.size; i++){</b>
+&nbsp;            //yes get is O(n) but it&#39;s practically irrelevant here
+<b class="nc">&nbsp;            res[i] = parseMesh(planet, array.get(i));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return res;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private GenericMesh parseMesh(Planet planet, JsonValue data){
+<b class="nc">&nbsp;        if(data.isArray()){</b>
+<b class="nc">&nbsp;            return new MultiMesh(parseMeshes(planet, data));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        String tname = Strings.capitalize(data.getString(&quot;type&quot;, &quot;NoiseMesh&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;        return switch(tname){</b>
+&nbsp;            //TODO NoiseMesh is bad
+<b class="nc">&nbsp;            case &quot;NoiseMesh&quot; -&gt; new NoiseMesh(planet,</b>
+<b class="nc">&nbsp;            data.getInt(&quot;seed&quot;, 0), data.getInt(&quot;divisions&quot;, 1), data.getFloat(&quot;radius&quot;, 1f),</b>
+<b class="nc">&nbsp;            data.getInt(&quot;octaves&quot;, 1), data.getFloat(&quot;persistence&quot;, 0.5f), data.getFloat(&quot;scale&quot;, 1f), data.getFloat(&quot;mag&quot;, 0.5f),</b>
+<b class="nc">&nbsp;            Color.valueOf(data.getString(&quot;color1&quot;, data.getString(&quot;color&quot;, &quot;ffffff&quot;))),</b>
+<b class="nc">&nbsp;            Color.valueOf(data.getString(&quot;color2&quot;, data.getString(&quot;color&quot;, &quot;ffffff&quot;))),</b>
+<b class="nc">&nbsp;            data.getInt(&quot;colorOct&quot;, 1), data.getFloat(&quot;colorPersistence&quot;, 0.5f), data.getFloat(&quot;colorScale&quot;, 1f),</b>
+<b class="nc">&nbsp;            data.getFloat(&quot;colorThreshold&quot;, 0.5f));</b>
+&nbsp;            case &quot;SunMesh&quot; -&gt; {
+<b class="nc">&nbsp;                var cvals = data.get(&quot;colors&quot;).asStringArray();</b>
+<b class="nc">&nbsp;                var colors = new Color[cvals.length];</b>
+<b class="nc">&nbsp;                for(int i=0; i&lt;cvals.length; i++){</b>
+<b class="nc">&nbsp;                    colors[i] = Color.valueOf(cvals[i]);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                yield new SunMesh(planet, data.getInt(&quot;divisions&quot;, 1), data.getInt(&quot;octaves&quot;, 1), data.getFloat(&quot;persistence&quot;, 0.5f),</b>
+<b class="nc">&nbsp;                data.getFloat(&quot;scl&quot;, 1f), data.getFloat(&quot;pow&quot;, 1f), data.getFloat(&quot;mag&quot;, 0.5f),</b>
+<b class="nc">&nbsp;                data.getFloat(&quot;colorScale&quot;, 1f), colors);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            case &quot;HexSkyMesh&quot; -&gt; new HexSkyMesh(planet,</b>
+<b class="nc">&nbsp;            data.getInt(&quot;seed&quot;, 0), data.getFloat(&quot;speed&quot;, 0), data.getFloat(&quot;radius&quot;, 1f),</b>
+<b class="nc">&nbsp;            data.getInt(&quot;divisions&quot;, 3), Color.valueOf(data.getString(&quot;color&quot;, &quot;ffffff&quot;)), data.getInt(&quot;octaves&quot;, 1),</b>
+<b class="nc">&nbsp;            data.getFloat(&quot;persistence&quot;, 0.5f), data.getFloat(&quot;scale&quot;, 1f), data.getFloat(&quot;thresh&quot;, 0.5f));</b>
+<b class="nc">&nbsp;            case &quot;MultiMesh&quot; -&gt; new MultiMesh(parseMeshes(planet, data.get(&quot;meshes&quot;)));</b>
+<b class="nc">&nbsp;            case &quot;MatMesh&quot; -&gt; new MatMesh(parseMesh(planet, data.get(&quot;mesh&quot;)), parser.readValue(Mat3D.class, data.get(&quot;mat&quot;)));</b>
+<b class="nc">&nbsp;            default -&gt; throw new RuntimeException(&quot;Unknown mesh type: &quot; + tname);</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    private PartProgress parseProgressOp(PartProgress base, String op, JsonValue data){
+&nbsp;        //I have to hard-code this, no easy way of getting parameter names, unfortunately
+<b class="fc">&nbsp;        return switch(op){</b>
+<b class="nc">&nbsp;            case &quot;inv&quot; -&gt; base.inv();</b>
+<b class="nc">&nbsp;            case &quot;slope&quot; -&gt; base.slope();</b>
+<b class="nc">&nbsp;            case &quot;clamp&quot; -&gt; base.clamp();</b>
+<b class="fc">&nbsp;            case &quot;delay&quot; -&gt; base.delay(data.getFloat(&quot;amount&quot;));</b>
+<b class="nc">&nbsp;            case &quot;sustain&quot; -&gt; base.sustain(data.getFloat(&quot;offset&quot;, 0f), data.getFloat(&quot;grow&quot;, 0f), data.getFloat(&quot;sustain&quot;));</b>
+<b class="nc">&nbsp;            case &quot;shorten&quot; -&gt; base.shorten(data.getFloat(&quot;amount&quot;));</b>
+<b class="fc">&nbsp;            case &quot;compress&quot; -&gt; base.compress(data.getFloat(&quot;start&quot;), data.getFloat(&quot;end&quot;));</b>
+<b class="fc">&nbsp;            case &quot;add&quot; -&gt; data.has(&quot;amount&quot;) ? base.add(data.getFloat(&quot;amount&quot;)) : base.add(parser.readValue(PartProgress.class, data.get(&quot;other&quot;)));</b>
+<b class="fc">&nbsp;            case &quot;blend&quot; -&gt; base.blend(parser.readValue(PartProgress.class, data.get(&quot;other&quot;)), data.getFloat(&quot;amount&quot;));</b>
+<b class="nc">&nbsp;            case &quot;mul&quot; -&gt; data.has(&quot;amount&quot;) ? base.mul(data.getFloat(&quot;amount&quot;)) : base.mul(parser.readValue(PartProgress.class, data.get(&quot;other&quot;)));</b>
+<b class="fc">&nbsp;            case &quot;min&quot; -&gt; base.min(parser.readValue(PartProgress.class, data.get(&quot;other&quot;)));</b>
+<b class="fc">&nbsp;            case &quot;sin&quot; -&gt; base.sin(data.has(&quot;offset&quot;) ? data.getFloat(&quot;offset&quot;) : 0f, data.getFloat(&quot;scl&quot;), data.getFloat(&quot;mag&quot;));</b>
+<b class="nc">&nbsp;            case &quot;absin&quot; -&gt; base.absin(data.getFloat(&quot;scl&quot;), data.getFloat(&quot;mag&quot;));</b>
+<b class="nc">&nbsp;            case &quot;mod&quot; -&gt; base.mod(data.getFloat(&quot;amount&quot;));</b>
+<b class="nc">&nbsp;            case &quot;loop&quot; -&gt; base.loop(data.getFloat(&quot;time&quot;));</b>
+<b class="fc">&nbsp;            case &quot;curve&quot; -&gt; data.has(&quot;interp&quot;) ? base.curve(parser.readValue(Interp.class, data.get(&quot;interp&quot;))) : base.curve(data.getFloat(&quot;offset&quot;), data.getFloat(&quot;duration&quot;));</b>
+<b class="nc">&nbsp;            default -&gt; throw new RuntimeException(&quot;Unknown operation &#39;&quot; + op + &quot;&#39;, check PartProgress class for a list of methods.&quot;);</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    &lt;T&gt; T make(Class&lt;T&gt; type){
+&nbsp;        try{
+<b class="fc">&nbsp;            Constructor&lt;T&gt; cons = type.getDeclaredConstructor();</b>
+<b class="fc">&nbsp;            cons.setAccessible(true);</b>
+<b class="fc">&nbsp;            return cons.newInstance();</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;T&gt; T make(Class&lt;T&gt; type, String name){
+&nbsp;        try{
+<b class="fc">&nbsp;            Constructor&lt;T&gt; cons = type.getDeclaredConstructor(String.class);</b>
+<b class="fc">&nbsp;            cons.setAccessible(true);</b>
+<b class="fc">&nbsp;            return cons.newInstance(name);</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;T&gt; Prov&lt;T&gt; supply(Class&lt;T&gt; type){
+&nbsp;        try{
+<b class="fc">&nbsp;            Constructor&lt;T&gt; cons = type.getDeclaredConstructor();</b>
+<b class="fc">&nbsp;            return () -&gt; {</b>
+&nbsp;                try{
+<b class="nc">&nbsp;                    return cons.newInstance();</b>
+<b class="nc">&nbsp;                }catch(Exception e){</b>
+<b class="nc">&nbsp;                    throw new RuntimeException(e);</b>
+&nbsp;                }
+&nbsp;            };
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    Object field(Class&lt;?&gt; type, JsonValue value){
+<b class="fc">&nbsp;        return field(type, value.asString());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Gets a field from a static class by name, throwing a descriptive exception if not found. */
+&nbsp;    private Object field(Class&lt;?&gt; type, String name){
+&nbsp;        try{
+<b class="fc">&nbsp;            Object b = type.getField(name).get(null);</b>
+<b class="fc">&nbsp;            if(b == null) throw new IllegalArgumentException(type.getSimpleName() + &quot;: not found: &#39;&quot; + name + &quot;&#39;&quot;);</b>
+<b class="fc">&nbsp;            return b;</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    Object fieldOpt(Class&lt;?&gt; type, JsonValue value){
+&nbsp;        try{
+<b class="fc">&nbsp;            return type.getField(value.asString()).get(null);</b>
+<b class="fc">&nbsp;        }catch(Exception e){</b>
+<b class="fc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void checkNullFields(Object object){
+<b class="fc">&nbsp;        if(object == null || object instanceof Number || object instanceof String || toBeParsed.contains(object) || object.getClass().getName().startsWith(&quot;arc.&quot;)) return;</b>
+&nbsp;
+<b class="fc">&nbsp;        parser.getFields(object.getClass()).values().toSeq().each(field -&gt; {</b>
+&nbsp;            try{
+<b class="fc">&nbsp;                if(field.field.getType().isPrimitive()) return;</b>
+&nbsp;
+<b class="fc">&nbsp;                if(!field.field.isAnnotationPresent(Nullable.class) &amp;&amp; field.field.get(object) == null &amp;&amp; !implicitNullable.contains(field.field.getType())){</b>
+<b class="nc">&nbsp;                    throw new RuntimeException(&quot;&#39;&quot; + field.field.getName() + &quot;&#39; in &quot; +</b>
+<b class="nc">&nbsp;                        ((object.getClass().isAnonymousClass() ? object.getClass().getSuperclass() : object.getClass()).getSimpleName()) +</b>
+<b class="nc">&nbsp;                        &quot; is missing! Object = &quot; + object + &quot;, field = (&quot; + field.field.getName() + &quot; = &quot; + field.field.get(object) + &quot;)&quot;);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                throw new RuntimeException(e);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void readFields(Object object, JsonValue jsonMap, boolean stripType){
+<b class="fc">&nbsp;        if(stripType) jsonMap.remove(&quot;type&quot;);</b>
+<b class="fc">&nbsp;        readFields(object, jsonMap);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void readFields(Object object, JsonValue jsonMap){
+<b class="fc">&nbsp;        JsonValue research = jsonMap.remove(&quot;research&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        toBeParsed.remove(object);</b>
+<b class="fc">&nbsp;        var type = object.getClass();</b>
+<b class="fc">&nbsp;        var fields = parser.getFields(type);</b>
+<b class="fc">&nbsp;        for(JsonValue child = jsonMap.child; child != null; child = child.next){</b>
+<b class="fc">&nbsp;            FieldMetadata metadata = fields.get(child.name().replace(&quot; &quot;, &quot;_&quot;));</b>
+<b class="fc">&nbsp;            if(metadata == null){</b>
+&nbsp;                if(ignoreUnknownFields){
+<b class="fc">&nbsp;                    Log.warn(&quot;[@]: Ignoring unknown field: @ (@)&quot;, currentContent.minfo.sourceFile.name(), child.name, type.getSimpleName());</b>
+<b class="fc">&nbsp;                    continue;</b>
+&nbsp;                }else{
+&nbsp;                    SerializationException ex = new SerializationException(&quot;Field not found: &quot; + child.name + &quot; (&quot; + type.getName() + &quot;)&quot;);
+&nbsp;                    ex.addTrace(child.trace());
+&nbsp;                    throw ex;
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;            Field field = metadata.field;</b>
+&nbsp;            try{
+<b class="fc">&nbsp;                if(child.isObject() &amp;&amp; child.has(&quot;add&quot;) &amp;&amp; (Seq.class.isAssignableFrom(field.getType()) || ObjectSet.class.isAssignableFrom(field.getType()))){</b>
+<b class="nc">&nbsp;                    Object readField = parser.readValue(field.getType(), metadata.elementType, child.get(&quot;add&quot;), metadata.keyType);</b>
+<b class="nc">&nbsp;                    Object fieldObj = field.get(object);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(fieldObj instanceof ObjectSet set){</b>
+<b class="nc">&nbsp;                        set.addAll((ObjectSet)readField);</b>
+<b class="nc">&nbsp;                    }else if(fieldObj instanceof Seq seq){</b>
+<b class="nc">&nbsp;                        seq.addAll((Seq)readField);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        throw new SerializationException(&quot;This should be impossible&quot;);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }else{</b>
+<b class="fc">&nbsp;                    boolean isMap = ObjectMap.class.isAssignableFrom(field.getType()) || ObjectIntMap.class.isAssignableFrom(field.getType()) || ObjectFloatMap.class.isAssignableFrom(field.getType());</b>
+<b class="fc">&nbsp;                    boolean mergeMap = isMap &amp;&amp; child.has(&quot;add&quot;) &amp;&amp; child.get(&quot;add&quot;).isBoolean() &amp;&amp; child.getBoolean(&quot;add&quot;, false);</b>
+&nbsp;
+<b class="fc">&nbsp;                    if(mergeMap){</b>
+<b class="nc">&nbsp;                        child.remove(&quot;add&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    Object readField = parser.readValue(field.getType(), metadata.elementType, child, metadata.keyType);</b>
+<b class="fc">&nbsp;                    Object fieldObj = field.get(object);</b>
+&nbsp;
+&nbsp;                    //if a map has add: true, add its contents to the map instead
+<b class="fc">&nbsp;                    if(mergeMap &amp;&amp; (fieldObj instanceof ObjectMap&lt;?,?&gt; || fieldObj instanceof ObjectIntMap&lt;?&gt; || fieldObj instanceof ObjectFloatMap&lt;?&gt;)){</b>
+<b class="nc">&nbsp;                        if(field.get(object) instanceof ObjectMap&lt;?,?&gt; baseMap){</b>
+<b class="nc">&nbsp;                            baseMap.putAll((ObjectMap)readField);</b>
+<b class="nc">&nbsp;                        }else if(field.get(object) instanceof ObjectIntMap&lt;?&gt; baseMap){</b>
+<b class="nc">&nbsp;                            baseMap.putAll((ObjectIntMap)readField);</b>
+<b class="nc">&nbsp;                        }else if(field.get(object) instanceof ObjectFloatMap&lt;?&gt; baseMap){</b>
+<b class="nc">&nbsp;                            baseMap.putAll((ObjectFloatMap)readField);</b>
+&nbsp;                        }
+&nbsp;                    }else{
+<b class="fc">&nbsp;                        field.set(object, readField);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }catch(IllegalAccessException ex){</b>
+<b class="nc">&nbsp;                throw new SerializationException(&quot;Error accessing field: &quot; + field.getName() + &quot; (&quot; + type.getName() + &quot;)&quot;, ex);</b>
+<b class="nc">&nbsp;            }catch(SerializationException ex){</b>
+<b class="nc">&nbsp;                ex.addTrace(field.getName() + &quot; (&quot; + type.getName() + &quot;)&quot;);</b>
+<b class="nc">&nbsp;                throw ex;</b>
+<b class="nc">&nbsp;            }catch(RuntimeException runtimeEx){</b>
+<b class="nc">&nbsp;                SerializationException ex = new SerializationException(runtimeEx);</b>
+<b class="nc">&nbsp;                ex.addTrace(child.trace());</b>
+<b class="nc">&nbsp;                ex.addTrace(field.getName() + &quot; (&quot; + type.getName() + &quot;)&quot;);</b>
+<b class="nc">&nbsp;                throw ex;</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(object instanceof UnlockableContent unlock &amp;&amp; research != null){</b>
+&nbsp;
+&nbsp;            //add research tech node
+&nbsp;            String researchName;
+&nbsp;            ItemStack[] customRequirements;
+&nbsp;
+&nbsp;            //research can be a single string or an object with parent and requirements
+<b class="fc">&nbsp;            if(research.isString()){</b>
+<b class="fc">&nbsp;                researchName = research.asString();</b>
+<b class="fc">&nbsp;                customRequirements = null;</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                researchName = research.getString(&quot;parent&quot;, null);</b>
+<b class="fc">&nbsp;                customRequirements = research.has(&quot;requirements&quot;) ? parser.readValue(ItemStack[].class, research.get(&quot;requirements&quot;)) : null;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //remove old node
+<b class="fc">&nbsp;            TechNode lastNode = TechTree.all.find(t -&gt; t.content == unlock);</b>
+<b class="fc">&nbsp;            if(lastNode != null){</b>
+<b class="nc">&nbsp;                lastNode.remove();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            TechNode node = new TechNode(null, unlock, customRequirements == null ? ItemStack.empty : customRequirements);</b>
+<b class="fc">&nbsp;            LoadedMod cur = currentMod;</b>
+&nbsp;
+<b class="fc">&nbsp;            postreads.add(() -&gt; {</b>
+<b class="fc">&nbsp;                currentContent = unlock;</b>
+<b class="fc">&nbsp;                currentMod = cur;</b>
+&nbsp;
+&nbsp;                //add custom objectives
+<b class="fc">&nbsp;                if(research.has(&quot;objectives&quot;)){</b>
+<b class="fc">&nbsp;                    node.objectives.addAll(parser.readValue(Objective[].class, research.get(&quot;objectives&quot;)));</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //all items have a produce requirement unless already specified
+<b class="fc">&nbsp;                if((unlock instanceof Item || unlock instanceof Liquid) &amp;&amp; !node.objectives.contains(o -&gt; o instanceof Produce p &amp;&amp; p.content == unlock)){</b>
+<b class="fc">&nbsp;                    node.objectives.add(new Produce(unlock));</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //remove old node from parent
+<b class="fc">&nbsp;                if(node.parent != null){</b>
+<b class="nc">&nbsp;                    node.parent.children.remove(node);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(customRequirements == null){</b>
+<b class="fc">&nbsp;                    node.setupRequirements(unlock.researchRequirements());</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(research.has(&quot;planet&quot;)){</b>
+<b class="fc">&nbsp;                    node.planet = find(ContentType.planet, research.getString(&quot;planet&quot;));</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(research.getBoolean(&quot;root&quot;, false)){</b>
+<b class="fc">&nbsp;                    node.name = research.getString(&quot;name&quot;, unlock.name);</b>
+<b class="fc">&nbsp;                    node.requiresUnlock = research.getBoolean(&quot;requiresUnlock&quot;, false);</b>
+<b class="fc">&nbsp;                    TechTree.roots.add(node);</b>
+&nbsp;                }else{
+<b class="fc">&nbsp;                    if(researchName != null){</b>
+&nbsp;                        //find parent node.
+<b class="fc">&nbsp;                        TechNode parent = TechTree.all.find(t -&gt; t.content.name.equals(researchName) || t.content.name.equals(currentMod.name + &quot;-&quot; + researchName) || t.content.name.equals(SaveVersion.mapFallback(researchName)));</b>
+&nbsp;
+<b class="fc">&nbsp;                        if(parent == null){</b>
+<b class="fc">&nbsp;                            Log.warn(&quot;Content &#39;&quot; + researchName + &quot;&#39; isn&#39;t in the tech tree, but &#39;&quot; + unlock.name + &quot;&#39; requires it to be researched.&quot;);</b>
+&nbsp;                        }else{
+&nbsp;                            //add this node to the parent
+<b class="fc">&nbsp;                            if(!parent.children.contains(node)){</b>
+<b class="fc">&nbsp;                                parent.children.add(node);</b>
+&nbsp;                            }
+&nbsp;                            //reparent the node
+<b class="fc">&nbsp;                            node.parent = parent;</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                    }else{</b>
+<b class="fc">&nbsp;                        Log.warn(unlock.name + &quot; is not a root node, and does not have a `parent: ` property. Ignoring.&quot;);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Tries to resolve a class from the class type map. */
+&nbsp;    &lt;T&gt; Class&lt;T&gt; resolve(String base){
+<b class="fc">&nbsp;        return resolve(base, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Tries to resolve a class from the class type map. */
+&nbsp;    &lt;T&gt; Class&lt;T&gt; resolve(String base, Class&lt;T&gt; def){
+&nbsp;        //no base class specified
+<b class="fc">&nbsp;        if((base == null || base.isEmpty()) &amp;&amp; def != null) return def;</b>
+&nbsp;
+&nbsp;        //return mapped class if found in the global map
+<b class="fc">&nbsp;        var out = ClassMap.classes.get(!base.isEmpty() &amp;&amp; Character.isLowerCase(base.charAt(0)) ? Strings.capitalize(base) : base);</b>
+<b class="fc">&nbsp;        if(out != null) return (Class&lt;T&gt;)out;</b>
+&nbsp;
+&nbsp;        //try to resolve it as a raw class name
+<b class="nc">&nbsp;        if(base.indexOf(&#39;.&#39;) != -1){</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                return (Class&lt;T&gt;)Class.forName(base);</b>
+<b class="nc">&nbsp;            }catch(Exception ignored){</b>
+&nbsp;                //try to use mod class loader
+&nbsp;                try{
+<b class="nc">&nbsp;                    return (Class&lt;T&gt;)Class.forName(base, true, mods.mainLoader());</b>
+<b class="nc">&nbsp;                }catch(Exception ignore){}</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(def != null){</b>
+<b class="nc">&nbsp;            Log.warn(&quot;[@] No type &#39;&quot; + base + &quot;&#39; found, defaulting to type &#39;&quot; + def.getSimpleName() + &quot;&#39;&quot;, currentContent == null ? currentMod.name : &quot;&quot;);</b>
+<b class="nc">&nbsp;            return def;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        throw new IllegalArgumentException(&quot;Type not found: &quot; + base);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private interface FieldParser{
+&nbsp;        Object parse(Class&lt;?&gt; type, JsonValue value) throws Exception;
+&nbsp;    }
+&nbsp;
+&nbsp;    private interface TypeParser&lt;T extends Content&gt;{
+&nbsp;        T parse(String mod, String name, JsonValue value) throws Exception;
+&nbsp;    }
+&nbsp;
+&nbsp;    //intermediate class for parsing
+<b class="nc">&nbsp;    static class UnitReq{</b>
+&nbsp;        public Block block;
+<b class="nc">&nbsp;        public ItemStack[] requirements = {};</b>
+&nbsp;        @Nullable
+&nbsp;        public UnitType previous;
+<b class="nc">&nbsp;        public float time = 60f * 10f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface ParseListener{
+&nbsp;        void parsed(Class&lt;?&gt; type, JsonValue jsonData, Object result);
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

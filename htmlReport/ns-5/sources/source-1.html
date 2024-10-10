@@ -1,0 +1,502 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > EntityIO</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.entity</a>
+</div>
+
+<h1>Coverage Summary for Class: EntityIO (mindustry.annotations.entity)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EntityIO</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/159)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">EntityIO$Revision</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">EntityIO$RevisionField</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/174)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.entity;
+&nbsp;
+&nbsp;import arc.files.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import com.squareup.javapoet.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.annotations.*;
+&nbsp;import mindustry.annotations.util.*;
+&nbsp;import mindustry.annotations.util.TypeIOResolver.*;
+&nbsp;
+&nbsp;import javax.lang.model.element.*;
+&nbsp;
+&nbsp;import static mindustry.annotations.BaseProcessor.instanceOf;
+&nbsp;
+&nbsp;public class EntityIO{
+<b class="nc">&nbsp;    final static Json json = new Json();</b>
+&nbsp;    //suffixes for sync fields
+&nbsp;    final static String targetSuf = &quot;_TARGET_&quot;, lastSuf = &quot;_LAST_&quot;;
+&nbsp;    //replacements after refactoring
+<b class="nc">&nbsp;    final static StringMap replacements = StringMap.of(&quot;mindustry.entities.units.BuildRequest&quot;, &quot;mindustry.entities.units.BuildPlan&quot;);</b>
+&nbsp;
+&nbsp;    final ClassSerializer serializer;
+&nbsp;    final String name;
+&nbsp;    final TypeSpec.Builder type;
+&nbsp;    final Fi directory;
+<b class="nc">&nbsp;    final Seq&lt;Revision&gt; revisions = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    boolean write;
+&nbsp;    MethodSpec.Builder method;
+<b class="nc">&nbsp;    ObjectSet&lt;String&gt; presentFields = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;    EntityIO(String name, TypeSpec.Builder type, Seq&lt;FieldSpec&gt; typeFields, ClassSerializer serializer, Fi directory){</b>
+<b class="nc">&nbsp;        this.directory = directory;</b>
+<b class="nc">&nbsp;        this.type = type;</b>
+<b class="nc">&nbsp;        this.serializer = serializer;</b>
+<b class="nc">&nbsp;        this.name = name;</b>
+&nbsp;
+<b class="nc">&nbsp;        json.setIgnoreUnknownFields(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        directory.mkdirs();</b>
+&nbsp;
+&nbsp;        //load old revisions
+<b class="nc">&nbsp;        for(Fi fi : directory.list()){</b>
+<b class="nc">&nbsp;            revisions.add(json.fromJson(Revision.class, fi));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        revisions.sort(r -&gt; r.version);</b>
+&nbsp;
+&nbsp;        //next revision to be used
+<b class="nc">&nbsp;        int nextRevision = revisions.isEmpty() ? 0 : revisions.max(r -&gt; r.version).version + 1;</b>
+&nbsp;
+&nbsp;        //resolve preferred field order based on fields that fit
+<b class="nc">&nbsp;        Seq&lt;FieldSpec&gt; fields = typeFields.select(spec -&gt;</b>
+<b class="nc">&nbsp;            !spec.hasModifier(Modifier.TRANSIENT) &amp;&amp;</b>
+<b class="nc">&nbsp;            !spec.hasModifier(Modifier.STATIC) &amp;&amp;</b>
+<b class="nc">&nbsp;            !spec.hasModifier(Modifier.FINAL)/* &amp;&amp;</b>
+&nbsp;            (spec.type.isPrimitive() || serializer.has(spec.type.toString()))*/);
+&nbsp;
+&nbsp;        //sort to keep order
+<b class="nc">&nbsp;        fields.sortComparing(f -&gt; f.name);</b>
+&nbsp;
+&nbsp;        //keep track of fields present in the entity
+<b class="nc">&nbsp;        presentFields.addAll(fields.map(f -&gt; f.name));</b>
+&nbsp;
+<b class="nc">&nbsp;        Revision previous = revisions.isEmpty() ? null : revisions.peek();</b>
+&nbsp;
+&nbsp;        //add new revision if it doesn&#39;t match or there are no revisions
+<b class="nc">&nbsp;        if(revisions.isEmpty() || !revisions.peek().equal(fields)){</b>
+<b class="nc">&nbsp;            revisions.add(new Revision(nextRevision,</b>
+<b class="nc">&nbsp;                fields.map(f -&gt; new RevisionField(f.name, f.type.toString()))));</b>
+<b class="nc">&nbsp;            Log.warn(&quot;Adding new revision @ for @.\nPre = @\nNew = @\n&quot;, nextRevision, name, previous == null ? null : previous.fields.toString(&quot;, &quot;, f -&gt; f.name + &quot;:&quot; + f.type), fields.toString(&quot;, &quot;, f -&gt; f.name + &quot;:&quot; + f.type.toString()));</b>
+&nbsp;            //write revision
+<b class="nc">&nbsp;            directory.child(nextRevision + &quot;.json&quot;).writeString(json.toJson(revisions.peek()));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void write(MethodSpec.Builder method, boolean write) throws Exception{
+<b class="nc">&nbsp;        this.method = method;</b>
+<b class="nc">&nbsp;        this.write = write;</b>
+&nbsp;
+&nbsp;        //subclasses *have* to call this method
+<b class="nc">&nbsp;        method.addAnnotation(CallSuper.class);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(write){</b>
+&nbsp;            //write short revision
+<b class="nc">&nbsp;            st(&quot;write.s($L)&quot;, revisions.peek().version);</b>
+&nbsp;            //write uses most recent revision
+<b class="nc">&nbsp;            for(RevisionField field : revisions.peek().fields){</b>
+<b class="nc">&nbsp;                io(field.type, &quot;this.&quot; + field.name, false);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }else{
+&nbsp;            //read revision
+<b class="nc">&nbsp;            st(&quot;short REV = read.s()&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; revisions.size; i++){</b>
+&nbsp;                //check for the right revision
+<b class="nc">&nbsp;                Revision rev = revisions.get(i);</b>
+<b class="nc">&nbsp;                if(i == 0){</b>
+<b class="nc">&nbsp;                    cont(&quot;if(REV == $L)&quot;, rev.version);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    ncont(&quot;else if(REV == $L)&quot;, rev.version);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //add code for reading revision
+<b class="nc">&nbsp;                for(RevisionField field : rev.fields){</b>
+&nbsp;                    //if the field doesn&#39;t exist, the result will be an empty string, it won&#39;t get assigned
+<b class="nc">&nbsp;                    io(field.type, presentFields.contains(field.name) ? &quot;this.&quot; + field.name + &quot; = &quot; : &quot;&quot;, false);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //throw exception on illegal revisions
+<b class="nc">&nbsp;            ncont(&quot;else&quot;);</b>
+<b class="nc">&nbsp;            st(&quot;throw new IllegalArgumentException(\&quot;Unknown revision &#39;\&quot; + REV + \&quot;&#39; for entity type &#39;&quot; + name + &quot;&#39;\&quot;)&quot;);</b>
+<b class="nc">&nbsp;            econt();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void writeSync(MethodSpec.Builder method, boolean write, Seq&lt;Svar&gt; allFields) throws Exception{
+<b class="nc">&nbsp;        this.method = method;</b>
+<b class="nc">&nbsp;        this.write = write;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(write){</b>
+&nbsp;            //write uses most recent revision
+<b class="nc">&nbsp;            for(RevisionField field : revisions.peek().fields){</b>
+<b class="nc">&nbsp;                Svar var = allFields.find(s -&gt; s.name().equals(field.name));</b>
+<b class="nc">&nbsp;                if(var == null || var.has(NoSync.class)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                io(field.type, &quot;this.&quot; + field.name, true);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Revision rev = revisions.peek();</b>
+&nbsp;
+&nbsp;            //base read code
+<b class="nc">&nbsp;            st(&quot;if(lastUpdated != 0) updateSpacing = $T.timeSinceMillis(lastUpdated)&quot;, Time.class);</b>
+<b class="nc">&nbsp;            st(&quot;lastUpdated = $T.millis()&quot;, Time.class);</b>
+<b class="nc">&nbsp;            st(&quot;boolean islocal = isLocal()&quot;);</b>
+&nbsp;
+&nbsp;            //add code for reading revision
+<b class="nc">&nbsp;            for(RevisionField field : rev.fields){</b>
+<b class="nc">&nbsp;                Svar var = allFields.find(s -&gt; s.name().equals(field.name));</b>
+<b class="nc">&nbsp;                if(var == null || var.has(NoSync.class)) continue;</b>
+<b class="nc">&nbsp;                boolean sf = var.has(SyncField.class), sl = var.has(SyncLocal.class);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(sl) cont(&quot;if(!islocal)&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(sf){</b>
+&nbsp;                    //TODO adding + targetSuf to the assignment fixes units being interpolated incorrectly during physics, but makes interpolation snap instead.
+<b class="nc">&nbsp;                    st(field.name + lastSuf + &quot; = this.&quot; + field.name);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                io(field.type, &quot;this.&quot; + (sf ? field.name + targetSuf : field.name) + &quot; = &quot;, true);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(sl){</b>
+<b class="nc">&nbsp;                    ncont(&quot;else&quot; );</b>
+&nbsp;
+<b class="nc">&nbsp;                    io(field.type, &quot;&quot;, true);</b>
+&nbsp;
+&nbsp;                    //just assign the two values so jumping does not occur on de-possession
+<b class="nc">&nbsp;                    if(sf){</b>
+<b class="nc">&nbsp;                        st(field.name + lastSuf + &quot; = this.&quot; + field.name);</b>
+<b class="nc">&nbsp;                        st(field.name + targetSuf + &quot; = this.&quot; + field.name);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    econt();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            st(&quot;afterSync()&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void writeSyncManual(MethodSpec.Builder method, boolean write, Seq&lt;Svar&gt; syncFields) throws Exception{
+<b class="nc">&nbsp;        this.method = method;</b>
+<b class="nc">&nbsp;        this.write = write;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(write){</b>
+<b class="nc">&nbsp;            for(Svar field : syncFields){</b>
+<b class="nc">&nbsp;                st(&quot;buffer.put(this.$L)&quot;, field.name());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }else{
+&nbsp;            //base read code
+<b class="nc">&nbsp;            st(&quot;if(lastUpdated != 0) updateSpacing = $T.timeSinceMillis(lastUpdated)&quot;, Time.class);</b>
+<b class="nc">&nbsp;            st(&quot;lastUpdated = $T.millis()&quot;, Time.class);</b>
+&nbsp;
+&nbsp;            //just read the field
+<b class="nc">&nbsp;            for(Svar field : syncFields){</b>
+&nbsp;                //last
+<b class="nc">&nbsp;                st(&quot;this.$L = this.$L&quot;, field.name() + lastSuf, field.name());</b>
+&nbsp;                //assign target
+<b class="nc">&nbsp;                st(&quot;this.$L = buffer.get()&quot;, field.name() + targetSuf);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void writeInterpolate(MethodSpec.Builder method, Seq&lt;Svar&gt; fields) throws Exception{
+<b class="nc">&nbsp;        this.method = method;</b>
+&nbsp;
+<b class="nc">&nbsp;        cont(&quot;if(lastUpdated != 0 &amp;&amp; updateSpacing != 0)&quot;);</b>
+&nbsp;
+&nbsp;        //base calculations
+<b class="nc">&nbsp;        st(&quot;float timeSinceUpdate = Time.timeSinceMillis(lastUpdated)&quot;);</b>
+<b class="nc">&nbsp;        st(&quot;float alpha = Math.min(timeSinceUpdate / updateSpacing, 2f)&quot;);</b>
+&nbsp;
+&nbsp;        //write interpolated data, using slerp / lerp
+<b class="nc">&nbsp;        for(Svar field : fields){</b>
+<b class="nc">&nbsp;            String name = field.name(), targetName = name + targetSuf, lastName = name + lastSuf;</b>
+<b class="nc">&nbsp;            st(&quot;$L = $L($T.$L($L, $L, alpha))&quot;, name, field.annotation(SyncField.class).clamped() ? &quot;arc.math.Mathf.clamp&quot; : &quot;&quot;, Mathf.class, field.annotation(SyncField.class).value() ? &quot;lerp&quot; : &quot;slerp&quot;, lastName, targetName);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        ncont(&quot;else if(lastUpdated != 0)&quot;); //check if no meaningful data has arrived yet</b>
+&nbsp;
+&nbsp;        //write values directly to targets
+<b class="nc">&nbsp;        for(Svar field : fields){</b>
+<b class="nc">&nbsp;            String name = field.name(), targetName = name + targetSuf;</b>
+<b class="nc">&nbsp;            st(&quot;$L = $L&quot;, name, targetName);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        econt();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void io(String type, String field, boolean network) throws Exception{
+<b class="nc">&nbsp;        type = type.replace(&quot;mindustry.gen.&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;        type = replacements.get(type, type);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(BaseProcessor.isPrimitive(type)){</b>
+<b class="nc">&nbsp;            s(type.equals(&quot;boolean&quot;) ? &quot;bool&quot; : type.charAt(0) + &quot;&quot;, field);</b>
+<b class="nc">&nbsp;        }else if(instanceOf(type, &quot;mindustry.ctype.Content&quot;) &amp;&amp; !type.equals(&quot;mindustry.ai.UnitStance&quot;) &amp;&amp; !type.equals(&quot;mindustry.ai.UnitCommand&quot;)){</b>
+<b class="nc">&nbsp;            if(write){</b>
+<b class="nc">&nbsp;                s(&quot;s&quot;, field + &quot;.id&quot;);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                st(field + &quot;mindustry.Vars.content.getByID(mindustry.ctype.ContentType.$L, read.s())&quot;, BaseProcessor.simpleName(type).toLowerCase().replace(&quot;type&quot;, &quot;&quot;));</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if((serializer.writers.containsKey(type) || (network &amp;&amp; serializer.netWriters.containsKey(type))) &amp;&amp; write){</b>
+<b class="nc">&nbsp;            st(&quot;$L(write, $L)&quot;, network ? serializer.getNetWriter(type, null) : serializer.writers.get(type), field);</b>
+<b class="nc">&nbsp;        }else if(serializer.mutatorReaders.containsKey(type) &amp;&amp; !write &amp;&amp; !field.replace(&quot; = &quot;, &quot;&quot;).contains(&quot; &quot;) &amp;&amp; !field.isEmpty()){</b>
+<b class="nc">&nbsp;            st(&quot;$L$L(read, $L)&quot;, field, serializer.mutatorReaders.get(type), field.replace(&quot; = &quot;, &quot;&quot;));</b>
+<b class="nc">&nbsp;        }else if(serializer.readers.containsKey(type) &amp;&amp; !write){</b>
+<b class="nc">&nbsp;            st(&quot;$L$L(read)&quot;, field, serializer.readers.get(type));</b>
+<b class="nc">&nbsp;        }else if(type.endsWith(&quot;[]&quot;)){ //it&#39;s a 1D array</b>
+<b class="nc">&nbsp;            String rawType = type.substring(0, type.length() - 2);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(write){</b>
+<b class="nc">&nbsp;                s(&quot;i&quot;, field + &quot;.length&quot;);</b>
+<b class="nc">&nbsp;                cont(&quot;for(int INDEX = 0; INDEX &lt; $L.length; INDEX ++)&quot;, field);</b>
+<b class="nc">&nbsp;                io(rawType, field + &quot;[INDEX]&quot;, network);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                String fieldName = field.replace(&quot; = &quot;, &quot;&quot;).replace(&quot;this.&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;                String lenf = fieldName + &quot;_LENGTH&quot;;</b>
+<b class="nc">&nbsp;                s(&quot;i&quot;, &quot;int &quot; + lenf + &quot; = &quot;);</b>
+<b class="nc">&nbsp;                if(!field.isEmpty()){</b>
+<b class="nc">&nbsp;                    st(&quot;$Lnew $L[$L]&quot;, field, type.replace(&quot;[]&quot;, &quot;&quot;), lenf);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                cont(&quot;for(int INDEX = 0; INDEX &lt; $L; INDEX ++)&quot;, lenf);</b>
+<b class="nc">&nbsp;                io(rawType, field.replace(&quot; = &quot;, &quot;[INDEX] = &quot;), network);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            econt();</b>
+<b class="nc">&nbsp;        }else if(type.startsWith(&quot;arc.struct&quot;) &amp;&amp; type.contains(&quot;&lt;&quot;)){ //it&#39;s some type of data structure</b>
+<b class="nc">&nbsp;            String struct = type.substring(0, type.indexOf(&quot;&lt;&quot;));</b>
+<b class="nc">&nbsp;            String generic = type.substring(type.indexOf(&quot;&lt;&quot;) + 1, type.indexOf(&quot;&gt;&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(struct.equals(&quot;arc.struct.Queue&quot;) || struct.equals(&quot;arc.struct.Seq&quot;)){</b>
+<b class="nc">&nbsp;                if(write){</b>
+<b class="nc">&nbsp;                    s(&quot;i&quot;, field + &quot;.size&quot;);</b>
+<b class="nc">&nbsp;                    cont(&quot;for(int INDEX = 0; INDEX &lt; $L.size; INDEX ++)&quot;, field);</b>
+<b class="nc">&nbsp;                    io(generic, field + &quot;.get(INDEX)&quot;, network);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    String fieldName = field.replace(&quot; = &quot;, &quot;&quot;).replace(&quot;this.&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;                    String lenf = fieldName + &quot;_LENGTH&quot;;</b>
+<b class="nc">&nbsp;                    s(&quot;i&quot;, &quot;int &quot; + lenf + &quot; = &quot;);</b>
+<b class="nc">&nbsp;                    if(!field.isEmpty()){</b>
+<b class="nc">&nbsp;                        st(&quot;$L.clear()&quot;, field.replace(&quot; = &quot;, &quot;&quot;));</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    cont(&quot;for(int INDEX = 0; INDEX &lt; $L; INDEX ++)&quot;, lenf);</b>
+<b class="nc">&nbsp;                    io(generic, field.replace(&quot; = &quot;, &quot;_ITEM = &quot;).replace(&quot;this.&quot;, generic + &quot; &quot;), network);</b>
+<b class="nc">&nbsp;                    if(!field.isEmpty()){</b>
+<b class="nc">&nbsp;                        String temp = field.replace(&quot; = &quot;, &quot;_ITEM&quot;).replace(&quot;this.&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;                        st(&quot;if($L != null) $L.add($L)&quot;, temp, field.replace(&quot; = &quot;, &quot;&quot;), temp);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                econt();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Log.warn(&quot;Missing serialization code for collection &#39;@&#39; in &#39;@&#39;&quot;, type, name);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            Log.warn(&quot;Missing serialization code for type &#39;@&#39; in &#39;@&#39;&quot;, type, name);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void cont(String text, Object... fmt){
+<b class="nc">&nbsp;        method.beginControlFlow(text, fmt);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void econt(){
+<b class="nc">&nbsp;        method.endControlFlow();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void ncont(String text, Object... fmt){
+<b class="nc">&nbsp;        method.nextControlFlow(text, fmt);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void st(String text, Object... args){
+<b class="nc">&nbsp;        method.addStatement(text, args);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void s(String type, String field){
+<b class="nc">&nbsp;        if(write){</b>
+<b class="nc">&nbsp;            method.addStatement(&quot;write.$L($L)&quot;, type, field);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            method.addStatement(&quot;$Lread.$L()&quot;, field, type);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class Revision{
+&nbsp;        int version;
+&nbsp;        Seq&lt;RevisionField&gt; fields;
+&nbsp;
+<b class="nc">&nbsp;        Revision(int version, Seq&lt;RevisionField&gt; fields){</b>
+<b class="nc">&nbsp;            this.version = version;</b>
+<b class="nc">&nbsp;            this.fields = fields;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Revision(){}</b>
+&nbsp;
+&nbsp;        /** @return whether these two revisions are compatible */
+&nbsp;        boolean equal(Seq&lt;FieldSpec&gt; specs){
+<b class="nc">&nbsp;            if(fields.size != specs.size) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; fields.size; i++){</b>
+<b class="nc">&nbsp;                RevisionField field = fields.get(i);</b>
+<b class="nc">&nbsp;                FieldSpec spec = specs.get(i);</b>
+<b class="nc">&nbsp;                if(!field.type.replace(&quot;mindustry.gen.&quot;, &quot;&quot;).equals(spec.type.toString().replace(&quot;mindustry.gen.&quot;, &quot;&quot;))){</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class RevisionField{
+&nbsp;        String name, type;
+&nbsp;
+<b class="nc">&nbsp;        RevisionField(String name, String type){</b>
+<b class="nc">&nbsp;            this.name = name;</b>
+<b class="nc">&nbsp;            this.type = type;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        RevisionField(){}</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

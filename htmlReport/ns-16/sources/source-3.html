@@ -1,0 +1,199 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ParticleEffect</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.effect</a>
+</div>
+
+<h1>Coverage Summary for Class: ParticleEffect (mindustry.entities.effect)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ParticleEffect</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37%
+  </span>
+  <span class="absValue">
+    (17/46)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.effect;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;
+&nbsp;/** The most essential effect class. Can create particles in various shapes. */
+<b class="fc">&nbsp;public class ParticleEffect extends Effect{</b>
+<b class="fc">&nbsp;    private static final Rand rand = new Rand();</b>
+<b class="fc">&nbsp;    private static final Vec2 rv = new Vec2();</b>
+&nbsp;
+<b class="fc">&nbsp;    public Color colorFrom = Color.white.cpy(), colorTo = Color.white.cpy();</b>
+<b class="fc">&nbsp;    public int particles = 6;</b>
+<b class="fc">&nbsp;    public boolean randLength = true;</b>
+&nbsp;    /** Gives the effect flipping compatability like casing effects. */
+&nbsp;    public boolean casingFlip;
+<b class="fc">&nbsp;    public float cone = 180f, length = 20f, baseLength = 0f;</b>
+&nbsp;    /** Particle size/length/radius interpolation. */
+<b class="fc">&nbsp;    public Interp interp = Interp.linear;</b>
+&nbsp;    /** Particle size interpolation. Null to use interp. */
+<b class="fc">&nbsp;    public @Nullable Interp sizeInterp = null;</b>
+&nbsp;    public float offsetX, offsetY;
+<b class="fc">&nbsp;    public float lightScl = 2f, lightOpacity = 0.6f;</b>
+&nbsp;    public @Nullable Color lightColor;
+&nbsp;
+&nbsp;    //region only
+&nbsp;
+&nbsp;    /** Spin in degrees per tick. */
+<b class="fc">&nbsp;    public float spin = 0f;</b>
+&nbsp;    /** Controls the initial and final sprite sizes. */
+<b class="fc">&nbsp;    public float sizeFrom = 2f, sizeTo = 0f;</b>
+&nbsp;    /** Whether the rotation adds with the parent */
+<b class="fc">&nbsp;    public boolean useRotation = true;</b>
+&nbsp;    /** Rotation offset. */
+<b class="fc">&nbsp;    public float offset = 0;</b>
+&nbsp;    /** Sprite to draw. */
+<b class="fc">&nbsp;    public String region = &quot;circle&quot;;</b>
+&nbsp;
+&nbsp;    //line only
+&nbsp;    public boolean line;
+<b class="fc">&nbsp;    public float strokeFrom = 2f, strokeTo = 0f, lenFrom = 4f, lenTo = 2f;</b>
+<b class="fc">&nbsp;    public boolean cap = true;</b>
+&nbsp;
+&nbsp;    private @Nullable TextureRegion tex;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="nc">&nbsp;        clip = Math.max(clip, length + Math.max(sizeFrom, sizeTo));</b>
+<b class="nc">&nbsp;        if(sizeInterp == null) sizeInterp = interp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void render(EffectContainer e){
+<b class="nc">&nbsp;        if(tex == null) tex = Core.atlas.find(region);</b>
+&nbsp;
+<b class="nc">&nbsp;        float realRotation = (useRotation ? (casingFlip ? Math.abs(e.rotation) : e.rotation) : baseRotation);</b>
+<b class="nc">&nbsp;        int flip = casingFlip ? -Mathf.sign(e.rotation) : 1;</b>
+<b class="nc">&nbsp;        float rawfin = e.fin();</b>
+<b class="nc">&nbsp;        float fin = e.fin(interp);</b>
+<b class="nc">&nbsp;        float rad = sizeInterp.apply(sizeFrom, sizeTo, rawfin) * 2;</b>
+<b class="nc">&nbsp;        float ox = e.x + Angles.trnsx(realRotation, offsetX * flip, offsetY), oy = e.y + Angles.trnsy(realRotation, offsetX * flip, offsetY);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(colorFrom, colorTo, fin);</b>
+<b class="nc">&nbsp;        Color lightColor = this.lightColor == null ? Draw.getColor() : this.lightColor;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(line){</b>
+<b class="nc">&nbsp;            Lines.stroke(sizeInterp.apply(strokeFrom, strokeTo, rawfin));</b>
+<b class="nc">&nbsp;            float len = sizeInterp.apply(lenFrom, lenTo, rawfin);</b>
+&nbsp;
+<b class="nc">&nbsp;            rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; particles; i++){</b>
+<b class="nc">&nbsp;                float l = length * fin + baseLength;</b>
+<b class="nc">&nbsp;                rv.trns(realRotation + rand.range(cone), !randLength ? l : rand.random(l));</b>
+<b class="nc">&nbsp;                float x = rv.x, y = rv.y;</b>
+&nbsp;
+<b class="nc">&nbsp;                Lines.lineAngle(ox + x, oy + y, Mathf.angle(x, y), len, cap);</b>
+<b class="nc">&nbsp;                Drawf.light(ox + x, oy + y, len * lightScl, lightColor, lightOpacity * Draw.getColorAlpha());</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            rand.setSeed(e.id);</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; particles; i++){</b>
+<b class="nc">&nbsp;                float l = length * fin + baseLength;</b>
+<b class="nc">&nbsp;                rv.trns(realRotation + rand.range(cone), !randLength ? l : rand.random(l));</b>
+<b class="nc">&nbsp;                float x = rv.x, y = rv.y;</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.rect(tex, ox + x, oy + y, rad, rad / tex.ratio(), realRotation + offset + e.time * spin);</b>
+<b class="nc">&nbsp;                Drawf.light(ox + x, oy + y, rad * lightScl, lightColor, lightOpacity * Draw.getColorAlpha());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

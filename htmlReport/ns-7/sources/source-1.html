@@ -1,0 +1,222 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LoadRegionProcessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.misc</a>
+</div>
+
+<h1>Coverage Summary for Class: LoadRegionProcessor (mindustry.annotations.misc)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoadRegionProcessor</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/61)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.misc;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.struct.*;
+&nbsp;import com.squareup.javapoet.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.annotations.*;
+&nbsp;import mindustry.annotations.util.*;
+&nbsp;
+&nbsp;import javax.annotation.processing.*;
+&nbsp;import javax.lang.model.element.*;
+&nbsp;
+&nbsp;@SupportedAnnotationTypes(&quot;mindustry.annotations.Annotations.Load&quot;)
+<b class="nc">&nbsp;public class LoadRegionProcessor extends BaseProcessor{</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void process(RoundEnvironment env) throws Exception{
+<b class="nc">&nbsp;        TypeSpec.Builder regionClass = TypeSpec.classBuilder(&quot;ContentRegions&quot;)</b>
+<b class="nc">&nbsp;            .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember(&quot;value&quot;, &quot;\&quot;deprecation\&quot;&quot;).build())</b>
+<b class="nc">&nbsp;            .addModifiers(Modifier.PUBLIC);</b>
+<b class="nc">&nbsp;        MethodSpec.Builder method = MethodSpec.methodBuilder(&quot;loadRegions&quot;)</b>
+<b class="nc">&nbsp;            .addParameter(tname(&quot;mindustry.ctype.MappableContent&quot;), &quot;content&quot;)</b>
+<b class="nc">&nbsp;            .addModifiers(Modifier.STATIC, Modifier.PUBLIC);</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectMap&lt;Stype, Seq&lt;Svar&gt;&gt; fieldMap = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Svar field : fields(Load.class)){</b>
+<b class="nc">&nbsp;            if(!field.is(Modifier.PUBLIC)){</b>
+<b class="nc">&nbsp;                err(&quot;@LoadRegion field must be public&quot;, field);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            fieldMap.get(field.enclosingType(), Seq::new).add(field);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Stype&gt; entries = Seq.with(fieldMap.keys());</b>
+<b class="nc">&nbsp;        entries.sortComparing(e -&gt; e.name());</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Stype type : entries){</b>
+<b class="nc">&nbsp;            Seq&lt;Svar&gt; fields = fieldMap.get(type);</b>
+<b class="nc">&nbsp;            fields.sortComparing(s -&gt; s.name());</b>
+<b class="nc">&nbsp;            method.beginControlFlow(&quot;if(content instanceof $L)&quot;, type.fullName());</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Svar field : fields){</b>
+<b class="nc">&nbsp;                Load an = field.annotation(Load.class);</b>
+&nbsp;                //get # of array dimensions
+<b class="nc">&nbsp;                int dims = count(field.mirror().toString(), &quot;[]&quot;);</b>
+<b class="nc">&nbsp;                boolean doFallback = !an.fallback().equals(&quot;error&quot;);</b>
+<b class="nc">&nbsp;                String fallbackString = doFallback ? &quot;, &quot; + parse(an.fallback()) : &quot;&quot;;</b>
+&nbsp;
+&nbsp;                //not an array
+<b class="nc">&nbsp;                if(dims == 0){</b>
+<b class="nc">&nbsp;                    method.addStatement(&quot;(($L)content).$L = $T.atlas.find($L$L)&quot;, type.fullName(), field.name(), Core.class, parse(an.value()), fallbackString);</b>
+&nbsp;                }else{
+&nbsp;                    //is an array, create length string
+<b class="nc">&nbsp;                    int[] lengths = an.lengths();</b>
+<b class="nc">&nbsp;                    if(lengths.length == 0) lengths = new int[]{an.length()};</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(dims != lengths.length){</b>
+<b class="nc">&nbsp;                        err(&quot;Length dimensions must match array dimensions: &quot; + dims + &quot; != &quot; + lengths.length, field);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    StringBuilder lengthString = new StringBuilder();</b>
+<b class="nc">&nbsp;                    for(int value : lengths) lengthString.append(&quot;[&quot;).append(value).append(&quot;]&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                    method.addStatement(&quot;(($T)content).$L = new $T$L&quot;, type.tname(), field.name(), TextureRegion.class, lengthString.toString());</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; dims; i++){</b>
+<b class="nc">&nbsp;                        method.beginControlFlow(&quot;for(int INDEX$L = 0; INDEX$L &lt; $L; INDEX$L ++)&quot;, i, i, lengths[i], i);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    StringBuilder indexString = new StringBuilder();</b>
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; dims; i++){</b>
+<b class="nc">&nbsp;                        indexString.append(&quot;[INDEX&quot;).append(i).append(&quot;]&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    method.addStatement(&quot;(($T)content).$L$L = $T.atlas.find($L$L)&quot;, type.tname(), field.name(), indexString.toString(), Core.class, parse(an.value()), fallbackString);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; dims; i++){</b>
+<b class="nc">&nbsp;                        method.endControlFlow();</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            method.endControlFlow();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        regionClass.addMethod(method.build());</b>
+&nbsp;
+<b class="nc">&nbsp;        write(regionClass);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static int count(String str, String substring){
+<b class="nc">&nbsp;        int lastIndex = 0;</b>
+<b class="nc">&nbsp;        int count = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        while(lastIndex != -1){</b>
+&nbsp;
+<b class="nc">&nbsp;            lastIndex = str.indexOf(substring, lastIndex);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(lastIndex != -1){</b>
+<b class="nc">&nbsp;                count ++;</b>
+<b class="nc">&nbsp;                lastIndex += substring.length();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return count;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String parse(String value){
+<b class="nc">&nbsp;        value = &#39;&quot;&#39; + value + &#39;&quot;&#39;;</b>
+<b class="nc">&nbsp;        value = value.replace(&quot;@size&quot;, &quot;\&quot; + ((mindustry.world.Block)content).size + \&quot;&quot;);</b>
+<b class="nc">&nbsp;        value = value.replace(&quot;@&quot;, &quot;\&quot; + content.name + \&quot;&quot;);</b>
+<b class="nc">&nbsp;        value = value.replace(&quot;#1&quot;, &quot;\&quot; + INDEX0 + \&quot;&quot;);</b>
+<b class="nc">&nbsp;        value = value.replace(&quot;#2&quot;, &quot;\&quot; + INDEX1 + \&quot;&quot;);</b>
+<b class="nc">&nbsp;        value = value.replace(&quot;#&quot;, &quot;\&quot; + INDEX0 + \&quot;&quot;);</b>
+<b class="nc">&nbsp;        return value;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

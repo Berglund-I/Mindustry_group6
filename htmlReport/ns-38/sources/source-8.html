@@ -1,0 +1,190 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DuctBridge</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: DuctBridge (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DuctBridge</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DuctBridge$DuctBridgeBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.8%
+  </span>
+  <span class="absValue">
+    (8/23)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48.3%
+  </span>
+  <span class="absValue">
+    (14/29)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;public class DuctBridge extends DirectionBridge{
+<b class="fc">&nbsp;    public float speed = 5f;</b>
+&nbsp;
+&nbsp;    public DuctBridge(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        itemCapacity = 4;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+<b class="fc">&nbsp;        isDuct = true;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class DuctBridgeBuild extends DirectionBridgeBuild{</b>
+<b class="fc">&nbsp;        public float progress = 0f;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            var link = lastLink = findLink();</b>
+<b class="fc">&nbsp;            if(link != null){</b>
+<b class="nc">&nbsp;                link.occupied[rotation % 4] = this;</b>
+<b class="nc">&nbsp;                if(items.any() &amp;&amp; link.items.total() &lt; link.block.itemCapacity){</b>
+<b class="nc">&nbsp;                    progress += edelta();</b>
+<b class="nc">&nbsp;                    while(progress &gt; speed){</b>
+<b class="nc">&nbsp;                        Item next = items.take();</b>
+<b class="nc">&nbsp;                        if(next != null &amp;&amp; link.items.total() &lt; link.block.itemCapacity){</b>
+<b class="nc">&nbsp;                            link.handleItem(this, next);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        progress -= speed;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(link == null &amp;&amp; items.any()){</b>
+<b class="nc">&nbsp;                Item next = items.first();</b>
+<b class="nc">&nbsp;                if(moveForward(next)){</b>
+<b class="nc">&nbsp;                    items.remove(next, 1);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="fc">&nbsp;                if(occupied[i] == null || occupied[i].rotation != i || !occupied[i].isValid() || occupied[i].lastLink != this){</b>
+<b class="fc">&nbsp;                    occupied[i] = null;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+&nbsp;            //only accept if there&#39;s an output point.
+<b class="nc">&nbsp;            if(findLink() == null) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;            int rel = this.relativeToEdge(source.tile);</b>
+<b class="nc">&nbsp;            return items.total() &lt; itemCapacity &amp;&amp; rel != rotation &amp;&amp; occupied[(rel + 2) % 4] == null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

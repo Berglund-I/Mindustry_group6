@@ -1,0 +1,183 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ShootPattern</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.pattern</a>
+</div>
+
+<h1>Coverage Summary for Class: ShootPattern (mindustry.entities.pattern)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ShootPattern</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.5%
+  </span>
+  <span class="absValue">
+    (6/11)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ShootPattern$BulletHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (6/12)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.pattern;
+&nbsp;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;
+&nbsp;/** Handles different types of bullet patterns for shooting. */
+<b class="fc">&nbsp;public class ShootPattern implements Cloneable{</b>
+&nbsp;    /** amount of shots per &quot;trigger pull&quot; */
+<b class="fc">&nbsp;    public int shots = 1;</b>
+&nbsp;    /** delay in ticks before first shot */
+<b class="fc">&nbsp;    public float firstShotDelay = 0;</b>
+&nbsp;    /** delay in ticks between shots */
+<b class="fc">&nbsp;    public float shotDelay = 0;</b>
+&nbsp;
+&nbsp;    /** Called on a single &quot;trigger pull&quot;. This function should call the handler with any bullets that result. */
+&nbsp;    public void shoot(int totalShots, BulletHandler handler, @Nullable Runnable barrelIncrementer){
+&nbsp;        //the default implementation calls the &quot;soft deprecated&quot; variant for mod compatibility, so overrides from older mods can function properly
+<b class="nc">&nbsp;        shoot(totalShots, handler);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called on a single &quot;trigger pull&quot;. This function should call the handler with any bullets that result. */
+&nbsp;    public void shoot(int totalShots, BulletHandler handler){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; shots; i++){</b>
+<b class="nc">&nbsp;            handler.shoot(0, 0, 0, firstShotDelay + shotDelay * i);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Subclasses should override this to flip its sides. */
+&nbsp;    public void flip(){
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ShootPattern copy(){
+&nbsp;        try{
+<b class="fc">&nbsp;            return (ShootPattern)clone();</b>
+<b class="nc">&nbsp;        }catch(CloneNotSupportedException absurd){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;impending doom&quot;, absurd);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface BulletHandler{
+&nbsp;        /**
+&nbsp;         * @param x x offset of bullet, should be transformed by weapon rotation
+&nbsp;         * @param y y offset of bullet, should be transformed by weapon rotation
+&nbsp;         * @param rotation rotation offset relative to weapon
+&nbsp;         * @param delay bullet delay in ticks
+&nbsp;         * */
+&nbsp;        default void shoot(float x, float y, float rotation, float delay){
+<b class="nc">&nbsp;            shoot(x, y, rotation, delay, null);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        void shoot(float x, float y, float rotation, float delay, Mover move);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

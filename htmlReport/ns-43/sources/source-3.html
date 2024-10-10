@@ -1,0 +1,248 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > RepairTower</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.units</a>
+</div>
+
+<h1>Coverage Summary for Class: RepairTower (mindustry.world.blocks.units)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RepairTower</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.3%
+  </span>
+  <span class="absValue">
+    (7/12)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">RepairTower$RepairTowerBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (3/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.4%
+  </span>
+  <span class="absValue">
+    (11/35)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    36.4%
+  </span>
+  <span class="absValue">
+    (4/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.3%
+  </span>
+  <span class="absValue">
+    (18/47)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.units;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class RepairTower extends Block{
+&nbsp;    static final float refreshInterval = 6f;
+&nbsp;
+<b class="fc">&nbsp;    public float range = 80f;</b>
+<b class="fc">&nbsp;    public Color circleColor = Pal.heal, glowColor = Pal.heal.cpy().a(0.5f);</b>
+<b class="fc">&nbsp;    public float circleSpeed = 120f, circleStroke = 3f, squareRad = 3f, squareSpinScl = 0.8f, glowMag = 0.5f, glowScl = 8f;</b>
+<b class="fc">&nbsp;    public float healAmount = 1f;</b>
+&nbsp;    public @Load(&quot;@-glow&quot;) TextureRegion glow;
+&nbsp;
+&nbsp;    public RepairTower(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.range, range / tilesize, StatUnit.blocks);</b>
+<b class="nc">&nbsp;        stats.add(Stat.repairSpeed, healAmount * 60f, StatUnit.perSecond);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        super.drawPlace(x, y, rotation, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, Pal.placing);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class RepairTowerBuild extends Building implements Ranged{</b>
+<b class="fc">&nbsp;        public float refresh = Mathf.random(refreshInterval);</b>
+<b class="fc">&nbsp;        public float warmup = 0f;</b>
+<b class="fc">&nbsp;        public float totalProgress = 0f;</b>
+<b class="fc">&nbsp;        public Seq&lt;Unit&gt; targets = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+&nbsp;
+<b class="fc">&nbsp;            if(potentialEfficiency &gt; 0 &amp;&amp; (refresh += Time.delta) &gt;= refreshInterval){</b>
+<b class="nc">&nbsp;                targets.clear();</b>
+<b class="nc">&nbsp;                refresh = 0f;</b>
+<b class="nc">&nbsp;                Units.nearby(team, x, y, range, u -&gt; {</b>
+<b class="nc">&nbsp;                    if(u.damaged()){</b>
+<b class="nc">&nbsp;                        targets.add(u);</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            boolean any = false;</b>
+<b class="fc">&nbsp;            if(efficiency &gt; 0){</b>
+<b class="nc">&nbsp;                for(var target : targets){</b>
+<b class="nc">&nbsp;                    if(target.damaged()){</b>
+<b class="nc">&nbsp;                        target.heal(healAmount * efficiency);</b>
+<b class="nc">&nbsp;                        any = true;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            warmup = Mathf.lerpDelta(warmup, any ? efficiency : 0f, 0.08f);</b>
+<b class="fc">&nbsp;            totalProgress += Time.delta / circleSpeed;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return targets.size &gt; 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(warmup &lt;= 0.001f) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.effect);</b>
+<b class="nc">&nbsp;            float mod = totalProgress % 1f;</b>
+<b class="nc">&nbsp;            Draw.color(circleColor);</b>
+<b class="nc">&nbsp;            Lines.stroke(circleStroke * (1f - mod) * warmup);</b>
+<b class="nc">&nbsp;            Lines.circle(x, y, range * mod);</b>
+<b class="nc">&nbsp;            Draw.color(Pal.heal);</b>
+<b class="nc">&nbsp;            Fill.square(x, y, squareRad * warmup, Time.time / squareSpinScl);</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;            Drawf.additive(glow, glowColor, warmup * (1f - glowMag + Mathf.absin(Time.time, glowScl, glowMag)), x, y, 0f, Layer.blockAdditive);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float range(){
+<b class="nc">&nbsp;            return range;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float warmup(){
+<b class="nc">&nbsp;            return warmup;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawSelect(){
+<b class="nc">&nbsp;            Drawf.dashCircle(x, y, range, Pal.placing);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

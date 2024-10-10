@@ -1,0 +1,145 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ShootMulti</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.pattern</a>
+</div>
+
+<h1>Coverage Summary for Class: ShootMulti (mindustry.entities.pattern)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ShootMulti</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (3/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    64.7%
+  </span>
+  <span class="absValue">
+    (11/17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.pattern;
+&nbsp;
+&nbsp;import arc.util.*;
+&nbsp;
+&nbsp;public class ShootMulti extends ShootPattern{
+&nbsp;    public ShootPattern source;
+<b class="fc">&nbsp;    public ShootPattern[] dest = {};</b>
+&nbsp;
+<b class="fc">&nbsp;    public ShootMulti(ShootPattern source, ShootPattern... dest){</b>
+<b class="fc">&nbsp;        this.source = source;</b>
+<b class="fc">&nbsp;        this.dest = dest;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ShootMulti(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //deep copy needed for flips
+&nbsp;    @Override
+&nbsp;    public void flip(){
+<b class="fc">&nbsp;        source = source.copy();</b>
+<b class="fc">&nbsp;        source.flip();</b>
+<b class="fc">&nbsp;        dest = dest.clone();</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; dest.length; i++){</b>
+<b class="fc">&nbsp;            dest[i] = dest[i].copy();</b>
+<b class="fc">&nbsp;            dest[i].flip();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void shoot(int totalShots, BulletHandler handler, @Nullable Runnable barrelIncrementer){
+<b class="nc">&nbsp;        source.shoot(totalShots, (x, y, rotation, delay, move) -&gt; {</b>
+<b class="nc">&nbsp;            for(var pattern : dest){</b>
+<b class="nc">&nbsp;                pattern.shoot(totalShots, (x2, y2, rot2, delay2, mover) -&gt; {</b>
+<b class="nc">&nbsp;                    handler.shoot(x + x2, y + y2, rotation + rot2, delay + delay2, move == null &amp;&amp; mover == null ? null : b -&gt; {</b>
+<b class="nc">&nbsp;                        if(move != null) move.move(b);</b>
+<b class="nc">&nbsp;                        if(mover != null) mover.move(b);</b>
+&nbsp;                    });
+&nbsp;                }, null);
+&nbsp;            }
+&nbsp;        }, barrelIncrementer);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

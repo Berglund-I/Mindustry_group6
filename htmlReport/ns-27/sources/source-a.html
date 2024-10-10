@@ -1,0 +1,423 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Packets</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.net</a>
+</div>
+
+<h1>Coverage Summary for Class: Packets (mindustry.net)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Packets</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Packets$AdminAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Packets$Connect</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Packets$ConnectPacket</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    93.1%
+  </span>
+  <span class="absValue">
+    (27/29)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Packets$Disconnect</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Packets$KickReason</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Packets$StreamBegin</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (2/8)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Packets$StreamChunk</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (1/6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Packets$WorldStream</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (6/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50.8%
+  </span>
+  <span class="absValue">
+    (31/61)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.net;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.io.*;
+&nbsp;
+&nbsp;import java.util.zip.*;
+&nbsp;
+&nbsp;/** Class for storing all packets. */
+<b class="nc">&nbsp;public class Packets{</b>
+&nbsp;
+<b class="nc">&nbsp;    public enum KickReason{</b>
+<b class="nc">&nbsp;        kick, clientOutdated, serverOutdated, banned, gameover(true), recentKick,</b>
+<b class="nc">&nbsp;        nameInUse, idInUse, nameEmpty, customClient, serverClose, vote, typeMismatch,</b>
+<b class="nc">&nbsp;        whitelist, playerLimit, serverRestarting;</b>
+&nbsp;
+<b class="nc">&nbsp;        public static final KickReason[] all = values();</b>
+&nbsp;
+&nbsp;        public final boolean quiet;
+&nbsp;
+&nbsp;        KickReason(){
+&nbsp;            this(false);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        KickReason(boolean quiet){</b>
+<b class="nc">&nbsp;            this.quiet = quiet;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public String toString(){
+<b class="nc">&nbsp;            return Core.bundle.get(&quot;server.kicked.&quot; + name());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public String extraText(){
+<b class="nc">&nbsp;            return Core.bundle.getOrNull(&quot;server.kicked.&quot; + name() + &quot;.text&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public enum AdminAction{</b>
+<b class="nc">&nbsp;        kick, ban, trace, wave, switchTeam;</b>
+&nbsp;
+<b class="nc">&nbsp;        public static final AdminAction[] all = values();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Generic client connection event. */
+<b class="nc">&nbsp;    public static class Connect extends Packet{</b>
+&nbsp;        public String addressTCP;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int getPriority(){
+<b class="nc">&nbsp;            return priorityHigh;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Generic client disconnection event. */
+<b class="nc">&nbsp;    public static class Disconnect extends Packet{</b>
+&nbsp;        public String reason;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int getPriority(){
+<b class="nc">&nbsp;            return priorityHigh;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static class WorldStream extends Streamable{</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Marks the beginning of a stream. */
+<b class="fc">&nbsp;    public static class StreamBegin extends Packet{</b>
+&nbsp;        private static int lastid;
+&nbsp;
+<b class="fc">&nbsp;        public int id = lastid++;</b>
+&nbsp;        public int total;
+&nbsp;        public byte type;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes buffer){
+<b class="nc">&nbsp;            buffer.i(id);</b>
+<b class="nc">&nbsp;            buffer.i(total);</b>
+<b class="nc">&nbsp;            buffer.b(type);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads buffer){
+<b class="nc">&nbsp;            id = buffer.i();</b>
+<b class="nc">&nbsp;            total = buffer.i();</b>
+<b class="nc">&nbsp;            type = buffer.b();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static class StreamChunk extends Packet{</b>
+&nbsp;        public int id;
+&nbsp;        public byte[] data;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes buffer){
+<b class="nc">&nbsp;            buffer.i(id);</b>
+<b class="nc">&nbsp;            buffer.s((short)data.length);</b>
+<b class="nc">&nbsp;            buffer.b(data);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads buffer){
+<b class="nc">&nbsp;            id = buffer.i();</b>
+<b class="nc">&nbsp;            data = buffer.b(buffer.s());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static class ConnectPacket extends Packet{</b>
+&nbsp;        public int version;
+&nbsp;        public String versionType;
+&nbsp;        public Seq&lt;String&gt; mods;
+&nbsp;        public String name, locale, uuid, usid;
+&nbsp;        public boolean mobile;
+&nbsp;        public int color;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes buffer){
+<b class="fc">&nbsp;            buffer.i(Version.build);</b>
+<b class="fc">&nbsp;            TypeIO.writeString(buffer, versionType);</b>
+<b class="fc">&nbsp;            TypeIO.writeString(buffer, name);</b>
+<b class="fc">&nbsp;            TypeIO.writeString(buffer, locale);</b>
+<b class="fc">&nbsp;            TypeIO.writeString(buffer, usid);</b>
+&nbsp;
+<b class="fc">&nbsp;            byte[] b = Base64Coder.decode(uuid);</b>
+<b class="fc">&nbsp;            buffer.b(b);</b>
+<b class="fc">&nbsp;            CRC32 crc = new CRC32();</b>
+<b class="fc">&nbsp;            crc.update(Base64Coder.decode(uuid), 0, b.length);</b>
+<b class="fc">&nbsp;            buffer.l(crc.getValue());</b>
+&nbsp;
+<b class="fc">&nbsp;            buffer.b(mobile ? (byte)1 : 0);</b>
+<b class="fc">&nbsp;            buffer.i(color);</b>
+<b class="fc">&nbsp;            buffer.b((byte)mods.size);</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; mods.size; i++){</b>
+<b class="nc">&nbsp;                TypeIO.writeString(buffer, mods.get(i));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads buffer){
+<b class="fc">&nbsp;            version = buffer.i();</b>
+<b class="fc">&nbsp;            versionType = TypeIO.readString(buffer);</b>
+<b class="fc">&nbsp;            name = TypeIO.readString(buffer);</b>
+<b class="fc">&nbsp;            locale = TypeIO.readString(buffer);</b>
+<b class="fc">&nbsp;            usid = TypeIO.readString(buffer);</b>
+<b class="fc">&nbsp;            byte[] idbytes =  buffer.b(16);</b>
+<b class="fc">&nbsp;            uuid = new String(Base64Coder.encode(idbytes));</b>
+<b class="fc">&nbsp;            mobile = buffer.b() == 1;</b>
+<b class="fc">&nbsp;            color = buffer.i();</b>
+<b class="fc">&nbsp;            int totalMods = buffer.b();</b>
+<b class="fc">&nbsp;            mods = new Seq&lt;&gt;(totalMods);</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; totalMods; i++){</b>
+<b class="nc">&nbsp;                mods.add(TypeIO.readString(buffer));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

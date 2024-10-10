@@ -1,0 +1,200 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapLocales</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: MapLocales (mindustry.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapLocales</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (3/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.5%
+  </span>
+  <span class="absValue">
+    (3/40)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import arc.util.serialization.Json.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;
+&nbsp;/** Class for storing map-specific locale bundles */
+<b class="fc">&nbsp;public class MapLocales extends ObjectMap&lt;String, StringMap&gt; implements JsonSerializable{</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void write(Json json){
+<b class="fc">&nbsp;        for(var entry : entries()){</b>
+<b class="nc">&nbsp;            json.writeValue(entry.key, entry.value, StringMap.class, String.class);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void read(Json json, JsonValue jsonData){
+<b class="fc">&nbsp;        for(JsonValue value : jsonData){</b>
+<b class="nc">&nbsp;            put(value.name, json.readValue(StringMap.class, value));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public MapLocales copy(){
+<b class="nc">&nbsp;        MapLocales out = new MapLocales();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var entry : this.entries()){</b>
+<b class="nc">&nbsp;            StringMap map = new StringMap();</b>
+<b class="nc">&nbsp;            map.putAll(entry.value);</b>
+<b class="nc">&nbsp;            out.put(entry.key, map);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getProperty(String key){
+<b class="nc">&nbsp;        if(!containsProperty(currentLocale(), key)){</b>
+<b class="nc">&nbsp;            if(containsProperty(&quot;en&quot;, key)) return get(&quot;en&quot;).get(key);</b>
+<b class="nc">&nbsp;            return &quot;???&quot; + key + &quot;???&quot;;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return get(currentLocale()).get(key);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getProperty(String locale, String key){
+<b class="nc">&nbsp;        if(!containsProperty(locale, key)){</b>
+<b class="nc">&nbsp;            if(containsProperty(&quot;en&quot;, key)) return get(&quot;en&quot;).get(key);</b>
+<b class="nc">&nbsp;            return &quot;???&quot; + key + &quot;???&quot;;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return get(locale).get(key);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean containsProperty(String key){
+<b class="nc">&nbsp;        return containsProperty(currentLocale(), key) || containsProperty(&quot;en&quot;, key);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean containsProperty(String locale, String key){
+<b class="nc">&nbsp;        if(!containsKey(locale)) return false;</b>
+<b class="nc">&nbsp;        return get(locale).containsKey(key);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getFormatted(String key, Object... args){
+<b class="nc">&nbsp;        StringBuilder result = new StringBuilder();</b>
+<b class="nc">&nbsp;        if(!containsProperty(currentLocale(), key)){</b>
+<b class="nc">&nbsp;            if(containsProperty(&quot;en&quot;, key)){</b>
+<b class="nc">&nbsp;                result.append(getProperty(&quot;en&quot;, key));</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                return &quot;???&quot; + key + &quot;???&quot;;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            result.append(getProperty(currentLocale(), key));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(var arg : args){</b>
+<b class="nc">&nbsp;            int placeholderIndex = result.indexOf(&quot;@&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(placeholderIndex == -1) break;</b>
+&nbsp;
+<b class="nc">&nbsp;            result.replace(placeholderIndex, placeholderIndex + 1, arg.toString());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return result.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // To handle default locale properly
+&nbsp;    public static String currentLocale(){
+<b class="nc">&nbsp;        String locale = settings.getString(&quot;locale&quot;);</b>
+<b class="nc">&nbsp;        if(locale.equals(&quot;default&quot;)){</b>
+<b class="nc">&nbsp;            locale = Locale.getDefault().getLanguage();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return locale;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

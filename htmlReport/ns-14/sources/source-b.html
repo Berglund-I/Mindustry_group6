@@ -1,0 +1,151 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > FlakBulletType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.bullet</a>
+</div>
+
+<h1>Coverage Summary for Class: FlakBulletType (mindustry.entities.bullet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FlakBulletType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (9/18)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.bullet;
+&nbsp;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;public class FlakBulletType extends BasicBulletType{
+<b class="fc">&nbsp;    public float explodeRange = 30f, explodeDelay = 5f, flakDelay = 0f, flakInterval = 6f;</b>
+&nbsp;
+&nbsp;    public FlakBulletType(float speed, float damage){
+<b class="fc">&nbsp;        super(speed, damage, &quot;shell&quot;);</b>
+<b class="fc">&nbsp;        splashDamage = 15f;</b>
+<b class="fc">&nbsp;        splashDamageRadius = 34f;</b>
+<b class="fc">&nbsp;        hitEffect = Fx.flakExplosionBig;</b>
+<b class="fc">&nbsp;        width = 8f;</b>
+<b class="fc">&nbsp;        height = 10f;</b>
+<b class="fc">&nbsp;        collidesGround = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public FlakBulletType(){
+<b class="fc">&nbsp;        this(1f, 1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(Bullet b){
+<b class="nc">&nbsp;        super.update(b);</b>
+&nbsp;
+&nbsp;        //don&#39;t check for targets if primed to explode
+<b class="nc">&nbsp;        if(b.time &gt;= flakDelay &amp;&amp; b.fdata &gt;= 0 &amp;&amp; b.timer(2, flakInterval)){</b>
+<b class="nc">&nbsp;            Units.nearbyEnemies(b.team, Tmp.r1.setSize(explodeRange * 2f).setCenter(b.x, b.y), unit -&gt; {</b>
+&nbsp;                //fdata &lt; 0 means it&#39;s primed to explode
+<b class="nc">&nbsp;                if(b.fdata &lt; 0f || !unit.checkTarget(collidesAir, collidesGround) || !unit.targetable(b.team)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(unit.within(b, explodeRange + unit.hitSize/2f)){</b>
+&nbsp;                    //mark as primed
+<b class="nc">&nbsp;                    b.fdata = -1f;</b>
+<b class="nc">&nbsp;                    Time.run(explodeDelay, () -&gt; {</b>
+&nbsp;                        //explode
+<b class="nc">&nbsp;                        if(b.fdata &lt; 0){</b>
+<b class="nc">&nbsp;                            b.time = b.lifetime;</b>
+&nbsp;                        }
+&nbsp;                    });
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

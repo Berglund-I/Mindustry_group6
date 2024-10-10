@@ -1,0 +1,501 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Rules</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.game</a>
+</div>
+
+<h1>Coverage Summary for Class: Rules (mindustry.game)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Rules</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (10/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96.4%
+  </span>
+  <span class="absValue">
+    (106/110)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Rules$TeamRule</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (14/14)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Rules$TeamRules</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (10/10)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    78.9%
+  </span>
+  <span class="absValue">
+    (15/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    97%
+  </span>
+  <span class="absValue">
+    (130/134)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.game;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import arc.util.serialization.Json.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.graphics.g3d.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.type.Weather.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Defines current rules on how the game should function.
+&nbsp; * Does not store game state, just configuration.
+&nbsp; */
+<b class="fc">&nbsp;public class Rules{</b>
+&nbsp;    /** Allows editing the rules in-game. Essentially a cheat mode toggle. */
+<b class="fc">&nbsp;    public boolean allowEditRules = false;</b>
+&nbsp;    /** Sandbox mode: Enables infinite resources, build range and build speed. */
+&nbsp;    public boolean infiniteResources;
+&nbsp;    /** Team-specific rules. */
+<b class="fc">&nbsp;    public TeamRules teams = new TeamRules();</b>
+&nbsp;    /** Whether the waves come automatically on a timer. If not, waves come when the play button is pressed. */
+<b class="fc">&nbsp;    public boolean waveTimer = true;</b>
+&nbsp;    /** Whether the waves can be manually summoned with the play button. */
+<b class="fc">&nbsp;    public boolean waveSending = true;</b>
+&nbsp;    /** Whether waves are spawnable at all. */
+&nbsp;    public boolean waves;
+&nbsp;    /** Whether air units spawn at spawns instead of the edge of the map */
+<b class="fc">&nbsp;    public boolean airUseSpawns = false;</b>
+&nbsp;    /** Whether the game objective is PvP. Note that this enables automatic hosting. */
+&nbsp;    public boolean pvp;
+&nbsp;    /** Whether is waiting for players enabled in PvP. */
+<b class="fc">&nbsp;    public boolean pvpAutoPause = true;</b>
+&nbsp;    /** Whether to pause the wave timer until all enemies are destroyed. */
+<b class="fc">&nbsp;    public boolean waitEnemies = false;</b>
+&nbsp;    /** Determines if gamemode is attack mode. */
+<b class="fc">&nbsp;    public boolean attackMode = false;</b>
+&nbsp;    /** Whether this is the editor gamemode. */
+<b class="fc">&nbsp;    public boolean editor = false;</b>
+&nbsp;    /** Whether blocks can be repaired by clicking them. */
+<b class="fc">&nbsp;    public boolean derelictRepair = true;</b>
+&nbsp;    /** Whether a gameover can happen at all. Set this to false to implement custom gameover conditions. */
+<b class="fc">&nbsp;    public boolean canGameOver = true;</b>
+&nbsp;    /** Whether cores change teams when they are destroyed. */
+<b class="fc">&nbsp;    public boolean coreCapture = false;</b>
+&nbsp;    /** Whether reactors can explode and damage other blocks. */
+<b class="fc">&nbsp;    public boolean reactorExplosions = true;</b>
+&nbsp;    /** Whether to allow manual unit control. */
+<b class="fc">&nbsp;    public boolean possessionAllowed = true;</b>
+&nbsp;    /** Whether schematics are allowed. */
+<b class="fc">&nbsp;    public boolean schematicsAllowed = true;</b>
+&nbsp;    /** Whether friendly explosions can occur and set fire/damage other blocks. */
+<b class="fc">&nbsp;    public boolean damageExplosions = true;</b>
+&nbsp;    /** Whether fire (and neoplasm spread) is enabled. */
+<b class="fc">&nbsp;    public boolean fire = true;</b>
+&nbsp;    /** Whether units use and require ammo. */
+<b class="fc">&nbsp;    public boolean unitAmmo = false;</b>
+&nbsp;    /** EXPERIMENTAL! If true, air and ground units target random things each wave instead of only the core/generators. */
+<b class="fc">&nbsp;    public boolean randomWaveAI = false;</b>
+&nbsp;    /** EXPERIMENTAL! If true, blocks will update in units and share power. */
+<b class="fc">&nbsp;    public boolean unitPayloadUpdate = false;</b>
+&nbsp;    /** If true, units&#39; payloads are destroy()ed when the unit is destroyed. */
+<b class="fc">&nbsp;    public boolean unitPayloadsExplode = false;</b>
+&nbsp;    /** Whether cores add to unit limit */
+<b class="fc">&nbsp;    public boolean unitCapVariable = true;</b>
+&nbsp;    /** If true, unit spawn points are shown. */
+<b class="fc">&nbsp;    public boolean showSpawns = false;</b>
+&nbsp;    /** Multiplies power output of solar panels. */
+<b class="fc">&nbsp;    public float solarMultiplier = 1f;</b>
+&nbsp;    /** How fast unit factories build units. */
+<b class="fc">&nbsp;    public float unitBuildSpeedMultiplier = 1f;</b>
+&nbsp;    /** Multiplier of resources that units take to build. */
+<b class="fc">&nbsp;    public float unitCostMultiplier = 1f;</b>
+&nbsp;    /** How much damage units deal. */
+<b class="fc">&nbsp;    public float unitDamageMultiplier = 1f;</b>
+&nbsp;    /** How much health units start with. */
+<b class="fc">&nbsp;    public float unitHealthMultiplier = 1f;</b>
+&nbsp;    /** How much damage unit crash damage deals. (Compounds with unitDamageMultiplier) */
+<b class="fc">&nbsp;    public float unitCrashDamageMultiplier = 1f;</b>
+&nbsp;    /** If true, ghost blocks will appear upon destruction, letting builder blocks/units rebuild them. */
+<b class="fc">&nbsp;    public boolean ghostBlocks = true;</b>
+&nbsp;    /** Whether to allow units to build with logic. */
+<b class="fc">&nbsp;    public boolean logicUnitBuild = true;</b>
+&nbsp;    /** If true, world processors can be edited and placed on this map. */
+<b class="fc">&nbsp;    public boolean allowEditWorldProcessors = false;</b>
+&nbsp;    /** If true, world processors no longer update. Used for testing. */
+<b class="fc">&nbsp;    public boolean disableWorldProcessors = false;</b>
+&nbsp;    /** How much health blocks start with. */
+<b class="fc">&nbsp;    public float blockHealthMultiplier = 1f;</b>
+&nbsp;    /** How much damage blocks (turrets) deal. */
+<b class="fc">&nbsp;    public float blockDamageMultiplier = 1f;</b>
+&nbsp;    /** Multiplier for buildings resource cost. */
+<b class="fc">&nbsp;    public float buildCostMultiplier = 1f;</b>
+&nbsp;    /** Multiplier for building speed. */
+<b class="fc">&nbsp;    public float buildSpeedMultiplier = 1f;</b>
+&nbsp;    /** Multiplier for percentage of materials refunded when deconstructing. */
+<b class="fc">&nbsp;    public float deconstructRefundMultiplier = 0.5f;</b>
+&nbsp;    /** Multiplier for time in timer objectives. */
+<b class="fc">&nbsp;    public float objectiveTimerMultiplier = 1f;</b>
+&nbsp;    /** No-build zone around enemy core radius. */
+<b class="fc">&nbsp;    public float enemyCoreBuildRadius = 400f;</b>
+&nbsp;    /** If true, no-build zones are calculated based on the closest core. */
+<b class="fc">&nbsp;    public boolean polygonCoreProtection = false;</b>
+&nbsp;    /** If true, blocks cannot be placed near blocks that are near the enemy team.*/
+<b class="fc">&nbsp;    public boolean placeRangeCheck = false;</b>
+&nbsp;    /** If true, dead teams in PvP automatically have their blocks &amp; units converted to derelict upon death. */
+<b class="fc">&nbsp;    public boolean cleanupDeadTeams = true;</b>
+&nbsp;    /** If true, items can only be deposited in the core. */
+<b class="fc">&nbsp;    public boolean onlyDepositCore = false;</b>
+&nbsp;    /** Cooldown, in seconds, of item depositing for players. */
+<b class="fc">&nbsp;    public float itemDepositCooldown = 0.5f;</b>
+&nbsp;    /** If true, every enemy block in the radius of the (enemy) core is destroyed upon death. Used for campaign maps. */
+<b class="fc">&nbsp;    public boolean coreDestroyClear = false;</b>
+&nbsp;    /** If true, banned blocks are hidden from the build menu. */
+<b class="fc">&nbsp;    public boolean hideBannedBlocks = false;</b>
+&nbsp;    /** If true, most blocks (including environmental walls) can be deconstructed. This is only meant to be used internally in sandbox/test maps. */
+<b class="fc">&nbsp;    public boolean allowEnvironmentDeconstruct = false;</b>
+&nbsp;    /** If true, buildings will be constructed instantly, with no limit on blocks placed per second. This is highly experimental and may cause lag! */
+<b class="fc">&nbsp;    public boolean instantBuild = false;</b>
+&nbsp;    /** If true, bannedBlocks becomes a whitelist. */
+<b class="fc">&nbsp;    public boolean blockWhitelist = false;</b>
+&nbsp;    /** If true, bannedUnits becomes a whitelist. */
+<b class="fc">&nbsp;    public boolean unitWhitelist = false;</b>
+&nbsp;    /** Radius around enemy wave drop zones.*/
+<b class="fc">&nbsp;    public float dropZoneRadius = 300f;</b>
+&nbsp;    /** Time between waves in ticks. */
+<b class="fc">&nbsp;    public float waveSpacing = 2 * Time.toMinutes;</b>
+&nbsp;    /** Starting wave spacing; if &lt;=0, uses waveSpacing * 2. */
+<b class="fc">&nbsp;    public float initialWaveSpacing = 0f;</b>
+&nbsp;    /** Wave after which the player &#39;wins&#39;. Use a value &lt;= 0 to disable. */
+<b class="fc">&nbsp;    public int winWave = 0;</b>
+&nbsp;    /** Base unit cap. Can still be increased by blocks. */
+<b class="fc">&nbsp;    public int unitCap = 0;</b>
+&nbsp;    /** If true, the unit cap is disabled. */
+&nbsp;    public boolean disableUnitCap;
+&nbsp;    /** Environment drag multiplier. */
+<b class="fc">&nbsp;    public float dragMultiplier = 1f;</b>
+&nbsp;    /** Environmental flags that dictate visuals &amp; how blocks function. */
+<b class="fc">&nbsp;    public int env = Vars.defaultEnv;</b>
+&nbsp;    /** Attributes of the environment. */
+<b class="fc">&nbsp;    public Attributes attributes = new Attributes();</b>
+&nbsp;    /** Sector for saves that have them. */
+&nbsp;    public @Nullable Sector sector;
+&nbsp;    /** Spawn layout. */
+<b class="fc">&nbsp;    public Seq&lt;SpawnGroup&gt; spawns = new Seq&lt;&gt;();</b>
+&nbsp;    /** Starting items put in cores. */
+<b class="fc">&nbsp;    public Seq&lt;ItemStack&gt; loadout = ItemStack.list(Items.copper, 100);</b>
+&nbsp;    /** Weather events that occur here. */
+<b class="fc">&nbsp;    public Seq&lt;WeatherEntry&gt; weather = new Seq&lt;&gt;(1);</b>
+&nbsp;    /** Blocks that cannot be placed. */
+<b class="fc">&nbsp;    public ObjectSet&lt;Block&gt; bannedBlocks = new ObjectSet&lt;&gt;();</b>
+&nbsp;    /** Units that cannot be built. */
+<b class="fc">&nbsp;    public ObjectSet&lt;UnitType&gt; bannedUnits = new ObjectSet&lt;&gt;();</b>
+&nbsp;    /** Reveals blocks normally hidden by build visibility. */
+<b class="fc">&nbsp;    public ObjectSet&lt;Block&gt; revealedBlocks = new ObjectSet&lt;&gt;();</b>
+&nbsp;    /** Unlocked content names. Only used in multiplayer when the campaign is enabled. */
+<b class="fc">&nbsp;    public ObjectSet&lt;String&gt; researched = new ObjectSet&lt;&gt;();</b>
+&nbsp;    /** In-map objective executor. */
+<b class="fc">&nbsp;    public MapObjectives objectives = new MapObjectives();</b>
+&nbsp;    /** Flags set by objectives. Used in world processors. */
+<b class="fc">&nbsp;    public ObjectSet&lt;String&gt; objectiveFlags = new ObjectSet&lt;&gt;();</b>
+&nbsp;    /** If true, fog of war is enabled. Enemy units and buildings are hidden unless in radar view. */
+<b class="fc">&nbsp;    public boolean fog = false;</b>
+&nbsp;    /** If fog = true, this is whether static (black) fog is enabled. */
+<b class="fc">&nbsp;    public boolean staticFog = true;</b>
+&nbsp;    /** Color for static, undiscovered fog of war areas. */
+<b class="fc">&nbsp;    public Color staticColor = new Color(0f, 0f, 0f, 1f);</b>
+&nbsp;    /** Color for discovered but un-monitored fog of war areas. */
+<b class="fc">&nbsp;    public Color dynamicColor = new Color(0f, 0f, 0f, 0.5f);</b>
+&nbsp;    /** Whether ambient lighting is enabled. */
+<b class="fc">&nbsp;    public boolean lighting = false;</b>
+&nbsp;    /** Ambient light color, used when lighting is enabled. */
+<b class="fc">&nbsp;    public Color ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.99f);</b>
+&nbsp;    /** team of the player by default. */
+<b class="fc">&nbsp;    public Team defaultTeam = Team.sharded;</b>
+&nbsp;    /** team of the enemy in waves/sectors. */
+<b class="fc">&nbsp;    public Team waveTeam = Team.crux;</b>
+&nbsp;    /** color of clouds that is displayed when the player is landing */
+<b class="fc">&nbsp;    public Color cloudColor = new Color(0f, 0f, 0f, 0f);</b>
+&nbsp;    /** name of the custom mode that this ruleset describes, or null. */
+&nbsp;    public @Nullable String modeName;
+&nbsp;    /** Mission string displayed instead of wave/core counter. Null to disable. */
+&nbsp;    public @Nullable String mission;
+&nbsp;    /** Whether cores incinerate items when full, just like in the campaign. */
+<b class="fc">&nbsp;    public boolean coreIncinerates = false;</b>
+&nbsp;    /** If false, borders fade out into darkness. Only use with custom backgrounds!*/
+<b class="fc">&nbsp;    public boolean borderDarkness = true;</b>
+&nbsp;    /** If true, the map play area is cropped based on the rectangle below. */
+<b class="fc">&nbsp;    public boolean limitMapArea = false;</b>
+&nbsp;    /** Map area limit rectangle. */
+<b class="fc">&nbsp;    public int limitX, limitY, limitWidth = 1, limitHeight = 1;</b>
+&nbsp;    /** If true, blocks outside the map area are disabled. */
+<b class="fc">&nbsp;    public boolean disableOutsideArea = true;</b>
+&nbsp;    /** special tags for additional info. */
+<b class="fc">&nbsp;    public StringMap tags = new StringMap();</b>
+&nbsp;    /** Name of callback to call for background rendering in mods; see Renderer#addCustomBackground. Runs last. */
+&nbsp;    public @Nullable String customBackgroundCallback;
+&nbsp;    /** path to background texture with extension (e.g. &quot;sprites/space.png&quot;)*/
+&nbsp;    public @Nullable String backgroundTexture;
+&nbsp;    /** background texture move speed scaling - bigger numbers mean slower movement. 0 to disable. */
+<b class="fc">&nbsp;    public float backgroundSpeed = 27000f;</b>
+&nbsp;    /** background texture scaling factor */
+<b class="fc">&nbsp;    public float backgroundScl = 1f;</b>
+&nbsp;    /** background UV offsets */
+<b class="fc">&nbsp;    public float backgroundOffsetX = 0.1f, backgroundOffsetY = 0.1f;</b>
+&nbsp;    /** Parameters for planet rendered in the background. Cannot be changed once a map is loaded. */
+&nbsp;    public @Nullable PlanetParams planetBackground;
+&nbsp;    /** Rules from this planet are applied. If it&#39;s {@code sun}, mixed tech is enabled. */
+<b class="fc">&nbsp;    public Planet planet = Planets.serpulo;</b>
+&nbsp;    /** If the `data` instruction is allowed for world processors */
+<b class="fc">&nbsp;    public boolean allowLogicData = false;</b>
+&nbsp;
+&nbsp;    /** Copies this ruleset exactly. Not efficient at all, do not use often. */
+&nbsp;    public Rules copy(){
+<b class="nc">&nbsp;        return JsonIO.copy(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the gamemode that best fits these rules. */
+&nbsp;    public Gamemode mode(){
+<b class="fc">&nbsp;        if(pvp){</b>
+<b class="fc">&nbsp;            return Gamemode.pvp;</b>
+<b class="fc">&nbsp;        }else if(editor){</b>
+<b class="fc">&nbsp;            return Gamemode.editor;</b>
+<b class="fc">&nbsp;        }else if(attackMode){</b>
+<b class="fc">&nbsp;            return Gamemode.attack;</b>
+<b class="fc">&nbsp;        }else if(infiniteResources){</b>
+<b class="fc">&nbsp;            return Gamemode.sandbox;</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            return Gamemode.survival;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasEnv(int env){
+<b class="fc">&nbsp;        return (this.env &amp; env) != 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float unitBuildSpeed(Team team){
+<b class="fc">&nbsp;        return unitBuildSpeedMultiplier * teams.get(team).unitBuildSpeedMultiplier;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float unitCost(Team team){
+<b class="fc">&nbsp;        return unitCostMultiplier * teams.get(team).unitCostMultiplier;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float unitDamage(Team team){
+<b class="nc">&nbsp;        return unitDamageMultiplier * teams.get(team).unitDamageMultiplier;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float unitHealth(Team team){
+&nbsp;        //a 0 here would be a very bad idea.
+<b class="nc">&nbsp;        return Math.max(unitHealthMultiplier * teams.get(team).unitHealthMultiplier, 0.000001f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float unitCrashDamage(Team team){
+<b class="nc">&nbsp;        return unitDamage(team) * unitCrashDamageMultiplier * teams.get(team).unitCrashDamageMultiplier;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float blockHealth(Team team){
+<b class="fc">&nbsp;        return blockHealthMultiplier * teams.get(team).blockHealthMultiplier;</b>
+&nbsp;    }
+&nbsp;    public float blockDamage(Team team){
+<b class="fc">&nbsp;        return blockDamageMultiplier * teams.get(team).blockDamageMultiplier;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float buildSpeed(Team team){
+<b class="fc">&nbsp;        return buildSpeedMultiplier * teams.get(team).buildSpeedMultiplier;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isBanned(Block block){
+<b class="fc">&nbsp;        return blockWhitelist != bannedBlocks.contains(block);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isBanned(UnitType unit){
+<b class="fc">&nbsp;        return unitWhitelist != bannedUnits.contains(unit);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** A team-specific ruleset. */
+<b class="fc">&nbsp;    public static class TeamRule{</b>
+&nbsp;        /** Whether, when AI is enabled, ships should be spawned from the core. TODO remove / unnecessary? */
+<b class="fc">&nbsp;        public boolean aiCoreSpawn = true;</b>
+&nbsp;        /** If true, blocks don&#39;t require power or resources. */
+&nbsp;        public boolean cheat;
+&nbsp;        /** If true, resources are not consumed when building. */
+&nbsp;        public boolean infiniteResources;
+&nbsp;        /** If true, this team has infinite unit ammo. */
+&nbsp;        public boolean infiniteAmmo;
+&nbsp;
+&nbsp;        /** AI that builds random schematics. */
+&nbsp;        public boolean buildAi;
+&nbsp;        /** Tier of builder AI. [0, 1] */
+<b class="fc">&nbsp;        public float buildAiTier = 1f;</b>
+&nbsp;
+&nbsp;        /** Enables &quot;RTS&quot; unit AI. */
+&nbsp;        public boolean rtsAi;
+&nbsp;        /** Minimum size of attack squads. */
+<b class="fc">&nbsp;        public int rtsMinSquad = 4;</b>
+&nbsp;        /** Maximum size of attack squads. */
+<b class="fc">&nbsp;        public int rtsMaxSquad = 1000;</b>
+&nbsp;        /** Minimum &quot;advantage&quot; needed for a squad to attack. Higher -&gt; more cautious. */
+<b class="fc">&nbsp;        public float rtsMinWeight = 1.2f;</b>
+&nbsp;
+&nbsp;        /** How fast unit factories build units. */
+<b class="fc">&nbsp;        public float unitBuildSpeedMultiplier = 1f;</b>
+&nbsp;        /** How much damage units deal. */
+<b class="fc">&nbsp;        public float unitDamageMultiplier = 1f;</b>
+&nbsp;        /** How much damage unit crash damage deals. (Compounds with unitDamageMultiplier) */
+<b class="fc">&nbsp;        public float unitCrashDamageMultiplier = 1f;</b>
+&nbsp;        /** Multiplier of resources that units take to build. */
+<b class="fc">&nbsp;        public float unitCostMultiplier = 1f;</b>
+&nbsp;        /** How much health units start with. */
+<b class="fc">&nbsp;        public float unitHealthMultiplier = 1f;</b>
+&nbsp;        /** How much health blocks start with. */
+<b class="fc">&nbsp;        public float blockHealthMultiplier = 1f;</b>
+&nbsp;        /** How much damage blocks (turrets) deal. */
+<b class="fc">&nbsp;        public float blockDamageMultiplier = 1f;</b>
+&nbsp;        /** Multiplier for building speed. */
+<b class="fc">&nbsp;        public float buildSpeedMultiplier = 1f;</b>
+&nbsp;
+&nbsp;        //build cost disabled due to technical complexity
+&nbsp;    }
+&nbsp;
+&nbsp;    /** A simple map for storing TeamRules in an efficient way without hashing. */
+<b class="fc">&nbsp;    public static class TeamRules implements JsonSerializable{</b>
+<b class="fc">&nbsp;        final TeamRule[] values = new TeamRule[Team.all.length];</b>
+&nbsp;
+&nbsp;        public TeamRule get(Team team){
+<b class="fc">&nbsp;            TeamRule out = values[team.id];</b>
+<b class="fc">&nbsp;            return out == null ? (values[team.id] = new TeamRule()) : out;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Json json){
+<b class="fc">&nbsp;            for(Team team : Team.all){</b>
+<b class="fc">&nbsp;                if(values[team.id] != null){</b>
+<b class="fc">&nbsp;                    json.writeValue(team.id + &quot;&quot;, values[team.id], TeamRule.class);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Json json, JsonValue jsonData){
+<b class="fc">&nbsp;            for(JsonValue value : jsonData){</b>
+<b class="fc">&nbsp;                values[Integer.parseInt(value.name)] = json.readValue(TeamRule.class, value);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

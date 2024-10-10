@@ -1,0 +1,161 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ArtilleryBulletType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.bullet</a>
+</div>
+
+<h1>Coverage Summary for Class: ArtilleryBulletType (mindustry.entities.bullet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ArtilleryBulletType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    84.2%
+  </span>
+  <span class="absValue">
+    (16/19)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.bullet;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;public class ArtilleryBulletType extends BasicBulletType{
+<b class="fc">&nbsp;    public float trailMult = 1f, trailSize = 4f;</b>
+&nbsp;
+&nbsp;    public ArtilleryBulletType(float speed, float damage, String bulletSprite){
+<b class="fc">&nbsp;        super(speed, damage, bulletSprite);</b>
+<b class="fc">&nbsp;        collidesTiles = false;</b>
+<b class="fc">&nbsp;        collides = false;</b>
+<b class="fc">&nbsp;        collidesAir = false;</b>
+<b class="fc">&nbsp;        scaleLife = true;</b>
+<b class="fc">&nbsp;        hitShake = 1f;</b>
+<b class="fc">&nbsp;        hitSound = Sounds.explosion;</b>
+<b class="fc">&nbsp;        hitEffect = Fx.flakExplosion;</b>
+<b class="fc">&nbsp;        shootEffect = Fx.shootBig;</b>
+<b class="fc">&nbsp;        trailEffect = Fx.artilleryTrail;</b>
+&nbsp;
+&nbsp;        //default settings:
+<b class="fc">&nbsp;        shrinkX = 0.15f;</b>
+<b class="fc">&nbsp;        shrinkY = 0.63f;</b>
+<b class="fc">&nbsp;        shrinkInterp = Interp.slope;</b>
+&nbsp;
+&nbsp;        //for trail:
+&nbsp;
+&nbsp;        /*
+&nbsp;        trailLength = 27;
+&nbsp;        trailWidth = 3.5f;
+&nbsp;        trailEffect = Fx.none;
+&nbsp;        trailColor = Pal.bulletYellowBack;
+&nbsp;
+&nbsp;        trailInterp = Interp.slope;
+&nbsp;
+&nbsp;        shrinkX = 0.8f;
+&nbsp;        shrinkY = 0.3f;
+&nbsp;        */
+&nbsp;    }
+&nbsp;
+&nbsp;    public ArtilleryBulletType(float speed, float damage){
+<b class="fc">&nbsp;        this(speed, damage, &quot;shell&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ArtilleryBulletType(){
+<b class="fc">&nbsp;        this(1f, 1f, &quot;shell&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(Bullet b){
+<b class="nc">&nbsp;        super.update(b);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(b.timer(0, (3 + b.fslope() * 2f) * trailMult)){</b>
+<b class="nc">&nbsp;            trailEffect.at(b.x, b.y, b.fslope() * trailSize, backColor);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

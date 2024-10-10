@@ -1,0 +1,302 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MinimapFragment</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.fragments</a>
+</div>
+
+<h1>Coverage Summary for Class: MinimapFragment (mindustry.ui.fragments)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MinimapFragment</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/55)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MinimapFragment$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MinimapFragment$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/70)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.fragments;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class MinimapFragment{</b>
+&nbsp;    private boolean shown;
+<b class="nc">&nbsp;    float panx, pany, zoom = 1f, lastZoom = -1;</b>
+<b class="nc">&nbsp;    private float baseSize = Scl.scl(5f);</b>
+&nbsp;    public Element elem;
+&nbsp;
+&nbsp;    protected Rect getRectBounds(){
+&nbsp;        float
+<b class="nc">&nbsp;            w = Core.graphics.getWidth(),</b>
+<b class="nc">&nbsp;            h = Core.graphics.getHeight(),</b>
+<b class="nc">&nbsp;            ratio = renderer.minimap.getTexture() == null ? 1f : (float)renderer.minimap.getTexture().height / renderer.minimap.getTexture().width,</b>
+<b class="nc">&nbsp;            size = baseSize * zoom * world.width();</b>
+&nbsp;
+<b class="nc">&nbsp;        return Tmp.r1.set(w/2f + panx*zoom - size/2f, h/2f + pany*zoom - size/2f * ratio, size, size * ratio);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void build(Group parent){
+<b class="nc">&nbsp;        elem = parent.fill((x, y, w, h) -&gt; {</b>
+<b class="nc">&nbsp;            w = Core.graphics.getWidth();</b>
+<b class="nc">&nbsp;            h = Core.graphics.getHeight();</b>
+<b class="nc">&nbsp;            float size = baseSize * zoom * world.width();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(Color.black);</b>
+<b class="nc">&nbsp;            Fill.crect(0, 0, w, h);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(renderer.minimap.getTexture() != null){</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+<b class="nc">&nbsp;                float ratio = (float)renderer.minimap.getTexture().height / renderer.minimap.getTexture().width;</b>
+<b class="nc">&nbsp;                TextureRegion reg = Draw.wrap(renderer.minimap.getTexture());</b>
+<b class="nc">&nbsp;                Draw.rect(reg, w/2f + panx*zoom, h/2f + pany*zoom, size, size * ratio);</b>
+&nbsp;
+<b class="nc">&nbsp;                Rect bounds = getRectBounds();</b>
+<b class="nc">&nbsp;                renderer.minimap.drawEntities(bounds.x, bounds.y, bounds.width, bounds.height, zoom, true);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        elem.visible(() -&gt; shown);</b>
+<b class="nc">&nbsp;        elem.update(() -&gt; {</b>
+<b class="nc">&nbsp;            if(!ui.chatfrag.shown()){</b>
+<b class="nc">&nbsp;                elem.requestKeyboard();</b>
+<b class="nc">&nbsp;                elem.requestScroll();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            elem.setFillParent(true);</b>
+<b class="nc">&nbsp;            elem.setBounds(0, 0, Core.graphics.getWidth(), Core.graphics.getHeight());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Core.input.keyTap(Binding.menu)){</b>
+<b class="nc">&nbsp;                shown = false;</b>
+&nbsp;            }
+&nbsp;        });
+<b class="nc">&nbsp;        elem.touchable = Touchable.enabled;</b>
+&nbsp;
+<b class="nc">&nbsp;        elem.addListener(new ElementGestureListener(){</b>
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void zoom(InputEvent event, float initialDistance, float distance){
+<b class="nc">&nbsp;                if(lastZoom &lt; 0){</b>
+<b class="nc">&nbsp;                    lastZoom = zoom;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                zoom = Mathf.clamp(distance / initialDistance * lastZoom, 0.25f, 10f);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void pan(InputEvent event, float x, float y, float deltaX, float deltaY){
+<b class="nc">&nbsp;                if(event.keyCode != KeyCode.mouseRight){</b>
+<b class="nc">&nbsp;                    panx += deltaX / zoom;</b>
+<b class="nc">&nbsp;                    pany += deltaY / zoom;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    panTo(x, y);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
+<b class="nc">&nbsp;                super.touchDown(event, x, y, pointer, button);</b>
+<b class="nc">&nbsp;                if(button == KeyCode.mouseRight){</b>
+<b class="nc">&nbsp;                    panTo(x, y);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button){
+<b class="nc">&nbsp;                lastZoom = zoom;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        elem.addListener(new InputListener(){</b>
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public boolean scrolled(InputEvent event, float x, float y, float amountX, float amountY){
+<b class="nc">&nbsp;                zoom = Mathf.clamp(zoom - amountY / 10f * zoom, 0.25f, 10f);</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        parent.fill(t -&gt; {</b>
+<b class="nc">&nbsp;            t.setFillParent(true);</b>
+<b class="nc">&nbsp;            t.visible(() -&gt; shown);</b>
+<b class="nc">&nbsp;            t.update(() -&gt; t.setBounds(0, 0, Core.graphics.getWidth(), Core.graphics.getHeight()));</b>
+&nbsp;
+<b class="nc">&nbsp;            t.add(&quot;@minimap&quot;).style(Styles.outlineLabel).pad(10f);</b>
+<b class="nc">&nbsp;            t.row();</b>
+<b class="nc">&nbsp;            t.add().growY();</b>
+<b class="nc">&nbsp;            t.row();</b>
+<b class="nc">&nbsp;            t.button(&quot;@back&quot;, Icon.leftOpen, () -&gt; shown = false).size(220f, 60f).pad(10f);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void panTo(float relativeX, float relativeY){
+<b class="nc">&nbsp;        Rect r = getRectBounds();</b>
+<b class="nc">&nbsp;        Tmp.v1.set(relativeX, relativeY).sub(r.x, r.y).scl(1f / r.width, 1f / r.height).scl(world.unitWidth(), world.unitHeight());</b>
+<b class="nc">&nbsp;        control.input.panCamera(Tmp.v1.clamp(-tilesize/2f, -tilesize/2f, world.unitWidth() + tilesize/2f, world.unitHeight() + tilesize/2f));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean shown(){
+<b class="nc">&nbsp;        return shown;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void hide(){
+<b class="nc">&nbsp;        shown = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void toggle(){
+<b class="nc">&nbsp;        if(renderer.minimap.getTexture() != null){</b>
+<b class="nc">&nbsp;            float size = baseSize * zoom * world.width();</b>
+<b class="nc">&nbsp;            float ratio = (float)renderer.minimap.getTexture().height / renderer.minimap.getTexture().width;</b>
+<b class="nc">&nbsp;            float px = player.dead() ? Core.camera.position.x : player.x, py = player.dead() ? Core.camera.position.y : player.y;</b>
+<b class="nc">&nbsp;            panx = (size/2f - px / (world.width() * tilesize) * size) / zoom;</b>
+<b class="nc">&nbsp;            pany = (size*ratio/2f - py / (world.height() * tilesize) * size*ratio) / zoom;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        shown = !shown;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

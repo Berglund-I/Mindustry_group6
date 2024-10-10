@@ -1,0 +1,243 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LiquidSource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.sandbox</a>
+</div>
+
+<h1>Coverage Summary for Class: LiquidSource (mindustry.world.blocks.sandbox)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LiquidSource</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    89.5%
+  </span>
+  <span class="absValue">
+    (17/19)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LiquidSource$LiquidSourceBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.5%
+  </span>
+  <span class="absValue">
+    (5/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (12/20)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    58.3%
+  </span>
+  <span class="absValue">
+    (7/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    74.4%
+  </span>
+  <span class="absValue">
+    (29/39)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.sandbox;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.liquid.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class LiquidSource extends Block{
+&nbsp;    public @Load(&quot;cross&quot;) TextureRegion crossRegion;
+&nbsp;    public @Load(&quot;source-bottom&quot;) TextureRegion bottomRegion;
+&nbsp;
+&nbsp;    public LiquidSource(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        hasLiquids = true;</b>
+<b class="fc">&nbsp;        liquidCapacity = 10000f;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        outputsLiquid = true;</b>
+<b class="fc">&nbsp;        saveConfig = true;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+<b class="fc">&nbsp;        displayFlow = false;</b>
+<b class="fc">&nbsp;        group = BlockGroup.liquids;</b>
+<b class="fc">&nbsp;        envEnabled = Env.any;</b>
+<b class="fc">&nbsp;        clearOnDoubleTap = true;</b>
+&nbsp;
+<b class="fc">&nbsp;        config(Liquid.class, (LiquidSourceBuild tile, Liquid l) -&gt; tile.source = l);</b>
+<b class="fc">&nbsp;        configClear((LiquidSourceBuild tile) -&gt; tile.source = null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        removeBar(&quot;liquid&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanConfig(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        drawPlanConfigCenter(plan, plan.config, &quot;center&quot;, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{bottomRegion, region};</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class LiquidSourceBuild extends Building{</b>
+<b class="fc">&nbsp;        public @Nullable Liquid source = null;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(source == null){</b>
+<b class="fc">&nbsp;                liquids.clear();</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                liquids.set(source, liquidCapacity);</b>
+<b class="fc">&nbsp;                dumpLiquid(source);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(bottomRegion, x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(source == null){</b>
+<b class="nc">&nbsp;                Draw.rect(crossRegion, x, y);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                LiquidBlock.drawTiledFrames(size, x, y, 0f, source, 1f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(block.region, x, y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            ItemSelection.buildTable(LiquidSource.this, table, content.liquids(), () -&gt; source, this::configure, selectionRows, selectionColumns);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Liquid config(){
+<b class="nc">&nbsp;            return source;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.s(source == null ? -1 : source.id);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            int id = revision == 1 ? read.s() : read.b();</b>
+<b class="fc">&nbsp;            source = id == -1 ? null : content.liquid(id);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

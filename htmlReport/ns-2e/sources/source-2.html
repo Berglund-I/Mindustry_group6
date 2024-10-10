@@ -1,0 +1,192 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ParticleWeather</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type.weather</a>
+</div>
+
+<h1>Coverage Summary for Class: ParticleWeather (mindustry.type.weather)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ParticleWeather</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.3%
+  </span>
+  <span class="absValue">
+    (10/43)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type.weather;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.Texture.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;public class ParticleWeather extends Weather{
+<b class="fc">&nbsp;    public String particleRegion = &quot;circle-shadow&quot;;</b>
+<b class="fc">&nbsp;    public Color color = Color.white.cpy();</b>
+&nbsp;    public TextureRegion region;
+<b class="fc">&nbsp;    public float yspeed = -2f, xspeed = 0.25f, padding = 16f, sizeMin = 2.4f, sizeMax = 12f, density = 1200f, minAlpha = 1f, maxAlpha = 1f, force = 0, noiseScale = 2000f, baseSpeed = 6.1f;</b>
+<b class="fc">&nbsp;    public float sinSclMin = 30f, sinSclMax = 80f, sinMagMin = 1f, sinMagMax = 7f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public Color noiseColor = color;</b>
+<b class="fc">&nbsp;    public boolean drawNoise = false, drawParticles = true, useWindVector = false, randomParticleRotation = false;</b>
+<b class="fc">&nbsp;    public int noiseLayers = 1;</b>
+<b class="fc">&nbsp;    public float noiseLayerSpeedM = 1.1f, noiseLayerAlphaM = 0.8f, noiseLayerSclM = 0.99f, noiseLayerColorM = 1f;</b>
+<b class="fc">&nbsp;    public String noisePath = &quot;noiseAlpha&quot;;</b>
+&nbsp;    public @Nullable Texture noise;
+&nbsp;
+&nbsp;    public ParticleWeather(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        region = Core.atlas.find(particleRegion);</b>
+&nbsp;
+&nbsp;        //load noise texture
+<b class="nc">&nbsp;        if(drawNoise &amp;&amp; Core.assets != null){</b>
+<b class="nc">&nbsp;            Core.assets.load(&quot;sprites/&quot; + noisePath + &quot;.png&quot;, Texture.class);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(WeatherState state){
+<b class="nc">&nbsp;        float speed = force * state.intensity * Time.delta;</b>
+<b class="nc">&nbsp;        if(speed &gt; 0.001f){</b>
+<b class="nc">&nbsp;            float windx = state.windVector.x * speed, windy = state.windVector.y * speed;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Unit unit : Groups.unit){</b>
+<b class="nc">&nbsp;                unit.impulse(windx, windy);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawOver(WeatherState state){
+&nbsp;
+&nbsp;        float windx, windy;
+<b class="nc">&nbsp;        if(useWindVector){</b>
+<b class="nc">&nbsp;            float speed = baseSpeed * state.intensity;</b>
+<b class="nc">&nbsp;            windx = state.windVector.x * speed;</b>
+<b class="nc">&nbsp;            windy = state.windVector.y * speed;</b>
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            windx = this.xspeed;</b>
+<b class="nc">&nbsp;            windy = this.yspeed;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(drawNoise){</b>
+<b class="nc">&nbsp;            if(noise == null){</b>
+<b class="nc">&nbsp;                noise = Core.assets.get(&quot;sprites/&quot; + noisePath + &quot;.png&quot;, Texture.class);</b>
+<b class="nc">&nbsp;                noise.setWrap(TextureWrap.repeat);</b>
+<b class="nc">&nbsp;                noise.setFilter(TextureFilter.linear);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float sspeed = 1f, sscl = 1f, salpha = 1f, offset = 0f;</b>
+<b class="nc">&nbsp;            Color col = Tmp.c1.set(noiseColor);</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; noiseLayers; i++){</b>
+<b class="nc">&nbsp;                drawNoise(noise, noiseColor, noiseScale * sscl, state.opacity * salpha * opacityMultiplier, sspeed * (useWindVector ? 1f : baseSpeed), state.intensity, windx, windy, offset);</b>
+<b class="nc">&nbsp;                sspeed *= noiseLayerSpeedM;</b>
+<b class="nc">&nbsp;                salpha *= noiseLayerAlphaM;</b>
+<b class="nc">&nbsp;                sscl *= noiseLayerSclM;</b>
+<b class="nc">&nbsp;                offset += 0.29f;</b>
+<b class="nc">&nbsp;                col.mul(noiseLayerColorM);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(drawParticles){</b>
+<b class="nc">&nbsp;            drawParticles(region, color, sizeMin, sizeMax, density, state.intensity, state.opacity, windx, windy, minAlpha, maxAlpha, sinSclMin, sinSclMax, sinMagMin, sinMagMax, randomParticleRotation);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

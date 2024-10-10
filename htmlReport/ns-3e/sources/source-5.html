@@ -1,0 +1,402 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PayloadBlock</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.payloads</a>
+</div>
+
+<h1>Coverage Summary for Class: PayloadBlock (mindustry.world.blocks.payloads)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PayloadBlock</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (10/35)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PayloadBlock$PayloadBlockBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.4%
+  </span>
+  <span class="absValue">
+    (7/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21.1%
+  </span>
+  <span class="absValue">
+    (15/71)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    31%
+  </span>
+  <span class="absValue">
+    (9/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.6%
+  </span>
+  <span class="absValue">
+    (25/106)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.payloads;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class PayloadBlock extends Block{
+<b class="fc">&nbsp;    public float payloadSpeed = 0.7f, payloadRotateSpeed = 5f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public String regionSuffix = &quot;&quot;;</b>
+&nbsp;    public TextureRegion topRegion, outRegion, inRegion;
+&nbsp;
+&nbsp;    public PayloadBlock(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        sync = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.payloads;</b>
+<b class="fc">&nbsp;        acceptsUnitPayloads = true;</b>
+<b class="fc">&nbsp;        envEnabled |= Env.space | Env.underwater;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        topRegion = findFactoryRegion(&quot;-top&quot;);</b>
+<b class="nc">&nbsp;        outRegion =  findFactoryRegion(&quot;-out&quot;);</b>
+<b class="nc">&nbsp;        inRegion =  findFactoryRegion(&quot;-in&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected TextureRegion findFactoryRegion(String suf){
+<b class="nc">&nbsp;        TextureRegion region = Core.atlas.find(name + suf);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!region.found() &amp;&amp; minfo.mod != null) region = Core.atlas.find(minfo.mod.name + &quot;-factory&quot; + suf + &quot;-&quot; + size + regionSuffix);</b>
+<b class="nc">&nbsp;        if(!region.found()) region = Core.atlas.find(&quot;factory&quot; + suf + &quot;-&quot; + size + regionSuffix);</b>
+&nbsp;
+<b class="nc">&nbsp;        return region;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean blends(Building build, int direction){
+<b class="nc">&nbsp;        int size = build.block.size;</b>
+<b class="nc">&nbsp;        int trns = build.block.size/2 + 1;</b>
+<b class="nc">&nbsp;        Building accept = build.nearby(Geometry.d4(direction).x * trns, Geometry.d4(direction).y * trns);</b>
+<b class="nc">&nbsp;        return accept != null &amp;&amp;</b>
+&nbsp;            accept.block.outputsPayload &amp;&amp;
+&nbsp;
+&nbsp;            //if size is the same, block must either be facing this one, or not be rotating
+&nbsp;            ((accept.block.size == size
+<b class="nc">&nbsp;            &amp;&amp; Math.abs(accept.tileX() - build.tileX()) % size == 0 //check alignment</b>
+<b class="nc">&nbsp;            &amp;&amp; Math.abs(accept.tileY() - build.tileY()) % size == 0</b>
+<b class="nc">&nbsp;            &amp;&amp; ((accept.block.rotate &amp;&amp; accept.tileX() + Geometry.d4(accept.rotation).x * size == build.tileX() &amp;&amp; accept.tileY() + Geometry.d4(accept.rotation).y * size == build.tileY())</b>
+&nbsp;            || !accept.block.rotate
+&nbsp;            || !accept.block.outputFacing)) ||
+&nbsp;
+&nbsp;            //if the other block is smaller, check alignment
+&nbsp;            (accept.block.size != size &amp;&amp;
+&nbsp;            (accept.rotation % 2 == 0 ? //check orientation; make sure it&#39;s aligned properly with this block.
+<b class="nc">&nbsp;                Math.abs(accept.y - build.y) &lt;= Math.abs(size * tilesize - accept.block.size * tilesize)/2f : //check Y alignment</b>
+<b class="nc">&nbsp;                Math.abs(accept.x - build.x) &lt;= Math.abs(size * tilesize - accept.block.size * tilesize)/2f   //check X alignment</b>
+<b class="nc">&nbsp;                )) &amp;&amp; (!accept.block.rotate || accept.front() == build || !accept.block.outputFacing) //make sure it&#39;s facing this block</b>
+&nbsp;            );
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void pushOutput(Payload payload, float progress){
+<b class="fc">&nbsp;        float thresh = 0.55f;</b>
+<b class="fc">&nbsp;        if(progress &gt;= thresh){</b>
+<b class="nc">&nbsp;            boolean legStep = payload instanceof UnitPayload u &amp;&amp; u.unit.type.allowLegStep;</b>
+<b class="nc">&nbsp;            float size = payload.size(), radius = size/2f, x = payload.x(), y = payload.y(), scl = Mathf.clamp(((progress - thresh) / (1f - thresh)) * 1.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Groups.unit.intersect(x - size/2f, y - size/2f, size, size, u -&gt; {</b>
+<b class="nc">&nbsp;                float dst = u.dst(payload);</b>
+<b class="nc">&nbsp;                float rs = radius + u.hitSize/2f;</b>
+<b class="nc">&nbsp;                if(u.isGrounded() &amp;&amp; u.type.allowLegStep == legStep &amp;&amp; dst &lt; rs){</b>
+<b class="nc">&nbsp;                    u.vel.add(Tmp.v1.set(u.x - x, u.y - y).setLength(Math.min(rs - dst, 1f)).scl(scl));</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class PayloadBlockBuild&lt;T extends Payload&gt; extends Building{</b>
+&nbsp;        public @Nullable T payload;
+&nbsp;        //TODO redundant; already stored in payload?
+<b class="fc">&nbsp;        public Vec2 payVector = new Vec2();</b>
+&nbsp;        public float payRotation;
+&nbsp;        public boolean carried;
+&nbsp;
+&nbsp;        public boolean acceptUnitPayload(Unit unit){
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean canControlSelect(Unit unit){
+<b class="nc">&nbsp;            return !unit.spawnedByCore &amp;&amp; unit.type.allowedInPayloads &amp;&amp; this.payload == null &amp;&amp; acceptUnitPayload(unit) &amp;&amp; unit.tileOn() != null &amp;&amp; unit.tileOn().build == this;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onControlSelect(Unit player){
+<b class="nc">&nbsp;            float x = player.x, y = player.y;</b>
+<b class="nc">&nbsp;            handleUnitPayload(player, p -&gt; payload = (T)p);</b>
+<b class="nc">&nbsp;            this.payVector.set(x, y).sub(this).clamp(-size * tilesize / 2f, -size * tilesize / 2f, size * tilesize / 2f, size * tilesize / 2f);</b>
+<b class="nc">&nbsp;            this.payRotation = player.rotation;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptPayload(Building source, Payload payload){
+<b class="nc">&nbsp;            return this.payload == null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handlePayload(Building source, Payload payload){
+<b class="nc">&nbsp;            this.payload = (T)payload;</b>
+<b class="nc">&nbsp;            this.payVector.set(source).sub(this).clamp(-size * tilesize / 2f, -size * tilesize / 2f, size * tilesize / 2f, size * tilesize / 2f);</b>
+<b class="nc">&nbsp;            this.payRotation = payload.rotation();</b>
+&nbsp;
+<b class="nc">&nbsp;            updatePayload();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Payload getPayload(){
+<b class="nc">&nbsp;            return payload;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void pickedUp(){
+<b class="nc">&nbsp;            carried = true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawTeamTop(){
+<b class="nc">&nbsp;            carried = false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Payload takePayload(){
+<b class="nc">&nbsp;            T t = payload;</b>
+<b class="nc">&nbsp;            payload = null;</b>
+<b class="nc">&nbsp;            return t;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onRemoved(){
+<b class="nc">&nbsp;            super.onRemoved();</b>
+<b class="nc">&nbsp;            if(payload != null &amp;&amp; !carried) payload.dump();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(payload != null){</b>
+<b class="nc">&nbsp;                payload.update(null, this);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onDestroyed(){
+<b class="nc">&nbsp;            if(payload != null) payload.destroyed();</b>
+<b class="nc">&nbsp;            super.onDestroyed();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean blends(int direction){
+<b class="nc">&nbsp;            return PayloadBlock.blends(this, direction);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void updatePayload(){
+<b class="nc">&nbsp;            if(payload != null){</b>
+<b class="nc">&nbsp;                payload.set(x + payVector.x, y + payVector.y, payRotation);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        /** @return true if the payload is in position. */
+&nbsp;        public boolean moveInPayload(){
+<b class="fc">&nbsp;            return moveInPayload(true);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** @return true if the payload is in position. */
+&nbsp;        public boolean moveInPayload(boolean rotate){
+<b class="fc">&nbsp;            if(payload == null) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;            updatePayload();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(rotate){</b>
+<b class="nc">&nbsp;                payRotation = Angles.moveToward(payRotation, block.rotate ? rotdeg() : 90f, payloadRotateSpeed * delta());</b>
+&nbsp;            }
+<b class="nc">&nbsp;            payVector.approach(Vec2.ZERO, payloadSpeed * delta());</b>
+&nbsp;
+<b class="nc">&nbsp;            return hasArrived();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void moveOutPayload(){
+<b class="fc">&nbsp;            if(payload == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            updatePayload();</b>
+&nbsp;
+<b class="nc">&nbsp;            Vec2 dest = Tmp.v1.trns(rotdeg(), size * tilesize/2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            payRotation = Angles.moveToward(payRotation, rotdeg(), payloadRotateSpeed * delta());</b>
+<b class="nc">&nbsp;            payVector.approach(dest, payloadSpeed * delta());</b>
+&nbsp;
+<b class="nc">&nbsp;            Building front = front();</b>
+<b class="nc">&nbsp;            boolean canDump = front == null || !front.tile().solid();</b>
+<b class="nc">&nbsp;            boolean canMove = front != null &amp;&amp; (front.block.outputsPayload || front.block.acceptsPayload);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(canDump &amp;&amp; !canMove){</b>
+<b class="nc">&nbsp;                pushOutput(payload, 1f - (payVector.dst(dest) / (size * tilesize / 2f)));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(payVector.within(dest, 0.001f)){</b>
+<b class="nc">&nbsp;                payVector.clamp(-size * tilesize / 2f, -size * tilesize / 2f, size * tilesize / 2f, size * tilesize / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(canMove){</b>
+<b class="nc">&nbsp;                    if(movePayload(payload)){</b>
+<b class="nc">&nbsp;                        payload = null;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }else if(canDump){</b>
+<b class="nc">&nbsp;                    dumpPayload();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void dumpPayload(){
+&nbsp;            //translate payload forward slightly
+<b class="nc">&nbsp;            float tx = Angles.trnsx(payload.rotation(), 0.1f), ty = Angles.trnsy(payload.rotation(), 0.1f);</b>
+<b class="nc">&nbsp;            payload.set(payload.x() + tx, payload.y() + ty, payload.rotation());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(payload.dump()){</b>
+<b class="nc">&nbsp;                payload = null;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                payload.set(payload.x() - tx, payload.y() - ty, payload.rotation());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean hasArrived(){
+<b class="nc">&nbsp;            return payVector.isZero(0.01f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void drawPayload(){
+<b class="nc">&nbsp;            if(payload != null){</b>
+<b class="nc">&nbsp;                updatePayload();</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.z(Layer.blockOver);</b>
+<b class="nc">&nbsp;                payload.draw();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            write.f(payVector.x);</b>
+<b class="fc">&nbsp;            write.f(payVector.y);</b>
+<b class="fc">&nbsp;            write.f(payRotation);</b>
+<b class="fc">&nbsp;            Payload.write(payload, write);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            payVector.set(read.f(), read.f());</b>
+<b class="fc">&nbsp;            payRotation = read.f();</b>
+<b class="fc">&nbsp;            payload = Payload.read(read);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

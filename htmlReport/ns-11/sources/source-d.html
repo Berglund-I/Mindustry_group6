@@ -1,0 +1,297 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapRenderer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: MapRenderer (mindustry.editor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/94)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class MapRenderer implements Disposable{</b>
+&nbsp;    private static final int chunkSize = 64;
+&nbsp;    private IndexedRenderer[][] chunks;
+<b class="nc">&nbsp;    private IntSet updates = new IntSet();</b>
+<b class="nc">&nbsp;    private IntSet delayedUpdates = new IntSet();</b>
+&nbsp;    private TextureRegion clearEditor;
+&nbsp;    private int width, height;
+&nbsp;
+&nbsp;    public void resize(int width, int height){
+<b class="nc">&nbsp;        updates.clear();</b>
+<b class="nc">&nbsp;        delayedUpdates.clear();</b>
+<b class="nc">&nbsp;        if(chunks != null){</b>
+<b class="nc">&nbsp;            for(int x = 0; x &lt; chunks.length; x++){</b>
+<b class="nc">&nbsp;                for(int y = 0; y &lt; chunks[0].length; y++){</b>
+<b class="nc">&nbsp;                    chunks[x][y].dispose();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        chunks = new IndexedRenderer[(int)Math.ceil((float)width / chunkSize)][(int)Math.ceil((float)height / chunkSize)];</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = 0; x &lt; chunks.length; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; chunks[0].length; y++){</b>
+<b class="nc">&nbsp;                chunks[x][y] = new IndexedRenderer(chunkSize * chunkSize * 2);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        this.width = width;</b>
+<b class="nc">&nbsp;        this.height = height;</b>
+<b class="nc">&nbsp;        updateAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(float tx, float ty, float tw, float th){
+<b class="nc">&nbsp;        Draw.flush();</b>
+<b class="nc">&nbsp;        clearEditor = Core.atlas.find(&quot;clear-editor&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        updates.each(i -&gt; render(i % width, i / width));</b>
+<b class="nc">&nbsp;        updates.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        updates.addAll(delayedUpdates);</b>
+<b class="nc">&nbsp;        delayedUpdates.clear();</b>
+&nbsp;
+&nbsp;        //????
+<b class="nc">&nbsp;        if(chunks == null){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var texture = Core.atlas.find(&quot;clear-editor&quot;).texture;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = 0; x &lt; chunks.length; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; chunks[0].length; y++){</b>
+<b class="nc">&nbsp;                IndexedRenderer mesh = chunks[x][y];</b>
+&nbsp;
+<b class="nc">&nbsp;                if(mesh == null){</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                mesh.getTransformMatrix().setToTranslation(tx, ty).scale(tw / (width * tilesize), th / (height * tilesize));</b>
+<b class="nc">&nbsp;                mesh.setProjectionMatrix(Draw.proj());</b>
+&nbsp;
+<b class="nc">&nbsp;                mesh.render(texture);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updatePoint(int x, int y){
+<b class="nc">&nbsp;        updates.add(x + y * width);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateAll(){
+<b class="nc">&nbsp;        clearEditor = Core.atlas.find(&quot;clear-editor&quot;);</b>
+<b class="nc">&nbsp;        for(int x = 0; x &lt; width; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; height; y++){</b>
+<b class="nc">&nbsp;                render(x, y);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private TextureRegion getIcon(Block wall, int index){
+<b class="nc">&nbsp;        return !wall.editorIcon().found() ?</b>
+<b class="nc">&nbsp;            clearEditor : wall.variants &gt; 0 ?</b>
+<b class="nc">&nbsp;            wall.editorVariantRegions()[Mathf.randomSeed(index, 0, wall.editorVariantRegions().length - 1)] :</b>
+<b class="nc">&nbsp;            wall.editorIcon();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void render(int wx, int wy){
+<b class="nc">&nbsp;        int x = wx / chunkSize, y = wy / chunkSize;</b>
+<b class="nc">&nbsp;        if(x &gt;= chunks.length || y &gt;= chunks[0].length) return;</b>
+<b class="nc">&nbsp;        IndexedRenderer mesh = chunks[x][y];</b>
+<b class="nc">&nbsp;        Tile tile = editor.tiles().getn(wx, wy);</b>
+&nbsp;
+<b class="nc">&nbsp;        Team team = tile.team();</b>
+<b class="nc">&nbsp;        Floor floor = tile.floor();</b>
+<b class="nc">&nbsp;        Floor overlay = tile.overlay();</b>
+<b class="nc">&nbsp;        Block wall = tile.block();</b>
+&nbsp;
+&nbsp;        TextureRegion region;
+&nbsp;
+<b class="nc">&nbsp;        int idxWall = (wx % chunkSize) + (wy % chunkSize) * chunkSize;</b>
+<b class="nc">&nbsp;        int idxDecal = (wx % chunkSize) + (wy % chunkSize) * chunkSize + chunkSize * chunkSize;</b>
+<b class="nc">&nbsp;        boolean center = tile.isCenter();</b>
+<b class="nc">&nbsp;        boolean useSyntheticWall = wall.synthetic() || overlay.wallOre;</b>
+&nbsp;
+&nbsp;        //draw synthetic wall or floor OR standard wall if wall ore
+<b class="nc">&nbsp;        if(wall != Blocks.air &amp;&amp; useSyntheticWall){</b>
+<b class="nc">&nbsp;            region = !center ? clearEditor : getIcon(wall, idxWall);</b>
+&nbsp;
+<b class="nc">&nbsp;            float width = region.width * region.scl(), height = region.height * region.scl(), ox = wall.offset + (tilesize - width) / 2f, oy = wall.offset + (tilesize - height) / 2f;</b>
+&nbsp;
+&nbsp;            //force fit to tile
+<b class="nc">&nbsp;            if(overlay.wallOre &amp;&amp; !wall.synthetic()){</b>
+<b class="nc">&nbsp;                width = height = tilesize;</b>
+<b class="nc">&nbsp;                ox = oy = 0f;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            mesh.draw(idxWall, region,</b>
+&nbsp;            wx * tilesize + ox,
+&nbsp;            wy * tilesize + oy,
+&nbsp;            width, height,
+<b class="nc">&nbsp;            tile.build == null || !wall.rotate ? 0 : tile.build.rotdeg());</b>
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            region = floor.editorVariantRegions()[Mathf.randomSeed(idxWall, 0, floor.editorVariantRegions().length - 1)];</b>
+&nbsp;
+<b class="nc">&nbsp;            mesh.draw(idxWall, region, wx * tilesize, wy * tilesize, 8, 8);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float offsetX = -((wall.size + 1) / 3) * tilesize, offsetY = -((wall.size + 1) / 3) * tilesize;</b>
+&nbsp;
+&nbsp;        //draw non-synthetic wall or ore
+<b class="nc">&nbsp;        if((wall.update || wall.destructible) &amp;&amp; center){</b>
+<b class="nc">&nbsp;            mesh.setColor(team.color);</b>
+<b class="nc">&nbsp;            region = Core.atlas.find(&quot;block-border-editor&quot;);</b>
+<b class="nc">&nbsp;            if(wall.size == 2){</b>
+<b class="nc">&nbsp;                offsetX += tilesize;</b>
+<b class="nc">&nbsp;                offsetY += tilesize;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(!useSyntheticWall &amp;&amp; wall != Blocks.air &amp;&amp; center){</b>
+<b class="nc">&nbsp;            region = getIcon(wall, idxWall);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(wall == Blocks.cliff){</b>
+<b class="nc">&nbsp;                mesh.setColor(Tmp.c1.set(floor.mapColor).mul(1.6f));</b>
+<b class="nc">&nbsp;                region = ((Cliff)Blocks.cliff).editorCliffs[tile.data &amp; 0xff];</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            offsetX = tilesize / 2f - region.width * region.scl() / 2f;</b>
+<b class="nc">&nbsp;            offsetY = tilesize / 2f - region.height * region.scl() / 2f;</b>
+<b class="nc">&nbsp;        }else if((wall == Blocks.air || overlay.wallOre) &amp;&amp; !overlay.isAir()){</b>
+<b class="nc">&nbsp;            if(floor.isLiquid){</b>
+<b class="nc">&nbsp;                mesh.setColor(Tmp.c1.set(1f, 1f, 1f, floor.overlayAlpha));</b>
+&nbsp;            }
+<b class="nc">&nbsp;            region = overlay.editorVariantRegions()[Mathf.randomSeed(idxWall, 0, tile.overlay().editorVariantRegions().length - 1)];</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            region = clearEditor;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float width = region.width * region.scl(), height = region.height * region.scl();</b>
+<b class="nc">&nbsp;        if(!wall.synthetic() &amp;&amp; wall != Blocks.air &amp;&amp; !wall.isMultiblock()){</b>
+<b class="nc">&nbsp;            offsetX = offsetY = 0f;</b>
+<b class="nc">&nbsp;            width = height = tilesize;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        mesh.draw(idxDecal, region, wx * tilesize + offsetX, wy * tilesize + offsetY, width, height);</b>
+<b class="nc">&nbsp;        mesh.setColor(Color.white);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+<b class="nc">&nbsp;        if(chunks == null){</b>
+&nbsp;            return;
+&nbsp;        }
+<b class="nc">&nbsp;        for(int x = 0; x &lt; chunks.length; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; chunks[0].length; y++){</b>
+<b class="nc">&nbsp;                if(chunks[x][y] != null){</b>
+<b class="nc">&nbsp;                    chunks[x][y].dispose();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

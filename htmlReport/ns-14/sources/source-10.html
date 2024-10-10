@@ -1,0 +1,196 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MassDriverBolt</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.bullet</a>
+</div>
+
+<h1>Coverage Summary for Class: MassDriverBolt (mindustry.entities.bullet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MassDriverBolt</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24.3%
+  </span>
+  <span class="absValue">
+    (9/37)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.bullet;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.blocks.distribution.MassDriver.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class MassDriverBolt extends BasicBulletType{
+&nbsp;
+&nbsp;    public MassDriverBolt(){
+<b class="fc">&nbsp;        super(1f, 75);</b>
+<b class="fc">&nbsp;        collidesTiles = false;</b>
+<b class="fc">&nbsp;        lifetime = 1f;</b>
+<b class="fc">&nbsp;        width = 11f;</b>
+<b class="fc">&nbsp;        height = 13f;</b>
+<b class="fc">&nbsp;        shrinkY = 0f;</b>
+<b class="fc">&nbsp;        sprite = &quot;shell&quot;;</b>
+<b class="fc">&nbsp;        despawnEffect = Fx.smeltsmoke;</b>
+<b class="fc">&nbsp;        hitEffect = Fx.hitBulletBig;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(Bullet b){
+<b class="nc">&nbsp;        super.update(b);</b>
+&nbsp;        
+&nbsp;        //data MUST be an instance of DriverBulletData
+<b class="nc">&nbsp;        if(!(b.data() instanceof DriverBulletData data)){</b>
+<b class="nc">&nbsp;            hit(b);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float hitDst = 7f;</b>
+&nbsp;
+&nbsp;        //if the target is dead, just keep flying until the bullet explodes
+<b class="nc">&nbsp;        if(data.to.dead()){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float baseDst = data.from.dst(data.to);</b>
+<b class="nc">&nbsp;        float dst1 = b.dst(data.from);</b>
+<b class="nc">&nbsp;        float dst2 = b.dst(data.to);</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean intersect = false;</b>
+&nbsp;
+&nbsp;        //bullet has gone past the destination point: but did it intersect it?
+<b class="nc">&nbsp;        if(dst1 &gt; baseDst){</b>
+<b class="nc">&nbsp;            float angleTo = b.angleTo(data.to);</b>
+<b class="nc">&nbsp;            float baseAngle = data.to.angleTo(data.from);</b>
+&nbsp;
+&nbsp;            //if angles are nearby, then yes, it did
+<b class="nc">&nbsp;            if(Angles.near(angleTo, baseAngle, 2f)){</b>
+<b class="nc">&nbsp;                intersect = true;</b>
+&nbsp;                //snap bullet position back; this is used for low-FPS situations
+<b class="nc">&nbsp;                b.set(data.to.x + Angles.trnsx(baseAngle, hitDst), data.to.y + Angles.trnsy(baseAngle, hitDst));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //if on course and it&#39;s in range of the target
+<b class="nc">&nbsp;        if(Math.abs(dst1 + dst2 - baseDst) &lt; 4f &amp;&amp; dst2 &lt;= hitDst){</b>
+<b class="nc">&nbsp;            intersect = true;</b>
+&nbsp;        } //else, bullet has gone off course, does not get received.
+&nbsp;
+<b class="nc">&nbsp;        if(intersect){</b>
+<b class="nc">&nbsp;            data.to.handlePayload(b, data);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void despawned(Bullet b){
+<b class="nc">&nbsp;        super.despawned(b);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!(b.data() instanceof DriverBulletData data)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; data.items.length; i++){</b>
+<b class="nc">&nbsp;            int amountDropped = Mathf.random(0, data.items[i]);</b>
+<b class="nc">&nbsp;            if(amountDropped &gt; 0){</b>
+<b class="nc">&nbsp;                float angle = b.rotation() + Mathf.range(100f);</b>
+<b class="nc">&nbsp;                Fx.dropItem.at(b.x, b.y, angle, Color.white, content.item(i));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void hit(Bullet b, float hitx, float hity){
+<b class="nc">&nbsp;        super.hit(b, hitx, hity);</b>
+<b class="nc">&nbsp;        despawned(b);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

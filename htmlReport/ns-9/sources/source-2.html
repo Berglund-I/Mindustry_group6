@@ -1,0 +1,219 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Selement</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.util</a>
+</div>
+
+<h1>Coverage Summary for Class: Selement (mindustry.annotations.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Selement</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/27)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.util;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import com.squareup.javapoet.*;
+&nbsp;import com.sun.tools.javac.code.Attribute.*;
+&nbsp;import mindustry.annotations.*;
+&nbsp;
+&nbsp;import javax.lang.model.element.*;
+&nbsp;import javax.lang.model.type.*;
+&nbsp;import java.lang.Class;
+&nbsp;import java.lang.annotation.*;
+&nbsp;import java.lang.reflect.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Wrapper over Element with added utility functions.
+&nbsp; * I would have preferred to use extension methods for this, but Java doesn&#39;t have any.
+&nbsp; * */
+&nbsp;public class Selement&lt;T extends Element&gt;{
+&nbsp;    public final T e;
+&nbsp;
+<b class="nc">&nbsp;    public Selement(T e){</b>
+<b class="nc">&nbsp;        this.e = e;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public String doc(){
+<b class="nc">&nbsp;        return BaseProcessor.elementu.getDocComment(e);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Selement&lt;?&gt;&gt; enclosed(){
+<b class="nc">&nbsp;        return Seq.with(e.getEnclosedElements()).map(Selement::new);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String fullName(){
+<b class="nc">&nbsp;        return e.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Stype asType(){
+<b class="nc">&nbsp;        return new Stype((TypeElement)e);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Svar asVar(){
+<b class="nc">&nbsp;        return new Svar((VariableElement)e);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Smethod asMethod(){
+<b class="nc">&nbsp;        return new Smethod((ExecutableElement)e);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isVar(){
+<b class="nc">&nbsp;        return e instanceof VariableElement;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isType(){
+<b class="nc">&nbsp;        return e instanceof TypeElement;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isMethod(){
+<b class="nc">&nbsp;        return e instanceof ExecutableElement;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;? extends AnnotationMirror&gt; annotations(){
+<b class="nc">&nbsp;        return Seq.with(e.getAnnotationMirrors());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;A extends Annotation&gt; A annotation(Class&lt;A&gt; annotation){
+&nbsp;        try{
+<b class="nc">&nbsp;            Method m = com.sun.tools.javac.code.AnnoConstruct.class.getDeclaredMethod(&quot;getAttribute&quot;, Class.class);</b>
+<b class="nc">&nbsp;            m.setAccessible(true);</b>
+<b class="nc">&nbsp;            Compound compound = (Compound)m.invoke(e, annotation);</b>
+<b class="nc">&nbsp;            return compound == null ? null : AnnotationProxyMaker.generateAnnotation(compound, annotation);</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;A extends Annotation&gt; boolean has(Class&lt;A&gt; annotation){
+<b class="nc">&nbsp;        return annotation(annotation) != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Element up(){
+<b class="nc">&nbsp;        return e.getEnclosingElement();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypeMirror mirror(){
+<b class="nc">&nbsp;        return e.asType();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypeName tname(){
+<b class="nc">&nbsp;        return TypeName.get(mirror());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassName cname(){
+<b class="nc">&nbsp;        return ClassName.get((TypeElement)BaseProcessor.typeu.asElement(mirror()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String name(){
+<b class="nc">&nbsp;        return e.getSimpleName().toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return e.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int hashCode(){
+<b class="nc">&nbsp;        return e.hashCode();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean equals(Object o){
+<b class="nc">&nbsp;        return o != null &amp;&amp; o.getClass() == getClass() &amp;&amp; e.equals(((Selement)o).e);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

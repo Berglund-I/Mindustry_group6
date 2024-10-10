@@ -1,0 +1,961 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BulletType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.bullet</a>
+</div>
+
+<h1>Coverage Summary for Class: BulletType (mindustry.entities.bullet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BulletType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.1%
+  </span>
+  <span class="absValue">
+    (9/56)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.7%
+  </span>
+  <span class="absValue">
+    (160/375)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.bullet;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.part.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class BulletType extends Content implements Cloneable{
+<b class="fc">&nbsp;    static final UnitDamageEvent bulletDamageEvent = new UnitDamageEvent();</b>
+&nbsp;
+&nbsp;    /** Lifetime in ticks. */
+<b class="fc">&nbsp;    public float lifetime = 40f;</b>
+&nbsp;    /** Speed in units/tick. */
+<b class="fc">&nbsp;    public float speed = 1f;</b>
+&nbsp;    /** Direct damage dealt on hit. */
+<b class="fc">&nbsp;    public float damage = 1f;</b>
+&nbsp;    /** Hitbox size. */
+<b class="fc">&nbsp;    public float hitSize = 4;</b>
+&nbsp;    /** Clipping hitbox. */
+<b class="fc">&nbsp;    public float drawSize = 40f;</b>
+&nbsp;    /** Drag as fraction of velocity. */
+<b class="fc">&nbsp;    public float drag = 0f;</b>
+&nbsp;    /** Whether to pierce units. */
+&nbsp;    public boolean pierce;
+&nbsp;    /** Whether to pierce buildings. */
+&nbsp;    public boolean pierceBuilding;
+&nbsp;    /** Maximum # of pierced objects. */
+<b class="fc">&nbsp;    public int pierceCap = -1;</b>
+&nbsp;    /** Multiplier of damage decreased per health pierced. */
+<b class="fc">&nbsp;    public float pierceDamageFactor = 0f;</b>
+&nbsp;    /** If positive, limits non-splash damage dealt to a fraction of the target&#39;s maximum health. */
+<b class="fc">&nbsp;    public float maxDamageFraction = -1f;</b>
+&nbsp;    /** If false, this bullet isn&#39;t removed after pierceCap is exceeded. Expert usage only. */
+<b class="fc">&nbsp;    public boolean removeAfterPierce = true;</b>
+&nbsp;    /** For piercing lasers, setting this to true makes it get absorbed by plastanium walls. */
+<b class="fc">&nbsp;    public boolean laserAbsorb = true;</b>
+&nbsp;    /** Life fraction at which this bullet has the best range/damage/etc. Used for lasers and continuous turrets. */
+<b class="fc">&nbsp;    public float optimalLifeFract = 0f;</b>
+&nbsp;    /** Z layer to drawn on. */
+<b class="fc">&nbsp;    public float layer = Layer.bullet;</b>
+&nbsp;    /** Effect shown on direct hit. */
+<b class="fc">&nbsp;    public Effect hitEffect = Fx.hitBulletSmall;</b>
+&nbsp;    /** Effect shown when bullet despawns. */
+<b class="fc">&nbsp;    public Effect despawnEffect = Fx.hitBulletSmall;</b>
+&nbsp;    /** Effect created when shooting. */
+<b class="fc">&nbsp;    public Effect shootEffect = Fx.shootSmall;</b>
+&nbsp;    /** Effect created when charging starts; only usable in single-shot weapons with a firstShotDelay / shotDelay. */
+<b class="fc">&nbsp;    public Effect chargeEffect = Fx.none;</b>
+&nbsp;    /** Extra smoke effect created when shooting. */
+<b class="fc">&nbsp;    public Effect smokeEffect = Fx.shootSmallSmoke;</b>
+&nbsp;    /** Sound made when hitting something or getting removed.*/
+<b class="fc">&nbsp;    public Sound hitSound = Sounds.none;</b>
+&nbsp;    /** Sound made when hitting something or getting removed.*/
+<b class="fc">&nbsp;    public Sound despawnSound = Sounds.none;</b>
+&nbsp;    /** Pitch of the sound made when hitting something*/
+<b class="fc">&nbsp;    public float hitSoundPitch = 1;</b>
+&nbsp;    /** Volume of the sound made when hitting something*/
+<b class="fc">&nbsp;    public float hitSoundVolume = 1;</b>
+&nbsp;    /** Extra inaccuracy when firing. */
+<b class="fc">&nbsp;    public float inaccuracy = 0f;</b>
+&nbsp;    /** How many bullets get created per ammo item/liquid. */
+<b class="fc">&nbsp;    public float ammoMultiplier = 2f;</b>
+&nbsp;    /** Multiplied by turret reload speed to get final shoot speed. */
+<b class="fc">&nbsp;    public float reloadMultiplier = 1f;</b>
+&nbsp;    /** Multiplier of how much base damage is done to tiles. */
+<b class="fc">&nbsp;    public float buildingDamageMultiplier = 1f;</b>
+&nbsp;    /** Recoil from shooter entities. */
+&nbsp;    public float recoil;
+&nbsp;    /** Whether to kill the shooter when this is shot. For suicide bombers. */
+&nbsp;    public boolean killShooter;
+&nbsp;    /** Whether to instantly make the bullet disappear. */
+&nbsp;    public boolean instantDisappear;
+&nbsp;    /** Damage dealt in splash. 0 to disable.*/
+<b class="fc">&nbsp;    public float splashDamage = 0f;</b>
+&nbsp;    /** If true, splash damage is &quot;correctly&quot; affected by unit hitbox size. Used for projectiles that do not collide / have splash as their main source of damage. */
+<b class="fc">&nbsp;    public boolean scaledSplashDamage = false;</b>
+&nbsp;    /** Knockback in velocity. */
+&nbsp;    public float knockback;
+&nbsp;    /** Should knockback follow the bullet&#39;s direction */
+&nbsp;    public boolean impact;
+&nbsp;    /** Status effect applied on hit. */
+<b class="fc">&nbsp;    public StatusEffect status = StatusEffects.none;</b>
+&nbsp;    /** Intensity of applied status effect in terms of duration. */
+<b class="fc">&nbsp;    public float statusDuration = 60 * 8f;</b>
+&nbsp;    /** Whether this bullet type collides with tiles. */
+<b class="fc">&nbsp;    public boolean collidesTiles = true;</b>
+&nbsp;    /** Whether this bullet type collides with tiles that are of the same team. */
+<b class="fc">&nbsp;    public boolean collidesTeam = false;</b>
+&nbsp;    /** Whether this bullet type collides with air/ground units. */
+<b class="fc">&nbsp;    public boolean collidesAir = true, collidesGround = true;</b>
+&nbsp;    /** Whether this bullet types collides with anything at all. */
+<b class="fc">&nbsp;    public boolean collides = true;</b>
+&nbsp;    /** If true, this projectile collides with non-surface floors. */
+<b class="fc">&nbsp;    public boolean collideFloor = false;</b>
+&nbsp;    /** If true, this projectile collides with static walls */
+<b class="fc">&nbsp;    public boolean collideTerrain = false;</b>
+&nbsp;    /** Whether velocity is inherited from the shooter. */
+<b class="fc">&nbsp;    public boolean keepVelocity = true;</b>
+&nbsp;    /** Whether to scale lifetime (not actually velocity!) to disappear at the target position. Used for artillery. */
+&nbsp;    public boolean scaleLife;
+&nbsp;    /** Whether this bullet can be hit by point defense. */
+<b class="fc">&nbsp;    public boolean hittable = true;</b>
+&nbsp;    /** Whether this bullet can be reflected. */
+<b class="fc">&nbsp;    public boolean reflectable = true;</b>
+&nbsp;    /** Whether this projectile can be absorbed by shields. */
+<b class="fc">&nbsp;    public boolean absorbable = true;</b>
+&nbsp;    /** Whether to move the bullet back depending on delta to fix some delta-time related issues.
+&nbsp;     * Do not change unless you know what you&#39;re doing. */
+<b class="fc">&nbsp;    public boolean backMove = true;</b>
+&nbsp;    /** If true, the angle param in create is ignored. */
+<b class="fc">&nbsp;    public boolean ignoreSpawnAngle = false;</b>
+&nbsp;    /** Chance for this bullet to be created. */
+<b class="fc">&nbsp;    public float createChance = 1;</b>
+&nbsp;    /** Bullet range positive override. */
+<b class="fc">&nbsp;    public float maxRange = -1f;</b>
+&nbsp;    /** When &gt; 0, overrides range even if smaller than base range. */
+<b class="fc">&nbsp;    public float rangeOverride = -1f;</b>
+&nbsp;    /** When used in a turret with multiple ammo types, this can be set to a non-zero value to influence range. */
+<b class="fc">&nbsp;    public float rangeChange = 0f;</b>
+&nbsp;    /** Range initialized in init(). */
+<b class="fc">&nbsp;    public float range = 0f;</b>
+&nbsp;    /** % of block health healed **/
+<b class="fc">&nbsp;    public float healPercent = 0f;</b>
+&nbsp;    /** flat amount of block health healed */
+<b class="fc">&nbsp;    public float healAmount = 0f;</b>
+&nbsp;    /** Whether to make fire on impact */
+<b class="fc">&nbsp;    public boolean makeFire = false;</b>
+&nbsp;    /** Whether to create hit effects on despawn. Forced to true if this bullet has any special effects like splash damage. */
+<b class="fc">&nbsp;    public boolean despawnHit = false;</b>
+&nbsp;    /** If true, this bullet will create bullets when it hits anything, not just when it despawns. */
+<b class="fc">&nbsp;    public boolean fragOnHit = true;</b>
+&nbsp;    /** If false, this bullet will not create fraags when absorbed by a shield. */
+<b class="fc">&nbsp;    public boolean fragOnAbsorb = true;</b>
+&nbsp;    /** If true, unit armor is ignored in damage calculations. */
+<b class="fc">&nbsp;    public boolean pierceArmor = false;</b>
+&nbsp;    /** Whether status and despawnHit should automatically be set. */
+<b class="fc">&nbsp;    public boolean setDefaults = true;</b>
+&nbsp;    /** Amount of shaking produced when this bullet hits something or despawns. */
+<b class="fc">&nbsp;    public float hitShake = 0f, despawnShake = 0f;</b>
+&nbsp;
+&nbsp;    /** Bullet type that is created when this bullet expires. */
+<b class="fc">&nbsp;    public @Nullable BulletType fragBullet = null;</b>
+&nbsp;    /** If true, frag bullets are delayed to the next frame. Fixes obscure bugs with piercing bullet types spawning frags immediately and screwing up the Damage temporary variables. */
+<b class="fc">&nbsp;    public boolean delayFrags = false;</b>
+&nbsp;    /** Degree spread range of fragmentation bullets. */
+<b class="fc">&nbsp;    public float fragRandomSpread = 360f;</b>
+&nbsp;    /** Uniform spread between each frag bullet in degrees. */
+<b class="fc">&nbsp;    public float fragSpread = 0f;</b>
+&nbsp;    /** Angle offset of fragmentation bullets. */
+<b class="fc">&nbsp;    public float fragAngle = 0f;</b>
+&nbsp;    /** Number of fragmentation bullets created. */
+<b class="fc">&nbsp;    public int fragBullets = 9;</b>
+&nbsp;    /** Random range of frag velocity as a multiplier. */
+<b class="fc">&nbsp;    public float fragVelocityMin = 0.2f, fragVelocityMax = 1f;</b>
+&nbsp;    /** Random range of frag lifetime as a multiplier. */
+<b class="fc">&nbsp;    public float fragLifeMin = 1f, fragLifeMax = 1f;</b>
+&nbsp;    /** Random offset of frag bullets from the parent bullet. */
+<b class="fc">&nbsp;    public float fragOffsetMin = 1f, fragOffsetMax = 7f;</b>
+&nbsp;    /** How many times this bullet can release frag bullets, if pierce = true. */
+<b class="fc">&nbsp;    public int pierceFragCap = -1;</b>
+&nbsp;
+&nbsp;    /** Bullet that is created at a fixed interval. */
+&nbsp;    public @Nullable BulletType intervalBullet;
+&nbsp;    /** Interval, in ticks, between which bullet spawn. */
+<b class="fc">&nbsp;    public float bulletInterval = 20f;</b>
+&nbsp;    /** Number of bullet spawned per interval. */
+<b class="fc">&nbsp;    public int intervalBullets = 1;</b>
+&nbsp;    /** Random spread of interval bullets. */
+<b class="fc">&nbsp;    public float intervalRandomSpread = 360f;</b>
+&nbsp;    /** Angle spread between individual interval bullets. */
+<b class="fc">&nbsp;    public float intervalSpread = 0f;</b>
+&nbsp;    /** Angle offset for interval bullets. */
+<b class="fc">&nbsp;    public float intervalAngle = 0f;</b>
+&nbsp;    /** Use a negative value to disable interval bullet delay. */
+<b class="fc">&nbsp;    public float intervalDelay = -1f;</b>
+&nbsp;
+&nbsp;    /** Color used for hit/despawn effects. */
+<b class="fc">&nbsp;    public Color hitColor = Color.white;</b>
+&nbsp;    /** Color used for block heal effects. */
+<b class="fc">&nbsp;    public Color healColor = Pal.heal;</b>
+&nbsp;    /** Effect emitted upon blocks that are healed. */
+<b class="fc">&nbsp;    public Effect healEffect = Fx.healBlockFull;</b>
+&nbsp;    /** Bullets spawned when this bullet is created. Rarely necessary, used for visuals. */
+<b class="fc">&nbsp;    public Seq&lt;BulletType&gt; spawnBullets = new Seq&lt;&gt;();</b>
+&nbsp;    /** Unit spawned _instead of_ this bullet. Useful for missiles. */
+&nbsp;    public @Nullable UnitType spawnUnit;
+&nbsp;    /** Unit spawned when this bullet hits something or despawns due to it hitting the end of its lifetime. */
+&nbsp;    public @Nullable UnitType despawnUnit;
+&nbsp;    /** The chance for despawn units to spawn. */
+<b class="fc">&nbsp;    public float despawnUnitChance = 1;</b>
+&nbsp;    /** Amount of units spawned when this bullet despawns. */
+<b class="fc">&nbsp;    public int despawnUnitCount = 1;</b>
+&nbsp;    /** Random offset distance from the original bullet despawn/hit coordinate. */
+<b class="fc">&nbsp;    public float despawnUnitRadius = 0.1f;</b>
+&nbsp;    /** If true, units spawned when this bullet despawns face away from the bullet instead of the same direction as the bullet. */
+<b class="fc">&nbsp;    public boolean faceOutwards = false;</b>
+&nbsp;    /** Extra visual parts for this bullet. */
+<b class="fc">&nbsp;    public Seq&lt;DrawPart&gt; parts = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    /** Color of trail behind bullet. */
+<b class="fc">&nbsp;    public Color trailColor = Pal.missileYellowBack;</b>
+&nbsp;    /** Chance of trail effect spawning on bullet per tick. */
+<b class="fc">&nbsp;    public float trailChance = -0.0001f;</b>
+&nbsp;    /** Uniform interval in which trail effect is spawned. */
+<b class="fc">&nbsp;    public float trailInterval = 0f;</b>
+&nbsp;    /** Trail effect that is spawned. */
+<b class="fc">&nbsp;    public Effect trailEffect = Fx.missileTrail;</b>
+&nbsp;    /** Rotation/size parameter that is passed to trail. Usually, this controls size. */
+<b class="fc">&nbsp;    public float trailParam =  2f;</b>
+&nbsp;    /** Whether the parameter passed to the trail is the bullet rotation, instead of a flat value. */
+<b class="fc">&nbsp;    public boolean trailRotation = false;</b>
+&nbsp;    /** Interpolation for trail width as function of bullet lifetime */
+<b class="fc">&nbsp;    public Interp trailInterp = Interp.one;</b>
+&nbsp;    /** Length of trail quads. Any value &lt;= 0 disables the trail. */
+<b class="fc">&nbsp;    public int trailLength = -1;</b>
+&nbsp;    /** Width of trail, if trailLength &gt; 0 */
+<b class="fc">&nbsp;    public float trailWidth = 2f;</b>
+&nbsp;    /** If trailSinMag &gt; 0, these values are applied as a sine curve to trail width. */
+<b class="fc">&nbsp;    public float trailSinMag = 0f, trailSinScl = 3f;</b>
+&nbsp;
+&nbsp;    /** Use a negative value to disable splash damage. */
+<b class="fc">&nbsp;    public float splashDamageRadius = -1f;</b>
+&nbsp;    /** If true, splash damage pierces through tiles. */
+<b class="fc">&nbsp;    public boolean splashDamagePierce = false;</b>
+&nbsp;
+&nbsp;    /** Amount of fires attempted around bullet. */
+<b class="fc">&nbsp;    public int incendAmount = 0;</b>
+&nbsp;    /** Spread of fires around bullet. */
+<b class="fc">&nbsp;    public float incendSpread = 8f;</b>
+&nbsp;    /** Chance of fire being created. */
+<b class="fc">&nbsp;    public float incendChance = 1f;</b>
+&nbsp;
+&nbsp;    /** Power of bullet ability. Usually a number between 0 and 1; try 0.1 as a starting point. */
+<b class="fc">&nbsp;    public float homingPower = 0f;</b>
+&nbsp;    /** Range of homing effect around bullet. */
+<b class="fc">&nbsp;    public float homingRange = 50f;</b>
+&nbsp;    /** Use a negative value to disable homing delay. */
+<b class="fc">&nbsp;    public float homingDelay = -1f;</b>
+&nbsp;
+&nbsp;    /** Range of healing block suppression effect. */
+<b class="fc">&nbsp;    public float suppressionRange = -1f;</b>
+&nbsp;    /** Duration of healing block suppression effect. */
+<b class="fc">&nbsp;    public float suppressionDuration = 60f * 8f;</b>
+&nbsp;    /** Chance of suppression effect occurring on block, scaled down by number of blocks. */
+<b class="fc">&nbsp;    public float suppressionEffectChance = 50f;</b>
+&nbsp;    /** Color used for the regenSuppressSeek effect. */
+<b class="fc">&nbsp;    public Color suppressColor = Pal.sapBullet;</b>
+&nbsp;
+&nbsp;    /** Color of lightning created by bullet. */
+<b class="fc">&nbsp;    public Color lightningColor = Pal.surge;</b>
+&nbsp;    /** Number of separate lightning &quot;roots&quot;. */
+&nbsp;    public int lightning;
+&nbsp;    /** Length of each lightning strand. */
+<b class="fc">&nbsp;    public int lightningLength = 5;</b>
+&nbsp;    /** Extra random length added onto base length of lightning. */
+<b class="fc">&nbsp;    public int lightningLengthRand = 0;</b>
+&nbsp;    /** Use a negative value to use default bullet damage. */
+<b class="fc">&nbsp;    public float lightningDamage = -1;</b>
+&nbsp;    /** Spread of lightning, relative to bullet rotation. */
+<b class="fc">&nbsp;    public float lightningCone = 360f;</b>
+&nbsp;    /** Offset of lightning relative to bullet rotation. */
+<b class="fc">&nbsp;    public float lightningAngle = 0f;</b>
+&nbsp;    /** The bullet created at lightning points. */
+<b class="fc">&nbsp;    public @Nullable BulletType lightningType = null;</b>
+&nbsp;
+&nbsp;    /** Scale of bullet weave pattern. Higher -&gt; less vibration. */
+<b class="fc">&nbsp;    public float weaveScale = 1f;</b>
+&nbsp;    /** Intensity of bullet weaving. Note that this may make bullets inaccurate. */
+<b class="fc">&nbsp;    public float weaveMag = 0f;</b>
+&nbsp;    /** If true, the bullet weave will randomly switch directions on spawn. */
+<b class="fc">&nbsp;    public boolean weaveRandom = true;</b>
+&nbsp;
+&nbsp;    /** Number of individual puddles created. */
+&nbsp;    public int puddles;
+&nbsp;    /** Range of puddles around bullet position. */
+&nbsp;    public float puddleRange;
+&nbsp;    /** Liquid count of each puddle created. */
+<b class="fc">&nbsp;    public float puddleAmount = 5f;</b>
+&nbsp;    /** Liquid that puddles created are made of. */
+<b class="fc">&nbsp;    public Liquid puddleLiquid = Liquids.water;</b>
+&nbsp;
+&nbsp;    /** Whether to display the ammo multiplayer for this bullet type in its stats. */
+<b class="fc">&nbsp;    public boolean displayAmmoMultiplier = true;</b>
+&nbsp;
+&nbsp;    /** Radius of light emitted by this bullet; &lt;0 to use defaults. */
+<b class="fc">&nbsp;    public float lightRadius = -1f;</b>
+&nbsp;    /** Opacity of light color. */
+<b class="fc">&nbsp;    public float lightOpacity = 0.3f;</b>
+&nbsp;    /** Color of light emitted by this bullet. */
+<b class="fc">&nbsp;    public Color lightColor = Pal.powerLight;</b>
+&nbsp;
+<b class="fc">&nbsp;    protected float cachedDps = -1;</b>
+&nbsp;
+<b class="fc">&nbsp;    public BulletType(float speed, float damage){</b>
+<b class="fc">&nbsp;        this.speed = speed;</b>
+<b class="fc">&nbsp;        this.damage = damage;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public BulletType(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public BulletType copy(){
+&nbsp;        try{
+<b class="fc">&nbsp;            BulletType copy = (BulletType)clone();</b>
+<b class="fc">&nbsp;            copy.id = (short)Vars.content.getBy(getContentType()).size;</b>
+<b class="fc">&nbsp;            Vars.content.handleContent(copy);</b>
+<b class="fc">&nbsp;            return copy;</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;death to checked exceptions&quot;, e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        for(var part : parts){</b>
+<b class="nc">&nbsp;            part.turretShading = false;</b>
+<b class="nc">&nbsp;            part.load(null);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return estimated damage per shot. this can be very inaccurate. */
+&nbsp;    public float estimateDPS(){
+<b class="fc">&nbsp;        if(cachedDps &gt;= 0f) return cachedDps;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(spawnUnit != null){</b>
+<b class="fc">&nbsp;            return spawnUnit.estimateDps();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        float sum = (damage + splashDamage*0.75f) * (pierce ? pierceCap == -1 ? 2 : Mathf.clamp(pierceCap, 1, 2) : 1f);</b>
+<b class="fc">&nbsp;        if(fragBullet != null &amp;&amp; fragBullet != this){</b>
+<b class="fc">&nbsp;            sum += fragBullet.estimateDPS() * fragBullets / 2f;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        for(var other : spawnBullets){</b>
+<b class="fc">&nbsp;            sum += other.estimateDPS();</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;        return cachedDps = sum;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return maximum distance the bullet this bullet type has can travel. */
+&nbsp;    protected float calculateRange(){
+<b class="fc">&nbsp;        if(rangeOverride &gt; 0) return rangeOverride;</b>
+<b class="fc">&nbsp;        if(spawnUnit != null) return spawnUnit.lifetime * spawnUnit.speed;</b>
+<b class="fc">&nbsp;        return Math.max(Mathf.zero(drag) ? speed * lifetime : speed * (1f - Mathf.pow(1f - drag, lifetime)) / drag, maxRange);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return continuous damage in damage/sec, or -1 if not continuous. */
+&nbsp;    public float continuousDamage(){
+<b class="nc">&nbsp;        return -1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean heals(){
+<b class="fc">&nbsp;        return healPercent &gt; 0 || healAmount &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean testCollision(Bullet bullet, Building tile){
+<b class="nc">&nbsp;        return !heals() || tile.team != bullet.team || tile.healthf() &lt; 1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** If direct is false, this is an indirect hit and the tile was already damaged.
+&nbsp;     * TODO this is a mess. */
+&nbsp;    public void hitTile(Bullet b, Building build, float x, float y, float initialHealth, boolean direct){
+<b class="nc">&nbsp;        if(makeFire &amp;&amp; build.team != b.team){</b>
+<b class="nc">&nbsp;            Fires.create(build.tile);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(heals() &amp;&amp; build.team == b.team &amp;&amp; !(build.block instanceof ConstructBlock)){</b>
+<b class="nc">&nbsp;            healEffect.at(build.x, build.y, 0f, healColor, build.block);</b>
+<b class="nc">&nbsp;            build.heal(healPercent / 100f * build.maxHealth + healAmount);</b>
+<b class="nc">&nbsp;        }else if(build.team != b.team &amp;&amp; direct){</b>
+<b class="nc">&nbsp;            hit(b);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        handlePierce(b, initialHealth, x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void hitEntity(Bullet b, Hitboxc entity, float health){
+<b class="nc">&nbsp;        boolean wasDead = entity instanceof Unit u &amp;&amp; u.dead;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(entity instanceof Healthc h){</b>
+<b class="nc">&nbsp;            float damage = b.damage;</b>
+<b class="nc">&nbsp;            float shield = entity instanceof Shieldc s ? Math.max(s.shield(), 0f) : 0f;</b>
+<b class="nc">&nbsp;            if(maxDamageFraction &gt; 0){</b>
+<b class="nc">&nbsp;                float cap = h.maxHealth() * maxDamageFraction + shield;</b>
+<b class="nc">&nbsp;                damage = Math.min(damage, cap);</b>
+&nbsp;                //cap health to effective health for handlePierce to handle it properly
+<b class="nc">&nbsp;                health = Math.min(health, cap);</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                health += shield;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(pierceArmor){</b>
+<b class="nc">&nbsp;                h.damagePierce(damage);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                h.damage(damage);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(entity instanceof Unit unit){</b>
+<b class="nc">&nbsp;            Tmp.v3.set(unit).sub(b).nor().scl(knockback * 80f);</b>
+<b class="nc">&nbsp;            if(impact) Tmp.v3.setAngle(b.rotation() + (knockback &lt; 0 ? 180f : 0f));</b>
+<b class="nc">&nbsp;            unit.impulse(Tmp.v3);</b>
+<b class="nc">&nbsp;            unit.apply(status, statusDuration);</b>
+&nbsp;
+<b class="nc">&nbsp;            Events.fire(bulletDamageEvent.set(unit, b));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!wasDead &amp;&amp; entity instanceof Unit unit &amp;&amp; unit.dead){</b>
+<b class="nc">&nbsp;            Events.fire(new UnitBulletDestroyEvent(unit, b));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        handlePierce(b, health, entity.x(), entity.y());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handlePierce(Bullet b, float initialHealth, float x, float y){
+<b class="nc">&nbsp;        float sub = Mathf.zero(pierceDamageFactor) ? 0f : Math.max(initialHealth * pierceDamageFactor, 0);</b>
+&nbsp;        //subtract health from each consecutive pierce
+<b class="nc">&nbsp;        b.damage -= Float.isNaN(sub) ? b.damage : Math.min(b.damage, sub);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(removeAfterPierce &amp;&amp; b.damage &lt;= 0){</b>
+<b class="nc">&nbsp;            b.hit = true;</b>
+<b class="nc">&nbsp;            b.remove();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public float damageMultiplier(Bullet b){
+<b class="nc">&nbsp;        if(b.owner instanceof Unit u) return u.damageMultiplier() * state.rules.unitDamage(b.team);</b>
+<b class="nc">&nbsp;        if(b.owner instanceof Building) return state.rules.blockDamage(b.team);</b>
+&nbsp;
+<b class="nc">&nbsp;        return 1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void hit(Bullet b){
+<b class="nc">&nbsp;        hit(b, b.x, b.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void hit(Bullet b, float x, float y){
+<b class="nc">&nbsp;        hitEffect.at(x, y, b.rotation(), hitColor);</b>
+<b class="nc">&nbsp;        hitSound.at(x, y, hitSoundPitch, hitSoundVolume);</b>
+&nbsp;
+<b class="nc">&nbsp;        Effect.shake(hitShake, hitShake, b);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(fragOnHit){</b>
+<b class="nc">&nbsp;            if(delayFrags &amp;&amp; fragBullet != null &amp;&amp; fragBullet.delayFrags){</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; createFrags(b, x, y));</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                createFrags(b, x, y);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        createPuddles(b, x, y);</b>
+<b class="nc">&nbsp;        createIncend(b, x, y);</b>
+<b class="nc">&nbsp;        createUnits(b, x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(suppressionRange &gt; 0){</b>
+&nbsp;            //bullets are pooled, require separate Vec2 instance
+<b class="nc">&nbsp;            Damage.applySuppression(b.team, b.x, b.y, suppressionRange, suppressionDuration, 0f, suppressionEffectChance, new Vec2(b.x, b.y), suppressColor);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        createSplashDamage(b, x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; lightning; i++){</b>
+<b class="nc">&nbsp;            Lightning.create(b, lightningColor, lightningDamage &lt; 0 ? damage : lightningDamage, b.x, b.y, b.rotation() + Mathf.range(lightningCone/2) + lightningAngle, lightningLength + Mathf.random(lightningLengthRand));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void createIncend(Bullet b, float x, float y){
+<b class="nc">&nbsp;        if(incendChance &gt; 0 &amp;&amp; Mathf.chance(incendChance)){</b>
+<b class="nc">&nbsp;            Damage.createIncend(x, y, incendSpread, incendAmount);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void createPuddles(Bullet b, float x, float y){
+<b class="nc">&nbsp;        if(puddleLiquid != null &amp;&amp; puddles &gt; 0){</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; puddles; i++){</b>
+<b class="nc">&nbsp;                Tile tile = world.tileWorld(x + Mathf.range(puddleRange), y + Mathf.range(puddleRange));</b>
+<b class="nc">&nbsp;                Puddles.deposit(tile, puddleLiquid, puddleAmount);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void createSplashDamage(Bullet b, float x, float y){
+<b class="nc">&nbsp;        if(splashDamageRadius &gt; 0 &amp;&amp; !b.absorbed){</b>
+<b class="nc">&nbsp;            Damage.damage(b.team, x, y, splashDamageRadius, splashDamage * b.damageMultiplier(), splashDamagePierce, collidesAir, collidesGround, scaledSplashDamage, b);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(status != StatusEffects.none){</b>
+<b class="nc">&nbsp;                Damage.status(b.team, x, y, splashDamageRadius, status, statusDuration, collidesAir, collidesGround);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(heals()){</b>
+<b class="nc">&nbsp;                indexer.eachBlock(b.team, x, y, splashDamageRadius, Building::damaged, other -&gt; {</b>
+<b class="nc">&nbsp;                    healEffect.at(other.x, other.y, 0f, healColor, other.block);</b>
+<b class="nc">&nbsp;                    other.heal(healPercent / 100f * other.maxHealth() + healAmount);</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(makeFire){</b>
+<b class="nc">&nbsp;                indexer.eachBlock(null, x, y, splashDamageRadius, other -&gt; other.team != b.team, other -&gt; Fires.create(other.tile));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void createFrags(Bullet b, float x, float y){
+<b class="nc">&nbsp;        if(fragBullet != null &amp;&amp; (fragOnAbsorb || !b.absorbed) &amp;&amp; !(b.frags &gt;= pierceFragCap &amp;&amp; pierceFragCap &gt; 0)){</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; fragBullets; i++){</b>
+<b class="nc">&nbsp;                float len = Mathf.random(fragOffsetMin, fragOffsetMax);</b>
+<b class="nc">&nbsp;                float a = b.rotation() + Mathf.range(fragRandomSpread / 2) + fragAngle + ((i - fragBullets/2) * fragSpread);</b>
+<b class="nc">&nbsp;                fragBullet.create(b, x + Angles.trnsx(a, len), y + Angles.trnsy(a, len), a, Mathf.random(fragVelocityMin, fragVelocityMax), Mathf.random(fragLifeMin, fragLifeMax));</b>
+&nbsp;            }
+<b class="nc">&nbsp;            b.frags++;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void createUnits(Bullet b, float x, float y){
+<b class="nc">&nbsp;        if(despawnUnit != null &amp;&amp; Mathf.chance(despawnUnitChance)){</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; despawnUnitCount; i++){</b>
+<b class="nc">&nbsp;                Tmp.v1.rnd(Mathf.random(despawnUnitRadius));</b>
+<b class="nc">&nbsp;                var u = despawnUnit.spawn(b.team, x + Tmp.v1.x, y + Tmp.v1.y);</b>
+<b class="nc">&nbsp;                u.rotation = faceOutwards ? Tmp.v1.angle() : b.rotation();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when the bullet reaches the end of its lifetime or is destroyed by something external. */
+&nbsp;    public void despawned(Bullet b){
+<b class="nc">&nbsp;        if(despawnHit){</b>
+<b class="nc">&nbsp;            hit(b);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            createUnits(b, b.x, b.y);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!fragOnHit){</b>
+<b class="nc">&nbsp;            createFrags(b, b.x, b.y);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        despawnEffect.at(b.x, b.y, b.rotation(), hitColor);</b>
+<b class="nc">&nbsp;        despawnSound.at(b);</b>
+&nbsp;
+<b class="nc">&nbsp;        Effect.shake(despawnShake, despawnShake, b);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when the bullet is removed for any reason. */
+&nbsp;    public void removed(Bullet b){
+<b class="nc">&nbsp;        if(trailLength &gt; 0 &amp;&amp; b.trail != null &amp;&amp; b.trail.size() &gt; 0){</b>
+<b class="nc">&nbsp;            Fx.trailFade.at(b.x, b.y, trailWidth, trailColor, b.trail.copy());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(Bullet b){
+<b class="nc">&nbsp;        drawTrail(b);</b>
+<b class="nc">&nbsp;        drawParts(b);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawTrail(Bullet b){
+<b class="nc">&nbsp;        if(trailLength &gt; 0 &amp;&amp; b.trail != null){</b>
+&nbsp;            //draw below bullets? TODO
+<b class="nc">&nbsp;            float z = Draw.z();</b>
+<b class="nc">&nbsp;            Draw.z(z - 0.0001f);</b>
+<b class="nc">&nbsp;            b.trail.draw(trailColor, trailWidth);</b>
+<b class="nc">&nbsp;            Draw.z(z);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawParts(Bullet b){
+<b class="nc">&nbsp;        if(parts.size &gt; 0){</b>
+<b class="nc">&nbsp;            DrawPart.params.set(b.fin(), 0f, 0f, 0f, 0f, 0f, b.x, b.y, b.rotation());</b>
+<b class="nc">&nbsp;            DrawPart.params.life = b.fin();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; parts.size; i++){</b>
+<b class="nc">&nbsp;                parts.get(i).draw(DrawPart.params);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawLight(Bullet b){
+<b class="nc">&nbsp;        if(lightOpacity &lt;= 0f || lightRadius &lt;= 0f) return;</b>
+<b class="nc">&nbsp;        Drawf.light(b, lightRadius, lightColor, lightOpacity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void init(Bullet b){
+&nbsp;
+<b class="nc">&nbsp;        if(killShooter &amp;&amp; b.owner() instanceof Healthc h &amp;&amp; !h.dead()){</b>
+<b class="nc">&nbsp;            h.kill();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(instantDisappear){</b>
+<b class="nc">&nbsp;            b.time = lifetime + 1f;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(spawnBullets.size &gt; 0){</b>
+<b class="nc">&nbsp;            for(var bullet : spawnBullets){</b>
+<b class="nc">&nbsp;                bullet.create(b, b.x, b.y, b.rotation());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(Bullet b){
+<b class="nc">&nbsp;        updateTrail(b);</b>
+<b class="nc">&nbsp;        updateHoming(b);</b>
+<b class="nc">&nbsp;        updateWeaving(b);</b>
+<b class="nc">&nbsp;        updateTrailEffects(b);</b>
+<b class="nc">&nbsp;        updateBulletInterval(b);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateBulletInterval(Bullet b){
+<b class="nc">&nbsp;        if(intervalBullet != null &amp;&amp; b.time &gt;= intervalDelay &amp;&amp; b.timer.get(2, bulletInterval)){</b>
+<b class="nc">&nbsp;            float ang = b.rotation();</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; intervalBullets; i++){</b>
+<b class="nc">&nbsp;                intervalBullet.create(b, b.x, b.y, ang + Mathf.range(intervalRandomSpread) + intervalAngle + ((i - (intervalBullets - 1f)/2f) * intervalSpread));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateHoming(Bullet b){
+<b class="nc">&nbsp;        if(homingPower &gt; 0.0001f &amp;&amp; b.time &gt;= homingDelay){</b>
+<b class="nc">&nbsp;            float realAimX = b.aimX &lt; 0 ? b.x : b.aimX;</b>
+<b class="nc">&nbsp;            float realAimY = b.aimY &lt; 0 ? b.y : b.aimY;</b>
+&nbsp;
+&nbsp;            Teamc target;
+&nbsp;            //home in on allies if possible
+<b class="nc">&nbsp;            if(heals()){</b>
+<b class="nc">&nbsp;                target = Units.closestTarget(null, realAimX, realAimY, homingRange,</b>
+<b class="nc">&nbsp;                e -&gt; e.checkTarget(collidesAir, collidesGround) &amp;&amp; e.team != b.team &amp;&amp; !b.hasCollided(e.id),</b>
+<b class="nc">&nbsp;                t -&gt; collidesGround &amp;&amp; (t.team != b.team || t.damaged()) &amp;&amp; !b.hasCollided(t.id)</b>
+&nbsp;                );
+&nbsp;            }else{
+<b class="nc">&nbsp;                if(b.aimTile != null &amp;&amp; b.aimTile.build != null &amp;&amp; b.aimTile.build.team != b.team &amp;&amp; collidesGround &amp;&amp; !b.hasCollided(b.aimTile.build.id)){</b>
+<b class="nc">&nbsp;                    target = b.aimTile.build;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    target = Units.closestTarget(b.team, realAimX, realAimY, homingRange,</b>
+<b class="nc">&nbsp;                        e -&gt; e != null &amp;&amp; e.checkTarget(collidesAir, collidesGround) &amp;&amp; !b.hasCollided(e.id),</b>
+<b class="nc">&nbsp;                        t -&gt; t != null &amp;&amp; collidesGround &amp;&amp; !b.hasCollided(t.id));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(target != null){</b>
+<b class="nc">&nbsp;                b.vel.setAngle(Angles.moveToward(b.rotation(), b.angleTo(target), homingPower * Time.delta * 50f));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateWeaving(Bullet b){
+<b class="nc">&nbsp;        if(weaveMag != 0){</b>
+<b class="nc">&nbsp;            b.vel.rotateRadExact((float)Math.sin((b.time + Math.PI * weaveScale/2f) / weaveScale) * weaveMag * (weaveRandom ? (Mathf.randomSeed(b.id, 0, 1) == 1 ? -1 : 1) : 1f) * Time.delta * Mathf.degRad);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateTrailEffects(Bullet b){
+<b class="nc">&nbsp;        if(trailChance &gt; 0){</b>
+<b class="nc">&nbsp;            if(Mathf.chanceDelta(trailChance)){</b>
+<b class="nc">&nbsp;                trailEffect.at(b.x, b.y, trailRotation ? b.rotation() : trailParam, trailColor);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(trailInterval &gt; 0f){</b>
+<b class="nc">&nbsp;            if(b.timer(0, trailInterval)){</b>
+<b class="nc">&nbsp;                trailEffect.at(b.x, b.y, trailRotation ? b.rotation() : trailParam, trailColor);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateTrail(Bullet b){
+<b class="nc">&nbsp;        if(!headless &amp;&amp; trailLength &gt; 0){</b>
+<b class="nc">&nbsp;            if(b.trail == null){</b>
+<b class="nc">&nbsp;                b.trail = new Trail(trailLength);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            b.trail.length = trailLength;</b>
+<b class="nc">&nbsp;            b.trail.update(b.x, b.y, trailInterp.apply(b.fin()) * (1f + (trailSinMag &gt; 0 ? Mathf.absin(Time.time, trailSinScl, trailSinMag) : 0f)));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        if(pierceCap &gt;= 1){</b>
+<b class="fc">&nbsp;            pierce = true;</b>
+&nbsp;            //pierceBuilding is not enabled by default, because a bullet may want to *not* pierce buildings
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(setDefaults){</b>
+<b class="fc">&nbsp;            if(lightning &gt; 0){</b>
+<b class="fc">&nbsp;                if(status == StatusEffects.none){</b>
+<b class="fc">&nbsp;                    status = StatusEffects.shocked;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(fragBullet != null || splashDamageRadius &gt; 0 || lightning &gt; 0){</b>
+<b class="fc">&nbsp;                despawnHit = true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(fragBullet != null){</b>
+<b class="fc">&nbsp;            fragBullet.keepVelocity = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(lightningType == null){</b>
+<b class="fc">&nbsp;            lightningType = !collidesAir ? Bullets.damageLightningGround : Bullets.damageLightning;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(lightRadius &lt;= -1){</b>
+<b class="fc">&nbsp;            lightRadius = Math.max(18, hitSize * 5f);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        drawSize = Math.max(drawSize, trailLength * speed * 2f);</b>
+<b class="fc">&nbsp;        range = calculateRange();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ContentType getContentType(){
+<b class="fc">&nbsp;        return ContentType.bullet;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(Teamc owner, float x, float y, float angle){
+<b class="nc">&nbsp;        return create(owner, owner.team(), x, y, angle);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(Entityc owner, Team team, float x, float y, float angle){
+<b class="nc">&nbsp;        return create(owner, team, x, y, angle, 1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(Entityc owner, Team team, float x, float y, float angle, float velocityScl){
+<b class="nc">&nbsp;        return create(owner, team, x, y, angle, -1, velocityScl, 1f, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(Entityc owner, Team team, float x, float y, float angle, float velocityScl, float lifetimeScl){
+<b class="nc">&nbsp;        return create(owner, team, x, y, angle, -1, velocityScl, lifetimeScl, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public @Nullable Bullet create(Entityc owner, Team team, float x, float y, float angle, float velocityScl, float lifetimeScl, Mover mover){
+<b class="nc">&nbsp;        return create(owner, team, x, y, angle, -1, velocityScl, lifetimeScl, null, mover);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(Bullet parent, float x, float y, float angle){
+<b class="nc">&nbsp;        return create(parent.owner, parent.team, x, y, angle);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(Bullet parent, float x, float y, float angle, float velocityScl, float lifeScale){
+<b class="nc">&nbsp;        return create(parent.owner, parent.team, x, y, angle, velocityScl, lifeScale);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(Bullet parent, float x, float y, float angle, float velocityScl){
+<b class="nc">&nbsp;        return create(parent.owner(), parent.team, x, y, angle, velocityScl);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(@Nullable Entityc owner, Team team, float x, float y, float angle, float damage, float velocityScl, float lifetimeScl, Object data){
+<b class="nc">&nbsp;        return create(owner, team, x, y, angle, damage, velocityScl, lifetimeScl, data, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(@Nullable Entityc owner, Team team, float x, float y, float angle, float damage, float velocityScl, float lifetimeScl, Object data, @Nullable Mover mover){
+<b class="nc">&nbsp;        return create(owner, team, x, y, angle, damage, velocityScl, lifetimeScl, data, mover, -1f, -1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(@Nullable Entityc owner, Team team, float x, float y, float angle, float damage, float velocityScl, float lifetimeScl, Object data, @Nullable Mover mover, float aimX, float aimY){
+<b class="nc">&nbsp;        return create(owner, owner, team, x, y, angle, damage, velocityScl, lifetimeScl, data, mover, aimX, aimY);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(@Nullable Entityc owner, @Nullable Entityc shooter, Team team, float x, float y, float angle, float damage, float velocityScl, float lifetimeScl, Object data, @Nullable Mover mover, float aimX, float aimY){
+<b class="nc">&nbsp;        return create(owner, shooter, team, x, y, angle, damage, velocityScl, lifetimeScl, data, mover, aimX, aimY, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Bullet create(
+&nbsp;        @Nullable Entityc owner, @Nullable Entityc shooter, Team team, float x, float y, float angle, float damage, float velocityScl,
+&nbsp;        float lifetimeScl, Object data, @Nullable Mover mover, float aimX, float aimY, @Nullable Teamc target
+&nbsp;    ){
+<b class="nc">&nbsp;        if(!Mathf.chance(createChance)) return null;</b>
+<b class="nc">&nbsp;        if(ignoreSpawnAngle) angle = 0;</b>
+<b class="nc">&nbsp;        if(spawnUnit != null){</b>
+&nbsp;            //don&#39;t spawn units clientside!
+<b class="nc">&nbsp;            if(!net.client()){</b>
+<b class="nc">&nbsp;                Unit spawned = spawnUnit.create(team);</b>
+<b class="nc">&nbsp;                spawned.set(x, y);</b>
+<b class="nc">&nbsp;                spawned.rotation = angle;</b>
+&nbsp;                //immediately spawn at top speed, since it was launched
+<b class="nc">&nbsp;                if(spawnUnit.missileAccelTime &lt;= 0f){</b>
+<b class="nc">&nbsp;                    spawned.vel.trns(angle, spawnUnit.speed);</b>
+&nbsp;                }
+&nbsp;                //assign unit owner
+<b class="nc">&nbsp;                if(spawned.controller() instanceof MissileAI ai){</b>
+<b class="nc">&nbsp;                    if(shooter instanceof Unit unit){</b>
+<b class="nc">&nbsp;                        ai.shooter = unit;</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(shooter instanceof ControlBlock control){</b>
+<b class="nc">&nbsp;                        ai.shooter = control.unit();</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                }
+<b class="nc">&nbsp;                spawned.add();</b>
+&nbsp;            }
+&nbsp;            //Since bullet init is never called, handle killing shooter here
+<b class="nc">&nbsp;            if(killShooter &amp;&amp; owner instanceof Healthc h &amp;&amp; !h.dead()) h.kill();</b>
+&nbsp;
+&nbsp;            //no bullet returned
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Bullet bullet = Bullet.create();</b>
+<b class="nc">&nbsp;        bullet.type = this;</b>
+<b class="nc">&nbsp;        bullet.owner = owner;</b>
+<b class="nc">&nbsp;        bullet.team = team;</b>
+<b class="nc">&nbsp;        bullet.time = 0f;</b>
+<b class="nc">&nbsp;        bullet.originX = x;</b>
+<b class="nc">&nbsp;        bullet.originY = y;</b>
+<b class="nc">&nbsp;        if(!(aimX == -1f &amp;&amp; aimY == -1f)){</b>
+<b class="nc">&nbsp;            bullet.aimTile = target instanceof Building b ? b.tile : world.tileWorld(aimX, aimY);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        bullet.aimX = aimX;</b>
+<b class="nc">&nbsp;        bullet.aimY = aimY;</b>
+&nbsp;
+<b class="nc">&nbsp;        bullet.initVel(angle, speed * velocityScl);</b>
+<b class="nc">&nbsp;        if(backMove){</b>
+<b class="nc">&nbsp;            bullet.set(x - bullet.vel.x * Time.delta, y - bullet.vel.y * Time.delta);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            bullet.set(x, y);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        bullet.lifetime = lifetime * lifetimeScl;</b>
+<b class="nc">&nbsp;        bullet.data = data;</b>
+<b class="nc">&nbsp;        bullet.drag = drag;</b>
+<b class="nc">&nbsp;        bullet.hitSize = hitSize;</b>
+<b class="nc">&nbsp;        bullet.mover = mover;</b>
+<b class="nc">&nbsp;        bullet.damage = (damage &lt; 0 ? this.damage : damage) * bullet.damageMultiplier();</b>
+&nbsp;        //reset trail
+<b class="nc">&nbsp;        if(bullet.trail != null){</b>
+<b class="nc">&nbsp;            bullet.trail.clear();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        bullet.add();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(keepVelocity &amp;&amp; owner instanceof Velc v) bullet.vel.add(v.vel());</b>
+<b class="nc">&nbsp;        return bullet;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void createNet(Team team, float x, float y, float angle, float damage, float velocityScl, float lifetimeScl){
+<b class="nc">&nbsp;        Call.createBullet(this, team, x, y, angle, damage, velocityScl, lifetimeScl);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server, unreliable = true)
+&nbsp;    public static void createBullet(BulletType type, Team team, float x, float y, float angle, float damage, float velocityScl, float lifetimeScl){
+<b class="nc">&nbsp;        if(type == null) return;</b>
+<b class="nc">&nbsp;        type.create(null, team, x, y, angle, damage, velocityScl, lifetimeScl, null);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,362 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnitCommand</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai</a>
+</div>
+
+<h1>Coverage Summary for Class: UnitCommand (mindustry.ai)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnitCommand</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (5/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    77.4%
+  </span>
+  <span class="absValue">
+    (24/31)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">UnitCommand$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UnitCommand$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UnitCommand$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UnitCommand$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UnitCommand$5</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UnitCommand$6</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UnitCommand$7</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    70.6%
+  </span>
+  <span class="absValue">
+    (12/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.1%
+  </span>
+  <span class="absValue">
+    (52/59)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.input.*;
+&nbsp;
+&nbsp;/** Defines a pattern of behavior that an RTS-controlled unit should follow. Shows up in the command UI. */
+&nbsp;public class UnitCommand extends MappableContent{
+&nbsp;    /** @deprecated now a content type, use the methods in Vars.content instead */
+&nbsp;    @Deprecated
+<b class="fc">&nbsp;    public static final Seq&lt;UnitCommand&gt; all = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public static UnitCommand moveCommand, repairCommand, rebuildCommand, assistCommand, mineCommand, boostCommand, enterPayloadCommand, loadUnitsCommand, loadBlocksCommand, unloadPayloadCommand, loopPayloadCommand;
+&nbsp;
+&nbsp;    /** Name of UI icon (from Icon class). */
+&nbsp;    public final String icon;
+&nbsp;    /** Controller that this unit will use when this command is used. Return null for &quot;default&quot; behavior. */
+&nbsp;    public final Func&lt;Unit, AIController&gt; controller;
+&nbsp;    /** If true, this unit will automatically switch away to the move command when given a position. */
+<b class="fc">&nbsp;    public boolean switchToMove = true;</b>
+&nbsp;    /** Whether to draw the movement/attack target. */
+<b class="fc">&nbsp;    public boolean drawTarget = false;</b>
+&nbsp;    /** Whether to reset targets when switching to or from this command. */
+<b class="fc">&nbsp;    public boolean resetTarget = true;</b>
+&nbsp;    /** */
+<b class="fc">&nbsp;    public boolean exactArrival = false;</b>
+&nbsp;    /** Key to press for this command. */
+<b class="fc">&nbsp;    public @Nullable Binding keybind = null;</b>
+&nbsp;
+&nbsp;    public UnitCommand(String name, String icon, Func&lt;Unit, AIController&gt; controller){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        this.icon = icon;</b>
+<b class="fc">&nbsp;        this.controller = controller == null ? u -&gt; null : controller;</b>
+&nbsp;
+<b class="fc">&nbsp;        all.add(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public UnitCommand(String name, String icon, Binding keybind, Func&lt;Unit, AIController&gt; controller){
+<b class="fc">&nbsp;        this(name, icon, controller);</b>
+<b class="fc">&nbsp;        this.keybind = keybind;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String localized(){
+<b class="nc">&nbsp;        return Core.bundle.get(&quot;command.&quot; + name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TextureRegionDrawable getIcon(){
+<b class="nc">&nbsp;        return Icon.icons.get(icon, Icon.cancel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public char getEmoji() {
+<b class="nc">&nbsp;        return (char)Iconc.codes.get(icon, Iconc.cancel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ContentType getContentType(){
+<b class="fc">&nbsp;        return ContentType.unitCommand;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return &quot;UnitCommand:&quot; + name;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void loadAll(){
+&nbsp;
+<b class="fc">&nbsp;        moveCommand = new UnitCommand(&quot;move&quot;, &quot;right&quot;, Binding.unit_command_move, null){{</b>
+<b class="fc">&nbsp;            drawTarget = true;</b>
+<b class="fc">&nbsp;            resetTarget = false;</b>
+&nbsp;        }};
+<b class="fc">&nbsp;        repairCommand = new UnitCommand(&quot;repair&quot;, &quot;modeSurvival&quot;, Binding.unit_command_repair, u -&gt; new RepairAI());</b>
+<b class="fc">&nbsp;        rebuildCommand = new UnitCommand(&quot;rebuild&quot;, &quot;hammer&quot;, Binding.unit_command_rebuild, u -&gt; new BuilderAI());</b>
+<b class="fc">&nbsp;        assistCommand = new UnitCommand(&quot;assist&quot;, &quot;players&quot;, Binding.unit_command_assist, u -&gt; {</b>
+<b class="nc">&nbsp;            var ai = new BuilderAI();</b>
+<b class="nc">&nbsp;            ai.onlyAssist = true;</b>
+<b class="nc">&nbsp;            return ai;</b>
+&nbsp;        });
+<b class="fc">&nbsp;        mineCommand = new UnitCommand(&quot;mine&quot;, &quot;production&quot;, Binding.unit_command_mine, u -&gt; new MinerAI());</b>
+<b class="fc">&nbsp;        boostCommand = new UnitCommand(&quot;boost&quot;, &quot;up&quot;, Binding.unit_command_boost, u -&gt; new BoostAI()){{</b>
+<b class="fc">&nbsp;            switchToMove = false;</b>
+<b class="fc">&nbsp;            drawTarget = true;</b>
+<b class="fc">&nbsp;            resetTarget = false;</b>
+&nbsp;        }};
+<b class="fc">&nbsp;        enterPayloadCommand = new UnitCommand(&quot;enterPayload&quot;, &quot;downOpen&quot;, Binding.unit_command_enter_payload, null){{</b>
+<b class="fc">&nbsp;            switchToMove = false;</b>
+<b class="fc">&nbsp;            drawTarget = true;</b>
+<b class="fc">&nbsp;            resetTarget = false;</b>
+&nbsp;        }};
+<b class="fc">&nbsp;        loadUnitsCommand = new UnitCommand(&quot;loadUnits&quot;, &quot;upload&quot;, Binding.unit_command_load_units, null){{</b>
+<b class="fc">&nbsp;            switchToMove = false;</b>
+<b class="fc">&nbsp;            drawTarget = true;</b>
+<b class="fc">&nbsp;            resetTarget = false;</b>
+&nbsp;        }};
+<b class="fc">&nbsp;        loadBlocksCommand = new UnitCommand(&quot;loadBlocks&quot;, &quot;up&quot;, Binding.unit_command_load_blocks, null){{</b>
+<b class="fc">&nbsp;            switchToMove = false;</b>
+<b class="fc">&nbsp;            drawTarget = true;</b>
+<b class="fc">&nbsp;            resetTarget = false;</b>
+<b class="fc">&nbsp;            exactArrival = true;</b>
+&nbsp;        }};
+<b class="fc">&nbsp;        unloadPayloadCommand = new UnitCommand(&quot;unloadPayload&quot;, &quot;download&quot;, Binding.unit_command_unload_payload, null){{</b>
+<b class="fc">&nbsp;            switchToMove = false;</b>
+<b class="fc">&nbsp;            drawTarget = true;</b>
+<b class="fc">&nbsp;            resetTarget = false;</b>
+&nbsp;        }};
+<b class="fc">&nbsp;        loopPayloadCommand = new UnitCommand(&quot;loopPayload&quot;, &quot;resize&quot;, Binding.unit_command_loop_payload, null){{</b>
+<b class="fc">&nbsp;            switchToMove = false;</b>
+<b class="fc">&nbsp;            drawTarget = true;</b>
+<b class="fc">&nbsp;            resetTarget = false;</b>
+&nbsp;        }};
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

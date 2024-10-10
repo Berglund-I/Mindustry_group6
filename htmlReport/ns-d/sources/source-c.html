@@ -1,0 +1,787 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > World</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.core</a>
+</div>
+
+<h1>Coverage Summary for Class: World (mindustry.core)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">World</td>
+<td class="coverageStat">
+  <span class="percent">
+    56%
+  </span>
+  <span class="absValue">
+    (28/50)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    39.4%
+  </span>
+  <span class="absValue">
+    (99/251)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">World$Context</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (7/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/9)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">World$FilterContext</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (12/12)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    63.3%
+  </span>
+  <span class="absValue">
+    (38/60)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.1%
+  </span>
+  <span class="absValue">
+    (120/272)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.core;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.Geometry.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.GameState.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.maps.filters.*;
+&nbsp;import mindustry.maps.filters.GenerateFilter.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.legacy.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class World{
+<b class="fc">&nbsp;    public final Context context = new Context();</b>
+&nbsp;
+<b class="fc">&nbsp;    public Tiles tiles = new Tiles(0, 0);</b>
+&nbsp;    /** The number of times tiles have changed in this session. Used for blocks that need to poll world state, but not frequently. */
+<b class="fc">&nbsp;    public int tileChanges = -1;</b>
+&nbsp;
+&nbsp;    private boolean generating, invalidMap;
+<b class="fc">&nbsp;    private ObjectMap&lt;Map, Runnable&gt; customMapLoaders = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    public World(){</b>
+<b class="fc">&nbsp;        Events.on(TileChangeEvent.class, e -&gt; {</b>
+<b class="fc">&nbsp;            tileChanges ++;</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(WorldLoadEvent.class, e -&gt; {</b>
+<b class="fc">&nbsp;            tileChanges = -1;</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a custom handler function for loading a custom map - usually a generated one. */
+&nbsp;    public void addMapLoader(Map map, Runnable loader){
+<b class="nc">&nbsp;        customMapLoaders.put(map, loader);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isInvalidMap(){
+<b class="nc">&nbsp;        return invalidMap;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean solid(int x, int y){
+<b class="nc">&nbsp;        Tile tile = tile(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        return tile == null || tile.solid();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean passable(int x, int y){
+<b class="nc">&nbsp;        Tile tile = tile(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        return tile != null &amp;&amp; tile.passable();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean wallSolid(int x, int y){
+<b class="nc">&nbsp;        Tile tile = tile(x, y);</b>
+<b class="nc">&nbsp;        return tile == null || tile.block().solid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean wallSolidFull(int x, int y){
+<b class="nc">&nbsp;        Tile tile = tile(x, y);</b>
+<b class="nc">&nbsp;        return tile == null || (tile.block().solid &amp;&amp; tile.block().fillsTile);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAccessible(int x, int y){
+<b class="nc">&nbsp;        return !wallSolid(x, y - 1) || !wallSolid(x, y + 1) || !wallSolid(x - 1, y) || !wallSolid(x + 1, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int width(){
+<b class="fc">&nbsp;        return tiles.width;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int height(){
+<b class="fc">&nbsp;        return tiles.height;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int unitWidth(){
+<b class="fc">&nbsp;        return width()*tilesize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int unitHeight(){
+<b class="fc">&nbsp;        return height()*tilesize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Floor floor(int x, int y){
+<b class="nc">&nbsp;        Tile tile = tile(x, y);</b>
+<b class="nc">&nbsp;        return tile == null ? Blocks.air.asFloor() : tile.floor();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Floor floorWorld(float x, float y){
+<b class="nc">&nbsp;        Tile tile = tileWorld(x, y);</b>
+<b class="nc">&nbsp;        return tile == null ? Blocks.air.asFloor() : tile.floor();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Tile tile(int pos){
+<b class="fc">&nbsp;        return tile(Point2.x(pos), Point2.y(pos));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Tile tile(int x, int y){
+<b class="fc">&nbsp;        return tiles.get(x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Tile tileBuilding(int x, int y){
+<b class="fc">&nbsp;        Tile tile = tiles.get(x, y);</b>
+<b class="fc">&nbsp;        if(tile == null) return null;</b>
+<b class="fc">&nbsp;        if(tile.build != null){</b>
+<b class="fc">&nbsp;            return tile.build.tile();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return tile;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Building build(int x, int y){
+<b class="fc">&nbsp;        Tile tile = tile(x, y);</b>
+<b class="fc">&nbsp;        if(tile == null) return null;</b>
+<b class="fc">&nbsp;        return tile.build;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Building build(int pos){
+<b class="fc">&nbsp;        Tile tile = tile(pos);</b>
+<b class="fc">&nbsp;        if(tile == null) return null;</b>
+<b class="nc">&nbsp;        return tile.build;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Tile rawTile(int x, int y){
+<b class="fc">&nbsp;        return tiles.getn(x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Tile tileWorld(float x, float y){
+<b class="fc">&nbsp;        return tile(Math.round(x / tilesize), Math.round(y / tilesize));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Building buildWorld(float x, float y){
+<b class="nc">&nbsp;        return build(Math.round(x / tilesize), Math.round(y / tilesize));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Convert from world to logic tile coordinates. Whole numbers are at centers of tiles. */
+&nbsp;    public static float conv(float coord){
+<b class="fc">&nbsp;        return coord / tilesize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Convert from tile to world coordinates. */
+&nbsp;    public static float unconv(float coord){
+<b class="nc">&nbsp;        return coord * tilesize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static int toTile(float coord){
+<b class="fc">&nbsp;        return Math.round(coord / tilesize);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int packArray(int x, int y){
+<b class="fc">&nbsp;        return x + y * tiles.width;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clearBuildings(){
+<b class="fc">&nbsp;        for(Tile tile : tiles){</b>
+<b class="nc">&nbsp;            if(tile != null &amp;&amp; tile.build != null){</b>
+<b class="nc">&nbsp;                tile.build.remove();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Resizes the tile array to the specified size and returns the resulting tile array.
+&nbsp;     * Only use for loading saves!
+&nbsp;     */
+&nbsp;    public Tiles resize(int width, int height){
+<b class="fc">&nbsp;        clearBuildings();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(tiles.width != width || tiles.height != height){</b>
+<b class="fc">&nbsp;            tiles = new Tiles(width, height);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return tiles;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Call to signify the beginning of map loading.
+&nbsp;     * TileEvents will not be fired until endMapLoad().
+&nbsp;     */
+&nbsp;    public void beginMapLoad(){
+<b class="fc">&nbsp;        generating = true;</b>
+<b class="fc">&nbsp;        Events.fire(new WorldLoadBeginEvent());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Call to signify the end of map loading. Updates tile proximities and sets up physics for the world.
+&nbsp;     * A WorldLoadEvent will be fire.
+&nbsp;     */
+&nbsp;    public void endMapLoad(){
+<b class="fc">&nbsp;        Events.fire(new WorldLoadEndEvent());</b>
+&nbsp;
+<b class="fc">&nbsp;        for(Tile tile : tiles){</b>
+&nbsp;            //remove legacy blocks; they need to stop existing
+<b class="fc">&nbsp;            if(tile.block() instanceof LegacyBlock l){</b>
+<b class="fc">&nbsp;                l.removeSelf(tile);</b>
+<b class="fc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(tile.build != null){</b>
+<b class="fc">&nbsp;                tile.build.updateProximity();</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        addDarkness(tiles);</b>
+&nbsp;
+<b class="fc">&nbsp;        Groups.resize(-finalWorldBounds, -finalWorldBounds, tiles.width * tilesize + finalWorldBounds * 2, tiles.height * tilesize + finalWorldBounds * 2);</b>
+&nbsp;
+<b class="fc">&nbsp;        generating = false;</b>
+<b class="fc">&nbsp;        Events.fire(new WorldLoadEvent());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Rect getQuadBounds(Rect in){
+<b class="fc">&nbsp;        return in.set(-finalWorldBounds, -finalWorldBounds, width() * tilesize + finalWorldBounds * 2, height() * tilesize + finalWorldBounds * 2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setGenerating(boolean gen){
+<b class="fc">&nbsp;        this.generating = gen;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isGenerating(){
+<b class="fc">&nbsp;        return generating;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void loadGenerator(int width, int height, Cons&lt;Tiles&gt; generator){
+<b class="fc">&nbsp;        beginMapLoad();</b>
+&nbsp;
+<b class="fc">&nbsp;        resize(width, height);</b>
+<b class="fc">&nbsp;        generator.get(tiles);</b>
+&nbsp;
+<b class="fc">&nbsp;        endMapLoad();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void loadSector(Sector sector){
+<b class="nc">&nbsp;        loadSector(sector, 0, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void loadSector(Sector sector, int seedOffset, boolean saveInfo){
+<b class="nc">&nbsp;        setSectorRules(sector, saveInfo);</b>
+&nbsp;
+<b class="nc">&nbsp;        int size = sector.getSize();</b>
+<b class="nc">&nbsp;        loadGenerator(size, size, tiles -&gt; {</b>
+<b class="nc">&nbsp;            if(sector.preset != null){</b>
+<b class="nc">&nbsp;                sector.preset.generator.generate(tiles);</b>
+<b class="nc">&nbsp;                sector.preset.rules.get(state.rules); //apply extra rules</b>
+<b class="nc">&nbsp;            }else if(sector.planet.generator != null){</b>
+<b class="nc">&nbsp;                sector.planet.generator.generate(tiles, sector, seedOffset);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;Sector &quot; + sector.id + &quot; on planet &quot; + sector.planet.name + &quot; has no generator or preset defined. Provide a planet generator or preset map.&quot;);</b>
+&nbsp;            }
+&nbsp;            //just in case
+<b class="nc">&nbsp;            state.rules.sector = sector;</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        if(saveInfo &amp;&amp; state.rules.waves){</b>
+<b class="nc">&nbsp;            sector.info.waves = state.rules.waves;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //postgenerate for bases
+<b class="nc">&nbsp;        if(sector.preset == null &amp;&amp; sector.planet.generator != null){</b>
+<b class="nc">&nbsp;            sector.planet.generator.postGenerate(tiles);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //reset rules
+<b class="nc">&nbsp;        setSectorRules(sector, saveInfo);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.defaultTeam.core() != null){</b>
+<b class="nc">&nbsp;            sector.info.spawnPosition = state.rules.defaultTeam.core().pos();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setSectorRules(Sector sector, boolean saveInfo){
+<b class="nc">&nbsp;        state.map = new Map(StringMap.of(&quot;name&quot;, sector.preset == null ? sector.planet.localizedName + &quot;; Sector &quot; + sector.id : sector.preset.localizedName));</b>
+<b class="nc">&nbsp;        state.rules.sector = sector;</b>
+<b class="nc">&nbsp;        state.rules.weather.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        sector.planet.generator.addWeather(sector, state.rules);</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectSet&lt;UnlockableContent&gt; content = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+&nbsp;        //resources can be outside area
+<b class="nc">&nbsp;        boolean border = state.rules.limitMapArea;</b>
+<b class="nc">&nbsp;        state.rules.limitMapArea = false;</b>
+&nbsp;
+&nbsp;        //TODO duplicate code?
+<b class="nc">&nbsp;        for(Tile tile : tiles){</b>
+<b class="nc">&nbsp;            if(getDarkness(tile.x, tile.y) &gt;= 3){</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Liquid liquid = tile.floor().liquidDrop;</b>
+<b class="nc">&nbsp;            if(tile.floor().itemDrop != null &amp;&amp; tile.block() == Blocks.air) content.add(tile.floor().itemDrop);</b>
+<b class="nc">&nbsp;            if(tile.overlay().itemDrop != null &amp;&amp; tile.block() == Blocks.air) content.add(tile.overlay().itemDrop);</b>
+<b class="nc">&nbsp;            if(tile.wallDrop() != null) content.add(tile.wallDrop());</b>
+<b class="nc">&nbsp;            if(liquid != null) content.add(liquid);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        state.rules.limitMapArea = border;</b>
+&nbsp;
+<b class="nc">&nbsp;        state.rules.cloudColor = sector.planet.landCloudColor;</b>
+<b class="nc">&nbsp;        state.rules.env = sector.planet.defaultEnv;</b>
+<b class="nc">&nbsp;        state.rules.planet = sector.planet;</b>
+<b class="nc">&nbsp;        sector.planet.applyRules(state.rules);</b>
+<b class="nc">&nbsp;        sector.info.resources = content.toSeq();</b>
+<b class="nc">&nbsp;        sector.info.resources.sort(Structs.comps(Structs.comparing(Content::getContentType), Structs.comparingInt(c -&gt; c.id)));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(saveInfo){</b>
+<b class="nc">&nbsp;            sector.saveInfo();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Context filterContext(Map map){
+<b class="nc">&nbsp;        return new FilterContext(map);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void loadMap(Map map){
+<b class="fc">&nbsp;        loadMap(map, new Rules());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void loadMap(Map map, Rules checkRules){
+&nbsp;        //load using custom loader if possible
+<b class="fc">&nbsp;        if(customMapLoaders.containsKey(map)){</b>
+<b class="nc">&nbsp;            customMapLoaders.get(map).run();</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;        try{
+<b class="fc">&nbsp;            SaveIO.load(map.file, new FilterContext(map));</b>
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;            if(!headless){</b>
+<b class="nc">&nbsp;                ui.showErrorMessage(&quot;@map.invalid&quot;);</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; state.set(State.menu));</b>
+<b class="nc">&nbsp;                invalidMap = true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            generating = false;</b>
+&nbsp;            return;
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        state.map = map;</b>
+&nbsp;
+<b class="fc">&nbsp;        invalidMap = false;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(!headless){</b>
+<b class="nc">&nbsp;            if(state.teams.cores(checkRules.defaultTeam).size == 0 &amp;&amp; !checkRules.pvp){</b>
+<b class="nc">&nbsp;                invalidMap = true;</b>
+<b class="nc">&nbsp;                ui.showErrorMessage(Core.bundle.format(&quot;map.nospawn&quot;, checkRules.defaultTeam.coloredName()));</b>
+<b class="nc">&nbsp;            }else if(checkRules.pvp){ //pvp maps need two cores to be valid</b>
+<b class="nc">&nbsp;                if(state.teams.getActive().count(TeamData::hasCore) &lt; 2){</b>
+<b class="nc">&nbsp;                    invalidMap = true;</b>
+<b class="nc">&nbsp;                    ui.showErrorMessage(&quot;@map.nospawn.pvp&quot;);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(checkRules.attackMode){ //attack maps need two cores to be valid</b>
+<b class="nc">&nbsp;                invalidMap = state.rules.waveTeam.data().noCores();</b>
+<b class="nc">&nbsp;                if(invalidMap){</b>
+<b class="nc">&nbsp;                    ui.showErrorMessage(Core.bundle.format(&quot;map.nospawn.attack&quot;, checkRules.waveTeam.coloredName()));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }else{
+<b class="fc">&nbsp;            invalidMap = !state.teams.getActive().contains(TeamData::hasCore);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(invalidMap){</b>
+<b class="nc">&nbsp;                throw new MapException(map, &quot;Map has no cores!&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(invalidMap) Core.app.post(() -&gt; state.set(State.menu));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addDarkness(Tiles tiles){
+<b class="fc">&nbsp;        byte[] dark = new byte[tiles.width * tiles.height];</b>
+<b class="fc">&nbsp;        byte[] writeBuffer = new byte[tiles.width * tiles.height];</b>
+&nbsp;
+<b class="fc">&nbsp;        byte darkIterations = darkRadius;</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; dark.length; i++){</b>
+<b class="fc">&nbsp;            Tile tile = tiles.geti(i);</b>
+<b class="fc">&nbsp;            if(tile.isDarkened()){</b>
+<b class="fc">&nbsp;                dark[i] = darkIterations;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; darkIterations; i++){</b>
+<b class="fc">&nbsp;            for(Tile tile : tiles){</b>
+<b class="fc">&nbsp;                int idx = tile.y * tiles.width + tile.x;</b>
+<b class="fc">&nbsp;                boolean min = false;</b>
+<b class="fc">&nbsp;                for(Point2 point : Geometry.d4){</b>
+<b class="fc">&nbsp;                    int newX = tile.x + point.x, newY = tile.y + point.y;</b>
+<b class="fc">&nbsp;                    int nidx = newY * tiles.width + newX;</b>
+<b class="fc">&nbsp;                    if(tiles.in(newX, newY) &amp;&amp; dark[nidx] &lt; dark[idx]){</b>
+<b class="fc">&nbsp;                        min = true;</b>
+<b class="fc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;                writeBuffer[idx] = (byte)Math.max(0, dark[idx] - Mathf.num(min));</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            System.arraycopy(writeBuffer, 0, dark, 0, writeBuffer.length);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        for(Tile tile : tiles){</b>
+<b class="fc">&nbsp;            int idx = tile.y * tiles.width + tile.x;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(tile.isDarkened()){</b>
+<b class="fc">&nbsp;                tile.data = dark[idx];</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(dark[idx] == darkRadius){</b>
+<b class="fc">&nbsp;                boolean full = true;</b>
+<b class="fc">&nbsp;                for(Point2 p : Geometry.d4){</b>
+<b class="fc">&nbsp;                    int px = p.x + tile.x, py = p.y + tile.y;</b>
+<b class="fc">&nbsp;                    int nidx = py * tiles.width + px;</b>
+<b class="fc">&nbsp;                    if(tiles.in(px, py) &amp;&amp; !(tile.isDarkened() &amp;&amp; dark[nidx] == 4)){</b>
+<b class="fc">&nbsp;                        full = false;</b>
+<b class="fc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(full) tile.data = darkRadius + 1;</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public byte getWallDarkness(Tile tile){
+<b class="nc">&nbsp;        if(tile.isDarkened()){</b>
+<b class="nc">&nbsp;            int minDst = darkRadius + 1;</b>
+<b class="nc">&nbsp;            for(int cx = tile.x - darkRadius; cx &lt;= tile.x + darkRadius; cx++){</b>
+<b class="nc">&nbsp;                for(int cy = tile.y - darkRadius; cy &lt;= tile.y + darkRadius; cy++){</b>
+<b class="nc">&nbsp;                    if(tiles.in(cx, cy) &amp;&amp; !rawTile(cx, cy).isDarkened()){</b>
+<b class="nc">&nbsp;                        minDst = Math.min(minDst, Math.abs(cx - tile.x) + Math.abs(cy - tile.y));</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return (byte)Math.max((minDst - 1), 0);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void checkMapArea(){
+<b class="nc">&nbsp;        for(var build : Groups.build){</b>
+&nbsp;            //reset map-area-based disabled blocks.
+<b class="nc">&nbsp;            if(!build.enabled &amp;&amp; build.block.autoResetEnabled){</b>
+<b class="nc">&nbsp;                build.enabled = true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO optimize; this is very slow and called too often!
+&nbsp;    public float getDarkness(int x, int y){
+<b class="nc">&nbsp;        float dark = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Vars.state.rules.borderDarkness){</b>
+<b class="nc">&nbsp;            int edgeBlend = 2;</b>
+&nbsp;            int edgeDst;
+&nbsp;
+<b class="nc">&nbsp;            if(!state.rules.limitMapArea){</b>
+<b class="nc">&nbsp;                edgeDst = Math.min(x, Math.min(y, Math.min(-(x - (tiles.width - 1)), -(y - (tiles.height - 1)))));</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                edgeDst =</b>
+<b class="nc">&nbsp;                    Math.min(x - state.rules.limitX,</b>
+<b class="nc">&nbsp;                    Math.min(y - state.rules.limitY,</b>
+<b class="nc">&nbsp;                    Math.min(-(x - (state.rules.limitX + state.rules.limitWidth - 1)), -(y - (state.rules.limitY + state.rules.limitHeight - 1)))));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(edgeDst &lt;= edgeBlend){</b>
+<b class="nc">&nbsp;                dark = Math.max((edgeBlend - edgeDst) * (4f / edgeBlend), dark);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.hasSector() &amp;&amp; state.getSector().preset == null){</b>
+<b class="nc">&nbsp;            int circleBlend = 5;</b>
+&nbsp;            //quantized angle
+<b class="nc">&nbsp;            float offset = state.getSector().rect.rotation + 90;</b>
+<b class="nc">&nbsp;            float angle = Angles.angle(x, y, tiles.width/2, tiles.height/2) + offset;</b>
+&nbsp;            //polygon sides, depends on sector
+<b class="nc">&nbsp;            int sides = state.getSector().tile.corners.length;</b>
+<b class="nc">&nbsp;            float step = 360f / sides;</b>
+&nbsp;            //prev and next angles of poly
+<b class="nc">&nbsp;            float prev = Mathf.round(angle, step);</b>
+<b class="nc">&nbsp;            float next = prev + step;</b>
+&nbsp;            //raw line length to be translated
+<b class="nc">&nbsp;            float length = state.getSector().getSize()/2f;</b>
+<b class="nc">&nbsp;            float rawDst = Intersector.distanceLinePoint(Tmp.v1.trns(prev, length), Tmp.v2.trns(next, length), Tmp.v3.set(x - tiles.width/2, y - tiles.height/2).rotate(offset)) / Mathf.sqrt3 - 1;</b>
+&nbsp;
+&nbsp;            //noise
+<b class="nc">&nbsp;            rawDst += Noise.noise(x, y, 11f, 7f) + Noise.noise(x, y, 22f, 15f);</b>
+&nbsp;
+<b class="nc">&nbsp;            int circleDst = (int)(rawDst - (length - circleBlend));</b>
+<b class="nc">&nbsp;            if(circleDst &gt; 0){</b>
+<b class="nc">&nbsp;                dark = Math.max(circleDst, dark);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tile(x, y);</b>
+<b class="nc">&nbsp;        if(tile != null &amp;&amp; tile.isDarkened()){</b>
+<b class="nc">&nbsp;            dark = Math.max(dark, tile.data);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return dark;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void raycastEachWorld(float x0, float y0, float x1, float y1, Raycaster cons){
+<b class="nc">&nbsp;        raycastEach(toTile(x0), toTile(y0), toTile(x1), toTile(y1), cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void raycastEach(int x1, int y1, int x2, int y2, Raycaster cons){
+<b class="nc">&nbsp;        int x = x1, dx = Math.abs(x2 - x), sx = x &lt; x2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int y = y1, dy = Math.abs(y2 - y), sy = y &lt; y2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int e2, err = dx - dy;</b>
+&nbsp;
+&nbsp;        while(true){
+<b class="nc">&nbsp;            if(cons.accept(x, y)) break;</b>
+<b class="nc">&nbsp;            if(x == x2 &amp;&amp; y == y2) break;</b>
+&nbsp;
+<b class="nc">&nbsp;            e2 = 2 * err;</b>
+<b class="nc">&nbsp;            if(e2 &gt; -dy){</b>
+<b class="nc">&nbsp;                err -= dy;</b>
+<b class="nc">&nbsp;                x += sx;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(e2 &lt; dx){</b>
+<b class="nc">&nbsp;                err += dx;</b>
+<b class="nc">&nbsp;                y += sy;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean raycast(int x1, int y1, int x2, int y2, Raycaster cons){
+<b class="nc">&nbsp;        int x = x1, dx = Math.abs(x2 - x), sx = x &lt; x2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int y = y1, dy = Math.abs(y2 - y), sy = y &lt; y2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int e2, err = dx - dy;</b>
+&nbsp;
+&nbsp;        while(true){
+<b class="nc">&nbsp;            if(cons.accept(x, y)) return true;</b>
+<b class="nc">&nbsp;            if(x == x2 &amp;&amp; y == y2) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;            e2 = 2 * err;</b>
+<b class="nc">&nbsp;            if(e2 &gt; -dy){</b>
+<b class="nc">&nbsp;                err = err - dy;</b>
+<b class="nc">&nbsp;                x = x + sx;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(e2 &lt; dx){</b>
+<b class="nc">&nbsp;                err = err + dx;</b>
+<b class="nc">&nbsp;                y = y + sy;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private class Context implements WorldContext{
+&nbsp;
+<b class="fc">&nbsp;        Context(){}</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Tile tile(int index){
+<b class="fc">&nbsp;            return tiles.geti(index);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void resize(int width, int height){
+<b class="fc">&nbsp;            World.this.resize(width, height);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Tile create(int x, int y, int floorID, int overlayID, int wallID){
+<b class="fc">&nbsp;            Tile tile = new Tile(x, y, floorID, overlayID, wallID);</b>
+<b class="fc">&nbsp;            tiles.set(x, y, tile);</b>
+<b class="fc">&nbsp;            return tile;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean isGenerating(){
+<b class="fc">&nbsp;            return World.this.isGenerating();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void begin(){
+<b class="fc">&nbsp;            beginMapLoad();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void end(){
+<b class="fc">&nbsp;            endMapLoad();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** World context that applies filters after generation end. */
+&nbsp;    public class FilterContext extends Context{
+&nbsp;        final Map map;
+&nbsp;
+<b class="fc">&nbsp;        public FilterContext(Map map){</b>
+<b class="fc">&nbsp;            this.map = map;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void end(){
+<b class="fc">&nbsp;            applyFilters();</b>
+&nbsp;
+<b class="fc">&nbsp;            super.end();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void applyFilters(){
+<b class="fc">&nbsp;            Seq&lt;GenerateFilter&gt; filters = map.filters();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(!filters.isEmpty()){</b>
+&nbsp;                //input for filter queries
+<b class="fc">&nbsp;                GenerateInput input = new GenerateInput();</b>
+&nbsp;
+<b class="fc">&nbsp;                for(GenerateFilter filter : filters){</b>
+<b class="fc">&nbsp;                    filter.randomize();</b>
+<b class="fc">&nbsp;                    input.begin(width(), height(), (x, y) -&gt; tiles.getn(x, y));</b>
+<b class="fc">&nbsp;                    filter.apply(tiles, input);</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

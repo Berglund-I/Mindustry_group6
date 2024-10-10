@@ -1,0 +1,492 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MenuFragment</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.fragments</a>
+</div>
+
+<h1>Coverage Summary for Class: MenuFragment (mindustry.ui.fragments)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MenuFragment</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/161)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MenuFragment$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MenuFragment$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MenuFragment$MenuButton</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/182)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.fragments;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.actions.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.ImageButton.*;
+&nbsp;import arc.scene.ui.TextButton.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.gen.Tex.*;
+&nbsp;
+<b class="nc">&nbsp;public class MenuFragment{</b>
+&nbsp;    private Table container, submenu;
+&nbsp;    private Button currentMenu;
+&nbsp;    private MenuRenderer renderer;
+<b class="nc">&nbsp;    private Seq&lt;MenuButton&gt; customButtons = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public void build(Group parent){
+<b class="nc">&nbsp;        renderer = new MenuRenderer();</b>
+&nbsp;
+<b class="nc">&nbsp;        Group group = new WidgetGroup();</b>
+<b class="nc">&nbsp;        group.setFillParent(true);</b>
+<b class="nc">&nbsp;        group.visible(() -&gt; !ui.editor.isShown());</b>
+<b class="nc">&nbsp;        parent.addChild(group);</b>
+&nbsp;
+<b class="nc">&nbsp;        parent = group;</b>
+&nbsp;
+<b class="nc">&nbsp;        parent.fill((x, y, w, h) -&gt; renderer.render());</b>
+&nbsp;
+<b class="nc">&nbsp;        parent.fill(c -&gt; {</b>
+<b class="nc">&nbsp;            c.pane(Styles.noBarPane, cont -&gt; {</b>
+<b class="nc">&nbsp;                container = cont;</b>
+<b class="nc">&nbsp;                cont.name = &quot;menu container&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!mobile){</b>
+<b class="nc">&nbsp;                    c.left();</b>
+<b class="nc">&nbsp;                    buildDesktop();</b>
+<b class="nc">&nbsp;                    Events.on(ResizeEvent.class, event -&gt; buildDesktop());</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    buildMobile();</b>
+<b class="nc">&nbsp;                    Events.on(ResizeEvent.class, event -&gt; buildMobile());</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }).with(pane -&gt; {</b>
+<b class="nc">&nbsp;                pane.setOverscroll(false, false);</b>
+<b class="nc">&nbsp;            }).grow();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        parent.fill(c -&gt; c.bottom().right().button(Icon.discord, new ImageButtonStyle(){{</b>
+<b class="nc">&nbsp;            up = discordBanner;</b>
+<b class="nc">&nbsp;        }}, ui.discord::show).marginTop(9f).marginLeft(10f).tooltip(&quot;@discord&quot;).size(84, 45).name(&quot;discord&quot;));</b>
+&nbsp;
+&nbsp;        //info icon
+<b class="nc">&nbsp;        if(mobile){</b>
+<b class="nc">&nbsp;            parent.fill(c -&gt; c.bottom().left().button(&quot;&quot;, new TextButtonStyle(){{</b>
+<b class="nc">&nbsp;                font = Fonts.def;</b>
+<b class="nc">&nbsp;                fontColor = Color.white;</b>
+<b class="nc">&nbsp;                up = infoBanner;</b>
+<b class="nc">&nbsp;            }}, ui.about::show).size(84, 45).name(&quot;info&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;            parent.fill((x, y, w, h) -&gt; {</b>
+<b class="nc">&nbsp;                if(Core.scene.marginBottom &gt; 0){</b>
+<b class="nc">&nbsp;                    Tex.paneTop.draw(0, 0, Core.graphics.getWidth(), Core.scene.marginBottom);</b>
+&nbsp;                }
+&nbsp;            });
+<b class="nc">&nbsp;        }else if(becontrol.active()){</b>
+<b class="nc">&nbsp;            parent.fill(c -&gt; c.bottom().right().button(&quot;@be.check&quot;, Icon.refresh, () -&gt; {</b>
+<b class="nc">&nbsp;                ui.loadfrag.show();</b>
+<b class="nc">&nbsp;                becontrol.checkUpdate(result -&gt; {</b>
+<b class="nc">&nbsp;                    ui.loadfrag.hide();</b>
+<b class="nc">&nbsp;                    if(!result){</b>
+<b class="nc">&nbsp;                        ui.showInfo(&quot;@be.noupdates&quot;);</b>
+&nbsp;                    }
+&nbsp;                });
+<b class="nc">&nbsp;            }).size(200, 60).name(&quot;becheck&quot;).update(t -&gt; {</b>
+<b class="nc">&nbsp;                t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);</b>
+&nbsp;            }));
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        String versionText = ((Version.build == -1) ? &quot;[#fc8140aa]&quot; : &quot;[#ffffffba]&quot;) + Version.combined();</b>
+<b class="nc">&nbsp;        parent.fill((x, y, w, h) -&gt; {</b>
+<b class="nc">&nbsp;            TextureRegion logo = Core.atlas.find(&quot;logo&quot;);</b>
+<b class="nc">&nbsp;            float width = Core.graphics.getWidth(), height = Core.graphics.getHeight() - Core.scene.marginTop;</b>
+<b class="nc">&nbsp;            float logoscl = Scl.scl(1) * logo.scale;</b>
+<b class="nc">&nbsp;            float logow = Math.min(logo.width * logoscl, Core.graphics.getWidth() - Scl.scl(20));</b>
+<b class="nc">&nbsp;            float logoh = logow * (float)logo.height / logo.width;</b>
+&nbsp;
+<b class="nc">&nbsp;            float fx = (int)(width / 2f);</b>
+<b class="nc">&nbsp;            float fy = (int)(height - 6 - logoh) + logoh / 2 - (Core.graphics.isPortrait() ? Scl.scl(30f) : 0f);</b>
+<b class="nc">&nbsp;            if(Core.settings.getBool(&quot;macnotch&quot;) ){</b>
+<b class="nc">&nbsp;                fy -= Scl.scl(macNotchHeight);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.color();</b>
+<b class="nc">&nbsp;            Draw.rect(logo, fx, fy, logow, logoh);</b>
+&nbsp;
+<b class="nc">&nbsp;            Fonts.outline.setColor(Color.white);</b>
+<b class="nc">&nbsp;            Fonts.outline.draw(versionText, fx, fy - logoh/2f - Scl.scl(2f), Align.center);</b>
+&nbsp;        }).touchable = Touchable.disabled;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void buildMobile(){
+<b class="nc">&nbsp;        container.clear();</b>
+<b class="nc">&nbsp;        container.name = &quot;buttons&quot;;</b>
+<b class="nc">&nbsp;        container.setSize(Core.graphics.getWidth(), Core.graphics.getHeight());</b>
+&nbsp;
+<b class="nc">&nbsp;        float size = 120f;</b>
+<b class="nc">&nbsp;        container.defaults().size(size).pad(5).padTop(4f);</b>
+&nbsp;
+&nbsp;        MobileButton
+<b class="nc">&nbsp;            play = new MobileButton(Icon.play, &quot;@campaign&quot;, () -&gt; checkPlay(ui.planet::show)),</b>
+<b class="nc">&nbsp;            custom = new MobileButton(Icon.rightOpenOut, &quot;@customgame&quot;, () -&gt; checkPlay(ui.custom::show)),</b>
+<b class="nc">&nbsp;            maps = new MobileButton(Icon.download, &quot;@loadgame&quot;, () -&gt; checkPlay(ui.load::show)),</b>
+<b class="nc">&nbsp;            join = new MobileButton(Icon.add, &quot;@joingame&quot;, () -&gt; checkPlay(ui.join::show)),</b>
+<b class="nc">&nbsp;            editor = new MobileButton(Icon.terrain, &quot;@editor&quot;, () -&gt; checkPlay(ui.maps::show)),</b>
+<b class="nc">&nbsp;            tools = new MobileButton(Icon.settings, &quot;@settings&quot;, ui.settings::show),</b>
+<b class="nc">&nbsp;            mods = new MobileButton(Icon.book, &quot;@mods&quot;, ui.mods::show),</b>
+<b class="nc">&nbsp;            exit = new MobileButton(Icon.exit, &quot;@quit&quot;, () -&gt; Core.app.exit()),</b>
+<b class="nc">&nbsp;            about = new MobileButton(Icon.info, &quot;@about.button&quot;, ui.about::show);</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;MobileButton&gt; customs = customButtons.map(b -&gt; new MobileButton(b.icon, b.text, b.runnable == null ? () -&gt; {} : b.runnable));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!Core.graphics.isPortrait()){</b>
+<b class="nc">&nbsp;            container.marginTop(60f);</b>
+<b class="nc">&nbsp;            container.add(play);</b>
+<b class="nc">&nbsp;            container.add(join);</b>
+<b class="nc">&nbsp;            container.add(custom);</b>
+<b class="nc">&nbsp;            container.add(maps);</b>
+&nbsp;            // add odd custom buttons
+<b class="nc">&nbsp;            for(int i = 1; i &lt; customs.size; i += 2){</b>
+<b class="nc">&nbsp;                container.add(customs.get(i));</b>
+&nbsp;            }
+<b class="nc">&nbsp;            container.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            container.add(editor);</b>
+<b class="nc">&nbsp;            container.add(tools);</b>
+<b class="nc">&nbsp;            container.add(mods);</b>
+&nbsp;            // add even custom buttons (before the exit button)
+<b class="nc">&nbsp;            for(int i = 0; i &lt; customs.size; i += 2){</b>
+<b class="nc">&nbsp;                container.add(customs.get(i));</b>
+&nbsp;            }
+<b class="nc">&nbsp;            container.add(ios ? about : exit);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            container.marginTop(0f);</b>
+<b class="nc">&nbsp;            container.add(play);</b>
+<b class="nc">&nbsp;            container.add(maps);</b>
+<b class="nc">&nbsp;            container.row();</b>
+<b class="nc">&nbsp;            container.add(custom);</b>
+<b class="nc">&nbsp;            container.add(join);</b>
+<b class="nc">&nbsp;            container.row();</b>
+<b class="nc">&nbsp;            container.add(editor);</b>
+<b class="nc">&nbsp;            container.add(tools);</b>
+<b class="nc">&nbsp;            container.row();</b>
+<b class="nc">&nbsp;            container.add(mods);</b>
+&nbsp;            // add custom buttons
+<b class="nc">&nbsp;            for(int i = 0; i &lt; customs.size; i++){</b>
+<b class="nc">&nbsp;                container.add(customs.get(i));</b>
+<b class="nc">&nbsp;                if(i % 2 == 0) container.row();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            container.add(ios ? about : exit);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void buildDesktop(){
+<b class="nc">&nbsp;        container.clear();</b>
+<b class="nc">&nbsp;        container.setSize(Core.graphics.getWidth(), Core.graphics.getHeight());</b>
+&nbsp;
+<b class="nc">&nbsp;        float width = 230f;</b>
+<b class="nc">&nbsp;        Drawable background = Styles.black6;</b>
+&nbsp;
+<b class="nc">&nbsp;        container.left();</b>
+<b class="nc">&nbsp;        container.add().width(Core.graphics.getWidth()/10f);</b>
+<b class="nc">&nbsp;        container.table(background, t -&gt; {</b>
+<b class="nc">&nbsp;            t.defaults().width(width).height(70f);</b>
+<b class="nc">&nbsp;            t.name = &quot;buttons&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;            buttons(t,</b>
+&nbsp;                new MenuButton(&quot;@play&quot;, Icon.play,
+<b class="nc">&nbsp;                    new MenuButton(&quot;@campaign&quot;, Icon.play, () -&gt; checkPlay(ui.planet::show)),</b>
+<b class="nc">&nbsp;                    new MenuButton(&quot;@joingame&quot;, Icon.add, () -&gt; checkPlay(ui.join::show)),</b>
+<b class="nc">&nbsp;                    new MenuButton(&quot;@customgame&quot;, Icon.terrain, () -&gt; checkPlay(ui.custom::show)),</b>
+<b class="nc">&nbsp;                    new MenuButton(&quot;@loadgame&quot;, Icon.download, () -&gt; checkPlay(ui.load::show))</b>
+&nbsp;                ),
+&nbsp;                new MenuButton(&quot;@database.button&quot;, Icon.menu,
+<b class="nc">&nbsp;                    new MenuButton(&quot;@schematics&quot;, Icon.paste, ui.schematics::show),</b>
+<b class="nc">&nbsp;                    new MenuButton(&quot;@database&quot;, Icon.book, ui.database::show),</b>
+<b class="nc">&nbsp;                    new MenuButton(&quot;@about.button&quot;, Icon.info, ui.about::show)</b>
+&nbsp;                ),
+<b class="nc">&nbsp;                new MenuButton(&quot;@editor&quot;, Icon.terrain, () -&gt; checkPlay(ui.maps::show)), steam ? new MenuButton(&quot;@workshop&quot;, Icon.steam, platform::openWorkshop) : null,</b>
+<b class="nc">&nbsp;                new MenuButton(&quot;@mods&quot;, Icon.book, ui.mods::show),</b>
+<b class="nc">&nbsp;                new MenuButton(&quot;@settings&quot;, Icon.settings, ui.settings::show)</b>
+&nbsp;            );
+<b class="nc">&nbsp;            buttons(t, customButtons.toArray(MenuButton.class));</b>
+<b class="nc">&nbsp;            buttons(t, new MenuButton(&quot;@quit&quot;, Icon.exit, Core.app::exit));</b>
+<b class="nc">&nbsp;        }).width(width).growY();</b>
+&nbsp;
+<b class="nc">&nbsp;        container.table(background, t -&gt; {</b>
+<b class="nc">&nbsp;            submenu = t;</b>
+<b class="nc">&nbsp;            t.name = &quot;submenu&quot;;</b>
+<b class="nc">&nbsp;            t.color.a = 0f;</b>
+<b class="nc">&nbsp;            t.top();</b>
+<b class="nc">&nbsp;            t.defaults().width(width).height(70f);</b>
+<b class="nc">&nbsp;            t.visible(() -&gt; !t.getChildren().isEmpty());</b>
+&nbsp;
+<b class="nc">&nbsp;        }).width(width).growY();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkPlay(Runnable run){
+<b class="nc">&nbsp;        if(!mods.hasContentErrors()){</b>
+<b class="nc">&nbsp;            run.run();</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            ui.showInfo(&quot;@mod.noerrorplay&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void fadeInMenu(){
+<b class="nc">&nbsp;        submenu.clearActions();</b>
+<b class="nc">&nbsp;        submenu.actions(Actions.alpha(1f, 0.15f, Interp.fade));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void fadeOutMenu(){
+&nbsp;        //nothing to fade out
+<b class="nc">&nbsp;        if(submenu.getChildren().isEmpty()){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        submenu.clearActions();</b>
+<b class="nc">&nbsp;        submenu.actions(Actions.alpha(1f), Actions.alpha(0f, 0.2f, Interp.fade), Actions.run(() -&gt; submenu.clearChildren()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void buttons(Table t, MenuButton... buttons){
+<b class="nc">&nbsp;        for(MenuButton b : buttons){</b>
+<b class="nc">&nbsp;            if(b == null) continue;</b>
+<b class="nc">&nbsp;            Button[] out = {null};</b>
+<b class="nc">&nbsp;            out[0] = t.button(b.text, b.icon, Styles.flatToggleMenut, () -&gt; {</b>
+<b class="nc">&nbsp;                if(currentMenu == out[0]){</b>
+<b class="nc">&nbsp;                    currentMenu = null;</b>
+<b class="nc">&nbsp;                    fadeOutMenu();</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    if(b.submenu != null){</b>
+<b class="nc">&nbsp;                        currentMenu = out[0];</b>
+<b class="nc">&nbsp;                        submenu.clearChildren();</b>
+<b class="nc">&nbsp;                        fadeInMenu();</b>
+&nbsp;                        //correctly offset the button
+<b class="nc">&nbsp;                        submenu.add().height((Core.graphics.getHeight() - Core.scene.marginTop - Core.scene.marginBottom - out[0].getY(Align.topLeft)) / Scl.scl(1f));</b>
+<b class="nc">&nbsp;                        submenu.row();</b>
+<b class="nc">&nbsp;                        buttons(submenu, b.submenu);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        currentMenu = null;</b>
+<b class="nc">&nbsp;                        fadeOutMenu();</b>
+<b class="nc">&nbsp;                        b.runnable.run();</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }).marginLeft(11f).get();</b>
+<b class="nc">&nbsp;            out[0].update(() -&gt; out[0].setChecked(currentMenu == out[0]));</b>
+<b class="nc">&nbsp;            t.row();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a custom button to the menu. */
+&nbsp;    public void addButton(String text, Drawable icon, Runnable callback){
+<b class="nc">&nbsp;        addButton(new MenuButton(text, icon, callback));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a custom button to the menu. */
+&nbsp;    public void addButton(String text, Runnable callback){
+<b class="nc">&nbsp;        addButton(text, Styles.none, callback);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Adds a custom button to the menu.
+&nbsp;     * If {@link MenuButton#submenu} is null or the player is on mobile, {@link MenuButton#runnable} is invoked on click.
+&nbsp;     * Otherwise, {@link MenuButton#submenu} is shown.
+&nbsp;     */
+&nbsp;    public void addButton(MenuButton button){
+<b class="nc">&nbsp;        customButtons.add(button);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Represents a menu button definition. */
+&nbsp;    public static class MenuButton{
+&nbsp;        public final Drawable icon;
+&nbsp;        public final String text;
+&nbsp;        /** Runnable ran when the button is clicked. Ignored on desktop if {@link #submenu} is not null. */
+&nbsp;        public final Runnable runnable;
+&nbsp;        /** Submenu shown when this button is clicked. Used instead of {@link #runnable} on desktop. */
+&nbsp;        public final @Nullable MenuButton[] submenu;
+&nbsp;
+&nbsp;        /** Constructs a simple menu button, which behaves the same way on desktop and mobile. */
+<b class="nc">&nbsp;        public MenuButton(String text, Drawable icon, Runnable runnable){</b>
+<b class="nc">&nbsp;            this.icon = icon;</b>
+<b class="nc">&nbsp;            this.text = text;</b>
+<b class="nc">&nbsp;            this.runnable = runnable;</b>
+<b class="nc">&nbsp;            this.submenu = null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Constructs a button that runs the runnable when clicked on mobile or shows the submenu on desktop. */
+<b class="nc">&nbsp;        public MenuButton(String text, Drawable icon, Runnable runnable, MenuButton... submenu){</b>
+<b class="nc">&nbsp;            this.icon = icon;</b>
+<b class="nc">&nbsp;            this.text = text;</b>
+<b class="nc">&nbsp;            this.runnable = runnable;</b>
+<b class="nc">&nbsp;            this.submenu = submenu;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Comstructs a desktop-only button; used internally. */
+<b class="nc">&nbsp;        MenuButton(String text, Drawable icon, MenuButton... submenu){</b>
+<b class="nc">&nbsp;            this.icon = icon;</b>
+<b class="nc">&nbsp;            this.text = text;</b>
+<b class="nc">&nbsp;            this.runnable = () -&gt; {};</b>
+<b class="nc">&nbsp;            this.submenu = submenu;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,158 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > CoreItemsDisplay</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui</a>
+</div>
+
+<h1>Coverage Summary for Class: CoreItemsDisplay (mindustry.ui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CoreItemsDisplay</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/21)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui;
+&nbsp;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class CoreItemsDisplay extends Table{
+<b class="nc">&nbsp;    private final ObjectSet&lt;Item&gt; usedItems = new ObjectSet&lt;&gt;();</b>
+&nbsp;    private CoreBuild core;
+&nbsp;
+<b class="nc">&nbsp;    public CoreItemsDisplay(){</b>
+<b class="nc">&nbsp;        rebuild();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resetUsed(){
+<b class="nc">&nbsp;        usedItems.clear();</b>
+<b class="nc">&nbsp;        background(null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void rebuild(){
+<b class="nc">&nbsp;        clear();</b>
+<b class="nc">&nbsp;        if(usedItems.size &gt; 0){</b>
+<b class="nc">&nbsp;            background(Styles.black6);</b>
+<b class="nc">&nbsp;            margin(4);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        update(() -&gt; {</b>
+<b class="nc">&nbsp;            core = Vars.player.team().core();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(content.items().contains(item -&gt; core != null &amp;&amp; core.items.get(item) &gt; 0 &amp;&amp; usedItems.add(item))){</b>
+<b class="nc">&nbsp;                rebuild();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Item item : content.items()){</b>
+<b class="nc">&nbsp;            if(usedItems.contains(item)){</b>
+<b class="nc">&nbsp;                image(item.uiIcon).size(iconSmall).padRight(3).tooltip(t -&gt; t.background(Styles.black6).margin(4f).add(item.localizedName).style(Styles.outlineLabel));</b>
+&nbsp;                //TODO leaks garbage
+<b class="nc">&nbsp;                label(() -&gt; core == null ? &quot;0&quot; : UI.formatAmount(core.items.get(item))).padRight(3).minWidth(52f).left().tooltip(t -&gt; t.background(Styles.black6).margin(4f).label(() -&gt; core == null ? &quot;0&quot; : core.items.get(item) + &quot;&quot;).style(Styles.outlineLabel));</b>
+&nbsp;
+<b class="nc">&nbsp;                if(++i % 4 == 0){</b>
+<b class="nc">&nbsp;                    row();</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

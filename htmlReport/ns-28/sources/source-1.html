@@ -1,0 +1,263 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Achievement</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.service</a>
+</div>
+
+<h1>Coverage Summary for Class: Achievement (mindustry.service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Achievement</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/107)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.service;
+&nbsp;
+&nbsp;import arc.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public enum Achievement{</b>
+<b class="nc">&nbsp;    kill1kEnemies(SStat.unitsDestroyed, 1000),</b>
+<b class="nc">&nbsp;    kill100kEnemies(SStat.unitsDestroyed, 100_000),</b>
+<b class="nc">&nbsp;    launch100kItems(SStat.itemsLaunched, 100_000),</b>
+&nbsp;
+<b class="nc">&nbsp;    produce5kMin(SStat.maxProduction, 5000),</b>
+<b class="nc">&nbsp;    produce50kMin(SStat.maxProduction, 50_000),</b>
+<b class="nc">&nbsp;    win10Attack(SStat.attacksWon, 10),</b>
+<b class="nc">&nbsp;    win10PvP(SStat.pvpsWon, 10),</b>
+<b class="nc">&nbsp;    defeatAttack5Waves,</b>
+<b class="nc">&nbsp;    launch30Times(SStat.timesLaunched, 30),</b>
+<b class="nc">&nbsp;    captureBackground,</b>
+<b class="nc">&nbsp;    survive100Waves(SStat.maxWavesSurvived, 100),</b>
+<b class="nc">&nbsp;    researchAll,</b>
+<b class="nc">&nbsp;    shockWetEnemy,</b>
+<b class="nc">&nbsp;    killEnemyPhaseWall,</b>
+<b class="nc">&nbsp;    researchRouter,</b>
+<b class="nc">&nbsp;    place10kBlocks(SStat.blocksBuilt, 10_000),</b>
+<b class="nc">&nbsp;    destroy1kBlocks(SStat.blocksDestroyed, 1000),</b>
+<b class="nc">&nbsp;    overheatReactor(SStat.reactorsOverheated, 1),</b>
+<b class="nc">&nbsp;    make10maps(SStat.mapsMade, 10),</b>
+<b class="nc">&nbsp;    downloadMapWorkshop,</b>
+<b class="nc">&nbsp;    publishMap(SStat.mapsPublished, 1),</b>
+<b class="nc">&nbsp;    defeatBoss(SStat.bossesDefeated, 1),</b>
+<b class="nc">&nbsp;    captureAllSectors,</b>
+<b class="nc">&nbsp;    control10Sectors(SStat.sectorsControlled, 10),</b>
+<b class="nc">&nbsp;    drop10kitems,</b>
+<b class="nc">&nbsp;    powerupImpactReactor,</b>
+<b class="nc">&nbsp;    obtainThorium,</b>
+<b class="nc">&nbsp;    obtainTitanium,</b>
+<b class="nc">&nbsp;    suicideBomb,</b>
+<b class="nc">&nbsp;    buildGroundFactory,</b>
+<b class="nc">&nbsp;    issueAttackCommand,</b>
+<b class="nc">&nbsp;    active100Units(SStat.maxUnitActive, 100),</b>
+<b class="nc">&nbsp;    build1000Units(SStat.unitsBuilt, 1000),</b>
+<b class="nc">&nbsp;    buildAllUnits(SStat.unitTypesBuilt, 50),</b>
+<b class="nc">&nbsp;    buildT5,</b>
+<b class="nc">&nbsp;    pickupT5,</b>
+<b class="nc">&nbsp;    active10Polys,</b>
+<b class="nc">&nbsp;    dieExclusion,</b>
+<b class="nc">&nbsp;    drown,</b>
+<b class="nc">&nbsp;    fillCoreAllCampaign,</b>
+<b class="nc">&nbsp;    hostServer10(SStat.maxPlayersServer, 10),</b>
+<b class="nc">&nbsp;    buildMeltdownSpectre, //technically inaccurate</b>
+<b class="nc">&nbsp;    launchItemPad,</b>
+<b class="nc">&nbsp;    chainRouters,</b>
+<b class="nc">&nbsp;    circleConveyor,</b>
+<b class="nc">&nbsp;    becomeRouter,</b>
+<b class="nc">&nbsp;    create20Schematics(SStat.schematicsCreated, 20),</b>
+<b class="nc">&nbsp;    create500Schematics(SStat.schematicsCreated, 500),</b>
+<b class="nc">&nbsp;    survive10WavesNoBlocks,</b>
+<b class="nc">&nbsp;    captureNoBlocksBroken,</b>
+<b class="nc">&nbsp;    useFlameAmmo,</b>
+<b class="nc">&nbsp;    coolTurret,</b>
+<b class="nc">&nbsp;    enablePixelation,</b>
+<b class="nc">&nbsp;    openWiki,</b>
+<b class="nc">&nbsp;    allTransportOneMap,</b>
+<b class="nc">&nbsp;    buildOverdriveProjector,</b>
+<b class="nc">&nbsp;    buildMendProjector,</b>
+<b class="nc">&nbsp;    buildWexWater,</b>
+&nbsp;
+<b class="nc">&nbsp;    have10mItems(SStat.totalCampaignItems, 10_000_000),</b>
+<b class="nc">&nbsp;    killEclipseDuo,</b>
+&nbsp;
+<b class="nc">&nbsp;    completeErekir,</b>
+<b class="nc">&nbsp;    completeSerpulo,</b>
+&nbsp;
+<b class="nc">&nbsp;    launchCoreSchematic,</b>
+<b class="nc">&nbsp;    nucleusGroundZero,</b>
+&nbsp;
+<b class="nc">&nbsp;    neoplasmWater,</b>
+<b class="nc">&nbsp;    blastFrozenUnit,</b>
+&nbsp;
+<b class="nc">&nbsp;    allBlocksSerpulo,</b>
+<b class="nc">&nbsp;    allBlocksErekir,</b>
+&nbsp;
+<b class="nc">&nbsp;    breakForceProjector,</b>
+<b class="nc">&nbsp;    researchLogic,</b>
+&nbsp;
+<b class="nc">&nbsp;    negative10kPower,</b>
+<b class="nc">&nbsp;    positive100kPower,</b>
+<b class="nc">&nbsp;    store1milPower,</b>
+&nbsp;
+<b class="nc">&nbsp;    blastGenerator,</b>
+<b class="nc">&nbsp;    neoplasiaExplosion,</b>
+&nbsp;
+<b class="nc">&nbsp;    installMod,</b>
+<b class="nc">&nbsp;    routerLanguage,</b>
+<b class="nc">&nbsp;    joinCommunityServer,</b>
+<b class="nc">&nbsp;    openConsole,</b>
+&nbsp;
+<b class="nc">&nbsp;    controlTurret,</b>
+<b class="nc">&nbsp;    dropUnitsCoreZone,</b>
+<b class="nc">&nbsp;    destroyScatterFlare,</b>
+<b class="nc">&nbsp;    boostUnit,</b>
+<b class="nc">&nbsp;    boostBuildingFloor,</b>
+&nbsp;
+<b class="nc">&nbsp;    hoverUnitLiquid,</b>
+&nbsp;
+<b class="nc">&nbsp;    break100Boulders(SStat.bouldersDeconstructed, 100),</b>
+<b class="nc">&nbsp;    break10000Boulders(SStat.bouldersDeconstructed, 10_000),</b>
+&nbsp;
+<b class="nc">&nbsp;    shockwaveTowerUse,</b>
+&nbsp;
+<b class="nc">&nbsp;    useAnimdustryEmoji,</b>
+&nbsp;
+&nbsp;    ;
+&nbsp;
+&nbsp;    private final SStat stat;
+&nbsp;    private final int statGoal;
+<b class="nc">&nbsp;    private boolean completed = false;</b>
+&nbsp;
+<b class="nc">&nbsp;    public static final Achievement[] all = values();</b>
+&nbsp;
+&nbsp;    /** Creates an achievement that is triggered when this stat reaches a number.*/
+<b class="nc">&nbsp;    Achievement(SStat stat, int goal){</b>
+<b class="nc">&nbsp;        this.stat = stat;</b>
+<b class="nc">&nbsp;        this.statGoal = goal;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Achievement(){
+&nbsp;        this(null, 0);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void complete(){
+<b class="nc">&nbsp;        if(!isAchieved()){</b>
+&nbsp;            //can&#39;t complete achievements with the dev console shown.
+<b class="nc">&nbsp;            if(ui != null &amp;&amp; ui.consolefrag != null &amp;&amp; ui.consolefrag.shown() &amp;&amp; !OS.username.equals(&quot;anuke&quot;) &amp;&amp; this != openConsole) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            service.completeAchievement(name());</b>
+<b class="nc">&nbsp;            service.storeStats();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void uncomplete(){
+<b class="nc">&nbsp;        if(isAchieved()){</b>
+<b class="nc">&nbsp;            service.clearAchievement(name());</b>
+<b class="nc">&nbsp;            completed = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void checkCompletion(){
+<b class="nc">&nbsp;        if(!isAchieved() &amp;&amp; stat != null &amp;&amp; stat.get() &gt;= statGoal){</b>
+<b class="nc">&nbsp;            complete();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAchieved(){
+<b class="nc">&nbsp;        if(completed){</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return (completed = service.isAchieved(name()));</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

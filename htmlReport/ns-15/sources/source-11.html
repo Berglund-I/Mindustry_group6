@@ -1,0 +1,204 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > HealthComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: HealthComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HealthComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class HealthComp implements Entityc, Posc{</b>
+&nbsp;    static final float hitDuration = 9f;
+&nbsp;
+&nbsp;    float health;
+&nbsp;    transient float hitTime;
+<b class="nc">&nbsp;    transient float maxHealth = 1f;</b>
+&nbsp;    transient boolean dead;
+&nbsp;
+&nbsp;    boolean isValid(){
+<b class="nc">&nbsp;        return !dead &amp;&amp; isAdded();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    float healthf(){
+<b class="nc">&nbsp;        return health / maxHealth;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        hitTime -= Time.delta / hitDuration;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void killed(){
+&nbsp;        //implement by other components
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    void kill(){
+<b class="nc">&nbsp;        if(dead) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        health = Math.min(health, 0);</b>
+<b class="nc">&nbsp;        dead = true;</b>
+<b class="nc">&nbsp;        killed();</b>
+<b class="nc">&nbsp;        remove();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void heal(){
+<b class="nc">&nbsp;        dead = false;</b>
+<b class="nc">&nbsp;        health = maxHealth;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean damaged(){
+<b class="nc">&nbsp;        return health &lt; maxHealth - 0.001f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Damage and pierce armor. */
+&nbsp;    void damagePierce(float amount, boolean withEffect){
+<b class="nc">&nbsp;        damage(amount, withEffect);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Damage and pierce armor. */
+&nbsp;    void damagePierce(float amount){
+<b class="nc">&nbsp;        damagePierce(amount, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void damage(float amount){
+<b class="nc">&nbsp;        health -= amount;</b>
+<b class="nc">&nbsp;        hitTime = 1f;</b>
+<b class="nc">&nbsp;        if(health &lt;= 0 &amp;&amp; !dead){</b>
+<b class="nc">&nbsp;            kill();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void damage(float amount, boolean withEffect){
+<b class="nc">&nbsp;        float pre = hitTime;</b>
+&nbsp;
+<b class="nc">&nbsp;        damage(amount);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!withEffect){</b>
+<b class="nc">&nbsp;            hitTime = pre;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void damageContinuous(float amount){
+<b class="nc">&nbsp;        damage(amount * Time.delta, hitTime &lt;= -10 + hitDuration);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void damageContinuousPierce(float amount){
+<b class="nc">&nbsp;        damagePierce(amount * Time.delta, hitTime &lt;= -20 + hitDuration);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void clampHealth(){
+<b class="nc">&nbsp;        health = Math.min(health, maxHealth);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Heals by a flat amount. */
+&nbsp;    void heal(float amount){
+<b class="nc">&nbsp;        health += amount;</b>
+<b class="nc">&nbsp;        clampHealth();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Heals by a 0-1 fraction of max health. */
+&nbsp;    void healFract(float amount){
+<b class="nc">&nbsp;        heal(amount * maxHealth);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

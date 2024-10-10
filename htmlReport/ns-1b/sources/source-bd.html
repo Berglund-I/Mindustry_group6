@@ -1,0 +1,679 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > WorldLabel</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: WorldLabel (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WorldLabel</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/66)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/178)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import java.nio.*;
+&nbsp;import java.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.async.PhysicsProcess.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.heat.*;
+&nbsp;import mindustry.world.blocks.heat.HeatConductor.*;
+&nbsp;import mindustry.world.blocks.logic.LogicBlock.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.entities.Puddles.*;
+&nbsp;import static mindustry.logic.GlobalVars.*;
+&nbsp;
+&nbsp;import arc.math.Mathf;
+&nbsp;import arc.math.geom.Position;
+&nbsp;import arc.util.Time;
+&nbsp;import arc.util.io.Reads;
+&nbsp;import arc.util.io.Writes;
+&nbsp;import java.nio.FloatBuffer;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.world.Block;
+&nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.world.blocks.environment.Floor;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+&nbsp;public class WorldLabel implements Drawc, Entityc, IndexableEntity__all, IndexableEntity__draw, IndexableEntity__label, IndexableEntity__sync, Posc, Syncc, WorldLabelc {
+&nbsp;  public static final byte flagBackground = 1;
+&nbsp;
+&nbsp;  public static final byte flagOutline = 2;
+&nbsp;
+&nbsp;  protected transient boolean added;
+&nbsp;
+<b class="nc">&nbsp;  public byte flags = flagBackground | flagOutline;</b>
+&nbsp;
+<b class="nc">&nbsp;  public float fontSize = 1.0F;</b>
+&nbsp;
+<b class="nc">&nbsp;  public transient int id = EntityGroup.nextId();</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__all = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__draw = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__label = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__sync = -1;</b>
+&nbsp;
+&nbsp;  public transient long lastUpdated;
+&nbsp;
+<b class="nc">&nbsp;  public String text = &quot;sample text&quot;;</b>
+&nbsp;
+&nbsp;  public transient long updateSpacing;
+&nbsp;
+&nbsp;  @Annotations.SyncField(true)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float x;
+&nbsp;
+&nbsp;  private transient float x_LAST_;
+&nbsp;
+&nbsp;  private transient float x_TARGET_;
+&nbsp;
+&nbsp;  @Annotations.SyncField(true)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float y;
+&nbsp;
+&nbsp;  private transient float y_LAST_;
+&nbsp;
+&nbsp;  private transient float y_TARGET_;
+&nbsp;
+<b class="nc">&nbsp;  public float z = Layer.playerName + 1;</b>
+&nbsp;
+<b class="nc">&nbsp;  protected WorldLabel() {</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public byte flags() {
+<b class="nc">&nbsp;    return flags;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float fontSize() {
+<b class="nc">&nbsp;    return fontSize;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float x() {
+<b class="nc">&nbsp;    return x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float y() {
+<b class="nc">&nbsp;    return y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float z() {
+<b class="nc">&nbsp;    return z;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int classId() {
+<b class="nc">&nbsp;    return 35;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int id() {
+<b class="nc">&nbsp;    return id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public String text() {
+<b class="nc">&nbsp;    return text;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public String toString() {
+<b class="nc">&nbsp;    return &quot;WorldLabel#&quot; + id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public long lastUpdated() {
+<b class="nc">&nbsp;    return lastUpdated;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public long updateSpacing() {
+<b class="nc">&nbsp;    return updateSpacing;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void flags(byte flags) {
+<b class="nc">&nbsp;    this.flags = flags;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void fontSize(float fontSize) {
+<b class="nc">&nbsp;    this.fontSize = fontSize;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void id(int id) {
+<b class="nc">&nbsp;    this.id = id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastUpdated(long lastUpdated) {
+<b class="nc">&nbsp;    this.lastUpdated = lastUpdated;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__all(int index) {
+<b class="nc">&nbsp;    index__all = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__draw(int index) {
+<b class="nc">&nbsp;    index__draw = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__label(int index) {
+<b class="nc">&nbsp;    index__label = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__sync(int index) {
+<b class="nc">&nbsp;    index__sync = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void text(String text) {
+<b class="nc">&nbsp;    this.text = text;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void updateSpacing(long updateSpacing) {
+<b class="nc">&nbsp;    this.updateSpacing = updateSpacing;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void x(float x) {
+<b class="nc">&nbsp;    this.x = x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void y(float y) {
+<b class="nc">&nbsp;    this.y = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void z(float z) {
+<b class="nc">&nbsp;    this.z = z;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Annotations.CallSuper
+&nbsp;  public void read(Reads read) {
+<b class="nc">&nbsp;    short REV = read.s();</b>
+<b class="nc">&nbsp;    if(REV == 0) {</b>
+<b class="nc">&nbsp;      this.flags = read.b();</b>
+<b class="nc">&nbsp;      this.fontSize = read.f();</b>
+<b class="nc">&nbsp;      this.text = mindustry.io.TypeIO.readString(read);</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;      this.z = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      throw new IllegalArgumentException(&quot;Unknown revision &#39;&quot; + REV + &quot;&#39; for entity type &#39;WorldLabelComp&#39;&quot;);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;        afterRead();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Annotations.CallSuper
+&nbsp;  public void write(Writes write) {
+<b class="nc">&nbsp;    write.s(0);</b>
+<b class="nc">&nbsp;    write.b(this.flags);</b>
+<b class="nc">&nbsp;    write.f(this.fontSize);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeString(write, this.text);</b>
+<b class="nc">&nbsp;    write.f(this.x);</b>
+<b class="nc">&nbsp;    write.f(this.y);</b>
+<b class="nc">&nbsp;    write.f(this.z);</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public &lt;T extends Entityc&gt; T self() {
+&nbsp;
+<b class="nc">&nbsp;        return (T)this;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public &lt;T&gt; T as() {
+&nbsp;
+<b class="nc">&nbsp;        return (T)this;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Building buildOn() {
+&nbsp;
+<b class="nc">&nbsp;        return world.buildWorld(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isAdded() {
+&nbsp;
+<b class="nc">&nbsp;        return added;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isLocal() {
+&nbsp;
+<b class="nc">&nbsp;        return ((Object)this) == player || ((Object)this) instanceof Unitc u &amp;&amp; u.controller() == player;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isRemote() {
+&nbsp;
+<b class="nc">&nbsp;        return ((Object)this) instanceof Unitc u &amp;&amp; u.isPlayer() &amp;&amp; !isLocal();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isSyncHidden(Player player) {
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean onSolid() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null || tile.solid();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean serialize() {
+<b class="nc">&nbsp;    return false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float clipSize() {
+&nbsp;
+<b class="nc">&nbsp;        return text.length() * 10.0F * fontSize;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getX() {
+&nbsp;
+<b class="nc">&nbsp;        return x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getY() {
+&nbsp;
+<b class="nc">&nbsp;        return y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int tileX() {
+&nbsp;
+<b class="nc">&nbsp;        return World.toTile(x);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int tileY() {
+&nbsp;
+<b class="nc">&nbsp;        return World.toTile(y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Block blockOn() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null ? Blocks.air : tile.block();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Tile tileOn() {
+&nbsp;
+<b class="nc">&nbsp;        return world.tileWorld(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Floor floorOn() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null || tile.block() != Blocks.air ? (Floor)Blocks.air : tile.floor();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static WorldLabel create() {
+<b class="nc">&nbsp;    return new WorldLabel();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void drawAt(String text, float x, float y, float layer, int flags, float fontSize) {
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(layer);</b>
+<b class="nc">&nbsp;        float z = Drawf.text();</b>
+<b class="nc">&nbsp;        Font font = (flags &amp; flagOutline) != 0 ? Fonts.outline : Fonts.def;</b>
+<b class="nc">&nbsp;        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);</b>
+<b class="nc">&nbsp;        boolean ints = font.usesIntegerPositions();</b>
+<b class="nc">&nbsp;        font.setUseIntegerPositions(false);</b>
+<b class="nc">&nbsp;        font.getData().setScale(0.25F / Scl.scl(1.0F) * fontSize);</b>
+<b class="nc">&nbsp;        layout.setText(font, text);</b>
+<b class="nc">&nbsp;        if ((flags &amp; flagBackground) != 0) {</b>
+<b class="nc">&nbsp;            Draw.color(0.0F, 0.0F, 0.0F, 0.3F);</b>
+<b class="nc">&nbsp;            Fill.rect(x, y - layout.height / 2, layout.width + 2, layout.height + 3);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        font.setColor(Color.white);</b>
+<b class="nc">&nbsp;        font.draw(text, x, y, 0, Align.center, false);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Pools.free(layout);</b>
+<b class="nc">&nbsp;        font.getData().setScale(1.0F);</b>
+<b class="nc">&nbsp;        font.setColor(Color.white);</b>
+<b class="nc">&nbsp;        font.setUseIntegerPositions(ints);</b>
+<b class="nc">&nbsp;        Draw.z(z);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void add() {
+<b class="nc">&nbsp;    if(added == true) return;</b>
+<b class="nc">&nbsp;    index__all = Groups.all.addIndex(this);</b>
+<b class="nc">&nbsp;    index__sync = Groups.sync.addIndex(this);</b>
+<b class="nc">&nbsp;    index__draw = Groups.draw.addIndex(this);</b>
+<b class="nc">&nbsp;    index__label = Groups.label.addIndex(this);</b>
+&nbsp;
+<b class="nc">&nbsp;        added = true;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void afterAllRead() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void afterRead() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void afterSync() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void draw() {
+&nbsp;    draw: {
+&nbsp;
+&nbsp;    }
+&nbsp;    worldlabel: {
+&nbsp;
+<b class="nc">&nbsp;        drawAt(text, x, y, z, flags, fontSize);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void handleSyncHidden() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void hide() {
+&nbsp;
+<b class="nc">&nbsp;        remove();</b>
+<b class="nc">&nbsp;        Call.removeWorldLabel(id);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void interpolate() {
+<b class="nc">&nbsp;    if(lastUpdated != 0 &amp;&amp; updateSpacing != 0) {</b>
+<b class="nc">&nbsp;      float timeSinceUpdate = Time.timeSinceMillis(lastUpdated);</b>
+<b class="nc">&nbsp;      float alpha = Math.min(timeSinceUpdate / updateSpacing, 2f);</b>
+<b class="nc">&nbsp;      x = (Mathf.lerp(x_LAST_, x_TARGET_, alpha));</b>
+<b class="nc">&nbsp;      y = (Mathf.lerp(y_LAST_, y_TARGET_, alpha));</b>
+<b class="nc">&nbsp;    } else if(lastUpdated != 0) {</b>
+<b class="nc">&nbsp;      x = x_TARGET_;</b>
+<b class="nc">&nbsp;      y = y_TARGET_;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void readSync(Reads read) {
+<b class="nc">&nbsp;    if(lastUpdated != 0) updateSpacing = Time.timeSinceMillis(lastUpdated);</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    boolean islocal = isLocal();</b>
+<b class="nc">&nbsp;    this.flags = read.b();</b>
+<b class="nc">&nbsp;    this.fontSize = read.f();</b>
+<b class="nc">&nbsp;    this.text = mindustry.io.TypeIO.readString(read);</b>
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      x_LAST_ = this.x;</b>
+<b class="nc">&nbsp;      this.x_TARGET_ = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      x_LAST_ = this.x;</b>
+<b class="nc">&nbsp;      x_TARGET_ = this.x;</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      y_LAST_ = this.y;</b>
+<b class="nc">&nbsp;      this.y_TARGET_ = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      y_LAST_ = this.y;</b>
+<b class="nc">&nbsp;      y_TARGET_ = this.y;</b>
+&nbsp;    }
+<b class="nc">&nbsp;    this.z = read.f();</b>
+<b class="nc">&nbsp;    afterSync();</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void readSyncManual(FloatBuffer buffer) {
+<b class="nc">&nbsp;    if(lastUpdated != 0) updateSpacing = Time.timeSinceMillis(lastUpdated);</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    this.x_LAST_ = this.x;</b>
+<b class="nc">&nbsp;    this.x_TARGET_ = buffer.get();</b>
+<b class="nc">&nbsp;    this.y_LAST_ = this.y;</b>
+<b class="nc">&nbsp;    this.y_TARGET_ = buffer.get();</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void remove() {
+<b class="nc">&nbsp;    if(added == false) return;</b>
+<b class="nc">&nbsp;    Groups.all.removeIndex(this, index__all);;</b>
+<b class="nc">&nbsp;    index__all = -1;</b>
+<b class="nc">&nbsp;    Groups.sync.removeIndex(this, index__sync);;</b>
+<b class="nc">&nbsp;    index__sync = -1;</b>
+<b class="nc">&nbsp;    Groups.draw.removeIndex(this, index__draw);;</b>
+<b class="nc">&nbsp;    index__draw = -1;</b>
+<b class="nc">&nbsp;    Groups.label.removeIndex(this, index__label);;</b>
+<b class="nc">&nbsp;    index__label = -1;</b>
+&nbsp;    entity: {
+&nbsp;
+<b class="nc">&nbsp;        added = false;</b>
+&nbsp;    }
+&nbsp;    sync: {
+&nbsp;
+<b class="nc">&nbsp;        if (Vars.net.client()) {</b>
+<b class="nc">&nbsp;            Vars.netClient.addRemovedEntity(id());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        set(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        this.x = x;</b>
+<b class="nc">&nbsp;        this.y = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void snapInterpolation() {
+<b class="nc">&nbsp;    updateSpacing = 16;</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    x_LAST_ = x;</b>
+<b class="nc">&nbsp;    x_TARGET_ = x;</b>
+<b class="nc">&nbsp;    y_LAST_ = y;</b>
+<b class="nc">&nbsp;    y_TARGET_ = y;</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void snapSync() {
+<b class="nc">&nbsp;    updateSpacing = 16;</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    x_LAST_ = x_TARGET_;</b>
+<b class="nc">&nbsp;    x = x_TARGET_;</b>
+<b class="nc">&nbsp;    y_LAST_ = y_TARGET_;</b>
+<b class="nc">&nbsp;    y = y_TARGET_;</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void trns(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        trns(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void trns(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        set(this.x + x, this.y + y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void update() {
+&nbsp;    entity: {
+&nbsp;
+&nbsp;    }
+&nbsp;    sync: {
+&nbsp;
+<b class="nc">&nbsp;        if ((Vars.net.client() &amp;&amp; !isLocal()) || isRemote()) {</b>
+<b class="nc">&nbsp;            interpolate();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void writeSync(Writes write) {
+<b class="nc">&nbsp;    write.b(this.flags);</b>
+<b class="nc">&nbsp;    write.f(this.fontSize);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeString(write, this.text);</b>
+<b class="nc">&nbsp;    write.f(this.x);</b>
+<b class="nc">&nbsp;    write.f(this.y);</b>
+<b class="nc">&nbsp;    write.f(this.z);</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void writeSyncManual(FloatBuffer buffer) {
+<b class="nc">&nbsp;    buffer.put(this.x);</b>
+<b class="nc">&nbsp;    buffer.put(this.y);</b>
+&nbsp;
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

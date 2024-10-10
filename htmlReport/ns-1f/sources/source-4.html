@@ -1,0 +1,328 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SaveIO</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.io</a>
+</div>
+
+<h1>Coverage Summary for Class: SaveIO (mindustry.io)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SaveIO</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.2%
+  </span>
+  <span class="absValue">
+    (12/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (42/84)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SaveIO$SaveException</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (12/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    49.4%
+  </span>
+  <span class="absValue">
+    (42/85)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.io;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.io.versions.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.util.*;
+&nbsp;import java.util.zip.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class SaveIO{</b>
+&nbsp;    /** Save format header. */
+<b class="fc">&nbsp;    public static final byte[] header = {&#39;M&#39;, &#39;S&#39;, &#39;A&#39;, &#39;V&#39;};</b>
+<b class="fc">&nbsp;    public static final IntMap&lt;SaveVersion&gt; versions = new IntMap&lt;&gt;();</b>
+<b class="fc">&nbsp;    public static final Seq&lt;SaveVersion&gt; versionArray = Seq.with(new Save1(), new Save2(), new Save3(), new Save4(), new Save5(), new Save6(), new Save7(), new Save8());</b>
+&nbsp;
+&nbsp;    static{
+<b class="fc">&nbsp;        for(SaveVersion version : versionArray){</b>
+<b class="fc">&nbsp;            versions.put(version.version, version);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static SaveVersion getSaveWriter(){
+<b class="nc">&nbsp;        return versionArray.peek();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static SaveVersion getSaveWriter(int version){
+<b class="fc">&nbsp;        return versions.get(version);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void save(Fi file){
+<b class="fc">&nbsp;        boolean exists = file.exists();</b>
+<b class="fc">&nbsp;        if(exists) file.moveTo(backupFileFor(file));</b>
+&nbsp;        try{
+<b class="fc">&nbsp;            write(file);</b>
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            if(exists) backupFileFor(file).moveTo(file);</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static DataInputStream getStream(Fi file){
+<b class="nc">&nbsp;        return new DataInputStream(new InflaterInputStream(file.read(bufferSize)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static DataInputStream getBackupStream(Fi file){
+<b class="nc">&nbsp;        return new DataInputStream(new InflaterInputStream(backupFileFor(file).read(bufferSize)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isSaveValid(Fi file){
+<b class="nc">&nbsp;        return isSaveFileValid(file) || isSaveFileValid(backupFileFor(file));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isSaveFileValid(Fi file){
+<b class="nc">&nbsp;        try(DataInputStream stream = new DataInputStream(new InflaterInputStream(file.read(bufferSize)))){</b>
+<b class="nc">&nbsp;            getMeta(stream);</b>
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isSaveValid(DataInputStream stream){
+&nbsp;        try{
+<b class="nc">&nbsp;            getMeta(stream);</b>
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static SaveMeta getMeta(Fi file){
+&nbsp;        try{
+<b class="nc">&nbsp;            return getMeta(getStream(file));</b>
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;            return getMeta(getBackupStream(file));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static SaveMeta getMeta(DataInputStream stream){
+&nbsp;
+&nbsp;        try{
+<b class="nc">&nbsp;            readHeader(stream);</b>
+<b class="nc">&nbsp;            int version = stream.readInt();</b>
+<b class="nc">&nbsp;            SaveVersion ver = versions.get(version);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(ver == null) throw new IOException(&quot;Unknown save version: &quot; + version + &quot;. Are you trying to load a save from a newer version?&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            SaveMeta meta = ver.getMeta(stream);</b>
+<b class="nc">&nbsp;            stream.close();</b>
+<b class="nc">&nbsp;            return meta;</b>
+<b class="nc">&nbsp;        }catch(IOException e){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Fi fileFor(int slot){
+<b class="nc">&nbsp;        return saveDirectory.child(slot + &quot;.&quot; + Vars.saveExtension);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Fi backupFileFor(Fi file){
+<b class="fc">&nbsp;        return file.sibling(file.name() + &quot;-backup.&quot; + file.extension());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void write(Fi file, StringMap tags){
+<b class="fc">&nbsp;        write(new FastDeflaterOutputStream(file.write(false, bufferSize)), tags);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void write(Fi file){
+<b class="fc">&nbsp;        write(file, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void write(OutputStream os, StringMap tags){
+<b class="fc">&nbsp;        try(DataOutputStream stream = new DataOutputStream(os)){</b>
+<b class="fc">&nbsp;            Events.fire(new SaveWriteEvent());</b>
+<b class="fc">&nbsp;            SaveVersion ver = getVersion();</b>
+&nbsp;
+<b class="fc">&nbsp;            stream.write(header);</b>
+<b class="fc">&nbsp;            stream.writeInt(ver.version);</b>
+<b class="fc">&nbsp;            if(tags == null){</b>
+<b class="fc">&nbsp;                ver.write(stream);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                ver.write(stream, tags);</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void load(String saveName) throws SaveException{
+<b class="nc">&nbsp;        load(saveDirectory.child(saveName + &quot;.msav&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void load(Fi file) throws SaveException{
+<b class="fc">&nbsp;        load(file, world.context);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void load(Fi file, WorldContext context) throws SaveException{
+&nbsp;        try{
+&nbsp;            //try and load; if any exception at all occurs
+<b class="fc">&nbsp;            load(new InflaterInputStream(file.read(bufferSize)), context);</b>
+<b class="nc">&nbsp;        }catch(SaveException e){</b>
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;            Fi backup = file.sibling(file.name() + &quot;-backup.&quot; + file.extension());</b>
+<b class="nc">&nbsp;            if(backup.exists()){</b>
+<b class="nc">&nbsp;                load(new InflaterInputStream(backup.read(bufferSize)), context);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                throw new SaveException(e.getCause());</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Loads from a deflated (!) input stream. */
+&nbsp;    public static void load(InputStream is, WorldContext context) throws SaveException{
+<b class="fc">&nbsp;        try(CounterInputStream counter = new CounterInputStream(is); DataInputStream stream = new DataInputStream(counter)){</b>
+<b class="fc">&nbsp;            logic.reset();</b>
+<b class="fc">&nbsp;            readHeader(stream);</b>
+<b class="fc">&nbsp;            int version = stream.readInt();</b>
+<b class="fc">&nbsp;            SaveVersion ver = versions.get(version);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(ver == null) throw new IOException(&quot;Unknown save version: &quot; + version + &quot;. Are you trying to load a save from a newer version?&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            ver.read(stream, counter, context);</b>
+<b class="fc">&nbsp;            Events.fire(new SaveLoadEvent(context.isMap()));</b>
+<b class="fc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            throw new SaveException(e);</b>
+&nbsp;        }finally{
+<b class="fc">&nbsp;            world.setGenerating(false);</b>
+<b class="fc">&nbsp;            content.setTemporaryMapper(null);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static SaveVersion getVersion(){
+<b class="fc">&nbsp;        return versionArray.peek();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void readHeader(DataInput input) throws IOException{
+<b class="fc">&nbsp;        byte[] bytes = new byte[header.length];</b>
+<b class="fc">&nbsp;        input.readFully(bytes);</b>
+<b class="fc">&nbsp;        if(!Arrays.equals(bytes, header)){</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;Incorrect header! Expecting: &quot; + Arrays.toString(header) + &quot;; Actual: &quot; + Arrays.toString(bytes));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class SaveException extends RuntimeException{
+&nbsp;        public SaveException(Throwable throwable){
+<b class="nc">&nbsp;            super(throwable);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

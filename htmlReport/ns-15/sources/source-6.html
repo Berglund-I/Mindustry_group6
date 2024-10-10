@@ -1,0 +1,374 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BulletComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: BulletComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BulletComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/93)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@EntityDef(value = {Bulletc.class}, pooled = true, serialize = false)
+&nbsp;@Component(base = true)
+<b class="nc">&nbsp;abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Drawc, Shielderc, Ownerc, Velc, Bulletc, Timerc{</b>
+&nbsp;    @Import Team team;
+&nbsp;    @Import Entityc owner;
+&nbsp;    @Import float x, y, damage, lastX, lastY, time, lifetime;
+&nbsp;    @Import Vec2 vel;
+&nbsp;
+<b class="nc">&nbsp;    IntSeq collided = new IntSeq(6);</b>
+&nbsp;    BulletType type;
+&nbsp;
+&nbsp;    Object data;
+&nbsp;    float fdata;
+&nbsp;
+&nbsp;    @ReadOnly
+&nbsp;    private float rotation;
+&nbsp;
+&nbsp;    //setting this variable to true prevents lifetime from decreasing for a frame.
+&nbsp;    transient boolean keepAlive;
+&nbsp;    transient @Nullable Tile aimTile;
+&nbsp;    transient float aimX, aimY;
+&nbsp;    transient float originX, originY;
+&nbsp;    transient @Nullable Mover mover;
+&nbsp;    transient boolean absorbed, hit;
+&nbsp;    transient @Nullable Trail trail;
+&nbsp;    transient int frags;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void getCollisions(Cons&lt;QuadTree&gt; consumer){
+<b class="nc">&nbsp;        Seq&lt;TeamData&gt; data = state.teams.present;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; data.size; i++){</b>
+<b class="nc">&nbsp;            if(data.items[i].team != team){</b>
+<b class="nc">&nbsp;                consumer.get(data.items[i].tree());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //bullets always considered local
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public boolean isLocal(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void add(){
+<b class="nc">&nbsp;        type.init(self());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void remove(){
+<b class="nc">&nbsp;        if(Groups.isClearing) return;</b>
+&nbsp;
+&nbsp;        //&#39;despawned&#39; only counts when the bullet is killed externally or reaches the end of life
+<b class="nc">&nbsp;        if(!hit){</b>
+<b class="nc">&nbsp;            type.despawned(self());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        type.removed(self());</b>
+<b class="nc">&nbsp;        collided.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float damageMultiplier(){
+<b class="nc">&nbsp;        return type.damageMultiplier(self());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void absorb(){
+<b class="nc">&nbsp;        absorbed = true;</b>
+<b class="nc">&nbsp;        remove();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasCollided(int id){
+<b class="nc">&nbsp;        return collided.size != 0 &amp;&amp; collided.contains(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    public float clipSize(){
+<b class="nc">&nbsp;        return type.drawSize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public boolean collides(Hitboxc other){
+<b class="nc">&nbsp;        return type.collides &amp;&amp; (other instanceof Teamc t &amp;&amp; t.team() != team)</b>
+<b class="nc">&nbsp;            &amp;&amp; !(other instanceof Flyingc f &amp;&amp; !f.checkTarget(type.collidesAir, type.collidesGround))</b>
+<b class="nc">&nbsp;            &amp;&amp; !(type.pierce &amp;&amp; hasCollided(other.id())); //prevent multiple collisions</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @MethodPriority(100)
+&nbsp;    @Override
+&nbsp;    public void collision(Hitboxc other, float x, float y){
+<b class="nc">&nbsp;        type.hit(self(), x, y);</b>
+&nbsp;
+&nbsp;        //must be last.
+<b class="nc">&nbsp;        if(!type.pierce){</b>
+<b class="nc">&nbsp;            hit = true;</b>
+<b class="nc">&nbsp;            remove();</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            collided.add(other.id());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        type.hitEntity(self(), other, other instanceof Healthc h ? h.health() : 0f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        if(mover != null){</b>
+<b class="nc">&nbsp;            mover.move(self());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        type.update(self());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(type.collidesTiles &amp;&amp; type.collides &amp;&amp; type.collidesGround){</b>
+<b class="nc">&nbsp;            tileRaycast(World.toTile(lastX), World.toTile(lastY), tileX(), tileY());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(type.removeAfterPierce &amp;&amp; type.pierceCap != -1 &amp;&amp; collided.size &gt;= type.pierceCap){</b>
+<b class="nc">&nbsp;            hit = true;</b>
+<b class="nc">&nbsp;            remove();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(keepAlive){</b>
+<b class="nc">&nbsp;            time -= Time.delta;</b>
+<b class="nc">&nbsp;            keepAlive = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void moveRelative(float x, float y){
+<b class="nc">&nbsp;        float rot = rotation();</b>
+<b class="nc">&nbsp;        this.x += Angles.trnsx(rot, x * Time.delta, y * Time.delta);</b>
+<b class="nc">&nbsp;        this.y += Angles.trnsy(rot, x * Time.delta, y * Time.delta);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void turn(float x, float y){
+<b class="nc">&nbsp;        float ang = vel.angle();</b>
+<b class="nc">&nbsp;        vel.add(Angles.trnsx(ang, x * Time.delta, y * Time.delta), Angles.trnsy(ang, x * Time.delta, y * Time.delta)).limit(type.speed);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean checkUnderBuild(Building build, float x, float y){
+<b class="nc">&nbsp;        return</b>
+&nbsp;            (!build.block.underBullets ||
+&nbsp;            //direct hit on correct tile
+&nbsp;            (aimTile != null &amp;&amp; aimTile.build == build) ||
+&nbsp;            //same team has no &#39;under build&#39; mechanics
+&nbsp;            (build.team == team) ||
+&nbsp;            //a piercing bullet overshot the aim tile, it&#39;s fine to hit things now
+<b class="nc">&nbsp;            (type.pierce &amp;&amp; aimTile != null &amp;&amp; Mathf.dst(x, y, originX, originY) &gt; aimTile.dst(originX, originY) + 2f) ||</b>
+&nbsp;            //there was nothing to aim at
+&nbsp;            (aimX == -1f &amp;&amp; aimY == -1f));
+&nbsp;    }
+&nbsp;
+&nbsp;    //copy-paste of World#raycastEach, inlined for lambda capture performance.
+&nbsp;    @Override
+&nbsp;    public void tileRaycast(int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        int x = x1, dx = Math.abs(x2 - x), sx = x &lt; x2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int y = y1, dy = Math.abs(y2 - y), sy = y &lt; y2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int e2, err = dx - dy;</b>
+<b class="nc">&nbsp;        int ww = world.width(), wh = world.height();</b>
+&nbsp;
+<b class="nc">&nbsp;        while(x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; x &lt; ww &amp;&amp; y &lt; wh){</b>
+<b class="nc">&nbsp;            Building build = world.build(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(type.collideFloor || type.collideTerrain){</b>
+<b class="nc">&nbsp;                Tile tile = world.tile(x, y);</b>
+<b class="nc">&nbsp;                if(</b>
+<b class="nc">&nbsp;                    type.collideFloor &amp;&amp; (tile == null || tile.floor().hasSurface() || tile.block() != Blocks.air) ||</b>
+<b class="nc">&nbsp;                    type.collideTerrain &amp;&amp; tile != null &amp;&amp; tile.block() instanceof StaticWall</b>
+&nbsp;                ){
+<b class="nc">&nbsp;                    remove();</b>
+<b class="nc">&nbsp;                    hit = true;</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(build != null &amp;&amp; isAdded()</b>
+<b class="nc">&nbsp;                &amp;&amp; checkUnderBuild(build, x * tilesize, y * tilesize)</b>
+<b class="nc">&nbsp;                &amp;&amp; build.collide(self()) &amp;&amp; type.testCollision(self(), build)</b>
+<b class="nc">&nbsp;                &amp;&amp; !build.dead() &amp;&amp; (type.collidesTeam || build.team != team) &amp;&amp; !(type.pierceBuilding &amp;&amp; hasCollided(build.id))){</b>
+&nbsp;
+<b class="nc">&nbsp;                boolean remove = false;</b>
+<b class="nc">&nbsp;                float health = build.health;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(build.team != team){</b>
+<b class="nc">&nbsp;                    remove = build.collision(self());</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(remove || type.collidesTeam){</b>
+<b class="nc">&nbsp;                    if(Mathf.dst2(lastX, lastY, x * tilesize, y * tilesize) &lt; Mathf.dst2(lastX, lastY, this.x, this.y)){</b>
+<b class="nc">&nbsp;                        this.x = x * tilesize;</b>
+<b class="nc">&nbsp;                        this.y = y * tilesize;</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(!type.pierceBuilding){</b>
+<b class="nc">&nbsp;                        hit = true;</b>
+<b class="nc">&nbsp;                        remove();</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        collided.add(build.id);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                type.hitTile(self(), build, x * tilesize, y * tilesize, health, true);</b>
+&nbsp;
+&nbsp;                //stop raycasting when building is hit
+<b class="nc">&nbsp;                if(type.pierceBuilding) return;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(x == x2 &amp;&amp; y == y2) break;</b>
+&nbsp;
+<b class="nc">&nbsp;            e2 = 2 * err;</b>
+<b class="nc">&nbsp;            if(e2 &gt; -dy){</b>
+<b class="nc">&nbsp;                err -= dy;</b>
+<b class="nc">&nbsp;                x += sx;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(e2 &lt; dx){</b>
+<b class="nc">&nbsp;                err += dx;</b>
+<b class="nc">&nbsp;                y += sy;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        Draw.z(type.layer);</b>
+&nbsp;
+<b class="nc">&nbsp;        type.draw(self());</b>
+<b class="nc">&nbsp;        type.drawLight(self());</b>
+&nbsp;        
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void initVel(float angle, float amount){
+<b class="nc">&nbsp;        vel.trns(angle, amount);</b>
+<b class="nc">&nbsp;        rotation = angle;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Sets the bullet&#39;s rotation in degrees. */
+&nbsp;    @Override
+&nbsp;    public void rotation(float angle){
+<b class="nc">&nbsp;        vel.setAngle(rotation = angle);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the bullet&#39;s rotation. */
+&nbsp;    @Override
+&nbsp;    public float rotation(){
+<b class="nc">&nbsp;        return vel.isZero(0.001f) ? rotation : vel.angle();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

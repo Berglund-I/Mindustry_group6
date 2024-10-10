@@ -1,0 +1,451 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Platform</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.core</a>
+</div>
+
+<h1>Coverage Summary for Class: Platform (mindustry.core)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Platform</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.8%
+  </span>
+  <span class="absValue">
+    (4/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.9%
+  </span>
+  <span class="absValue">
+    (7/118)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Platform$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90%
+  </span>
+  <span class="absValue">
+    (9/10)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Platform$FileWriter</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (6/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (16/128)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.core;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.filedialogs.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import mindustry.mod.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Net.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;import rhino.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.net.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public interface Platform{
+&nbsp;
+&nbsp;    /** Dynamically creates a class loader for a jar file. This loader must be child-first. */
+&nbsp;    default ClassLoader loadJar(Fi jar, ClassLoader parent) throws Exception{
+<b class="fc">&nbsp;        return new URLClassLoader(new URL[]{jar.file().toURI().toURL()}, parent){</b>
+&nbsp;            @Override
+&nbsp;            protected Class&lt;?&gt; loadClass(String name, boolean resolve) throws ClassNotFoundException{
+&nbsp;                //check for loaded state
+<b class="fc">&nbsp;                Class&lt;?&gt; loadedClass = findLoadedClass(name);</b>
+<b class="fc">&nbsp;                if(loadedClass == null){</b>
+&nbsp;                    try{
+&nbsp;                        //try to load own class first
+<b class="fc">&nbsp;                        loadedClass = findClass(name);</b>
+<b class="fc">&nbsp;                    }catch(ClassNotFoundException e){</b>
+&nbsp;                        //use parent if not found
+<b class="fc">&nbsp;                        return parent.loadClass(name);</b>
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(resolve){</b>
+<b class="nc">&nbsp;                    resolveClass(loadedClass);</b>
+&nbsp;                }
+<b class="fc">&nbsp;                return loadedClass;</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Steam: Update lobby visibility.*/
+<b class="nc">&nbsp;    default void updateLobby(){}</b>
+&nbsp;
+&nbsp;    /** Steam: Show multiplayer friend invite dialog.*/
+<b class="nc">&nbsp;    default void inviteFriends(){}</b>
+&nbsp;
+&nbsp;    /** Steam: Share a map on the workshop.*/
+<b class="nc">&nbsp;    default void publish(Publishable pub){}</b>
+&nbsp;
+&nbsp;    /** Steam: View a listing on the workshop.*/
+<b class="nc">&nbsp;    default void viewListing(Publishable pub){}</b>
+&nbsp;
+&nbsp;    /** Steam: View a listing on the workshop by an ID.*/
+<b class="nc">&nbsp;    default void viewListingID(String mapid){}</b>
+&nbsp;
+&nbsp;    /** Steam: Return external workshop maps to be loaded.*/
+&nbsp;    default Seq&lt;Fi&gt; getWorkshopContent(Class&lt;? extends Publishable&gt; type){
+<b class="fc">&nbsp;        return new Seq&lt;&gt;(0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Steam: Open workshop for maps.*/
+<b class="nc">&nbsp;    default void openWorkshop(){}</b>
+&nbsp;
+&nbsp;    /** Get the networking implementation.*/
+&nbsp;    default NetProvider getNet(){
+<b class="nc">&nbsp;        return new ArcNetProvider();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Gets the scripting implementation. */
+&nbsp;    default Scripts createScripts(){
+<b class="fc">&nbsp;        return new Scripts();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    default Context getScriptContext(){
+<b class="fc">&nbsp;        Context context = Context.getCurrentContext();</b>
+<b class="fc">&nbsp;        if(context == null) context = Context.enter();</b>
+<b class="fc">&nbsp;        context.setOptimizationLevel(9);</b>
+<b class="fc">&nbsp;        return context;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Update discord RPC. */
+&nbsp;    default void updateRPC(){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Must be a base64 string 8 bytes in length. */
+&nbsp;    default String getUUID(){
+<b class="nc">&nbsp;        String uuid = Core.settings.getString(&quot;uuid&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;        if(uuid.isEmpty()){</b>
+<b class="nc">&nbsp;            byte[] result = new byte[8];</b>
+<b class="nc">&nbsp;            new Rand().nextBytes(result);</b>
+<b class="nc">&nbsp;            uuid = new String(Base64Coder.encode(result));</b>
+<b class="nc">&nbsp;            Core.settings.put(&quot;uuid&quot;, uuid);</b>
+<b class="nc">&nbsp;            return uuid;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return uuid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Only used for iOS or android: open the share menu for a map or save. */
+&nbsp;    default void shareFile(Fi file){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    default void export(String name, String extension, FileWriter writer){
+<b class="nc">&nbsp;        if(!ios){</b>
+<b class="nc">&nbsp;            platform.showFileChooser(false, extension, file -&gt; {</b>
+<b class="nc">&nbsp;                ui.loadAnd(() -&gt; {</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        writer.write(file);</b>
+<b class="nc">&nbsp;                    }catch(Throwable e){</b>
+<b class="nc">&nbsp;                        ui.showException(e);</b>
+<b class="nc">&nbsp;                        Log.err(e);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;        }else{
+<b class="nc">&nbsp;            ui.loadAnd(() -&gt; {</b>
+&nbsp;                try{
+<b class="nc">&nbsp;                    Fi result = Core.files.local(name + &quot;.&quot; + extension);</b>
+<b class="nc">&nbsp;                    writer.write(result);</b>
+<b class="nc">&nbsp;                    platform.shareFile(result);</b>
+<b class="nc">&nbsp;                }catch(Throwable e){</b>
+<b class="nc">&nbsp;                    ui.showException(e);</b>
+<b class="nc">&nbsp;                    Log.err(e);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Show a file chooser.
+&nbsp;     * @param cons Selection listener
+&nbsp;     * @param open Whether to open or save files
+&nbsp;     * @param extension File extension to filter
+&nbsp;     * @param title The title of the native dialog
+&nbsp;     */
+&nbsp;    default void showFileChooser(boolean open, String title, String extension, Cons&lt;Fi&gt; cons){
+<b class="nc">&nbsp;        if(OS.isWindows || OS.isMac){</b>
+<b class="nc">&nbsp;            showNativeFileChooser(open, title, cons, extension);</b>
+<b class="nc">&nbsp;        }else if(OS.isLinux &amp;&amp; !OS.isAndroid){</b>
+<b class="nc">&nbsp;            showZenity(open, title, new String[]{extension}, cons, () -&gt; defaultFileDialog(open, title, extension, cons));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            defaultFileDialog(open, title, extension, cons);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** attempt to use the native file picker with zenity, or runs the fallback Runnable if the operation fails */
+&nbsp;    static void showZenity(boolean open, String title, String[] extensions, Cons&lt;Fi&gt; cons, Runnable fallback){
+<b class="nc">&nbsp;        Threads.daemon(() -&gt; {</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                String formatted = (title.startsWith(&quot;@&quot;) ? Core.bundle.get(title.substring(1)) : title).replaceAll(&quot;\&quot;&quot;, &quot;&#39;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                String last = FileChooser.getLastDirectory().absolutePath();</b>
+<b class="nc">&nbsp;                if(!last.endsWith(&quot;/&quot;)) last += &quot;/&quot;;</b>
+&nbsp;
+&nbsp;                //zenity doesn&#39;t support filtering by extension
+<b class="nc">&nbsp;                Seq&lt;String&gt; args = Seq.with(&quot;zenity&quot;,</b>
+&nbsp;                    &quot;--file-selection&quot;,
+&nbsp;                    &quot;--title=&quot; + formatted,
+&nbsp;                    &quot;--filename=&quot; + last,
+&nbsp;                    &quot;--confirm-overwrite&quot;,
+<b class="nc">&nbsp;                    &quot;--file-filter=&quot; + Seq.with(extensions).toString(&quot; &quot;, s -&gt; &quot;*.&quot; + s),</b>
+&nbsp;                    &quot;--file-filter=All files | *&quot; //allow anything if the user wants
+&nbsp;                );
+&nbsp;
+<b class="nc">&nbsp;                if(!open){</b>
+<b class="nc">&nbsp;                    args.add(&quot;--save&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                String result = OS.exec(args.toArray(String.class));</b>
+&nbsp;                //first line.
+<b class="nc">&nbsp;                if(result.length() &gt; 1 &amp;&amp; result.contains(&quot;\n&quot;)){</b>
+<b class="nc">&nbsp;                    result = result.split(&quot;\n&quot;)[0];</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //cancelled selection, ignore result
+<b class="nc">&nbsp;                if(result.isEmpty() || result.equals(&quot;\n&quot;)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(result.endsWith(&quot;\n&quot;)) result = result.substring(0, result.length() - 1);</b>
+<b class="nc">&nbsp;                if(result.contains(&quot;\n&quot;)) throw new IOException(&quot;invalid input: \&quot;&quot; + result + &quot;\&quot;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                Fi file = Core.files.absolute(result);</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                    FileChooser.setLastDirectory(file.isDirectory() ? file : file.parent());</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(!open){</b>
+<b class="nc">&nbsp;                        cons.get(file.parent().child(file.nameWithoutExtension() + &quot;.&quot; + extensions[0]));</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        cons.get(file);</b>
+&nbsp;                    }
+&nbsp;                });
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                Log.err(e);</b>
+<b class="nc">&nbsp;                Log.warn(&quot;zenity not found, using non-native file dialog. Consider installing `zenity` for native file dialogs.&quot;);</b>
+<b class="nc">&nbsp;                Core.app.post(fallback);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    static void defaultFileDialog(boolean open, String title, String extension, Cons&lt;Fi&gt; cons){
+<b class="nc">&nbsp;        new FileChooser(title, file -&gt; file.extEquals(extension), open, file -&gt; {</b>
+<b class="nc">&nbsp;            if(!open){</b>
+<b class="nc">&nbsp;                cons.get(file.parent().child(file.nameWithoutExtension() + &quot;.&quot; + extension));</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                cons.get(file);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    default void showFileChooser(boolean open, String extension, Cons&lt;Fi&gt; cons){
+<b class="nc">&nbsp;        showFileChooser(open, open ? &quot;@open&quot;: &quot;@save&quot;, extension, cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Show a file chooser for multiple file types.
+&nbsp;     * @param cons Selection listener
+&nbsp;     * @param extensions File extensions to filter
+&nbsp;     */
+&nbsp;    default void showMultiFileChooser(Cons&lt;Fi&gt; cons, String... extensions){
+<b class="nc">&nbsp;        if(mobile){</b>
+<b class="nc">&nbsp;            showFileChooser(true, extensions[0], cons);</b>
+<b class="nc">&nbsp;        }else if(OS.isWindows || OS.isMac){</b>
+<b class="nc">&nbsp;            showNativeFileChooser(true, &quot;@open&quot;, cons, extensions);</b>
+<b class="nc">&nbsp;        }else if(OS.isLinux &amp;&amp; !OS.isAndroid){</b>
+<b class="nc">&nbsp;            showZenity(true, &quot;@open&quot;, extensions, cons, () -&gt; defaultMultiFileChooser(cons, extensions));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            defaultMultiFileChooser(cons, extensions);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static void defaultMultiFileChooser(Cons&lt;Fi&gt; cons, String... extensions){
+<b class="nc">&nbsp;        new FileChooser(&quot;@open&quot;, file -&gt; Structs.contains(extensions, file.extension().toLowerCase()), true, cons).show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    default void showNativeFileChooser(boolean open, String title, Cons&lt;Fi&gt; cons, String... shownExtensions){
+<b class="nc">&nbsp;        String formatted = (title.startsWith(&quot;@&quot;) ? Core.bundle.get(title.substring(1)) : title).replaceAll(&quot;\&quot;&quot;, &quot;&#39;&quot;);</b>
+&nbsp;
+&nbsp;        //this should never happen unless someone is being dumb with the parameters
+<b class="nc">&nbsp;        String[] ext = shownExtensions == null || shownExtensions.length == 0 ? new String[]{&quot;&quot;} : shownExtensions;</b>
+&nbsp;
+&nbsp;        //native file dialog
+<b class="nc">&nbsp;        Threads.daemon(() -&gt; {</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                FileDialogs.loadNatives();</b>
+&nbsp;
+&nbsp;                String result;
+<b class="nc">&nbsp;                String[] patterns = new String[ext.length];</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; ext.length; i++){</b>
+<b class="nc">&nbsp;                    patterns[i] = &quot;*.&quot; + ext[i];</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //on MacOS, .msav is not properly recognized until I put garbage into the array?
+<b class="nc">&nbsp;                if(patterns.length == 1 &amp;&amp; OS.isMac &amp;&amp; open){</b>
+<b class="nc">&nbsp;                    patterns = new String[]{&quot;&quot;, &quot;*.&quot; + ext[0]};</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(open){</b>
+<b class="nc">&nbsp;                    result = FileDialogs.openFileDialog(formatted, FileChooser.getLastDirectory().absolutePath(), patterns, &quot;.&quot; + ext[0] + &quot; files&quot;, false);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    result = FileDialogs.saveFileDialog(formatted, FileChooser.getLastDirectory().child(&quot;file.&quot; + ext[0]).absolutePath(), patterns, &quot;.&quot; + ext[0] + &quot; files&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(result == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(result.length() &gt; 1 &amp;&amp; result.contains(&quot;\n&quot;)){</b>
+<b class="nc">&nbsp;                    result = result.split(&quot;\n&quot;)[0];</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //cancelled selection, ignore result
+<b class="nc">&nbsp;                if(result.isEmpty() || result.equals(&quot;\n&quot;)) return;</b>
+<b class="nc">&nbsp;                if(result.endsWith(&quot;\n&quot;)) result = result.substring(0, result.length() - 1);</b>
+<b class="nc">&nbsp;                if(result.contains(&quot;\n&quot;)) throw new IOException(&quot;invalid input: \&quot;&quot; + result + &quot;\&quot;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                Fi file = Core.files.absolute(result);</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                    FileChooser.setLastDirectory(file.isDirectory() ? file : file.parent());</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(!open){</b>
+<b class="nc">&nbsp;                        cons.get(file.parent().child(file.nameWithoutExtension() + &quot;.&quot; + ext[0]));</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        cons.get(file);</b>
+&nbsp;                    }
+&nbsp;                });
+<b class="nc">&nbsp;            }catch(Throwable error){</b>
+<b class="nc">&nbsp;                Log.err(&quot;Failure to execute native file chooser&quot;, error);</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                    if(ext.length &gt; 1){</b>
+<b class="nc">&nbsp;                        defaultMultiFileChooser(cons, ext);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        defaultFileDialog(open, title, ext[0], cons);</b>
+&nbsp;                    }
+&nbsp;                });
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Hide the app. Android only. */
+&nbsp;    default void hide(){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Forces the app into landscape mode.*/
+&nbsp;    default void beginForceLandscape(){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Stops forcing the app into landscape orientation.*/
+&nbsp;    default void endForceLandscape(){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    interface FileWriter{
+&nbsp;        void write(Fi file) throws Throwable;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

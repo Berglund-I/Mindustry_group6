@@ -548,6 +548,33 @@ public class ApplicationTests{
         assertTrue(state.teams.playerCores().size > 0);
     }
 
+    @Test
+    void testSaveNotNull() {
+        // Andreas
+        // Arrange
+        if (arc.Core.assets == null) {
+            Core.assets = new arc.assets.AssetManager();
+        }
+        // Act
+        Saves save = new Saves();
+        // Assert
+        assertFalse(save.isSaving());
+    }
+
+    @Test
+    void testSaveStateChangeToMenu() {
+        // Arrange
+        if (arc.Core.assets == null) {
+            Core.assets = new arc.assets.AssetManager();
+        }
+        // Act
+        Saves save = new Saves();
+        Events.fire(new EventType.StateChangeEvent(State.playing, State.menu));
+        // Assert
+        assertNull(save.getCurrent());
+    }
+
+
     void updateBlocks(int times){
         for(Tile tile : world.tiles){
             if(tile.build != null && tile.isCenter()){

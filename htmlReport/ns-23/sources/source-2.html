@@ -1,0 +1,152 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ClearFilter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps.filters</a>
+</div>
+
+<h1>Coverage Summary for Class: ClearFilter (mindustry.maps.filters)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClearFilter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14.3%
+  </span>
+  <span class="absValue">
+    (1/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (4/20)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps.filters;
+&nbsp;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.maps.filters.FilterOption.*;
+&nbsp;
+<b class="fc">&nbsp;public class ClearFilter extends GenerateFilter{</b>
+<b class="fc">&nbsp;    public Block target = Blocks.stone;</b>
+<b class="fc">&nbsp;    public Block replace = Blocks.air;</b>
+<b class="fc">&nbsp;    public Block ignore = Blocks.air;</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public FilterOption[] options(){
+<b class="nc">&nbsp;        return new FilterOption[]{</b>
+<b class="nc">&nbsp;            new BlockOption(&quot;target&quot;, () -&gt; target, b -&gt; target = b, anyOptional),</b>
+<b class="nc">&nbsp;            new BlockOption(&quot;replacement&quot;, () -&gt; replace, b -&gt; replace = b, anyOptional),</b>
+<b class="nc">&nbsp;            new BlockOption(&quot;ignore&quot;, () -&gt; ignore, b -&gt; ignore = b, anyOptional)</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public char icon(){
+<b class="nc">&nbsp;        return Iconc.blockSnow;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void apply(GenerateInput in){
+<b class="nc">&nbsp;        if(ignore != Blocks.air &amp;&amp; (in.block == ignore || in.floor == ignore || in.overlay == ignore)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(in.block == target || in.floor == target || (target.isOverlay() &amp;&amp; in.overlay == target)){</b>
+&nbsp;            //special case: when air is the result, replace only the overlay or wall
+<b class="nc">&nbsp;            if(replace == Blocks.air){</b>
+<b class="nc">&nbsp;                if(in.overlay == target){</b>
+<b class="nc">&nbsp;                    in.overlay = Blocks.air;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    in.block = Blocks.air;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(replace.isOverlay()){ //replace the best match based on type</b>
+<b class="nc">&nbsp;                in.overlay = replace;</b>
+<b class="nc">&nbsp;            }else if(replace.isFloor()){</b>
+<b class="nc">&nbsp;                in.floor = replace;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                in.block = replace;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

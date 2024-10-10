@@ -1,0 +1,191 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > NoiseMesh</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics.g3d</a>
+</div>
+
+<h1>Coverage Summary for Class: NoiseMesh (mindustry.graphics.g3d)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NoiseMesh</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">NoiseMesh$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">NoiseMesh$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics.g3d;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;public class NoiseMesh extends HexMesh{
+&nbsp;
+<b class="nc">&nbsp;    public NoiseMesh(Planet planet, int seed, int divisions, Color color, float radius, int octaves, float persistence, float scale, float mag){</b>
+<b class="nc">&nbsp;        this.planet = planet;</b>
+<b class="nc">&nbsp;        this.shader = Shaders.planet;</b>
+<b class="nc">&nbsp;        this.mesh = MeshBuilder.buildHex(new HexMesher(){</b>
+&nbsp;            @Override
+&nbsp;            public float getHeight(Vec3 position){
+<b class="nc">&nbsp;                return Simplex.noise3d(planet.id + seed, octaves, persistence, scale, 5f + position.x, 5f + position.y, 5f + position.z) * mag;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public Color getColor(Vec3 position){
+<b class="nc">&nbsp;                return color;</b>
+&nbsp;            }
+&nbsp;        }, divisions, false, radius, 0.2f);
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Two-color variant. */
+<b class="nc">&nbsp;    public NoiseMesh(Planet planet, int seed, int divisions, float radius, int octaves, float persistence, float scale, float mag, Color color1, Color color2, int coct, float cper, float cscl, float cthresh){</b>
+<b class="nc">&nbsp;        this.planet = planet;</b>
+<b class="nc">&nbsp;        this.shader = Shaders.planet;</b>
+<b class="nc">&nbsp;        this.mesh = MeshBuilder.buildHex(new HexMesher(){</b>
+&nbsp;            @Override
+&nbsp;            public float getHeight(Vec3 position){
+<b class="nc">&nbsp;                return Simplex.noise3d(planet.id + seed, octaves, persistence, scale, 5f + position.x, 5f + position.y, 5f + position.z) * mag;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public Color getColor(Vec3 position){
+<b class="nc">&nbsp;                return Simplex.noise3d(planet.id + seed + 1, coct, cper, cscl, 5f + position.x, 5f + position.y, 5f + position.z) &gt; cthresh ? color2 : color1;</b>
+&nbsp;            }
+&nbsp;        }, divisions, false, radius, 0.2f);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

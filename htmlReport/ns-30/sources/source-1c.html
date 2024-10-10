@@ -1,0 +1,872 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ModsDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: ModsDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ModsDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/75)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/420)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ModsDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ModsDialog$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/81)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/447)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.Texture.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.TextButton.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.Http.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import arc.util.serialization.Jval.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.mod.*;
+&nbsp;import mindustry.mod.Mods.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import java.text.*;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class ModsDialog extends BaseDialog{</b>
+<b class="nc">&nbsp;    private ObjectMap&lt;String, TextureRegion&gt; textureCache = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    private float modImportProgress;
+<b class="nc">&nbsp;    private String searchtxt = &quot;&quot;;</b>
+&nbsp;    private @Nullable Seq&lt;ModListing&gt; modList;
+<b class="nc">&nbsp;    private boolean orderDate = true;</b>
+&nbsp;    private BaseDialog currentContent;
+&nbsp;
+&nbsp;    private BaseDialog browser;
+&nbsp;    private Table browserTable;
+<b class="nc">&nbsp;    private float scroll = 0f;</b>
+&nbsp;
+&nbsp;    public ModsDialog(){
+<b class="nc">&nbsp;        super(&quot;@mods&quot;);</b>
+<b class="nc">&nbsp;        addCloseButton();</b>
+&nbsp;
+<b class="nc">&nbsp;        browser = new BaseDialog(&quot;@mods.browser&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        browser.cont.table(table -&gt; {</b>
+<b class="nc">&nbsp;            table.left();</b>
+<b class="nc">&nbsp;            table.image(Icon.zoom);</b>
+<b class="nc">&nbsp;            table.field(searchtxt, res -&gt; {</b>
+<b class="nc">&nbsp;                searchtxt = res;</b>
+<b class="nc">&nbsp;                rebuildBrowser();</b>
+<b class="nc">&nbsp;            }).growX().get();</b>
+<b class="nc">&nbsp;            table.button(Icon.list, Styles.emptyi, 32f, () -&gt; {</b>
+<b class="nc">&nbsp;                orderDate = !orderDate;</b>
+<b class="nc">&nbsp;                rebuildBrowser();</b>
+<b class="nc">&nbsp;            }).update(b -&gt; b.getStyle().imageUp = (orderDate ? Icon.list : Icon.star)).size(40f).get()</b>
+<b class="nc">&nbsp;            .addListener(new Tooltip(tip -&gt; tip.label(() -&gt; orderDate ? &quot;@mods.browser.sortdate&quot; : &quot;@mods.browser.sortstars&quot;).left()));</b>
+<b class="nc">&nbsp;        }).fillX().padBottom(4);</b>
+&nbsp;
+<b class="nc">&nbsp;        browser.cont.row();</b>
+<b class="nc">&nbsp;        browser.cont.pane(tablebrow -&gt; {</b>
+<b class="nc">&nbsp;            tablebrow.margin(10f).top();</b>
+<b class="nc">&nbsp;            browserTable = tablebrow;</b>
+<b class="nc">&nbsp;        }).scrollX(false);</b>
+<b class="nc">&nbsp;        browser.addCloseButton();</b>
+<b class="nc">&nbsp;        browser.makeButtonOverlay();</b>
+&nbsp;
+<b class="nc">&nbsp;        browser.onResize(this::rebuildBrowser);</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@mods.guide&quot;, Icon.link, () -&gt; Core.app.openURI(modGuideURL)).size(210, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!mobile){</b>
+<b class="nc">&nbsp;            buttons.button(&quot;@mods.openfolder&quot;, Icon.link, () -&gt; Core.app.openFolder(modDirectory.absolutePath()));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        shown(this::setup);</b>
+<b class="nc">&nbsp;        onResize(this::setup);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ResizeEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            if(currentContent != null){</b>
+<b class="nc">&nbsp;                currentContent.hide();</b>
+<b class="nc">&nbsp;                currentContent = null;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        hidden(() -&gt; {</b>
+<b class="nc">&nbsp;            if(mods.requiresReload()){</b>
+<b class="nc">&nbsp;                reload();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    void modError(Throwable error){
+<b class="nc">&nbsp;        ui.loadfrag.hide();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(error instanceof NoSuchMethodError || Strings.getCauses(error).contains(t -&gt; t.getMessage() != null &amp;&amp; (t.getMessage().contains(&quot;trust anchor&quot;) || t.getMessage().contains(&quot;SSL&quot;) || t.getMessage().contains(&quot;protocol&quot;)))){</b>
+<b class="nc">&nbsp;            ui.showErrorMessage(&quot;@feature.unsupported&quot;);</b>
+<b class="nc">&nbsp;        }else if(error instanceof HttpStatusException st){</b>
+<b class="nc">&nbsp;            ui.showErrorMessage(Core.bundle.format(&quot;connectfail&quot;, Strings.capitalize(st.status.toString().toLowerCase())));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            ui.showException(error);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void getModList(Cons&lt;Seq&lt;ModListing&gt;&gt; listener){
+<b class="nc">&nbsp;        if(modList == null){</b>
+<b class="nc">&nbsp;            Http.get(&quot;https://raw.githubusercontent.com/Anuken/MindustryMods/master/mods.json&quot;, response -&gt; {</b>
+<b class="nc">&nbsp;                String strResult = response.getResultAsString();</b>
+&nbsp;
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        modList = JsonIO.json.fromJson(Seq.class, ModListing.class, strResult);</b>
+&nbsp;
+<b class="nc">&nbsp;                        var d = new SimpleDateFormat(&quot;yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;&quot;);</b>
+<b class="nc">&nbsp;                        Func&lt;String, Date&gt; parser = text -&gt; {</b>
+&nbsp;                            try{
+<b class="nc">&nbsp;                                return d.parse(text);</b>
+<b class="nc">&nbsp;                            }catch(Exception e){</b>
+<b class="nc">&nbsp;                                return new Date();</b>
+&nbsp;                            }
+&nbsp;                        };
+&nbsp;
+<b class="nc">&nbsp;                        modList.sortComparing(m -&gt; parser.get(m.lastUpdated)).reverse();</b>
+<b class="nc">&nbsp;                        listener.get(modList);</b>
+<b class="nc">&nbsp;                    }catch(Exception e){</b>
+<b class="nc">&nbsp;                        e.printStackTrace();</b>
+<b class="nc">&nbsp;                        ui.showException(e);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                });
+<b class="nc">&nbsp;            }, error -&gt; Core.app.post(() -&gt; modError(error)));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            listener.get(modList);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void setup(){
+<b class="nc">&nbsp;        float h = 110f;</b>
+<b class="nc">&nbsp;        float w = Math.min(Core.graphics.getWidth() / Scl.scl(1.05f), 520f);</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.clear();</b>
+<b class="nc">&nbsp;        cont.defaults().width(Math.min(Core.graphics.getWidth() / Scl.scl(1.05f), 556f)).pad(4);</b>
+<b class="nc">&nbsp;        cont.add(&quot;@mod.reloadrequired&quot;).visible(mods::requiresReload).center().get().setAlignment(Align.center);</b>
+<b class="nc">&nbsp;        cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.table(buttons -&gt; {</b>
+<b class="nc">&nbsp;            buttons.left().defaults().growX().height(60f).uniformX();</b>
+&nbsp;
+<b class="nc">&nbsp;            TextButtonStyle style = Styles.flatBordert;</b>
+<b class="nc">&nbsp;            float margin = 12f;</b>
+&nbsp;
+<b class="nc">&nbsp;            buttons.button(&quot;@mod.import&quot;, Icon.add, style, () -&gt; {</b>
+<b class="nc">&nbsp;                BaseDialog dialog = new BaseDialog(&quot;@mod.import&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                TextButtonStyle bstyle = Styles.flatt;</b>
+&nbsp;
+<b class="nc">&nbsp;                dialog.cont.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                    t.defaults().size(300f, 70f);</b>
+<b class="nc">&nbsp;                    t.margin(12f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.button(&quot;@mod.import.file&quot;, Icon.file, bstyle, () -&gt; {</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+&nbsp;
+<b class="nc">&nbsp;                        platform.showMultiFileChooser(file -&gt; {</b>
+&nbsp;                            try{
+<b class="nc">&nbsp;                                mods.importMod(file);</b>
+<b class="nc">&nbsp;                                setup();</b>
+<b class="nc">&nbsp;                            }catch(Exception e){</b>
+<b class="nc">&nbsp;                                ui.showException(e);</b>
+<b class="nc">&nbsp;                                Log.err(e);</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        }, &quot;zip&quot;, &quot;jar&quot;);
+<b class="nc">&nbsp;                    }).margin(12f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.button(&quot;@mod.import.github&quot;, Icon.github, bstyle, () -&gt; {</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+&nbsp;
+<b class="nc">&nbsp;                        ui.showTextInput(&quot;@mod.import.github&quot;, &quot;&quot;, 64, Core.settings.getString(&quot;lastmod&quot;, &quot;&quot;), text -&gt; {</b>
+&nbsp;                            //clean up the text in case somebody inputs a URL or adds random spaces
+<b class="nc">&nbsp;                            text = text.trim().replace(&quot; &quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;                            if(text.startsWith(&quot;https://github.com/&quot;)) text = text.substring(&quot;https://github.com/&quot;.length());</b>
+&nbsp;
+<b class="nc">&nbsp;                            Core.settings.put(&quot;lastmod&quot;, text);</b>
+&nbsp;                            //there&#39;s no good way to know if it&#39;s a java mod here, so assume it&#39;s not
+<b class="nc">&nbsp;                            githubImportMod(text, false, null);</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                    }).margin(12f);</b>
+&nbsp;                });
+<b class="nc">&nbsp;                dialog.addCloseButton();</b>
+&nbsp;
+<b class="nc">&nbsp;                dialog.show();</b>
+&nbsp;
+<b class="nc">&nbsp;            }).margin(margin);</b>
+&nbsp;
+<b class="nc">&nbsp;            buttons.button(&quot;@mods.browser&quot;, Icon.menu, style, this::showModBrowser).margin(margin);</b>
+<b class="nc">&nbsp;        }).width(w);</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!mods.list().isEmpty()){</b>
+<b class="nc">&nbsp;            boolean[] anyDisabled = {false};</b>
+<b class="nc">&nbsp;            Table[] pane = {null};</b>
+&nbsp;
+<b class="nc">&nbsp;            Cons&lt;String&gt; rebuild = query -&gt; {</b>
+<b class="nc">&nbsp;                pane[0].clear();</b>
+<b class="nc">&nbsp;                boolean any = false;</b>
+<b class="nc">&nbsp;                for(LoadedMod item : mods.list()){</b>
+<b class="nc">&nbsp;                    if(Strings.matches(query, item.meta.displayName)){</b>
+<b class="nc">&nbsp;                        any = true;</b>
+<b class="nc">&nbsp;                        if(!item.enabled() &amp;&amp; !anyDisabled[0] &amp;&amp; mods.list().size &gt; 0){</b>
+<b class="nc">&nbsp;                            anyDisabled[0] = true;</b>
+<b class="nc">&nbsp;                            pane[0].row();</b>
+<b class="nc">&nbsp;                            pane[0].image().growX().height(4f).pad(6f).color(Pal.gray).row();</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        pane[0].button(t -&gt; {</b>
+<b class="nc">&nbsp;                            t.top().left();</b>
+<b class="nc">&nbsp;                            t.margin(12f);</b>
+&nbsp;
+<b class="nc">&nbsp;                            String stateDetails = getStateDetails(item);</b>
+<b class="nc">&nbsp;                            if(stateDetails != null){</b>
+<b class="nc">&nbsp;                                t.addListener(new Tooltip(f -&gt; f.background(Styles.black8).margin(4f).add(stateDetails).growX().width(400f).wrap()));</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            t.defaults().left().top();</b>
+<b class="nc">&nbsp;                            t.table(title1 -&gt; {</b>
+<b class="nc">&nbsp;                                title1.left();</b>
+&nbsp;
+<b class="nc">&nbsp;                                title1.add(new BorderImage(){{</b>
+<b class="nc">&nbsp;                                    if(item.iconTexture != null){</b>
+<b class="nc">&nbsp;                                        setDrawable(new TextureRegion(item.iconTexture));</b>
+&nbsp;                                    }else{
+<b class="nc">&nbsp;                                        setDrawable(Tex.nomap);</b>
+&nbsp;                                    }
+<b class="nc">&nbsp;                                    border(Pal.accent);</b>
+<b class="nc">&nbsp;                                }}).size(h - 8f).padTop(-8f).padLeft(-8f).padRight(8f);</b>
+&nbsp;
+<b class="nc">&nbsp;                                title1.table(text -&gt; {</b>
+<b class="nc">&nbsp;                                    boolean hideDisabled = !item.isSupported() || item.hasUnmetDependencies() || item.hasContentErrors();</b>
+<b class="nc">&nbsp;                                    String shortDesc = item.meta.shortDescription();</b>
+&nbsp;
+<b class="nc">&nbsp;                                    text.add(&quot;[accent]&quot; + Strings.stripColors(item.meta.displayName) + &quot;\n&quot; +</b>
+<b class="nc">&nbsp;                                        (shortDesc.length() &gt; 0 ? &quot;[lightgray]&quot; + shortDesc + &quot;\n&quot; : &quot;&quot;)</b>
+&nbsp;                                        //so does anybody care about version?
+&nbsp;                                        //+ &quot;[gray]v&quot; + Strings.stripColors(trimText(item.meta.version)) + &quot;\n&quot;
+<b class="nc">&nbsp;                                        + (item.enabled() || hideDisabled ? &quot;&quot; : Core.bundle.get(&quot;mod.disabled&quot;) + &quot;&quot;))</b>
+<b class="nc">&nbsp;                                    .wrap().top().width(300f).growX().left();</b>
+&nbsp;
+<b class="nc">&nbsp;                                    text.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                                    String state = getStateText(item);</b>
+<b class="nc">&nbsp;                                    if(state != null){</b>
+<b class="nc">&nbsp;                                        text.labelWrap(state).growX().row();</b>
+&nbsp;                                    }
+<b class="nc">&nbsp;                                }).top().growX();</b>
+&nbsp;
+<b class="nc">&nbsp;                                title1.add().growX();</b>
+<b class="nc">&nbsp;                            }).growX().growY().left();</b>
+&nbsp;
+<b class="nc">&nbsp;                            t.table(right -&gt; {</b>
+<b class="nc">&nbsp;                                right.right();</b>
+<b class="nc">&nbsp;                                right.button(item.enabled() ? Icon.downOpen : Icon.upOpen, Styles.clearNonei, () -&gt; {</b>
+<b class="nc">&nbsp;                                    mods.setEnabled(item, !item.enabled());</b>
+<b class="nc">&nbsp;                                    setup();</b>
+<b class="nc">&nbsp;                                }).size(50f).disabled(!item.isSupported());</b>
+&nbsp;
+<b class="nc">&nbsp;                                right.button(item.hasSteamID() ? Icon.link : Icon.trash, Styles.clearNonei, () -&gt; {</b>
+<b class="nc">&nbsp;                                    if(!item.hasSteamID()){</b>
+<b class="nc">&nbsp;                                        ui.showConfirm(&quot;@confirm&quot;, &quot;@mod.remove.confirm&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                                            mods.removeMod(item);</b>
+<b class="nc">&nbsp;                                            setup();</b>
+&nbsp;                                        });
+&nbsp;                                    }else{
+<b class="nc">&nbsp;                                        platform.viewListing(item);</b>
+&nbsp;                                    }
+<b class="nc">&nbsp;                                }).size(50f);</b>
+&nbsp;
+<b class="nc">&nbsp;                                if(steam &amp;&amp; !item.hasSteamID()){</b>
+<b class="nc">&nbsp;                                    right.row();</b>
+<b class="nc">&nbsp;                                    right.button(Icon.export, Styles.clearNonei, () -&gt; {</b>
+<b class="nc">&nbsp;                                        platform.publish(item);</b>
+<b class="nc">&nbsp;                                    }).size(50f);</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).growX().right().padRight(-8f).padTop(-8f);</b>
+<b class="nc">&nbsp;                        }, Styles.flatBordert, () -&gt; showMod(item)).size(w, h).growX().pad(4f);</b>
+<b class="nc">&nbsp;                        pane[0].row();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!any){</b>
+<b class="nc">&nbsp;                    pane[0].add(&quot;@none.found&quot;).color(Color.lightGray).pad(4);</b>
+&nbsp;                }
+&nbsp;            };
+&nbsp;
+<b class="nc">&nbsp;            if(!mobile || Core.graphics.isPortrait()){</b>
+<b class="nc">&nbsp;                cont.table(search -&gt; {</b>
+<b class="nc">&nbsp;                    search.image(Icon.zoom).padRight(8f);</b>
+<b class="nc">&nbsp;                    search.field(&quot;&quot;, rebuild).growX();</b>
+<b class="nc">&nbsp;                }).fillX().padBottom(4);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            cont.row();</b>
+<b class="nc">&nbsp;            cont.pane(table1 -&gt; {</b>
+<b class="nc">&nbsp;                pane[0] = table1.margin(10f).top();</b>
+<b class="nc">&nbsp;                rebuild.get(&quot;&quot;);</b>
+<b class="nc">&nbsp;            }).scrollX(false).update(s -&gt; scroll = s.getScrollY()).get().setScrollYForce(scroll);</b>
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            cont.table(Styles.black6, t -&gt; t.add(&quot;@mods.none&quot;)).height(80f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        cont.row();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private @Nullable String getStateText(LoadedMod item){
+<b class="nc">&nbsp;        if(item.isOutdated()){</b>
+<b class="nc">&nbsp;            return &quot;@mod.incompatiblemod&quot;;</b>
+<b class="nc">&nbsp;        }else if(item.isBlacklisted()){</b>
+<b class="nc">&nbsp;            return &quot;@mod.blacklisted&quot;;</b>
+<b class="nc">&nbsp;        }else if(!item.isSupported()){</b>
+<b class="nc">&nbsp;            return &quot;@mod.incompatiblegame&quot;;</b>
+<b class="nc">&nbsp;        }else if(item.state == ModState.circularDependencies){</b>
+<b class="nc">&nbsp;            return &quot;@mod.circulardependencies&quot;;</b>
+<b class="nc">&nbsp;        }else if(item.state == ModState.incompleteDependencies){</b>
+<b class="nc">&nbsp;            return &quot;@mod.incompletedependencies&quot;;</b>
+<b class="nc">&nbsp;        }else if(item.hasUnmetDependencies()){</b>
+<b class="nc">&nbsp;            return &quot;@mod.unmetdependencies&quot;;</b>
+<b class="nc">&nbsp;        }else if(item.hasContentErrors()){</b>
+<b class="nc">&nbsp;            return &quot;@mod.erroredcontent&quot;;</b>
+<b class="nc">&nbsp;        }else if(item.meta.hidden){</b>
+<b class="nc">&nbsp;            return &quot;@mod.multiplayer.compatible&quot;;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private @Nullable String getStateDetails(LoadedMod item){
+<b class="nc">&nbsp;        if(item.isOutdated()){</b>
+<b class="nc">&nbsp;            return &quot;@mod.outdatedv7.details&quot;;</b>
+<b class="nc">&nbsp;        }else if(item.isBlacklisted()){</b>
+<b class="nc">&nbsp;            return &quot;@mod.blacklisted.details&quot;;</b>
+<b class="nc">&nbsp;        }else if(!item.isSupported()){</b>
+<b class="nc">&nbsp;            return Core.bundle.format(&quot;mod.requiresversion.details&quot;, item.meta.minGameVersion);</b>
+<b class="nc">&nbsp;        }else if(item.state == ModState.circularDependencies){</b>
+<b class="nc">&nbsp;            return &quot;@mod.circulardependencies.details&quot;;</b>
+<b class="nc">&nbsp;        }else if(item.state == ModState.incompleteDependencies){</b>
+<b class="nc">&nbsp;            return Core.bundle.format(&quot;mod.incompletedependencies.details&quot;, item.missingDependencies.toString(&quot;, &quot;));</b>
+<b class="nc">&nbsp;        }else if(item.hasUnmetDependencies()){</b>
+<b class="nc">&nbsp;            return Core.bundle.format(&quot;mod.missingdependencies.details&quot;, item.missingDependencies.toString(&quot;, &quot;));</b>
+<b class="nc">&nbsp;        }else if(item.hasContentErrors()){</b>
+<b class="nc">&nbsp;            return &quot;@mod.erroredcontent.details&quot;;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void reload(){
+<b class="nc">&nbsp;        ui.showInfoOnHidden(&quot;@mods.reloadexit&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;            Log.info(&quot;Exiting to reload mods.&quot;);</b>
+<b class="nc">&nbsp;            Core.app.exit();</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void showMod(LoadedMod mod){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(mod.meta.displayName);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!mobile){</b>
+<b class="nc">&nbsp;            dialog.buttons.button(&quot;@mods.openfolder&quot;, Icon.link, () -&gt; Core.app.openFolder(mod.file.absolutePath()));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(mod.getRepo() != null){</b>
+<b class="nc">&nbsp;            boolean showImport = !mod.hasSteamID();</b>
+<b class="nc">&nbsp;            dialog.buttons.button(&quot;@mods.github.open&quot;, Icon.link, () -&gt; Core.app.openURI(&quot;https://github.com/&quot; + mod.getRepo()));</b>
+<b class="nc">&nbsp;            if(mobile &amp;&amp; showImport) dialog.buttons.row();</b>
+<b class="nc">&nbsp;            if(showImport) dialog.buttons.button(&quot;@mods.browser.reinstall&quot;, Icon.download, () -&gt; githubImportMod(mod.getRepo(), mod.isJava(), null));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.pane(desc -&gt; {</b>
+<b class="nc">&nbsp;            desc.center();</b>
+<b class="nc">&nbsp;            desc.defaults().padTop(10).left();</b>
+&nbsp;
+<b class="nc">&nbsp;            desc.add(&quot;@editor.name&quot;).padRight(10).color(Color.gray).padTop(0);</b>
+<b class="nc">&nbsp;            desc.row();</b>
+<b class="nc">&nbsp;            desc.add(mod.meta.displayName).growX().wrap().padTop(2);</b>
+<b class="nc">&nbsp;            desc.row();</b>
+<b class="nc">&nbsp;            if(mod.meta.author != null){</b>
+<b class="nc">&nbsp;                desc.add(&quot;@editor.author&quot;).padRight(10).color(Color.gray);</b>
+<b class="nc">&nbsp;                desc.row();</b>
+<b class="nc">&nbsp;                desc.add(mod.meta.author).growX().wrap().padTop(2);</b>
+<b class="nc">&nbsp;                desc.row();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(mod.meta.description != null){</b>
+<b class="nc">&nbsp;                desc.add(&quot;@editor.description&quot;).padRight(10).color(Color.gray).top();</b>
+<b class="nc">&nbsp;                desc.row();</b>
+<b class="nc">&nbsp;                desc.add(mod.meta.description).growX().wrap().padTop(2);</b>
+<b class="nc">&nbsp;                desc.row();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            String state = getStateDetails(mod);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(state != null){</b>
+<b class="nc">&nbsp;                desc.add(&quot;@mod.disabled&quot;).padTop(13f).padBottom(-6f).row();</b>
+<b class="nc">&nbsp;                desc.add(state).growX().wrap().row();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        }).width(400f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;UnlockableContent&gt; all = Seq.with(content.getContentMap()).&lt;Content&gt;flatten().select(c -&gt; c.minfo.mod == mod &amp;&amp; c instanceof UnlockableContent u &amp;&amp; !u.isHidden()).as();</b>
+<b class="nc">&nbsp;        if(all.any()){</b>
+<b class="nc">&nbsp;            dialog.cont.row();</b>
+<b class="nc">&nbsp;            dialog.cont.button(&quot;@mods.viewcontent&quot;, Icon.book, () -&gt; {</b>
+<b class="nc">&nbsp;                BaseDialog d = new BaseDialog(mod.meta.displayName);</b>
+<b class="nc">&nbsp;                d.cont.pane(cs -&gt; {</b>
+<b class="nc">&nbsp;                    int i = 0;</b>
+<b class="nc">&nbsp;                    for(UnlockableContent c : all){</b>
+<b class="nc">&nbsp;                        cs.button(new TextureRegionDrawable(c.uiIcon), Styles.flati, iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                            ui.content.show(c);</b>
+<b class="nc">&nbsp;                        }).size(50f).with(im -&gt; {</b>
+<b class="nc">&nbsp;                            var click = im.getClickListener();</b>
+<b class="nc">&nbsp;                            im.update(() -&gt; im.getImage().color.lerp(!click.isOver() ? Color.lightGray : Color.white, 0.4f * Time.delta));</b>
+&nbsp;
+<b class="nc">&nbsp;                        }).tooltip(c.localizedName);</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(++i % (int)Math.min(Core.graphics.getWidth() / Scl.scl(110), 14) == 0) cs.row();</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }).grow();</b>
+<b class="nc">&nbsp;                d.addCloseButton();</b>
+<b class="nc">&nbsp;                d.show();</b>
+<b class="nc">&nbsp;                currentContent = d;</b>
+<b class="nc">&nbsp;            }).size(300, 50).pad(4);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void showModBrowser(){
+<b class="nc">&nbsp;        rebuildBrowser();</b>
+<b class="nc">&nbsp;        browser.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void rebuildBrowser(){
+<b class="nc">&nbsp;        ObjectSet&lt;String&gt; installed = mods.list().map(m -&gt; m.getRepo()).asSet();</b>
+&nbsp;
+<b class="nc">&nbsp;        browserTable.clear();</b>
+<b class="nc">&nbsp;        browserTable.add(&quot;@loading&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        int cols = (int)Math.max(Core.graphics.getWidth() / Scl.scl(480), 1);</b>
+&nbsp;
+<b class="nc">&nbsp;        getModList(rlistings -&gt; {</b>
+<b class="nc">&nbsp;            browserTable.clear();</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            var listings = rlistings;</b>
+<b class="nc">&nbsp;            if(!orderDate){</b>
+<b class="nc">&nbsp;                listings = rlistings.copy();</b>
+<b class="nc">&nbsp;                listings.sortComparing(m1 -&gt; -m1.stars);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(ModListing mod : listings){</b>
+<b class="nc">&nbsp;                if(((mod.hasJava || mod.hasScripts) &amp;&amp; Vars.ios) ||</b>
+<b class="nc">&nbsp;                    (!Strings.matches(searchtxt, mod.name) &amp;&amp; !Strings.matches(searchtxt, mod.repo))</b>
+&nbsp;                    //hack, I&#39;m basically testing if 135.10 &gt;= modVersion, which is equivalent to modVersion &gt;= 136
+<b class="nc">&nbsp;                    || (Version.isAtLeast(135, 10, mod.minGameVersion))</b>
+<b class="nc">&nbsp;                ) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                float s = 64f;</b>
+&nbsp;
+<b class="nc">&nbsp;                browserTable.button(con -&gt; {</b>
+<b class="nc">&nbsp;                    con.margin(0f);</b>
+<b class="nc">&nbsp;                    con.left();</b>
+&nbsp;
+<b class="nc">&nbsp;                    String repo = mod.repo;</b>
+<b class="nc">&nbsp;                    con.add(new BorderImage(){</b>
+&nbsp;                        TextureRegion last;
+&nbsp;
+&nbsp;                        {
+<b class="nc">&nbsp;                            border(installed.contains(repo) ? Pal.accent : Color.lightGray);</b>
+<b class="nc">&nbsp;                            setDrawable(Tex.nomap);</b>
+<b class="nc">&nbsp;                            pad = Scl.scl(4f);</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        @Override
+&nbsp;                        public void draw(){
+<b class="nc">&nbsp;                            super.draw();</b>
+&nbsp;
+&nbsp;                            //textures are only requested when the rendering happens; this assists with culling
+<b class="nc">&nbsp;                            if(!textureCache.containsKey(repo)){</b>
+<b class="nc">&nbsp;                                textureCache.put(repo, last = Core.atlas.find(&quot;nomap&quot;));</b>
+<b class="nc">&nbsp;                                Http.get(&quot;https://raw.githubusercontent.com/Anuken/MindustryMods/master/icons/&quot; + repo.replace(&quot;/&quot;, &quot;_&quot;), res -&gt; {</b>
+<b class="nc">&nbsp;                                    Pixmap pix = new Pixmap(res.getResult());</b>
+<b class="nc">&nbsp;                                    Core.app.post(() -&gt; {</b>
+&nbsp;                                        try{
+<b class="nc">&nbsp;                                            var tex = new Texture(pix);</b>
+<b class="nc">&nbsp;                                            tex.setFilter(TextureFilter.linear);</b>
+<b class="nc">&nbsp;                                            textureCache.put(repo, new TextureRegion(tex));</b>
+<b class="nc">&nbsp;                                            pix.dispose();</b>
+<b class="nc">&nbsp;                                        }catch(Exception e){</b>
+<b class="nc">&nbsp;                                            Log.err(e);</b>
+<b class="nc">&nbsp;                                        }</b>
+&nbsp;                                    });
+<b class="nc">&nbsp;                                }, err -&gt; {});</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            var next = textureCache.get(repo);</b>
+<b class="nc">&nbsp;                            if(last != next){</b>
+<b class="nc">&nbsp;                                last = next;</b>
+<b class="nc">&nbsp;                                setDrawable(next);</b>
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                    }).size(s).pad(4f * 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    con.add(</b>
+<b class="nc">&nbsp;                    &quot;[accent]&quot; + mod.name.replace(&quot;\n&quot;, &quot;&quot;) +</b>
+<b class="nc">&nbsp;                    (installed.contains(mod.repo) ? &quot;\n[lightgray]&quot; + Core.bundle.get(&quot;mod.installed&quot;) : &quot;&quot;) +</b>
+&nbsp;                    &quot;\n[lightgray]\uE809 &quot; + mod.stars +
+<b class="nc">&nbsp;                    (Version.isAtLeast(mod.minGameVersion) ?  &quot;&quot; :</b>
+<b class="nc">&nbsp;                    &quot;\n&quot; + Core.bundle.format(&quot;mod.requiresversion&quot;, mod.minGameVersion)))</b>
+<b class="nc">&nbsp;                    .width(358f).wrap().grow().pad(4f, 2f, 4f, 6f).top().left().labelAlign(Align.topLeft);</b>
+&nbsp;
+&nbsp;                }, Styles.flatBordert, () -&gt; {
+<b class="nc">&nbsp;                    var sel = new BaseDialog(mod.name);</b>
+<b class="nc">&nbsp;                    sel.cont.pane(p -&gt; p.add(mod.description + &quot;\n\n[accent]&quot; + Core.bundle.get(&quot;editor.author&quot;) + &quot;[lightgray] &quot; + mod.author)</b>
+<b class="nc">&nbsp;                        .width(mobile ? 400f : 500f).wrap().pad(4f).labelAlign(Align.center, Align.left)).grow();</b>
+<b class="nc">&nbsp;                    sel.buttons.defaults().size(150f, 54f).pad(2f);</b>
+<b class="nc">&nbsp;                    sel.buttons.button(&quot;@back&quot;, Icon.left, () -&gt; {</b>
+<b class="nc">&nbsp;                        sel.clear();</b>
+<b class="nc">&nbsp;                        sel.hide();</b>
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    var found = mods.list().find(l -&gt; mod.repo != null &amp;&amp; mod.repo.equals(l.getRepo()));</b>
+<b class="nc">&nbsp;                    sel.buttons.button(found == null ? &quot;@mods.browser.add&quot; : &quot;@mods.browser.reinstall&quot;, Icon.download, () -&gt; {</b>
+<b class="nc">&nbsp;                        sel.hide();</b>
+<b class="nc">&nbsp;                        githubImportMod(mod.repo, mod.hasJava, null);</b>
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    if(Core.graphics.isPortrait()){</b>
+<b class="nc">&nbsp;                        sel.buttons.row();</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    sel.buttons.button(&quot;@mods.github.open&quot;, Icon.link, () -&gt; {</b>
+<b class="nc">&nbsp;                        Core.app.openURI(&quot;https://github.com/&quot; + mod.repo);</b>
+&nbsp;                    });
+<b class="nc">&nbsp;                    sel.buttons.button(&quot;@mods.browser.view-releases&quot;, Icon.zoom, () -&gt; {</b>
+<b class="nc">&nbsp;                        BaseDialog load = new BaseDialog(&quot;&quot;);</b>
+<b class="nc">&nbsp;                        load.cont.add(&quot;[accent]Fetching Releases...&quot;);</b>
+<b class="nc">&nbsp;                        load.show();</b>
+<b class="nc">&nbsp;                        Http.get(ghApi + &quot;/repos/&quot; + mod.repo + &quot;/releases&quot;, res -&gt; {</b>
+<b class="nc">&nbsp;                            var json = Jval.read(res.getResultAsString());</b>
+<b class="nc">&nbsp;                            JsonArray releases = json.asArray();</b>
+&nbsp;
+<b class="nc">&nbsp;                            Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                                load.hide();</b>
+&nbsp;
+<b class="nc">&nbsp;                                if(releases.size == 0){</b>
+<b class="nc">&nbsp;                                    ui.showInfo(&quot;@mods.browser.noreleases&quot;);</b>
+&nbsp;                                }else{
+<b class="nc">&nbsp;                                    sel.hide();</b>
+<b class="nc">&nbsp;                                    var downloads = new BaseDialog(&quot;@mods.browser.releases&quot;);</b>
+<b class="nc">&nbsp;                                    downloads.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;                                        for(int j = 0; j &lt; releases.size; j++){</b>
+<b class="nc">&nbsp;                                            var release = releases.get(j);</b>
+&nbsp;
+<b class="nc">&nbsp;                                            int index = j;</b>
+<b class="nc">&nbsp;                                            p.table(((TextureRegionDrawable)Tex.whiteui).tint(Pal.darkestGray), t -&gt; {</b>
+<b class="nc">&nbsp;                                                t.add(&quot;[accent]&quot; + release.getString(&quot;name&quot;) + (index == 0 ? &quot; &quot; + Core.bundle.get(&quot;mods.browser.latest&quot;) : &quot;&quot;)).top().left().growX().wrap().pad(5f);</b>
+<b class="nc">&nbsp;                                                t.row();</b>
+<b class="nc">&nbsp;                                                t.add((release.getString(&quot;published_at&quot;)).substring(0, 10).replaceAll(&quot;-&quot;, &quot;/&quot;)).top().left().growX().wrap().pad(5f).color(Color.gray);</b>
+<b class="nc">&nbsp;                                                t.row();</b>
+<b class="nc">&nbsp;                                                t.table(b -&gt; {</b>
+<b class="nc">&nbsp;                                                    b.defaults().size(150f, 54f).pad(2f);</b>
+<b class="nc">&nbsp;                                                    b.button(&quot;@mods.github.open-release&quot;, Icon.link, () -&gt; Core.app.openURI(release.getString(&quot;html_url&quot;)));</b>
+<b class="nc">&nbsp;                                                    b.button(&quot;@mods.browser.add&quot;, Icon.download, () -&gt; {</b>
+<b class="nc">&nbsp;                                                        String releaseUrl = release.getString(&quot;url&quot;);</b>
+<b class="nc">&nbsp;                                                        githubImportMod(mod.repo, mod.hasJava, releaseUrl.substring(releaseUrl.lastIndexOf(&quot;/&quot;) + 1));</b>
+&nbsp;                                                    });
+<b class="nc">&nbsp;                                                }).right();</b>
+<b class="nc">&nbsp;                                            }).margin(5f).growX().pad(5f);</b>
+&nbsp;
+<b class="nc">&nbsp;                                            if(j &lt; releases.size - 1) p.row();</b>
+&nbsp;                                        }
+<b class="nc">&nbsp;                                    }).width(500f).scrollX(false).fillY();</b>
+<b class="nc">&nbsp;                                    downloads.buttons.button(&quot;@back&quot;, Icon.left, () -&gt; {</b>
+<b class="nc">&nbsp;                                        downloads.clear();</b>
+<b class="nc">&nbsp;                                        downloads.hide();</b>
+<b class="nc">&nbsp;                                        sel.show();</b>
+<b class="nc">&nbsp;                                    }).size(150f, 54f).pad(2f);</b>
+<b class="nc">&nbsp;                                    downloads.keyDown(KeyCode.escape, downloads::hide);</b>
+<b class="nc">&nbsp;                                    downloads.keyDown(KeyCode.back, downloads::hide);</b>
+<b class="nc">&nbsp;                                    downloads.hidden(sel::show);</b>
+<b class="nc">&nbsp;                                    downloads.show();</b>
+&nbsp;                                }
+&nbsp;                            });
+<b class="nc">&nbsp;                        }, t -&gt; Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                            modError(t);</b>
+<b class="nc">&nbsp;                            load.hide();</b>
+&nbsp;                        }));
+&nbsp;                    });
+<b class="nc">&nbsp;                    sel.keyDown(KeyCode.escape, sel::hide);</b>
+<b class="nc">&nbsp;                    sel.keyDown(KeyCode.back, sel::hide);</b>
+<b class="nc">&nbsp;                    sel.show();</b>
+<b class="nc">&nbsp;                }).width(438f).pad(4).growX().left().height(s + 8*2f).fillY();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(++i % cols == 0) browserTable.row();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void handleMod(String repo, HttpResponse result){
+&nbsp;        try{
+<b class="nc">&nbsp;            Fi file = tmpDirectory.child(repo.replace(&quot;/&quot;, &quot;&quot;) + &quot;.zip&quot;);</b>
+<b class="nc">&nbsp;            long len = result.getContentLength();</b>
+<b class="nc">&nbsp;            Floatc cons = len &lt;= 0 ? f -&gt; {} : p -&gt; modImportProgress = p;</b>
+&nbsp;
+<b class="nc">&nbsp;            try(var stream = file.write(false)){</b>
+<b class="nc">&nbsp;                Streams.copyProgress(result.getResultAsStream(), stream, len, 4096, cons);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            var mod = mods.importMod(file);</b>
+<b class="nc">&nbsp;            mod.setRepo(repo);</b>
+<b class="nc">&nbsp;            file.delete();</b>
+<b class="nc">&nbsp;            Core.app.post(() -&gt; {</b>
+&nbsp;
+&nbsp;                try{
+<b class="nc">&nbsp;                    setup();</b>
+<b class="nc">&nbsp;                    ui.loadfrag.hide();</b>
+<b class="nc">&nbsp;                }catch(Throwable e){</b>
+<b class="nc">&nbsp;                    ui.showException(e);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            });
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            modError(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void importFail(Throwable t){
+<b class="nc">&nbsp;        Core.app.post(() -&gt; modError(t));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void githubImportMod(String repo, boolean isJava){
+<b class="nc">&nbsp;        githubImportMod(repo, isJava, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void githubImportMod(String repo, boolean isJava, @Nullable String release){
+<b class="nc">&nbsp;        modImportProgress = 0f;</b>
+<b class="nc">&nbsp;        ui.loadfrag.show(&quot;@downloading&quot;);</b>
+<b class="nc">&nbsp;        ui.loadfrag.setProgress(() -&gt; modImportProgress);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(isJava){</b>
+<b class="nc">&nbsp;            githubImportJavaMod(repo, release);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Http.get(ghApi + &quot;/repos/&quot; + repo, res -&gt; {</b>
+<b class="nc">&nbsp;                var json = Jval.read(res.getResultAsString());</b>
+<b class="nc">&nbsp;                String mainBranch = json.getString(&quot;default_branch&quot;);</b>
+<b class="nc">&nbsp;                String language = json.getString(&quot;language&quot;, &quot;&lt;none&gt;&quot;);</b>
+&nbsp;
+&nbsp;                //this is a crude heuristic for class mods; only required for direct github import
+&nbsp;                //TODO make a more reliable way to distinguish java mod repos
+<b class="nc">&nbsp;                if(language.equals(&quot;Java&quot;) || language.equals(&quot;Kotlin&quot;)){</b>
+<b class="nc">&nbsp;                    githubImportJavaMod(repo, release);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    githubImportBranch(mainBranch, repo, release);</b>
+&nbsp;                }
+&nbsp;            }, this::importFail);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void githubImportJavaMod(String repo, @Nullable String release){
+&nbsp;        //grab latest release
+<b class="nc">&nbsp;        Http.get(ghApi + &quot;/repos/&quot; + repo + &quot;/releases/&quot; + (release == null ? &quot;latest&quot; : release), res -&gt; {</b>
+<b class="nc">&nbsp;            var json = Jval.read(res.getResultAsString());</b>
+<b class="nc">&nbsp;            var assets = json.get(&quot;assets&quot;).asArray();</b>
+&nbsp;
+&nbsp;            //prioritize dexed jar, as that&#39;s what Sonnicon&#39;s mod template outputs
+<b class="nc">&nbsp;            var dexedAsset = assets.find(j -&gt; j.getString(&quot;name&quot;).startsWith(&quot;dexed&quot;) &amp;&amp; j.getString(&quot;name&quot;).endsWith(&quot;.jar&quot;));</b>
+<b class="nc">&nbsp;            var asset = dexedAsset == null ? assets.find(j -&gt; j.getString(&quot;name&quot;).endsWith(&quot;.jar&quot;)) : dexedAsset;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(asset != null){</b>
+&nbsp;                //grab actual file
+<b class="nc">&nbsp;                var url = asset.getString(&quot;browser_download_url&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                Http.get(url, result -&gt; handleMod(repo, result), this::importFail);</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                throw new ArcRuntimeException(&quot;No JAR file found in releases. Make sure you have a valid jar file in the mod&#39;s latest Github Release.&quot;);</b>
+&nbsp;            }
+&nbsp;        }, this::importFail);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void githubImportBranch(String branch, String repo, @Nullable String release){
+<b class="nc">&nbsp;        if(release != null) {</b>
+<b class="nc">&nbsp;            Http.get(ghApi + &quot;/repos/&quot; + repo + &quot;/releases/&quot; + release, res -&gt; {</b>
+<b class="nc">&nbsp;                String zipUrl = Jval.read(res.getResultAsString()).getString(&quot;zipball_url&quot;);</b>
+<b class="nc">&nbsp;                Http.get(zipUrl, loc -&gt; {</b>
+<b class="nc">&nbsp;                    if(loc.getHeader(&quot;Location&quot;) != null){</b>
+<b class="nc">&nbsp;                        Http.get(loc.getHeader(&quot;Location&quot;), result -&gt; {</b>
+<b class="nc">&nbsp;                            handleMod(repo, result);</b>
+&nbsp;                        }, this::importFail);
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        handleMod(repo, loc);</b>
+&nbsp;                    }
+&nbsp;                }, this::importFail);
+&nbsp;            });
+&nbsp;        }else{
+<b class="nc">&nbsp;            Http.get(ghApi + &quot;/repos/&quot; + repo + &quot;/zipball/&quot; + branch, loc -&gt; {</b>
+<b class="nc">&nbsp;                if(loc.getHeader(&quot;Location&quot;) != null){</b>
+<b class="nc">&nbsp;                    Http.get(loc.getHeader(&quot;Location&quot;), result -&gt; {</b>
+<b class="nc">&nbsp;                        handleMod(repo, result);</b>
+&nbsp;                    }, this::importFail);
+&nbsp;                }else{
+<b class="nc">&nbsp;                    handleMod(repo, loc);</b>
+&nbsp;                }
+&nbsp;            }, this::importFail);
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

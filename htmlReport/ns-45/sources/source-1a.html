@@ -1,0 +1,158 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawPulseShape</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawPulseShape (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawPulseShape</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29.2%
+  </span>
+  <span class="absValue">
+    (7/24)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class DrawPulseShape extends DrawBlock{
+<b class="fc">&nbsp;    public Color color = Pal.accent.cpy();</b>
+<b class="fc">&nbsp;    public float stroke = 2f, timeScl = 100f, minStroke = 0.2f;</b>
+<b class="fc">&nbsp;    public float radiusScl = 1f;</b>
+<b class="fc">&nbsp;    public float layer = -1f;</b>
+<b class="fc">&nbsp;    public boolean square = true;</b>
+&nbsp;
+<b class="fc">&nbsp;    public DrawPulseShape(boolean square){</b>
+<b class="fc">&nbsp;        this.square = square;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public DrawPulseShape(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+<b class="nc">&nbsp;        float pz = Draw.z();</b>
+<b class="nc">&nbsp;        if(layer &gt; 0) Draw.z(layer);</b>
+&nbsp;
+<b class="nc">&nbsp;        float f = 1f - (Time.time / timeScl) % 1f;</b>
+<b class="nc">&nbsp;        float rad = build.block.size * tilesize / 2f * radiusScl;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        Lines.stroke((stroke * f + minStroke) * build.warmup());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(square){</b>
+<b class="nc">&nbsp;            Lines.square(build.x, build.y, Math.min(1f + (1f - f) * rad, rad));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            float r = Math.max(0f, Mathf.clamp(2f - f * 2f) * rad - f - 0.2f), w = Mathf.clamp(0.5f - f) * rad * 2f;</b>
+<b class="nc">&nbsp;            Lines.beginLine();</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                Lines.linePoint(build.x + Geometry.d4(i).x * r + Geometry.d4(i).y * w, build.y + Geometry.d4(i).y * r - Geometry.d4(i).x * w);</b>
+<b class="nc">&nbsp;                if(f &lt; 0.5f) Lines.linePoint(build.x + Geometry.d4(i).x * r - Geometry.d4(i).y * w, build.y + Geometry.d4(i).y * r + Geometry.d4(i).x * w);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Lines.endLine(true);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Draw.z(pz);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

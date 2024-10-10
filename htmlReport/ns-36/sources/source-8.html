@@ -1,0 +1,303 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > OverdriveProjector</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense</a>
+</div>
+
+<h1>Coverage Summary for Class: OverdriveProjector (mindustry.world.blocks.defense)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OverdriveProjector</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    67.6%
+  </span>
+  <span class="absValue">
+    (23/34)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">OverdriveProjector$OverdriveBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (4/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.1%
+  </span>
+  <span class="absValue">
+    (16/42)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (7/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.3%
+  </span>
+  <span class="absValue">
+    (39/76)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class OverdriveProjector extends Block{
+<b class="fc">&nbsp;    @Deprecated</b>
+&nbsp;    public final int timerUse = timers++;
+&nbsp;
+&nbsp;    public @Load(&quot;@-top&quot;) TextureRegion topRegion;
+<b class="fc">&nbsp;    public float reload = 60f;</b>
+<b class="fc">&nbsp;    public float range = 80f;</b>
+<b class="fc">&nbsp;    public float speedBoost = 1.5f;</b>
+<b class="fc">&nbsp;    public float speedBoostPhase = 0.75f;</b>
+<b class="fc">&nbsp;    public float useTime = 400f;</b>
+<b class="fc">&nbsp;    public float phaseRangeBoost = 20f;</b>
+<b class="fc">&nbsp;    public boolean hasBoost = true;</b>
+<b class="fc">&nbsp;    public Color baseColor = Color.valueOf(&quot;feb380&quot;);</b>
+<b class="fc">&nbsp;    public Color phaseColor = Color.valueOf(&quot;ffd59e&quot;);</b>
+&nbsp;
+&nbsp;    public OverdriveProjector(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.projectors;</b>
+<b class="fc">&nbsp;        hasPower = true;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        canOverdrive = false;</b>
+<b class="fc">&nbsp;        emitLight = true;</b>
+<b class="fc">&nbsp;        lightRadius = 50f;</b>
+<b class="fc">&nbsp;        envEnabled |= Env.space;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        super.drawPlace(x, y, rotation, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, baseColor);</b>
+&nbsp;
+<b class="nc">&nbsp;        indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range, other -&gt; other.block.canOverdrive, other -&gt; Drawf.selected(other, Tmp.c1.set(baseColor).a(Mathf.absin(4f, 1f))));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        stats.timePeriod = useTime;</b>
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.speedIncrease, &quot;+&quot; + (int)(speedBoost * 100f - 100) + &quot;%&quot;);</b>
+<b class="nc">&nbsp;        stats.add(Stat.range, range / tilesize, StatUnit.blocks);</b>
+<b class="nc">&nbsp;        stats.add(Stat.productionTime, useTime / 60f, StatUnit.seconds);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(hasBoost &amp;&amp; findConsumer(f -&gt; f instanceof ConsumeItems) instanceof ConsumeItems items){</b>
+<b class="nc">&nbsp;            stats.remove(Stat.booster);</b>
+<b class="nc">&nbsp;            stats.add(Stat.booster, StatValues.itemBoosters(&quot;+{0}%&quot;, stats.timePeriod, speedBoostPhase * 100f, phaseRangeBoost, items.items, this::consumesItem));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+<b class="fc">&nbsp;        addBar(&quot;boost&quot;, (OverdriveBuild entity) -&gt; new Bar(() -&gt; Core.bundle.format(&quot;bar.boost&quot;, Mathf.round(Math.max((entity.realBoost() * 100 - 100), 0))), () -&gt; Pal.accent, () -&gt; entity.realBoost() / (hasBoost ? speedBoost + speedBoostPhase : speedBoost)));</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class OverdriveBuild extends Building implements Ranged{</b>
+<b class="fc">&nbsp;        public float heat, charge = Mathf.random(reload), phaseHeat, smoothEfficiency, useProgress;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float range(){
+<b class="nc">&nbsp;            return range;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawLight(){
+<b class="nc">&nbsp;            Drawf.light(x, y, lightRadius * smoothEfficiency, baseColor, 0.7f * smoothEfficiency);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            smoothEfficiency = Mathf.lerpDelta(smoothEfficiency, efficiency, 0.08f);</b>
+<b class="fc">&nbsp;            heat = Mathf.lerpDelta(heat, efficiency &gt; 0 ? 1f : 0f, 0.08f);</b>
+<b class="fc">&nbsp;            charge += heat * Time.delta;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(hasBoost){</b>
+<b class="fc">&nbsp;                phaseHeat = Mathf.lerpDelta(phaseHeat, optionalEfficiency, 0.1f);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(charge &gt;= reload){</b>
+<b class="nc">&nbsp;                float realRange = range + phaseHeat * phaseRangeBoost;</b>
+&nbsp;
+<b class="nc">&nbsp;                charge = 0f;</b>
+<b class="nc">&nbsp;                indexer.eachBlock(this, realRange, other -&gt; other.block.canOverdrive, other -&gt; other.applyBoost(realBoost(), reload + 1f));</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(efficiency &gt; 0){</b>
+<b class="nc">&nbsp;                useProgress += delta();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(useProgress &gt;= useTime){</b>
+<b class="nc">&nbsp;                consume();</b>
+<b class="nc">&nbsp;                useProgress %= useTime;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public float realBoost(){
+<b class="nc">&nbsp;            return (speedBoost + phaseHeat * speedBoostPhase) * efficiency;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawSelect(){
+<b class="nc">&nbsp;            float realRange = range + phaseHeat * phaseRangeBoost;</b>
+&nbsp;
+<b class="nc">&nbsp;            indexer.eachBlock(this, realRange, other -&gt; other.block.canOverdrive, other -&gt; Drawf.selected(other, Tmp.c1.set(baseColor).a(Mathf.absin(4f, 1f))));</b>
+&nbsp;
+<b class="nc">&nbsp;            Drawf.dashCircle(x, y, realRange, baseColor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            float f = 1f - (Time.time / 100f) % 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(baseColor, phaseColor, phaseHeat);</b>
+<b class="nc">&nbsp;            Draw.alpha(heat * Mathf.absin(Time.time, 50f / Mathf.PI2, 1f) * 0.5f);</b>
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y);</b>
+<b class="nc">&nbsp;            Draw.alpha(1f);</b>
+<b class="nc">&nbsp;            Lines.stroke((2f * f + 0.1f) * heat);</b>
+&nbsp;
+<b class="nc">&nbsp;            float r = Math.max(0f, Mathf.clamp(2f - f * 2f) * size * tilesize / 2f - f - 0.2f), w = Mathf.clamp(0.5f - f) * size * tilesize;</b>
+<b class="nc">&nbsp;            Lines.beginLine();</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                Lines.linePoint(x + Geometry.d4(i).x * r + Geometry.d4(i).y * w, y + Geometry.d4(i).y * r - Geometry.d4(i).x * w);</b>
+<b class="nc">&nbsp;                if(f &lt; 0.5f) Lines.linePoint(x + Geometry.d4(i).x * r - Geometry.d4(i).y * w, y + Geometry.d4(i).y * r + Geometry.d4(i).x * w);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Lines.endLine(true);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.f(heat);</b>
+<b class="fc">&nbsp;            write.f(phaseHeat);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            heat = read.f();</b>
+<b class="fc">&nbsp;            phaseHeat = read.f();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

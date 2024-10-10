@@ -1,0 +1,521 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > EditorTool</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: EditorTool (mindustry.editor)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EditorTool</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">EditorTool$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">EditorTool$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">EditorTool$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">EditorTool$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">EditorTool$5</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/84)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">EditorTool$6</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/149)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public enum EditorTool{</b>
+<b class="nc">&nbsp;    zoom(KeyCode.v),</b>
+<b class="nc">&nbsp;    pick(KeyCode.i){</b>
+&nbsp;        public void touched(int x, int y){
+<b class="nc">&nbsp;            if(!Structs.inBounds(x, y, editor.width(), editor.height())) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            Tile tile = editor.tile(x, y);</b>
+<b class="nc">&nbsp;            editor.drawBlock = tile.block() == Blocks.air || !tile.block().inEditor ? tile.overlay() == Blocks.air ? tile.floor() : tile.overlay() : tile.block();</b>
+&nbsp;        }
+&nbsp;    },
+<b class="nc">&nbsp;    line(KeyCode.l, &quot;replace&quot;, &quot;orthogonal&quot;){</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void touchedLine(int x1, int y1, int x2, int y2){
+&nbsp;            //straight
+<b class="nc">&nbsp;            if(mode == 1){</b>
+<b class="nc">&nbsp;                if(Math.abs(x2 - x1) &gt; Math.abs(y2 - y1)){</b>
+<b class="nc">&nbsp;                    y2 = y1;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    x2 = x1;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Bresenham2.line(x1, y1, x2, y2, (x, y) -&gt; {</b>
+<b class="nc">&nbsp;                if(mode == 0){</b>
+&nbsp;                    //replace
+<b class="nc">&nbsp;                    editor.drawBlocksReplace(x, y);</b>
+&nbsp;                }else{
+&nbsp;                    //normal
+<b class="nc">&nbsp;                    editor.drawBlocks(x, y);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;    },
+&nbsp;    //the &quot;under liquid&quot; rendering is too buggy to make public
+<b class="nc">&nbsp;    pencil(KeyCode.b, &quot;replace&quot;, &quot;square&quot;, &quot;drawteams&quot;/*, &quot;underliquid&quot;*/){</b>
+&nbsp;        {
+<b class="nc">&nbsp;            edit = true;</b>
+<b class="nc">&nbsp;            draggable = true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void touched(int x, int y){
+<b class="nc">&nbsp;            if(mode == -1){</b>
+&nbsp;                //normal mode
+<b class="nc">&nbsp;                editor.drawBlocks(x, y);</b>
+<b class="nc">&nbsp;            }else if(mode == 0){</b>
+&nbsp;                //replace mode
+<b class="nc">&nbsp;                editor.drawBlocksReplace(x, y);</b>
+<b class="nc">&nbsp;            }else if(mode == 1){</b>
+&nbsp;                //square mode
+<b class="nc">&nbsp;                editor.drawBlocks(x, y, true, false, tile -&gt; true);</b>
+<b class="nc">&nbsp;            }else if(mode == 2){</b>
+&nbsp;                //draw teams
+<b class="nc">&nbsp;                editor.drawCircle(x, y, tile -&gt; tile.setTeam(editor.drawTeam));</b>
+<b class="nc">&nbsp;            }else if(mode == 3){</b>
+<b class="nc">&nbsp;                editor.drawBlocks(x, y, false, true, tile -&gt; tile.floor().isLiquid);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    },
+<b class="nc">&nbsp;    eraser(KeyCode.e, &quot;eraseores&quot;){</b>
+&nbsp;        {
+<b class="nc">&nbsp;            edit = true;</b>
+<b class="nc">&nbsp;            draggable = true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void touched(int x, int y){
+<b class="nc">&nbsp;            editor.drawCircle(x, y, tile -&gt; {</b>
+<b class="nc">&nbsp;                if(mode == -1){</b>
+&nbsp;                    //erase block
+<b class="nc">&nbsp;                    tile.remove();</b>
+<b class="nc">&nbsp;                }else if(mode == 0){</b>
+&nbsp;                    //erase ore
+<b class="nc">&nbsp;                    tile.clearOverlay();</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;    },
+<b class="nc">&nbsp;    fill(KeyCode.g, &quot;replaceall&quot;, &quot;fillteams&quot;, &quot;fillerase&quot;){</b>
+&nbsp;        {
+<b class="nc">&nbsp;            edit = true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        IntSeq stack = new IntSeq();</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void touched(int x, int y){
+<b class="nc">&nbsp;            if(!Structs.inBounds(x, y, editor.width(), editor.height())) return;</b>
+<b class="nc">&nbsp;            Tile tile = editor.tile(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(tile == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(editor.drawBlock.isMultiblock() &amp;&amp; (mode == 0 || mode == -1)){</b>
+&nbsp;                //don&#39;t fill multiblocks, thanks
+<b class="nc">&nbsp;                pencil.touched(x, y);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+&nbsp;            //mode 0 or standard, fill everything with the floor/tile or replace it
+<b class="nc">&nbsp;            if(mode == 0 || mode == -1){</b>
+&nbsp;                //can&#39;t fill parts or multiblocks
+<b class="nc">&nbsp;                if(tile.block().isMultiblock()){</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+&nbsp;                Boolf&lt;Tile&gt; tester;
+&nbsp;                Cons&lt;Tile&gt; setter;
+&nbsp;
+<b class="nc">&nbsp;                if(editor.drawBlock.isOverlay()){</b>
+<b class="nc">&nbsp;                    Block dest = tile.overlay();</b>
+<b class="nc">&nbsp;                    if(dest == editor.drawBlock) return;</b>
+<b class="nc">&nbsp;                    tester = t -&gt; t.overlay() == dest &amp;&amp; (t.floor().hasSurface() || !t.floor().needsSurface);</b>
+<b class="nc">&nbsp;                    setter = t -&gt; t.setOverlay(editor.drawBlock);</b>
+<b class="nc">&nbsp;                }else if(editor.drawBlock.isFloor()){</b>
+<b class="nc">&nbsp;                    Block dest = tile.floor();</b>
+<b class="nc">&nbsp;                    if(dest == editor.drawBlock) return;</b>
+<b class="nc">&nbsp;                    tester = t -&gt; t.floor() == dest;</b>
+<b class="nc">&nbsp;                    setter = t -&gt; t.setFloorUnder(editor.drawBlock.asFloor());</b>
+<b class="nc">&nbsp;                }else{</b>
+<b class="nc">&nbsp;                    Block dest = tile.block();</b>
+<b class="nc">&nbsp;                    if(dest == editor.drawBlock) return;</b>
+<b class="nc">&nbsp;                    tester = t -&gt; t.block() == dest;</b>
+<b class="nc">&nbsp;                    setter = t -&gt; t.setBlock(editor.drawBlock, editor.drawTeam);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //replace only when the mode is 0 using the specified functions
+<b class="nc">&nbsp;                fill(x, y, mode == 0, tester, setter);</b>
+<b class="nc">&nbsp;            }else if(mode == 1){ //mode 1 is team fill</b>
+&nbsp;
+&nbsp;                //only fill synthetic blocks, it&#39;s meaningless otherwise
+<b class="nc">&nbsp;                if(tile.synthetic()){</b>
+<b class="nc">&nbsp;                    Team dest = tile.team();</b>
+<b class="nc">&nbsp;                    if(dest == editor.drawTeam) return;</b>
+<b class="nc">&nbsp;                    fill(x, y, true, t -&gt; t.getTeamID() == dest.id &amp;&amp; t.synthetic(), t -&gt; t.setTeam(editor.drawTeam));</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }else if(mode == 2){ //erase mode</b>
+&nbsp;                Boolf&lt;Tile&gt; tester;
+&nbsp;                Cons&lt;Tile&gt; setter;
+&nbsp;
+<b class="nc">&nbsp;                if(tile.block() != Blocks.air){</b>
+<b class="nc">&nbsp;                    Block dest = tile.block();</b>
+<b class="nc">&nbsp;                    tester = t -&gt; t.block() == dest;</b>
+<b class="nc">&nbsp;                    setter = t -&gt; t.setBlock(Blocks.air);</b>
+<b class="nc">&nbsp;                }else if(tile.overlay() != Blocks.air){</b>
+<b class="nc">&nbsp;                    Block dest = tile.overlay();</b>
+<b class="nc">&nbsp;                    tester = t -&gt; t.overlay() == dest;</b>
+<b class="nc">&nbsp;                    setter = t -&gt; t.setOverlay(Blocks.air);</b>
+<b class="nc">&nbsp;                }else{</b>
+&nbsp;                    //trying to erase floor (no)
+<b class="nc">&nbsp;                    tester = null;</b>
+<b class="nc">&nbsp;                    setter = null;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(setter != null){</b>
+<b class="nc">&nbsp;                    fill(x, y, false, tester, setter);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        void fill(int x, int y, boolean replace, Boolf&lt;Tile&gt; tester, Cons&lt;Tile&gt; filler){
+<b class="nc">&nbsp;            int width = editor.width(), height = editor.height();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(replace){</b>
+&nbsp;                //just do it on everything
+<b class="nc">&nbsp;                for(int cx = 0; cx &lt; width; cx++){</b>
+<b class="nc">&nbsp;                    for(int cy = 0; cy &lt; height; cy++){</b>
+<b class="nc">&nbsp;                        Tile tile = editor.tile(cx, cy);</b>
+<b class="nc">&nbsp;                        if(tester.get(tile)){</b>
+<b class="nc">&nbsp;                            filler.get(tile);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;            }else{
+&nbsp;                //perform flood fill
+&nbsp;                int x1;
+&nbsp;
+<b class="nc">&nbsp;                stack.clear();</b>
+<b class="nc">&nbsp;                stack.add(Point2.pack(x, y));</b>
+&nbsp;
+&nbsp;                try{
+<b class="nc">&nbsp;                    while(stack.size &gt; 0 &amp;&amp; stack.size &lt; width*height){</b>
+<b class="nc">&nbsp;                        int popped = stack.pop();</b>
+<b class="nc">&nbsp;                        x = Point2.x(popped);</b>
+<b class="nc">&nbsp;                        y = Point2.y(popped);</b>
+&nbsp;
+<b class="nc">&nbsp;                        x1 = x;</b>
+<b class="nc">&nbsp;                        while(x1 &gt;= 0 &amp;&amp; tester.get(editor.tile(x1, y))) x1--;</b>
+<b class="nc">&nbsp;                        x1++;</b>
+<b class="nc">&nbsp;                        boolean spanAbove = false, spanBelow = false;</b>
+<b class="nc">&nbsp;                        while(x1 &lt; width &amp;&amp; tester.get(editor.tile(x1, y))){</b>
+<b class="nc">&nbsp;                            filler.get(editor.tile(x1, y));</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(!spanAbove &amp;&amp; y &gt; 0 &amp;&amp; tester.get(editor.tile(x1, y - 1))){</b>
+<b class="nc">&nbsp;                                stack.add(Point2.pack(x1, y - 1));</b>
+<b class="nc">&nbsp;                                spanAbove = true;</b>
+<b class="nc">&nbsp;                            }else if(spanAbove &amp;&amp; !tester.get(editor.tile(x1, y - 1))){</b>
+<b class="nc">&nbsp;                                spanAbove = false;</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            if(!spanBelow &amp;&amp; y &lt; height - 1 &amp;&amp; tester.get(editor.tile(x1, y + 1))){</b>
+<b class="nc">&nbsp;                                stack.add(Point2.pack(x1, y + 1));</b>
+<b class="nc">&nbsp;                                spanBelow = true;</b>
+<b class="nc">&nbsp;                            }else if(spanBelow &amp;&amp; y &lt; height - 1 &amp;&amp; !tester.get(editor.tile(x1, y + 1))){</b>
+<b class="nc">&nbsp;                                spanBelow = false;</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                            x1++;</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                    stack.clear();</b>
+<b class="nc">&nbsp;                }catch(OutOfMemoryError e){</b>
+&nbsp;                    //hack
+<b class="nc">&nbsp;                    stack = null;</b>
+<b class="nc">&nbsp;                    System.gc();</b>
+<b class="nc">&nbsp;                    e.printStackTrace();</b>
+<b class="nc">&nbsp;                    stack = new IntSeq();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    },
+<b class="nc">&nbsp;    spray(KeyCode.r, &quot;replace&quot;){</b>
+<b class="nc">&nbsp;        final double chance = 0.012;</b>
+&nbsp;
+&nbsp;        {
+<b class="nc">&nbsp;            edit = true;</b>
+<b class="nc">&nbsp;            draggable = true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void touched(int x, int y){
+&nbsp;
+&nbsp;            //floor spray
+<b class="nc">&nbsp;            if(editor.drawBlock.isFloor()){</b>
+<b class="nc">&nbsp;                editor.drawCircle(x, y, tile -&gt; {</b>
+<b class="nc">&nbsp;                    if(Mathf.chance(chance)){</b>
+<b class="nc">&nbsp;                        tile.setFloor(editor.drawBlock.asFloor());</b>
+&nbsp;                    }
+&nbsp;                });
+<b class="nc">&nbsp;            }else if(mode == 0){ //replace-only mode, doesn&#39;t affect air</b>
+<b class="nc">&nbsp;                editor.drawBlocks(x, y, tile -&gt; Mathf.chance(chance) &amp;&amp; tile.block() != Blocks.air);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                editor.drawBlocks(x, y, tile -&gt; Mathf.chance(chance));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+<b class="nc">&nbsp;    public static final EditorTool[] all = values();</b>
+&nbsp;
+&nbsp;    /** All the internal alternate placement modes of this tool. */
+&nbsp;    public final String[] altModes;
+&nbsp;    /** Key to activate this tool. */
+<b class="nc">&nbsp;    public KeyCode key = KeyCode.unset;</b>
+&nbsp;    /** The current alternate placement mode. -1 is the standard mode, no changes.*/
+<b class="nc">&nbsp;    public int mode = -1;</b>
+&nbsp;    /** Whether this tool causes canvas changes when touched.*/
+&nbsp;    public boolean edit;
+&nbsp;    /** Whether this tool should be dragged across the canvas when the mouse moves.*/
+&nbsp;    public boolean draggable;
+&nbsp;
+&nbsp;    EditorTool(){
+&nbsp;        this(new String[]{});
+&nbsp;    }
+&nbsp;
+&nbsp;    EditorTool(KeyCode code){
+<b class="nc">&nbsp;        this(new String[]{});</b>
+<b class="nc">&nbsp;        this.key = code;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    EditorTool(String... altModes){</b>
+<b class="nc">&nbsp;        this.altModes = altModes;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    EditorTool(KeyCode code, String... altModes){</b>
+<b class="nc">&nbsp;        this.altModes = altModes;</b>
+<b class="nc">&nbsp;        this.key = code;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void touched(int x, int y){}</b>
+&nbsp;
+<b class="nc">&nbsp;    public void touchedLine(int x1, int y1, int x2, int y2){}</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

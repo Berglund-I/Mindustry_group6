@@ -1,0 +1,161 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ShallowLiquid</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.environment</a>
+</div>
+
+<h1>Coverage Summary for Class: ShallowLiquid (mindustry.world.blocks.environment)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ShallowLiquid</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (10/22)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.environment;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.graphics.MultiPacker.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Blends water together with a standard floor. No new mechanics.
+&nbsp; * */
+&nbsp;public class ShallowLiquid extends Floor{
+&nbsp;    public @Nullable Floor liquidBase, floorBase;
+<b class="fc">&nbsp;    public float liquidOpacity = 0.35f;</b>
+&nbsp;
+&nbsp;    public ShallowLiquid(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void set(Block liquid, Block floor){
+<b class="fc">&nbsp;        this.liquidBase = liquid.asFloor();</b>
+<b class="fc">&nbsp;        this.floorBase = floor.asFloor();</b>
+&nbsp;
+<b class="fc">&nbsp;        isLiquid = true;</b>
+<b class="fc">&nbsp;        variants = floorBase.variants;</b>
+<b class="fc">&nbsp;        status = liquidBase.status;</b>
+<b class="fc">&nbsp;        liquidDrop = liquidBase.liquidDrop;</b>
+<b class="fc">&nbsp;        cacheLayer = liquidBase.cacheLayer;</b>
+<b class="fc">&nbsp;        shallow = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void createIcons(MultiPacker packer){
+&nbsp;        //TODO might not be necessary at all, but I am not sure yet
+&nbsp;        //super.createIcons(packer);
+&nbsp;
+<b class="nc">&nbsp;        if(liquidBase != null &amp;&amp; floorBase != null){</b>
+<b class="nc">&nbsp;            var overlay = Core.atlas.getPixmap(liquidBase.region);</b>
+<b class="nc">&nbsp;            int index = 0;</b>
+<b class="nc">&nbsp;            for(TextureRegion region : floorBase.variantRegions()){</b>
+<b class="nc">&nbsp;                var res = Core.atlas.getPixmap(region).crop();</b>
+<b class="nc">&nbsp;                for(int x = 0; x &lt; res.width; x++){</b>
+<b class="nc">&nbsp;                    for(int y = 0; y &lt; res.height; y++){</b>
+<b class="nc">&nbsp;                        res.setRaw(x, y, Pixmap.blend((overlay.getRaw(x, y) &amp; 0xffffff00) | (int)(liquidOpacity * 255), res.getRaw(x, y)));</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                String baseName = this.name + &quot;&quot; + (++index);</b>
+<b class="nc">&nbsp;                packer.add(PageType.environment, baseName, res);</b>
+<b class="nc">&nbsp;                packer.add(PageType.editor, &quot;editor-&quot; + baseName, res);</b>
+&nbsp;
+<b class="nc">&nbsp;                res.dispose();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

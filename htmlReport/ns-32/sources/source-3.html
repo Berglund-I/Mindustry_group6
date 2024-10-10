@@ -1,0 +1,139 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > RowTreeLayout</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.layout</a>
+</div>
+
+<h1>Coverage Summary for Class: RowTreeLayout (mindustry.ui.layout)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RowTreeLayout</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.layout;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;
+<b class="nc">&nbsp;public class RowTreeLayout implements TreeLayout{</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void layout(TreeNode root){
+<b class="nc">&nbsp;       layout(root, 0, new IntSeq());</b>
+&nbsp;
+&nbsp;        /*
+&nbsp;        def minimum_ws(tree, depth=0):
+&nbsp;    tree.x = nexts[depth]
+&nbsp;    tree.y = depth
+&nbsp;    nexts[depth] += 1
+&nbsp;    for c in tree.children:
+&nbsp;        minimum_ws(tree, c)
+&nbsp;         */
+&nbsp;    }
+&nbsp;
+&nbsp;    void layout(TreeNode node, int depth, IntSeq nexts){
+<b class="nc">&nbsp;        float size = node.height * 5f;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(nexts.size &lt; depth + 1){</b>
+<b class="nc">&nbsp;            nexts.ensureCapacity(depth + 1);</b>
+<b class="nc">&nbsp;            nexts.size = depth + 1;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        node.x = size * nexts.get(depth);</b>
+<b class="nc">&nbsp;        node.y = size * depth;</b>
+<b class="nc">&nbsp;        nexts.incr(depth, 1);</b>
+<b class="nc">&nbsp;        for(TreeNode child : node.children){</b>
+<b class="nc">&nbsp;            layout(child, depth + 1, nexts);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

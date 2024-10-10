@@ -1,0 +1,166 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawSoftParticles</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawSoftParticles (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawSoftParticles</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.7%
+  </span>
+  <span class="absValue">
+    (6/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.Interp.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+<b class="fc">&nbsp;public class DrawSoftParticles extends DrawBlock{</b>
+&nbsp;    public TextureRegion region;
+&nbsp;
+<b class="fc">&nbsp;    public Color color = Color.valueOf(&quot;e3ae6f&quot;), color2 = Color.valueOf(&quot;d04d46&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;    public float alpha = 0.5f;</b>
+<b class="fc">&nbsp;    public int particles = 30;</b>
+<b class="fc">&nbsp;    public float particleLife = 70f, particleRad = 7f, particleSize = 3f, fadeMargin = 0.4f, rotateScl = 1.5f;</b>
+<b class="fc">&nbsp;    public Interp particleInterp = new PowIn(1.5f);</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+&nbsp;
+<b class="nc">&nbsp;        if(build.warmup() &gt; 0f &amp;&amp; color.a &gt; 0.001f){</b>
+<b class="nc">&nbsp;            float a = alpha * build.warmup();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(color, a);</b>
+<b class="nc">&nbsp;            Draw.blend(Blending.additive);</b>
+&nbsp;
+<b class="nc">&nbsp;            float base = (Time.time / particleLife);</b>
+<b class="nc">&nbsp;            rand.setSeed(build.id);</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; particles; i++){</b>
+<b class="nc">&nbsp;                float fin = (rand.random(1f) + base) % 1f, fout = 1f - fin;</b>
+<b class="nc">&nbsp;                fin = 1f - fin;</b>
+<b class="nc">&nbsp;                fout = 1f - fout;</b>
+&nbsp;
+<b class="nc">&nbsp;                float angle = rand.random(360f) + (Time.time / rotateScl) % 360f;</b>
+<b class="nc">&nbsp;                float col = rand.random(1f);</b>
+<b class="nc">&nbsp;                Draw.tint(color, color2, col);</b>
+<b class="nc">&nbsp;                float len = particleRad * particleInterp.apply(fout);</b>
+<b class="nc">&nbsp;                Draw.alpha(a * (1f - Mathf.curve(fin, 1f - fadeMargin)));</b>
+<b class="nc">&nbsp;                float r = particleSize * fin * build.warmup()*2f;</b>
+<b class="nc">&nbsp;                Draw.rect(</b>
+&nbsp;                    region,
+<b class="nc">&nbsp;                    build.x + Angles.trnsx(angle, len),</b>
+<b class="nc">&nbsp;                    build.y + Angles.trnsy(angle, len),</b>
+&nbsp;                    r, r
+&nbsp;                );
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.blend();</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(Block block){
+<b class="nc">&nbsp;        super.load(block);</b>
+&nbsp;
+<b class="nc">&nbsp;        region = Core.atlas.find(&quot;circle-shadow&quot;);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

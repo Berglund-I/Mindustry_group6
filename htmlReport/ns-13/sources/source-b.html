@@ -1,0 +1,243 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ShieldArcAbility</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.abilities</a>
+</div>
+
+<h1>Coverage Summary for Class: ShieldArcAbility (mindustry.entities.abilities)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ShieldArcAbility</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (3/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.3%
+  </span>
+  <span class="absValue">
+    (14/60)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.abilities;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+<b class="fc">&nbsp;public class ShieldArcAbility extends Ability{</b>
+&nbsp;    private static Unit paramUnit;
+&nbsp;    private static ShieldArcAbility paramField;
+<b class="fc">&nbsp;    private static Vec2 paramPos = new Vec2();</b>
+<b class="fc">&nbsp;    private static final Cons&lt;Bullet&gt; shieldConsumer = b -&gt; {</b>
+<b class="nc">&nbsp;        if(b.team != paramUnit.team &amp;&amp; b.type.absorbable &amp;&amp; paramField.data &gt; 0 &amp;&amp;</b>
+<b class="nc">&nbsp;            !(b.within(paramPos, paramField.radius - paramField.width/2f) &amp;&amp; paramPos.within(b.x - b.deltaX, b.y - b.deltaY, paramField.radius - paramField.width/2f)) &amp;&amp;</b>
+<b class="nc">&nbsp;            (Tmp.v1.set(b).add(b.deltaX, b.deltaY).within(paramPos, paramField.radius + paramField.width/2f) || b.within(paramPos, paramField.radius + paramField.width/2f)) &amp;&amp;</b>
+<b class="nc">&nbsp;            (Angles.within(paramPos.angleTo(b), paramUnit.rotation + paramField.angleOffset, paramField.angle / 2f) || Angles.within(paramPos.angleTo(b.x + b.deltaX, b.y + b.deltaY), paramUnit.rotation + paramField.angleOffset, paramField.angle / 2f))){</b>
+&nbsp;
+<b class="nc">&nbsp;            b.absorb();</b>
+<b class="nc">&nbsp;            Fx.absorb.at(b);</b>
+&nbsp;
+&nbsp;            //break shield
+<b class="nc">&nbsp;            if(paramField.data &lt;= b.damage()){</b>
+<b class="nc">&nbsp;                paramField.data -= paramField.cooldown * paramField.regen;</b>
+&nbsp;
+<b class="nc">&nbsp;                Fx.arcShieldBreak.at(paramPos.x, paramPos.y, 0, paramField.color == null ? paramUnit.type.shieldColor(paramUnit) : paramField.color, paramUnit);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            paramField.data -= b.damage();</b>
+<b class="nc">&nbsp;            paramField.alpha = 1f;</b>
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+&nbsp;    /** Shield radius. */
+<b class="fc">&nbsp;    public float radius = 60f;</b>
+&nbsp;    /** Shield regen speed in damage/tick. */
+<b class="fc">&nbsp;    public float regen = 0.1f;</b>
+&nbsp;    /** Maximum shield. */
+<b class="fc">&nbsp;    public float max = 200f;</b>
+&nbsp;    /** Cooldown after the shield is broken, in ticks. */
+<b class="fc">&nbsp;    public float cooldown = 60f * 5;</b>
+&nbsp;    /** Angle of shield arc. */
+<b class="fc">&nbsp;    public float angle = 80f;</b>
+&nbsp;    /** Offset parameters for shield. */
+<b class="fc">&nbsp;    public float angleOffset = 0f, x = 0f, y = 0f;</b>
+&nbsp;    /** If true, only activates when shooting. */
+<b class="fc">&nbsp;    public boolean whenShooting = true;</b>
+&nbsp;    /** Width of shield line. */
+<b class="fc">&nbsp;    public float width = 6f;</b>
+&nbsp;
+&nbsp;    /** Whether to draw the arc line. */
+<b class="fc">&nbsp;    public boolean drawArc = true;</b>
+&nbsp;    /** If not null, will be drawn on top. */
+&nbsp;    public @Nullable String region;
+&nbsp;    /** Color override of the shield. Uses unit shield colour by default. */
+&nbsp;    public @Nullable Color color;
+&nbsp;    /** If true, sprite position will be influenced by x/y. */
+<b class="fc">&nbsp;    public boolean offsetRegion = false;</b>
+&nbsp;
+&nbsp;    /** State. */
+&nbsp;    protected float widthScale, alpha;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void addStats(Table t){
+<b class="nc">&nbsp;        super.addStats(t);</b>
+<b class="nc">&nbsp;        t.add(abilityStat(&quot;shield&quot;, Strings.autoFixed(max, 2)));</b>
+<b class="nc">&nbsp;        t.row();</b>
+<b class="nc">&nbsp;        t.add(abilityStat(&quot;repairspeed&quot;, Strings.autoFixed(regen * 60f, 2)));</b>
+<b class="nc">&nbsp;        t.row();</b>
+<b class="nc">&nbsp;        t.add(abilityStat(&quot;cooldown&quot;, Strings.autoFixed(cooldown / 60f, 2)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(Unit unit){
+&nbsp;
+<b class="nc">&nbsp;        if(data &lt; max){</b>
+<b class="nc">&nbsp;            data += Time.delta * regen;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean active = data &gt; 0 &amp;&amp; (unit.isShooting || !whenShooting);</b>
+<b class="nc">&nbsp;        alpha = Math.max(alpha - Time.delta/10f, 0f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(active){</b>
+<b class="nc">&nbsp;            widthScale = Mathf.lerpDelta(widthScale, 1f, 0.06f);</b>
+<b class="nc">&nbsp;            paramUnit = unit;</b>
+<b class="nc">&nbsp;            paramField = this;</b>
+<b class="nc">&nbsp;            paramPos.set(x, y).rotate(unit.rotation - 90f).add(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;            float reach = radius + width / 2f;</b>
+<b class="nc">&nbsp;            Groups.bullet.intersect(paramPos.x - reach, paramPos.y - reach, reach * 2f, reach * 2f, shieldConsumer);</b>
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            widthScale = Mathf.lerpDelta(widthScale, 0f, 0.11f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(UnitType type){
+<b class="fc">&nbsp;        data = max;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Unit unit){
+<b class="nc">&nbsp;        if(widthScale &gt; 0.001f){</b>
+<b class="nc">&nbsp;            Draw.z(Layer.shields);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(color == null ? unit.type.shieldColor(unit) : color, Color.white, Mathf.clamp(alpha));</b>
+<b class="nc">&nbsp;            var pos = paramPos.set(x, y).rotate(unit.rotation - 90f).add(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!Vars.renderer.animateShields){</b>
+<b class="nc">&nbsp;                Draw.alpha(0.4f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(region != null){</b>
+<b class="nc">&nbsp;                Vec2 rp = offsetRegion ? pos : Tmp.v1.set(unit);</b>
+<b class="nc">&nbsp;                Draw.yscl = widthScale;</b>
+<b class="nc">&nbsp;                Draw.rect(region, rp.x, rp.y, unit.rotation - 90);</b>
+<b class="nc">&nbsp;                Draw.yscl = 1f;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(drawArc){</b>
+<b class="nc">&nbsp;                Lines.stroke(width * widthScale);</b>
+<b class="nc">&nbsp;                Lines.arc(pos.x, pos.y, radius, angle / 360f, unit.rotation + angleOffset - angle / 2f);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void displayBars(Unit unit, Table bars){
+<b class="nc">&nbsp;        bars.add(new Bar(&quot;stat.shieldhealth&quot;, Pal.accent, () -&gt; data / max)).row();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

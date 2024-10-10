@@ -1,0 +1,627 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Vars</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry</a>
+</div>
+
+<h1>Coverage Summary for Class: Vars (mindustry)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Vars</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (3/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.5%
+  </span>
+  <span class="absValue">
+    (97/178)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Vars$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    30.8%
+  </span>
+  <span class="absValue">
+    (4/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.7%
+  </span>
+  <span class="absValue">
+    (98/179)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.assets.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.Log.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.editor.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.maps.Map;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.mod.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.service.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.nio.charset.*;
+&nbsp;import java.util.*;
+&nbsp;import java.util.concurrent.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;
+<b class="nc">&nbsp;public class Vars implements Loadable{</b>
+&nbsp;    /** Whether the game failed to launch last time. */
+<b class="fc">&nbsp;    public static boolean failedToLaunch = false;</b>
+&nbsp;    /** Whether to load locales.*/
+<b class="fc">&nbsp;    public static boolean loadLocales = true;</b>
+&nbsp;    /** Whether the logger is loaded. */
+<b class="fc">&nbsp;    public static boolean loadedLogger = false, loadedFileLogger = false;</b>
+&nbsp;    /** Whether to enable various experimental features (e.g. spawn positions for spawn groups) TODO change */
+<b class="fc">&nbsp;    public static boolean experimental = true;</b>
+&nbsp;    /** Name of current Steam player. */
+<b class="fc">&nbsp;    public static String steamPlayerName = &quot;&quot;;</b>
+&nbsp;    /** Default accessible content types used for player-selectable icons. */
+<b class="fc">&nbsp;    public static final ContentType[] defaultContentIcons = {ContentType.item, ContentType.liquid, ContentType.block, ContentType.unit};</b>
+&nbsp;    /** Default rule environment. */
+&nbsp;    public static final int defaultEnv = Env.terrestrial | Env.spores | Env.groundOil | Env.groundWater | Env.oxygen;
+&nbsp;    /** Wall darkness radius. */
+&nbsp;    public static final int darkRadius = 4;
+&nbsp;    /** Maximum extra padding around deployment schematics. */
+&nbsp;    public static final int maxLoadoutSchematicPad = 5;
+&nbsp;    /** All schematic base64 starts with this string.*/
+&nbsp;    public static final String schematicBaseStart =&quot;bXNjaA&quot;;
+&nbsp;    /** IO buffer size. */
+&nbsp;    public static final int bufferSize = 8192;
+&nbsp;    /** global charset, since Android doesn&#39;t support the Charsets class */
+<b class="fc">&nbsp;    public static final Charset charset = Charset.forName(&quot;UTF-8&quot;);</b>
+&nbsp;    /** main application name, capitalized */
+&nbsp;    public static final String appName = &quot;Mindustry&quot;;
+&nbsp;    /** Github API URL. */
+&nbsp;    public static final String ghApi = &quot;https://api.github.com&quot;;
+&nbsp;    /** URL for discord invite. */
+&nbsp;    public static final String discordURL = &quot;https://discord.gg/mindustry&quot;;
+&nbsp;    /** URL the links to the wiki&#39;s modding guide.*/
+&nbsp;    public static final String modGuideURL = &quot;https://mindustrygame.github.io/wiki/modding/1-modding/&quot;;
+&nbsp;    /** URL to the JSON file containing all the BE servers. Only queried in BE. */
+&nbsp;    public static final String serverJsonBeURL = &quot;https://raw.githubusercontent.com/Anuken/Mindustry/master/servers_be.json&quot;;
+&nbsp;    /** URL to the JSON file containing all the stable servers.  */
+&nbsp;    //TODO merge with v6 list upon release
+&nbsp;    public static final String serverJsonURL = &quot;https://raw.githubusercontent.com/Anuken/Mindustry/master/servers_v7.json&quot;;
+&nbsp;    /** URL of the github issue report template.*/
+&nbsp;    public static final String reportIssueURL = &quot;https://github.com/Anuken/Mindustry/issues/new?labels=bug&amp;template=bug_report.md&quot;;
+&nbsp;    /** list of built-in servers.*/
+<b class="fc">&nbsp;    public static final Seq&lt;ServerGroup&gt; defaultServers = Seq.with();</b>
+&nbsp;    /** maximum size of any block, do not change unless you know what you&#39;re doing */
+&nbsp;    public static final int maxBlockSize = 16;
+&nbsp;    /** maximum distance between mine and core that supports automatic transferring */
+&nbsp;    public static final float mineTransferRange = 220f;
+&nbsp;    /** max chat message length */
+&nbsp;    public static final int maxTextLength = 150;
+&nbsp;    /** max player name length in bytes */
+&nbsp;    public static final int maxNameLength = 40;
+&nbsp;    /** displayed item size when ingame. */
+&nbsp;    public static final float itemSize = 5f;
+&nbsp;    /** units outside this bound will die instantly */
+&nbsp;    public static final float finalWorldBounds = 250;
+&nbsp;    /** default range for building */
+&nbsp;    public static final float buildingRange = 220f;
+&nbsp;    /** range for moving items */
+&nbsp;    public static final float itemTransferRange = 220f;
+&nbsp;    /** range for moving items for logic units */
+&nbsp;    public static final float logicItemTransferRange = 45f;
+&nbsp;    /** duration of time between turns in ticks */
+&nbsp;    public static final float turnDuration = 2 * Time.toMinutes;
+&nbsp;    /** chance of an invasion per turn, 1 = 100% */
+&nbsp;    public static final float baseInvasionChance = 1f / 100f;
+&nbsp;    /** how many minutes have to pass before invasions in a *captured* sector start */
+&nbsp;    public static final float invasionGracePeriod = 20;
+&nbsp;    /** min armor fraction damage; e.g. 0.05 = at least 5% damage */
+&nbsp;    public static final float minArmorDamage = 0.1f;
+&nbsp;    /** @deprecated see {@link CoreBlock#landDuration} instead! */
+&nbsp;    public static final @Deprecated float coreLandDuration = 160f;
+&nbsp;    /** size of tiles in units */
+&nbsp;    public static final int tilesize = 8;
+&nbsp;    /** size of one tile payload (^2) */
+&nbsp;    public static final float tilePayload = tilesize * tilesize;
+&nbsp;    /** icon sizes for UI */
+&nbsp;    public static final float iconXLarge = 8*6f, iconLarge = 8*5f, iconMed = 8*4f, iconSmall = 8*3f;
+&nbsp;    /** macbook screen notch height */
+<b class="fc">&nbsp;    public static float macNotchHeight = 32f;</b>
+&nbsp;    /** for map generator dialog */
+<b class="fc">&nbsp;    public static boolean updateEditorOnChange = false;</b>
+&nbsp;    /** all choosable player colors in join/host dialog */
+<b class="fc">&nbsp;    public static final Color[] playerColors = {</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;82759a&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;c0c1c5&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;ffffff&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;7d2953&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;ff074e&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;ff072a&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;ff76a6&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;a95238&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;ffa108&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;feeb2c&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;ffcaa8&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;008551&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;00e339&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;423c7b&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;4b5ef1&quot;),</b>
+<b class="fc">&nbsp;        Color.valueOf(&quot;2cabfe&quot;),</b>
+&nbsp;    };
+&nbsp;    /** Icons available to the user for customization in certain dialogs. */
+<b class="fc">&nbsp;    public static final String[] accessibleIcons = {</b>
+&nbsp;    &quot;effect&quot;, &quot;power&quot;, &quot;logic&quot;, &quot;units&quot;, &quot;liquid&quot;, &quot;production&quot;, &quot;defense&quot;, &quot;turret&quot;, &quot;distribution&quot;, &quot;crafting&quot;,
+&nbsp;    &quot;settings&quot;, &quot;cancel&quot;, &quot;zoom&quot;, &quot;ok&quot;, &quot;star&quot;, &quot;home&quot;, &quot;pencil&quot;, &quot;up&quot;, &quot;down&quot;, &quot;left&quot;, &quot;right&quot;,
+&nbsp;    &quot;hammer&quot;, &quot;warning&quot;, &quot;tree&quot;, &quot;admin&quot;, &quot;map&quot;, &quot;modePvp&quot;, &quot;terrain&quot;,
+&nbsp;    &quot;modeSurvival&quot;, &quot;commandRally&quot;, &quot;commandAttack&quot;,
+&nbsp;    };
+&nbsp;    /** maximum TCP packet size */
+&nbsp;    public static final int maxTcpSize = 1100;
+&nbsp;    /** default server port */
+&nbsp;    public static final int port = 6567;
+&nbsp;    /** multicast discovery port.*/
+&nbsp;    public static final int multicastPort = 20151;
+&nbsp;    /** Maximum char length of mod subtitles in browser/viewer. */
+&nbsp;    public static final int maxModSubtitleLength = 40;
+&nbsp;    /** multicast group for discovery.*/
+&nbsp;    public static final String multicastGroup = &quot;227.2.7.7&quot;;
+&nbsp;    /** Maximum delta time. If the actual delta time (*60) between frames is higher than this number, the game will start to slow down. */
+<b class="fc">&nbsp;    public static float maxDeltaClient = 6f, maxDeltaServer = 10f;</b>
+&nbsp;    /** whether the graphical game client has loaded */
+<b class="fc">&nbsp;    public static boolean clientLoaded = false;</b>
+&nbsp;    /** max GL texture size */
+<b class="fc">&nbsp;    public static int maxTextureSize = 2048;</b>
+&nbsp;    /** Maximum schematic size.*/
+<b class="fc">&nbsp;    public static int maxSchematicSize = 64;</b>
+&nbsp;    /** Whether to show sector info upon landing. */
+<b class="fc">&nbsp;    public static boolean showSectorLandInfo = true;</b>
+&nbsp;    /** Whether to check for memory use before taking screenshots. */
+<b class="fc">&nbsp;    public static boolean checkScreenshotMemory = true;</b>
+&nbsp;    /** Whether to prompt the user to confirm exiting. */
+<b class="fc">&nbsp;    public static boolean confirmExit = true;</b>
+&nbsp;    /** if true, UI is not drawn */
+&nbsp;    public static boolean disableUI;
+&nbsp;    /** if true, most autosaving is disabled. internal use only! */
+&nbsp;    public static boolean disableSave;
+&nbsp;    /** if true, game is set up in mobile mode, even on desktop. used for debugging */
+&nbsp;    public static boolean testMobile;
+&nbsp;    /** whether the game is running on a mobile device */
+&nbsp;    public static boolean mobile;
+&nbsp;    /** whether the game is running on an iOS device */
+&nbsp;    public static boolean ios;
+&nbsp;    /** whether the game is running on an Android device */
+&nbsp;    public static boolean android;
+&nbsp;    /** whether the game is running on a headless server */
+&nbsp;    public static boolean headless;
+&nbsp;    /** whether steam is enabled for this game */
+&nbsp;    public static boolean steam;
+&nbsp;    /** whether to clear sector saves when landing */
+<b class="fc">&nbsp;    public static boolean clearSectors = false;</b>
+&nbsp;    /** whether any light rendering is enabled */
+<b class="fc">&nbsp;    public static boolean enableLight = true;</b>
+&nbsp;    /** Whether to draw shadows of blocks at map edges and static blocks.
+&nbsp;     * Do not change unless you know exactly what you are doing.*/
+<b class="fc">&nbsp;    public static boolean enableDarkness = true;</b>
+&nbsp;    /** application data directory, equivalent to {@link Settings#getDataDirectory()} */
+&nbsp;    public static Fi dataDirectory;
+&nbsp;    /** data subdirectory used for screenshots */
+&nbsp;    public static Fi screenshotDirectory;
+&nbsp;    /** data subdirectory used for custom maps */
+&nbsp;    public static Fi customMapDirectory;
+&nbsp;    /** data subdirectory used for custom map previews */
+&nbsp;    public static Fi mapPreviewDirectory;
+&nbsp;    /** tmp subdirectory for map conversion */
+&nbsp;    public static Fi tmpDirectory;
+&nbsp;    /** data subdirectory used for saves */
+&nbsp;    public static Fi saveDirectory;
+&nbsp;    /** data subdirectory used for mods */
+&nbsp;    public static Fi modDirectory;
+&nbsp;    /** data subdirectory used for schematics */
+&nbsp;    public static Fi schematicDirectory;
+&nbsp;    /** data subdirectory used for bleeding edge build versions */
+&nbsp;    public static Fi bebuildDirectory;
+&nbsp;    /** file used to store launch ID */
+&nbsp;    public static Fi launchIDFile;
+&nbsp;    /** empty map, indicates no current map */
+&nbsp;    public static Map emptyMap;
+&nbsp;    /** empty tile for payloads */
+&nbsp;    public static Tile emptyTile;
+&nbsp;    /** map file extension */
+&nbsp;    public static final String mapExtension = &quot;msav&quot;;
+&nbsp;    /** save file extension */
+&nbsp;    public static final String saveExtension = &quot;msav&quot;;
+&nbsp;    /** schematic file extension */
+&nbsp;    public static final String schematicExtension = &quot;msch&quot;;
+&nbsp;    /** path to the java executable */
+&nbsp;    public static String javaPath;
+&nbsp;
+&nbsp;    /** list of all locales that can be switched to */
+&nbsp;    public static Locale[] locales;
+&nbsp;
+&nbsp;    //the main executor will only have at most [cores] number of threads active
+<b class="fc">&nbsp;    public static ExecutorService mainExecutor = Threads.executor(&quot;Main Executor&quot;, OS.cores);</b>
+&nbsp;
+<b class="fc">&nbsp;    public static FileTree tree = new FileTree();</b>
+&nbsp;    public static Net net;
+&nbsp;    public static ContentLoader content;
+&nbsp;    public static GameState state;
+&nbsp;    public static EntityCollisions collisions;
+&nbsp;    public static Waves waves;
+<b class="fc">&nbsp;    public static Platform platform = new Platform(){};</b>
+&nbsp;    public static Mods mods;
+&nbsp;    public static Schematics schematics;
+&nbsp;    public static BeControl becontrol;
+&nbsp;    public static AsyncCore asyncCore;
+&nbsp;    public static BaseRegistry bases;
+&nbsp;    public static GlobalVars logicVars;
+&nbsp;    public static MapEditor editor;
+<b class="fc">&nbsp;    public static GameService service = new GameService();</b>
+&nbsp;
+&nbsp;    public static Universe universe;
+&nbsp;    public static World world;
+&nbsp;    public static Maps maps;
+&nbsp;    public static WaveSpawner spawner;
+&nbsp;    public static BlockIndexer indexer;
+&nbsp;    public static Pathfinder pathfinder;
+&nbsp;    public static ControlPathfinder controlPath;
+&nbsp;    public static FogControl fogControl;
+&nbsp;
+&nbsp;    public static Control control;
+&nbsp;    public static Logic logic;
+&nbsp;    public static Renderer renderer;
+&nbsp;    public static UI ui;
+&nbsp;    public static NetServer netServer;
+&nbsp;    public static NetClient netClient;
+&nbsp;
+&nbsp;    public static Player player;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void loadAsync(){
+<b class="nc">&nbsp;        loadSettings();</b>
+<b class="nc">&nbsp;        init();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void init(){
+<b class="fc">&nbsp;        Groups.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(loadLocales){</b>
+&nbsp;            //load locales
+<b class="fc">&nbsp;            String[] stra = Core.files.internal(&quot;locales&quot;).readString().split(&quot;\n&quot;);</b>
+<b class="fc">&nbsp;            locales = new Locale[stra.length];</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; locales.length; i++){</b>
+<b class="fc">&nbsp;                String code = stra[i];</b>
+<b class="fc">&nbsp;                if(code.contains(&quot;_&quot;)){</b>
+<b class="fc">&nbsp;                    locales[i] = new Locale(code.split(&quot;_&quot;)[0], code.split(&quot;_&quot;)[1]);</b>
+&nbsp;                }else{
+<b class="fc">&nbsp;                    locales[i] = new Locale(code);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            Arrays.sort(locales, Structs.comparing(LanguageDialog::getDisplayName, String.CASE_INSENSITIVE_ORDER));</b>
+<b class="fc">&nbsp;            locales = Seq.with(locales).add(new Locale(&quot;router&quot;)).toArray(Locale.class);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Version.init();</b>
+<b class="fc">&nbsp;        CacheLayer.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(!headless){</b>
+<b class="nc">&nbsp;            Log.info(&quot;[Mindustry] Version: @&quot;, Version.buildString());</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        dataDirectory = settings.getDataDirectory();</b>
+<b class="fc">&nbsp;        screenshotDirectory = dataDirectory.child(&quot;screenshots/&quot;);</b>
+<b class="fc">&nbsp;        customMapDirectory = dataDirectory.child(&quot;maps/&quot;);</b>
+<b class="fc">&nbsp;        mapPreviewDirectory = dataDirectory.child(&quot;previews/&quot;);</b>
+<b class="fc">&nbsp;        saveDirectory = dataDirectory.child(&quot;saves/&quot;);</b>
+<b class="fc">&nbsp;        tmpDirectory = dataDirectory.child(&quot;tmp/&quot;);</b>
+<b class="fc">&nbsp;        modDirectory = dataDirectory.child(&quot;mods/&quot;);</b>
+<b class="fc">&nbsp;        schematicDirectory = dataDirectory.child(&quot;schematics/&quot;);</b>
+<b class="fc">&nbsp;        bebuildDirectory = dataDirectory.child(&quot;be_builds/&quot;);</b>
+<b class="fc">&nbsp;        emptyMap = new Map(new StringMap());</b>
+&nbsp;
+<b class="fc">&nbsp;        if(tree == null) tree = new FileTree();</b>
+<b class="fc">&nbsp;        if(mods == null) mods = new Mods();</b>
+&nbsp;
+<b class="fc">&nbsp;        content = new ContentLoader();</b>
+<b class="fc">&nbsp;        waves = new Waves();</b>
+<b class="fc">&nbsp;        collisions = new EntityCollisions();</b>
+<b class="fc">&nbsp;        world = new World();</b>
+<b class="fc">&nbsp;        universe = new Universe();</b>
+<b class="fc">&nbsp;        becontrol = new BeControl();</b>
+<b class="fc">&nbsp;        asyncCore = new AsyncCore();</b>
+<b class="fc">&nbsp;        if(!headless) editor = new MapEditor();</b>
+&nbsp;
+<b class="fc">&nbsp;        maps = new Maps();</b>
+<b class="fc">&nbsp;        spawner = new WaveSpawner();</b>
+<b class="fc">&nbsp;        indexer = new BlockIndexer();</b>
+<b class="fc">&nbsp;        pathfinder = new Pathfinder();</b>
+<b class="fc">&nbsp;        controlPath = new ControlPathfinder();</b>
+<b class="fc">&nbsp;        fogControl = new FogControl();</b>
+<b class="fc">&nbsp;        bases = new BaseRegistry();</b>
+<b class="fc">&nbsp;        logicVars = new GlobalVars();</b>
+&nbsp;        javaPath =
+<b class="fc">&nbsp;            new Fi(OS.prop(&quot;java.home&quot;)).child(&quot;bin/java&quot;).exists() ? new Fi(OS.prop(&quot;java.home&quot;)).child(&quot;bin/java&quot;).absolutePath() :</b>
+<b class="fc">&nbsp;            Core.files.local(&quot;jre/bin/java&quot;).exists() ? Core.files.local(&quot;jre/bin/java&quot;).absolutePath() : // Unix</b>
+<b class="fc">&nbsp;            Core.files.local(&quot;jre/bin/java.exe&quot;).exists() ? Core.files.local(&quot;jre/bin/java.exe&quot;).absolutePath() : // Windows</b>
+<b class="fc">&nbsp;            &quot;java&quot;;</b>
+&nbsp;
+<b class="fc">&nbsp;        state = new GameState();</b>
+&nbsp;
+<b class="fc">&nbsp;        mobile = Core.app.isMobile() || testMobile;</b>
+<b class="fc">&nbsp;        ios = Core.app.isIOS();</b>
+<b class="fc">&nbsp;        android = Core.app.isAndroid();</b>
+&nbsp;
+<b class="fc">&nbsp;        modDirectory.mkdirs();</b>
+&nbsp;
+<b class="fc">&nbsp;        Events.on(ContentInitEvent.class, e -&gt; {</b>
+<b class="fc">&nbsp;            emptyTile = new Tile(Short.MAX_VALUE - 20, Short.MAX_VALUE - 20);</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        mods.load();</b>
+<b class="fc">&nbsp;        maps.load();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Checks if a launch failure occurred.
+&nbsp;     * If this is the case, failedToLaunch is set to true. */
+&nbsp;    public static void checkLaunch(){
+<b class="nc">&nbsp;        settings.setAppName(appName);</b>
+<b class="nc">&nbsp;        launchIDFile = settings.getDataDirectory().child(&quot;launchid.dat&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(launchIDFile.exists()){</b>
+<b class="nc">&nbsp;            failedToLaunch = true;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            failedToLaunch = false;</b>
+<b class="nc">&nbsp;            launchIDFile.writeString(&quot;go away&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Cleans up after a successful launch. */
+&nbsp;    public static void finishLaunch(){
+<b class="nc">&nbsp;        if(launchIDFile != null){</b>
+<b class="nc">&nbsp;            launchIDFile.delete();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void loadLogger(){
+<b class="nc">&nbsp;        if(loadedLogger) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        String[] tags = {&quot;[green][D][]&quot;, &quot;[royal][I][]&quot;, &quot;[yellow][W][]&quot;, &quot;[scarlet][E][]&quot;, &quot;&quot;};</b>
+<b class="nc">&nbsp;        String[] stags = {&quot;&amp;lc&amp;fb[D]&quot;, &quot;&amp;lb&amp;fb[I]&quot;, &quot;&amp;ly&amp;fb[W]&quot;, &quot;&amp;lr&amp;fb[E]&quot;, &quot;&quot;};</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;String&gt; logBuffer = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        Log.logger = (level, text) -&gt; {</b>
+<b class="nc">&nbsp;            synchronized(logBuffer){</b>
+<b class="nc">&nbsp;                String result = text;</b>
+<b class="nc">&nbsp;                String rawText = Log.format(stags[level.ordinal()] + &quot;&amp;fr &quot; + text);</b>
+<b class="nc">&nbsp;                System.out.println(rawText);</b>
+&nbsp;
+<b class="nc">&nbsp;                result = tags[level.ordinal()] + &quot; &quot; + result;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!headless &amp;&amp; (ui == null || ui.consolefrag == null)){</b>
+<b class="nc">&nbsp;                    logBuffer.add(result);</b>
+<b class="nc">&nbsp;                }else if(!headless){</b>
+<b class="nc">&nbsp;                    if(!OS.isWindows){</b>
+<b class="nc">&nbsp;                        for(String code : ColorCodes.values){</b>
+<b class="nc">&nbsp;                            result = result.replace(code, &quot;&quot;);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    ui.consolefrag.addMessage(Log.removeColors(result));</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ClientLoadEvent.class, e -&gt; logBuffer.each(ui.consolefrag::addMessage));</b>
+&nbsp;
+<b class="nc">&nbsp;        loadedLogger = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void loadFileLogger(){
+<b class="nc">&nbsp;        if(loadedFileLogger) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        settings.setAppName(appName);</b>
+&nbsp;
+&nbsp;        try{
+<b class="nc">&nbsp;            Writer writer = settings.getDataDirectory().child(&quot;last_log.txt&quot;).writer(false);</b>
+<b class="nc">&nbsp;            LogHandler log = Log.logger;</b>
+<b class="nc">&nbsp;            Log.logger = (level, text) -&gt; {</b>
+<b class="nc">&nbsp;                log.log(level, text);</b>
+&nbsp;
+&nbsp;                try{
+<b class="nc">&nbsp;                    writer.write(&quot;[&quot; + Character.toUpperCase(level.name().charAt(0)) + &quot;] &quot; + Log.removeColors(text) + &quot;\n&quot;);</b>
+<b class="nc">&nbsp;                    writer.flush();</b>
+<b class="nc">&nbsp;                }catch(IOException e){</b>
+<b class="nc">&nbsp;                    e.printStackTrace();</b>
+&nbsp;                    //ignore it
+<b class="nc">&nbsp;                }</b>
+&nbsp;            };
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+&nbsp;            //handle log file not being found
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        loadedFileLogger = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void loadSettings(){
+<b class="nc">&nbsp;        settings.setJson(JsonIO.json);</b>
+<b class="nc">&nbsp;        settings.setAppName(appName);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(steam || (Version.modifier != null &amp;&amp; Version.modifier.contains(&quot;steam&quot;))){</b>
+<b class="nc">&nbsp;            settings.setDataDirectory(Core.files.local(&quot;saves/&quot;));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        settings.defaults(&quot;locale&quot;, &quot;default&quot;, &quot;blocksync&quot;, true);</b>
+<b class="nc">&nbsp;        keybinds.setDefaults(Binding.values());</b>
+<b class="nc">&nbsp;        settings.setAutosave(false);</b>
+<b class="nc">&nbsp;        settings.load();</b>
+&nbsp;
+&nbsp;        //https://github.com/Anuken/Mindustry/issues/8483
+<b class="nc">&nbsp;        if(settings.getInt(&quot;uiscale&quot;) == 5){</b>
+<b class="nc">&nbsp;            settings.put(&quot;uiscale&quot;, 100);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Scl.setProduct(Math.max(settings.getInt(&quot;uiscale&quot;, 100), 25) / 100f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!loadLocales) return;</b>
+&nbsp;
+&nbsp;        try{
+&nbsp;            //try loading external bundle
+<b class="nc">&nbsp;            Fi handle = Core.files.local(&quot;bundle&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            Locale locale = Locale.ENGLISH;</b>
+<b class="nc">&nbsp;            Core.bundle = I18NBundle.createBundle(handle, locale);</b>
+&nbsp;
+<b class="nc">&nbsp;            Log.info(&quot;NOTE: external translation bundle has been loaded.&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!headless){</b>
+<b class="nc">&nbsp;                Time.run(10f, () -&gt; ui.showInfo(&quot;Note: You have successfully loaded an external translation bundle.\n[accent]&quot; + handle.absolutePath()));</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+&nbsp;            //no external bundle found
+&nbsp;
+<b class="nc">&nbsp;            Fi handle = Core.files.internal(&quot;bundles/bundle&quot;);</b>
+&nbsp;            Locale locale;
+<b class="nc">&nbsp;            String loc = settings.getString(&quot;locale&quot;);</b>
+<b class="nc">&nbsp;            if(loc.equals(&quot;default&quot;)){</b>
+<b class="nc">&nbsp;                locale = Locale.getDefault();</b>
+&nbsp;            }else{
+&nbsp;                Locale lastLocale;
+<b class="nc">&nbsp;                if(loc.contains(&quot;_&quot;)){</b>
+<b class="nc">&nbsp;                    String[] split = loc.split(&quot;_&quot;);</b>
+<b class="nc">&nbsp;                    lastLocale = new Locale(split[0], split[1]);</b>
+<b class="nc">&nbsp;                }else{</b>
+<b class="nc">&nbsp;                    lastLocale = new Locale(loc);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                locale = lastLocale;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Locale.setDefault(locale);</b>
+<b class="nc">&nbsp;            Core.bundle = I18NBundle.createBundle(handle, locale);</b>
+&nbsp;
+&nbsp;            //router
+<b class="nc">&nbsp;            if(locale.toString().equals(&quot;router&quot;)){</b>
+<b class="nc">&nbsp;                bundle.debug(&quot;router&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

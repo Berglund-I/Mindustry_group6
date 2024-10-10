@@ -1,0 +1,470 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Floor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.environment</a>
+</div>
+
+<h1>Coverage Summary for Class: Floor (mindustry.world.blocks.environment)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Floor</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.8%
+  </span>
+  <span class="absValue">
+    (5/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.3%
+  </span>
+  <span class="absValue">
+    (49/139)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Floor$UpdateRenderState</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (5/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.5%
+  </span>
+  <span class="absValue">
+    (49/142)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.environment;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.graphics.MultiPacker.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Floor extends Block{
+&nbsp;    /** edge fallback, used mainly for ores */
+<b class="fc">&nbsp;    public String edge = &quot;stone&quot;;</b>
+&nbsp;    /** Multiplies unit velocity by this when walked on. */
+<b class="fc">&nbsp;    public float speedMultiplier = 1f;</b>
+&nbsp;    /** Multiplies unit drag by this when walked on. */
+<b class="fc">&nbsp;    public float dragMultiplier = 1f;</b>
+&nbsp;    /** Damage taken per tick on this tile. */
+<b class="fc">&nbsp;    public float damageTaken = 0f;</b>
+&nbsp;    /** How many ticks it takes to drown on this. 0 to disable. */
+<b class="fc">&nbsp;    public float drownTime = 0f;</b>
+&nbsp;    /** Effect when walking on this floor. */
+<b class="fc">&nbsp;    public Effect walkEffect = Fx.none;</b>
+&nbsp;    /** Sound made when walking. */
+<b class="fc">&nbsp;    public Sound walkSound = Sounds.none;</b>
+&nbsp;    /** Volume of sound made when walking. */
+<b class="fc">&nbsp;    public float walkSoundVolume = 0.1f, walkSoundPitchMin = 0.8f, walkSoundPitchMax = 1.2f;</b>
+&nbsp;    /** Effect displayed when drowning on this floor. */
+<b class="fc">&nbsp;    public Effect drownUpdateEffect = Fx.bubble;</b>
+&nbsp;    /** Status effect applied when walking on. */
+<b class="fc">&nbsp;    public StatusEffect status = StatusEffects.none;</b>
+&nbsp;    /** Intensity of applied status effect. */
+<b class="fc">&nbsp;    public float statusDuration = 60f;</b>
+&nbsp;    /** liquids that drop from this block, used for pumps. */
+<b class="fc">&nbsp;    public @Nullable Liquid liquidDrop = null;</b>
+&nbsp;    /** Multiplier for pumped liquids, used for deep water. */
+<b class="fc">&nbsp;    public float liquidMultiplier = 1f;</b>
+&nbsp;    /** whether this block is liquid. */
+&nbsp;    public boolean isLiquid;
+&nbsp;    /** for liquid floors, this is the opacity of the overlay drawn on top. */
+<b class="fc">&nbsp;    public float overlayAlpha = 0.65f;</b>
+&nbsp;    /** whether this floor supports an overlay floor */
+<b class="fc">&nbsp;    public boolean supportsOverlay = false;</b>
+&nbsp;    /** shallow water flag used for generation */
+<b class="fc">&nbsp;    public boolean shallow = false;</b>
+&nbsp;    /** Group of blocks that this block does not draw edges on. */
+<b class="fc">&nbsp;    public Block blendGroup = this;</b>
+&nbsp;    /** Whether this ore generates in maps by default. */
+<b class="fc">&nbsp;    public boolean oreDefault = false;</b>
+&nbsp;    /** Ore generation params. */
+<b class="fc">&nbsp;    public float oreScale = 24f, oreThreshold = 0.828f;</b>
+&nbsp;    /** Wall variant of this block. May be Blocks.air if not found. */
+<b class="fc">&nbsp;    public Block wall = Blocks.air;</b>
+&nbsp;    /** Decoration block. Usually a rock. May be air. */
+<b class="fc">&nbsp;    public Block decoration = Blocks.air;</b>
+&nbsp;    /** Whether units can draw shadows over this. */
+<b class="fc">&nbsp;    public boolean canShadow = true;</b>
+&nbsp;    /** Whether this overlay needs a surface to be on. False for floating blocks, like spawns. */
+<b class="fc">&nbsp;    public boolean needsSurface = true;</b>
+&nbsp;    /** If true, cores can be placed on this floor. */
+<b class="fc">&nbsp;    public boolean allowCorePlacement = false;</b>
+&nbsp;    /** If true, this ore is allowed on walls. */
+<b class="fc">&nbsp;    public boolean wallOre = false;</b>
+&nbsp;    /** Actual ID used for blend groups. Internal. */
+<b class="fc">&nbsp;    public int blendId = -1;</b>
+&nbsp;
+&nbsp;    protected TextureRegion[][] edges;
+<b class="fc">&nbsp;    protected Seq&lt;Floor&gt; blenders = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    protected Bits blended = new Bits(256);</b>
+<b class="fc">&nbsp;    protected int[] dirs = new int[8];</b>
+&nbsp;    protected TextureRegion edgeRegion;
+&nbsp;
+&nbsp;    public Floor(String name){
+<b class="fc">&nbsp;        this(name, 3);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Floor(String name, int variants){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        this.variants = variants;</b>
+<b class="fc">&nbsp;        placeableLiquid = true;</b>
+<b class="fc">&nbsp;        allowRectanglePlacement = true;</b>
+<b class="fc">&nbsp;        instantBuild = true;</b>
+<b class="fc">&nbsp;        placeEffect = Fx.rotateBlock;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+&nbsp;
+&nbsp;        //load variant regions for drawing
+<b class="nc">&nbsp;        if(variants &gt; 0){</b>
+<b class="nc">&nbsp;            variantRegions = new TextureRegion[variants];</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; variants; i++){</b>
+<b class="nc">&nbsp;                variantRegions[i] = Core.atlas.find(name + (i + 1));</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            variantRegions = new TextureRegion[1];</b>
+<b class="nc">&nbsp;            variantRegions[0] = Core.atlas.find(name);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        int size = (int)(tilesize / Draw.scl);</b>
+<b class="nc">&nbsp;        if(Core.atlas.has(name + &quot;-edge&quot;)){</b>
+<b class="nc">&nbsp;            edges = Core.atlas.find(name + &quot;-edge&quot;).split(size, size);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        region = variantRegions[0];</b>
+<b class="nc">&nbsp;        edgeRegion = Core.atlas.find(&quot;edge&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        blendId = blendGroup.id;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(wall == Blocks.air){</b>
+<b class="fc">&nbsp;            wall = content.block(name + &quot;-wall&quot;);</b>
+<b class="fc">&nbsp;            if(wall == null) wall = content.block(name.replace(&quot;darksand&quot;, &quot;dune&quot;) + &quot;-wall&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //keep default value if not found...
+<b class="fc">&nbsp;        if(wall == null) wall = Blocks.air;</b>
+&nbsp;
+&nbsp;        //try to load the default boulder
+<b class="fc">&nbsp;        if(decoration == null){</b>
+<b class="nc">&nbsp;            decoration = content.block(name + &quot;-boulder&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(isLiquid &amp;&amp; walkEffect == Fx.none){</b>
+<b class="fc">&nbsp;            walkEffect = Fx.ripple;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(isLiquid &amp;&amp; walkSound == Sounds.none){</b>
+<b class="fc">&nbsp;            walkSound = Sounds.splash;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion getDisplayIcon(Tile tile){
+<b class="nc">&nbsp;        return liquidDrop == null ? super.getDisplayIcon(tile) : liquidDrop.uiIcon;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String getDisplayName(Tile tile){
+<b class="nc">&nbsp;        return liquidDrop == null ? super.getDisplayName(tile) : liquidDrop.localizedName;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void createIcons(MultiPacker packer){
+<b class="nc">&nbsp;        super.createIcons(packer);</b>
+<b class="nc">&nbsp;        packer.add(PageType.editor, &quot;editor-&quot; + name, Core.atlas.getPixmap(fullIcon));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(blendGroup != this){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.atlas.has(name + &quot;-edge&quot;)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        var image = Core.atlas.getPixmap(icons()[0]);</b>
+<b class="nc">&nbsp;        var edge = Core.atlas.getPixmap(Core.atlas.find(name + &quot;-edge-stencil&quot;, &quot;edge-stencil&quot;));</b>
+<b class="nc">&nbsp;        Pixmap result = new Pixmap(edge.width, edge.height);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = 0; x &lt; edge.width; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; edge.height; y++){</b>
+<b class="nc">&nbsp;                result.set(x, y, Color.muli(edge.get(x, y), image.get(x % image.width, y % image.height)));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        packer.add(PageType.environment, name + &quot;-edge&quot;, result);</b>
+<b class="nc">&nbsp;        result.dispose();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawBase(Tile tile){
+<b class="nc">&nbsp;        Mathf.rand.setSeed(tile.pos());</b>
+<b class="nc">&nbsp;        Draw.rect(variantRegions[variant(tile.x, tile.y)], tile.worldx(), tile.worldy());</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.alpha(1f);</b>
+<b class="nc">&nbsp;        drawEdges(tile);</b>
+<b class="nc">&nbsp;        drawOverlay(tile);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int variant(int x, int y){
+<b class="nc">&nbsp;        return Mathf.randomSeed(Point2.pack(x, y), 0, Math.max(0, variantRegions.length - 1));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawOverlay(Tile tile){
+<b class="nc">&nbsp;        Floor floor = tile.overlay();</b>
+<b class="nc">&nbsp;        if(floor != Blocks.air &amp;&amp; floor != this){</b>
+<b class="nc">&nbsp;            if(isLiquid){</b>
+<b class="nc">&nbsp;                Draw.alpha(overlayAlpha);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            floor.drawBase(tile);</b>
+<b class="nc">&nbsp;            if(isLiquid){</b>
+<b class="nc">&nbsp;                Draw.alpha(1f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{Core.atlas.find(Core.atlas.has(name) ? name : name + &quot;1&quot;)};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO currently broken for dynamically edited floor tiles
+&nbsp;    /** @return true if this floor should be updated in the render loop, e.g. for effects. Do NOT overuse this! */
+&nbsp;    public boolean updateRender(Tile tile){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void renderUpdate(UpdateRenderState tile){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** @return whether this floor has a valid surface on which to place things, e.g. scorch marks. */
+&nbsp;    public boolean hasSurface(){
+<b class="fc">&nbsp;        return !isLiquid &amp;&amp; !solid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isDeep(){
+<b class="fc">&nbsp;        return drownTime &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawNonLayer(Tile tile, CacheLayer layer){
+<b class="nc">&nbsp;        Mathf.rand.setSeed(tile.pos());</b>
+&nbsp;
+<b class="nc">&nbsp;        Arrays.fill(dirs, 0);</b>
+<b class="nc">&nbsp;        blenders.clear();</b>
+<b class="nc">&nbsp;        blended.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 8; i++){</b>
+<b class="nc">&nbsp;            Point2 point = Geometry.d8[i];</b>
+<b class="nc">&nbsp;            Tile other = tile.nearby(point);</b>
+&nbsp;            //special case: empty is, well, empty, so never draw emptiness on top, as that would just be an incorrect black texture
+<b class="nc">&nbsp;            if(other != null &amp;&amp; other.floor().cacheLayer == layer &amp;&amp; other.floor().edges(tile.x, tile.y) != null &amp;&amp; other.floor() != Blocks.empty){</b>
+<b class="nc">&nbsp;                if(!blended.getAndSet(other.floor().id)){</b>
+<b class="nc">&nbsp;                    blenders.add(other.floor());</b>
+<b class="nc">&nbsp;                    dirs[i] = other.floorID();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        drawBlended(tile, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawEdges(Tile tile){
+<b class="nc">&nbsp;        blenders.clear();</b>
+<b class="nc">&nbsp;        blended.clear();</b>
+<b class="nc">&nbsp;        Arrays.fill(dirs, 0);</b>
+<b class="nc">&nbsp;        CacheLayer realCache = tile.floor().cacheLayer;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 8; i++){</b>
+<b class="nc">&nbsp;            Point2 point = Geometry.d8[i];</b>
+<b class="nc">&nbsp;            Tile other = tile.nearby(point);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(other != null &amp;&amp; doEdge(tile, other, other.floor()) &amp;&amp; other.floor().cacheLayer == realCache &amp;&amp; other.floor().edges(tile.x, tile.y) != null &amp;&amp; other.floor() != Blocks.empty){</b>
+<b class="nc">&nbsp;                if(!blended.getAndSet(other.floor().id)){</b>
+<b class="nc">&nbsp;                    blenders.add(other.floor());</b>
+&nbsp;                }
+<b class="nc">&nbsp;                dirs[i] = other.floorID();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        drawBlended(tile, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void drawBlended(Tile tile, boolean checkId){
+<b class="nc">&nbsp;        blenders.sort(a -&gt; a.id);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Floor block : blenders){</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 8; i++){</b>
+<b class="nc">&nbsp;                Point2 point = Geometry.d8[i];</b>
+<b class="nc">&nbsp;                Tile other = tile.nearby(point);</b>
+<b class="nc">&nbsp;                if(other != null &amp;&amp; other.floor() == block &amp;&amp; (!checkId || dirs[i] == block.id)){</b>
+<b class="nc">&nbsp;                    TextureRegion region = block.edge(tile.x, tile.y, 1 - point.x, 1 - point.y);</b>
+<b class="nc">&nbsp;                    Draw.rect(region, tile.worldx(), tile.worldy());</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //&#39;new&#39; style of edges with shadows instead of colors, not used currently
+&nbsp;    protected void drawEdgesFlat(Tile tile, boolean sameLayer){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            Tile other = tile.nearby(i);</b>
+<b class="nc">&nbsp;            if(other != null &amp;&amp; doEdge(tile, other, other.floor())){</b>
+<b class="nc">&nbsp;                Color color = other.floor().mapColor;</b>
+<b class="nc">&nbsp;                Draw.color(color.r, color.g, color.b, 1f);</b>
+<b class="nc">&nbsp;                Draw.rect(edgeRegion, tile.worldx(), tile.worldy(), i*90);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int realBlendId(Tile tile){
+<b class="nc">&nbsp;        if(tile.floor().isLiquid &amp;&amp; !tile.overlay().isAir() &amp;&amp; !(tile.overlay() instanceof OreBlock)){</b>
+<b class="nc">&nbsp;            return -((tile.overlay().blendId) | (tile.floor().blendId &lt;&lt; 15));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return blendId;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the edge array that should be used to draw at the specified tile position. */
+&nbsp;    protected TextureRegion[][] edges(int x, int y){
+<b class="nc">&nbsp;        return blendGroup.asFloor().edges;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected TextureRegion edge(int x, int y, int rx, int ry){
+<b class="nc">&nbsp;        return edges(x, y)[rx][2 - ry];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Deprecated
+&nbsp;    protected TextureRegion[][] edges(){
+<b class="nc">&nbsp;        return edges(0, 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether the edges from {@param other} should be drawn onto this tile **/
+&nbsp;    protected boolean doEdge(Tile tile, Tile otherTile, Floor other){
+<b class="nc">&nbsp;        return (other.realBlendId(otherTile) &gt; realBlendId(tile) || edges(tile.x, tile.y) == null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class UpdateRenderState{
+&nbsp;        public Tile tile;
+&nbsp;        public Floor floor;
+&nbsp;        public float data;
+&nbsp;
+<b class="nc">&nbsp;        public UpdateRenderState(Tile tile, Floor floor){</b>
+<b class="nc">&nbsp;            this.tile = tile;</b>
+<b class="nc">&nbsp;            this.floor = floor;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

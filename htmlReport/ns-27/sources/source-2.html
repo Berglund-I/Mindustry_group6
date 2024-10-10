@@ -1,0 +1,745 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ArcNetProvider</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.net</a>
+</div>
+
+<h1>Coverage Summary for Class: ArcNetProvider (mindustry.net)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ArcNetProvider</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/104)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ArcNetProvider$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ArcNetProvider$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/27)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ArcNetProvider$ArcConnection</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ArcNetProvider$ArcConnection$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ArcNetProvider$PacketSerializer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/77)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/49)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/250)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.net;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.net.*;
+&nbsp;import arc.net.FrameworkMessage.*;
+&nbsp;import arc.net.Server.*;
+&nbsp;import arc.net.dns.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.Log.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Net.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import net.jpountz.lz4.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.net.*;
+&nbsp;import java.nio.*;
+&nbsp;import java.nio.channels.*;
+&nbsp;import java.util.concurrent.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class ArcNetProvider implements NetProvider{</b>
+&nbsp;    final Client client;
+<b class="nc">&nbsp;    final Prov&lt;DatagramPacket&gt; packetSupplier = () -&gt; new DatagramPacket(new byte[512], 512);</b>
+&nbsp;
+&nbsp;    final Server server;
+<b class="nc">&nbsp;    final CopyOnWriteArrayList&lt;ArcConnection&gt; connections = new CopyOnWriteArrayList&lt;&gt;();</b>
+&nbsp;    Thread serverThread;
+&nbsp;
+<b class="nc">&nbsp;    private static final LZ4FastDecompressor decompressor = LZ4Factory.fastestInstance().fastDecompressor();</b>
+<b class="nc">&nbsp;    private static final LZ4Compressor compressor = LZ4Factory.fastestInstance().fastCompressor();</b>
+&nbsp;
+&nbsp;    private volatile int playerLimitCache, packetSpamLimit;
+&nbsp;
+<b class="nc">&nbsp;    public ArcNetProvider(){</b>
+<b class="nc">&nbsp;        ArcNet.errorHandler = e -&gt; {</b>
+<b class="nc">&nbsp;            if(Log.level == LogLevel.debug){</b>
+<b class="nc">&nbsp;                Log.debug(Strings.getStackTrace(e));</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;
+&nbsp;        //fetch this in the main thread to prevent threading issues
+<b class="nc">&nbsp;        Events.run(Trigger.update, () -&gt; {</b>
+<b class="nc">&nbsp;            playerLimitCache = netServer.admins.getPlayerLimit();</b>
+<b class="nc">&nbsp;            packetSpamLimit = Config.packetSpamLimit.num();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        client = new Client(8192, 16384, new PacketSerializer());</b>
+<b class="nc">&nbsp;        client.setDiscoveryPacket(packetSupplier);</b>
+<b class="nc">&nbsp;        client.addListener(new NetListener(){</b>
+&nbsp;            @Override
+&nbsp;            public void connected(Connection connection){
+<b class="nc">&nbsp;                Connect c = new Connect();</b>
+<b class="nc">&nbsp;                c.addressTCP = connection.getRemoteAddressTCP().getAddress().getHostAddress();</b>
+<b class="nc">&nbsp;                if(connection.getRemoteAddressTCP() != null) c.addressTCP = connection.getRemoteAddressTCP().toString();</b>
+&nbsp;
+<b class="nc">&nbsp;                Core.app.post(() -&gt; net.handleClientReceived(c));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void disconnected(Connection connection, DcReason reason){
+<b class="nc">&nbsp;                if(connection.getLastProtocolError() != null){</b>
+<b class="nc">&nbsp;                    netClient.setQuiet();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Disconnect c = new Disconnect();</b>
+<b class="nc">&nbsp;                c.reason = reason.toString();</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; net.handleClientReceived(c));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void received(Connection connection, Object object){
+<b class="nc">&nbsp;                if(!(object instanceof Packet p)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        net.handleClientReceived(p);</b>
+<b class="nc">&nbsp;                    }catch(Throwable e){</b>
+<b class="nc">&nbsp;                        net.handleException(e);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                });
+&nbsp;
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        server = new Server(32768, 16384, new PacketSerializer());</b>
+<b class="nc">&nbsp;        server.setMulticast(multicastGroup, multicastPort);</b>
+<b class="nc">&nbsp;        server.setDiscoveryHandler((address, handler) -&gt; {</b>
+<b class="nc">&nbsp;            ByteBuffer buffer = NetworkIO.writeServerData();</b>
+<b class="nc">&nbsp;            int length = buffer.position();</b>
+<b class="nc">&nbsp;            buffer.position(0);</b>
+<b class="nc">&nbsp;            buffer.limit(length);</b>
+<b class="nc">&nbsp;            handler.respond(buffer);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        server.addListener(new NetListener(){</b>
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void connected(Connection connection){
+<b class="nc">&nbsp;                String ip = connection.getRemoteAddressTCP().getAddress().getHostAddress();</b>
+&nbsp;
+&nbsp;                //kill connections above the limit to prevent spam
+<b class="nc">&nbsp;                if((playerLimitCache &gt; 0 &amp;&amp; server.getConnections().length &gt; playerLimitCache) || netServer.admins.isDosBlacklisted(ip)){</b>
+<b class="nc">&nbsp;                    connection.close(DcReason.closed);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                ArcConnection kn = new ArcConnection(ip, connection);</b>
+&nbsp;
+<b class="nc">&nbsp;                Connect c = new Connect();</b>
+<b class="nc">&nbsp;                c.addressTCP = ip;</b>
+&nbsp;
+<b class="nc">&nbsp;                Log.debug(&quot;&amp;bReceived connection: @&quot;, c.addressTCP);</b>
+&nbsp;
+<b class="nc">&nbsp;                connection.setArbitraryData(kn);</b>
+<b class="nc">&nbsp;                connections.add(kn);</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; net.handleServerReceived(kn, c));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void disconnected(Connection connection, DcReason reason){
+<b class="nc">&nbsp;                if(!(connection.getArbitraryData() instanceof ArcConnection k)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                Disconnect c = new Disconnect();</b>
+<b class="nc">&nbsp;                c.reason = reason.toString();</b>
+&nbsp;
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                    net.handleServerReceived(k, c);</b>
+<b class="nc">&nbsp;                    connections.remove(k);</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void received(Connection connection, Object object){
+<b class="nc">&nbsp;                if(!(connection.getArbitraryData() instanceof ArcConnection k) || !(object instanceof Packet pack)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(packetSpamLimit &gt; 0 &amp;&amp; !k.packetRate.allow(3000, packetSpamLimit)){</b>
+<b class="nc">&nbsp;                    Log.warn(&quot;Blacklisting IP &#39;@&#39; as potential DOS attack - packet spam.&quot;, k.address);</b>
+<b class="nc">&nbsp;                    connection.close(DcReason.closed);</b>
+<b class="nc">&nbsp;                    netServer.admins.blacklistDos(k.address);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        net.handleServerReceived(k, pack);</b>
+<b class="nc">&nbsp;                    }catch(Throwable e){</b>
+<b class="nc">&nbsp;                        Log.err(e);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setConnectFilter(Server.ServerConnectFilter connectFilter){
+<b class="nc">&nbsp;        server.setConnectFilter(connectFilter);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public @Nullable ServerConnectFilter getConnectFilter(){
+<b class="nc">&nbsp;        return server.getConnectFilter();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isLocal(InetAddress addr){
+<b class="nc">&nbsp;        if(addr.isAnyLocalAddress() || addr.isLoopbackAddress()) return true;</b>
+&nbsp;
+&nbsp;        try{
+<b class="nc">&nbsp;            return NetworkInterface.getByInetAddress(addr) != null;</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void connectClient(String ip, int port, Runnable success){
+<b class="nc">&nbsp;        Threads.daemon(() -&gt; {</b>
+&nbsp;            try{
+&nbsp;                //just in case
+<b class="nc">&nbsp;                client.stop();</b>
+&nbsp;
+<b class="nc">&nbsp;                Threads.daemon(&quot;Net Client&quot;, () -&gt; {</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        client.run();</b>
+<b class="nc">&nbsp;                    }catch(Exception e){</b>
+<b class="nc">&nbsp;                        if(!(e instanceof ClosedSelectorException)) net.handleException(e);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                client.connect(5000, ip, port, port);</b>
+<b class="nc">&nbsp;                success.run();</b>
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                if(netClient.isConnecting()){</b>
+<b class="nc">&nbsp;                    net.handleException(e);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void disconnectClient(){
+<b class="nc">&nbsp;        client.close();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void sendClient(Object object, boolean reliable){
+&nbsp;        try{
+<b class="nc">&nbsp;            if(reliable){</b>
+<b class="nc">&nbsp;                client.sendTCP(object);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                client.sendUDP(object);</b>
+&nbsp;            }
+&nbsp;            //sending things can cause an under/overflow, catch it and disconnect instead of crashing
+<b class="nc">&nbsp;        }catch(BufferOverflowException | BufferUnderflowException e){</b>
+<b class="nc">&nbsp;            net.showError(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void pingHost(String address, int port, Cons&lt;Host&gt; valid, Cons&lt;Exception&gt; invalid){
+&nbsp;        try{
+<b class="nc">&nbsp;            var host = pingHostImpl(address, port);</b>
+<b class="nc">&nbsp;            Core.app.post(() -&gt; valid.get(host));</b>
+<b class="nc">&nbsp;        }catch(IOException e){</b>
+<b class="nc">&nbsp;            if(port == Vars.port){</b>
+<b class="nc">&nbsp;                for(var record : ArcDns.getSrvRecords(&quot;_mindustry._tcp.&quot; + address)){</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        var host = pingHostImpl(record.target, record.port);</b>
+<b class="nc">&nbsp;                        Core.app.post(() -&gt; valid.get(host));</b>
+&nbsp;                        return;
+<b class="nc">&nbsp;                    }catch(IOException ignored){</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Core.app.post(() -&gt; invalid.get(e));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Host pingHostImpl(String address, int port) throws IOException{
+<b class="nc">&nbsp;        try(DatagramSocket socket = new DatagramSocket()){</b>
+<b class="nc">&nbsp;            long time = Time.millis();</b>
+&nbsp;
+<b class="nc">&nbsp;            socket.send(new DatagramPacket(new byte[]{-2, 1}, 2, InetAddress.getByName(address), port));</b>
+<b class="nc">&nbsp;            socket.setSoTimeout(2000);</b>
+&nbsp;
+<b class="nc">&nbsp;            DatagramPacket packet = packetSupplier.get();</b>
+<b class="nc">&nbsp;            socket.receive(packet);</b>
+&nbsp;
+<b class="nc">&nbsp;            ByteBuffer buffer = ByteBuffer.wrap(packet.getData());</b>
+<b class="nc">&nbsp;            Host host = NetworkIO.readServerData((int)Time.timeSinceMillis(time), packet.getAddress().getHostAddress(), buffer);</b>
+<b class="nc">&nbsp;            host.port = port;</b>
+<b class="nc">&nbsp;            return host;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void discoverServers(Cons&lt;Host&gt; callback, Runnable done){
+<b class="nc">&nbsp;        Seq&lt;InetAddress&gt; foundAddresses = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        long time = Time.millis();</b>
+&nbsp;
+<b class="nc">&nbsp;        client.discoverHosts(port, multicastGroup, multicastPort, 3000, packet -&gt; {</b>
+<b class="nc">&nbsp;            synchronized(foundAddresses){</b>
+&nbsp;                try{
+<b class="nc">&nbsp;                    if(foundAddresses.contains(address -&gt; address.equals(packet.getAddress()) || (isLocal(address) &amp;&amp; isLocal(packet.getAddress())))){</b>
+<b class="nc">&nbsp;                        return;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    ByteBuffer buffer = ByteBuffer.wrap(packet.getData());</b>
+<b class="nc">&nbsp;                    Host host = NetworkIO.readServerData((int)Time.timeSinceMillis(time), packet.getAddress().getHostAddress(), buffer);</b>
+<b class="nc">&nbsp;                    Core.app.post(() -&gt; callback.get(host));</b>
+<b class="nc">&nbsp;                    foundAddresses.add(packet.getAddress());</b>
+<b class="nc">&nbsp;                }catch(Exception e){</b>
+&nbsp;                    //don&#39;t crash when there&#39;s an error pinging a server or parsing data
+<b class="nc">&nbsp;                    e.printStackTrace();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }, () -&gt; Core.app.post(done));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+<b class="nc">&nbsp;        disconnectClient();</b>
+<b class="nc">&nbsp;        closeServer();</b>
+&nbsp;        try{
+<b class="nc">&nbsp;            client.dispose();</b>
+<b class="nc">&nbsp;        }catch(IOException ignored){</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Iterable&lt;ArcConnection&gt; getConnections(){
+<b class="nc">&nbsp;        return connections;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void hostServer(int port) throws IOException{
+<b class="nc">&nbsp;        connections.clear();</b>
+<b class="nc">&nbsp;        server.bind(port, port);</b>
+&nbsp;
+<b class="nc">&nbsp;        serverThread = new Thread(() -&gt; {</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                server.run();</b>
+<b class="nc">&nbsp;            }catch(Throwable e){</b>
+<b class="nc">&nbsp;                if(!(e instanceof ClosedSelectorException)) Threads.throwAppException(e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }, &quot;Net Server&quot;);
+<b class="nc">&nbsp;        serverThread.setDaemon(true);</b>
+<b class="nc">&nbsp;        serverThread.start();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void closeServer(){
+<b class="nc">&nbsp;        connections.clear();</b>
+<b class="nc">&nbsp;        mainExecutor.submit(server::stop);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    class ArcConnection extends NetConnection{
+&nbsp;        public final Connection connection;
+&nbsp;
+<b class="nc">&nbsp;        public ArcConnection(String address, Connection connection){</b>
+<b class="nc">&nbsp;            super(address);</b>
+<b class="nc">&nbsp;            this.connection = connection;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean isConnected(){
+<b class="nc">&nbsp;            return connection.isConnected();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void sendStream(Streamable stream){
+<b class="nc">&nbsp;            connection.addListener(new InputStreamSender(stream.stream, 1024){</b>
+&nbsp;                int id;
+&nbsp;
+&nbsp;                @Override
+&nbsp;                protected void start(){
+&nbsp;                    //send an object so the receiving side knows how to handle the following chunks
+<b class="nc">&nbsp;                    StreamBegin begin = new StreamBegin();</b>
+<b class="nc">&nbsp;                    begin.total = stream.stream.available();</b>
+<b class="nc">&nbsp;                    begin.type = Net.getPacketId(stream);</b>
+<b class="nc">&nbsp;                    connection.sendTCP(begin);</b>
+<b class="nc">&nbsp;                    id = begin.id;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                @Override
+&nbsp;                protected Object next(byte[] bytes){
+<b class="nc">&nbsp;                    StreamChunk chunk = new StreamChunk();</b>
+<b class="nc">&nbsp;                    chunk.id = id;</b>
+<b class="nc">&nbsp;                    chunk.data = bytes;</b>
+<b class="nc">&nbsp;                    return chunk; //wrap the byte[] with an object so the receiving side knows how to handle it.</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void send(Object object, boolean reliable){
+&nbsp;            try{
+<b class="nc">&nbsp;                if(reliable){</b>
+<b class="nc">&nbsp;                    connection.sendTCP(object);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    connection.sendUDP(object);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                Log.err(e);</b>
+<b class="nc">&nbsp;                Log.info(&quot;Error sending packet. Disconnecting invalid client!&quot;);</b>
+<b class="nc">&nbsp;                connection.close(DcReason.error);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(connection.getArbitraryData() instanceof ArcConnection k){</b>
+<b class="nc">&nbsp;                    connections.remove(k);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void close(){
+<b class="nc">&nbsp;            if(connection.isConnected()) connection.close(DcReason.closed);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static class PacketSerializer implements NetSerializer{</b>
+&nbsp;        //for debugging total read/write speeds
+&nbsp;        private static final boolean debug = false;
+&nbsp;
+<b class="nc">&nbsp;        ThreadLocal&lt;ByteBuffer&gt; decompressBuffer = Threads.local(() -&gt; ByteBuffer.allocate(32768));</b>
+<b class="nc">&nbsp;        ThreadLocal&lt;Reads&gt; reads = Threads.local(() -&gt; new Reads(new ByteBufferInput(decompressBuffer.get())));</b>
+<b class="nc">&nbsp;        ThreadLocal&lt;Writes&gt; writes = Threads.local(() -&gt; new Writes(new ByteBufferOutput(decompressBuffer.get())));</b>
+&nbsp;
+&nbsp;        //for debugging network write counts
+<b class="nc">&nbsp;        static WindowedMean upload = new WindowedMean(5), download = new WindowedMean(5);</b>
+&nbsp;        static long lastUpload, lastDownload, uploadAccum, downloadAccum;
+&nbsp;        static int lastPos;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Object read(ByteBuffer byteBuffer){
+&nbsp;            if(debug){
+&nbsp;                if(Time.timeSinceMillis(lastDownload) &gt;= 1000){
+&nbsp;                    lastDownload = Time.millis();
+&nbsp;                    download.add(downloadAccum);
+&nbsp;                    downloadAccum = 0;
+&nbsp;                    Log.info(&quot;Download: @ b/s&quot;, download.mean());
+&nbsp;                }
+&nbsp;                downloadAccum += byteBuffer.remaining();
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            byte id = byteBuffer.get();</b>
+<b class="nc">&nbsp;            if(id == -2){</b>
+<b class="nc">&nbsp;                return readFramework(byteBuffer);</b>
+&nbsp;            }else{
+&nbsp;                //read length int, followed by compressed lz4 data
+<b class="nc">&nbsp;                Packet packet = Net.newPacket(id);</b>
+<b class="nc">&nbsp;                var buffer = decompressBuffer.get();</b>
+<b class="nc">&nbsp;                int length = byteBuffer.getShort() &amp; 0xffff;</b>
+<b class="nc">&nbsp;                byte compression = byteBuffer.get();</b>
+&nbsp;
+&nbsp;                //no compression, copy over buffer
+<b class="nc">&nbsp;                if(compression == 0){</b>
+<b class="nc">&nbsp;                    buffer.position(0).limit(length);</b>
+<b class="nc">&nbsp;                    buffer.put(byteBuffer.array(), byteBuffer.position(), length);</b>
+<b class="nc">&nbsp;                    buffer.position(0);</b>
+<b class="nc">&nbsp;                    packet.read(reads.get(), length);</b>
+&nbsp;                    //move read packets forward
+<b class="nc">&nbsp;                    byteBuffer.position(byteBuffer.position() + buffer.position());</b>
+&nbsp;                }else{
+&nbsp;                    //decompress otherwise
+<b class="nc">&nbsp;                    int read = decompressor.decompress(byteBuffer, byteBuffer.position(), buffer, 0, length);</b>
+&nbsp;
+<b class="nc">&nbsp;                    buffer.position(0);</b>
+<b class="nc">&nbsp;                    buffer.limit(length);</b>
+<b class="nc">&nbsp;                    packet.read(reads.get(), length);</b>
+&nbsp;                    //move buffer forward based on bytes read by decompressor
+<b class="nc">&nbsp;                    byteBuffer.position(byteBuffer.position() + read);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return packet;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(ByteBuffer byteBuffer, Object o){
+&nbsp;            if(debug){
+&nbsp;                lastPos = byteBuffer.position();
+&nbsp;            }
+&nbsp;
+&nbsp;            //write raw buffer
+<b class="nc">&nbsp;            if(o instanceof ByteBuffer raw){</b>
+<b class="nc">&nbsp;                byteBuffer.put(raw);</b>
+<b class="nc">&nbsp;            }else if(o instanceof FrameworkMessage msg){</b>
+<b class="nc">&nbsp;                byteBuffer.put((byte)-2); //code for framework message</b>
+<b class="nc">&nbsp;                writeFramework(byteBuffer, msg);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                if(!(o instanceof Packet pack)) throw new RuntimeException(&quot;All sent objects must extend Packet! Class: &quot; + o.getClass());</b>
+<b class="nc">&nbsp;                byte id = Net.getPacketId(pack);</b>
+<b class="nc">&nbsp;                byteBuffer.put(id);</b>
+&nbsp;
+<b class="nc">&nbsp;                var temp = decompressBuffer.get();</b>
+<b class="nc">&nbsp;                temp.position(0);</b>
+<b class="nc">&nbsp;                temp.limit(temp.capacity());</b>
+<b class="nc">&nbsp;                pack.write(writes.get());</b>
+&nbsp;
+<b class="nc">&nbsp;                short length = (short)temp.position();</b>
+&nbsp;
+&nbsp;                //write length, uncompressed
+<b class="nc">&nbsp;                byteBuffer.putShort(length);</b>
+&nbsp;
+&nbsp;                //don&#39;t bother with small packets
+<b class="nc">&nbsp;                if(length &lt; 36 || pack instanceof StreamChunk){</b>
+&nbsp;                    //write direct contents...
+<b class="nc">&nbsp;                    byteBuffer.put((byte)0); //0 = no compression</b>
+<b class="nc">&nbsp;                    byteBuffer.put(temp.array(), 0, length);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    byteBuffer.put((byte)1); //1 = compression</b>
+&nbsp;                    //write compressed data; this does not modify position!
+<b class="nc">&nbsp;                    int written = compressor.compress(temp, 0, temp.position(), byteBuffer, byteBuffer.position(), byteBuffer.remaining());</b>
+&nbsp;                    //skip to indicate the written, compressed data
+<b class="nc">&nbsp;                    byteBuffer.position(byteBuffer.position() + written);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if(debug){
+&nbsp;                if(Time.timeSinceMillis(lastUpload) &gt;= 1000){
+&nbsp;                    lastUpload = Time.millis();
+&nbsp;                    upload.add(uploadAccum);
+&nbsp;                    uploadAccum = 0;
+&nbsp;                    Log.info(&quot;Upload: @ b/s&quot;, upload.mean());
+&nbsp;                }
+&nbsp;                uploadAccum += byteBuffer.position() - lastPos;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void writeFramework(ByteBuffer buffer, FrameworkMessage message){
+<b class="nc">&nbsp;            if(message instanceof Ping p){</b>
+<b class="nc">&nbsp;                buffer.put((byte)0);</b>
+<b class="nc">&nbsp;                buffer.putInt(p.id);</b>
+<b class="nc">&nbsp;                buffer.put(p.isReply ? 1 : (byte)0);</b>
+<b class="nc">&nbsp;            }else if(message instanceof DiscoverHost){</b>
+<b class="nc">&nbsp;                buffer.put((byte)1);</b>
+<b class="nc">&nbsp;            }else if(message instanceof KeepAlive){</b>
+<b class="nc">&nbsp;                buffer.put((byte)2);</b>
+<b class="nc">&nbsp;            }else if(message instanceof RegisterUDP p){</b>
+<b class="nc">&nbsp;                buffer.put((byte)3);</b>
+<b class="nc">&nbsp;                buffer.putInt(p.connectionID);</b>
+<b class="nc">&nbsp;            }else if(message instanceof RegisterTCP p){</b>
+<b class="nc">&nbsp;                buffer.put((byte)4);</b>
+<b class="nc">&nbsp;                buffer.putInt(p.connectionID);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public FrameworkMessage readFramework(ByteBuffer buffer){
+<b class="nc">&nbsp;            byte id = buffer.get();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(id == 0){</b>
+<b class="nc">&nbsp;                Ping p = new Ping();</b>
+<b class="nc">&nbsp;                p.id = buffer.getInt();</b>
+<b class="nc">&nbsp;                p.isReply = buffer.get() == 1;</b>
+<b class="nc">&nbsp;                return p;</b>
+<b class="nc">&nbsp;            }else if(id == 1){</b>
+<b class="nc">&nbsp;                return FrameworkMessage.discoverHost;</b>
+<b class="nc">&nbsp;            }else if(id == 2){</b>
+<b class="nc">&nbsp;                return FrameworkMessage.keepAlive;</b>
+<b class="nc">&nbsp;            }else if(id == 3){</b>
+<b class="nc">&nbsp;                RegisterUDP p = new RegisterUDP();</b>
+<b class="nc">&nbsp;                p.connectionID = buffer.getInt();</b>
+<b class="nc">&nbsp;                return p;</b>
+<b class="nc">&nbsp;            }else if(id == 4){</b>
+<b class="nc">&nbsp;                RegisterTCP p = new RegisterTCP();</b>
+<b class="nc">&nbsp;                p.connectionID = buffer.getInt();</b>
+<b class="nc">&nbsp;                return p;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;Unknown framework message!&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

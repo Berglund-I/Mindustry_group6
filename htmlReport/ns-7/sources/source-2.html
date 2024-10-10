@@ -1,0 +1,209 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LogicStatementProcessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.misc</a>
+</div>
+
+<h1>Coverage Summary for Class: LogicStatementProcessor (mindustry.annotations.misc)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LogicStatementProcessor</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/60)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.misc;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.struct.*;
+&nbsp;import com.squareup.javapoet.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.annotations.*;
+&nbsp;import mindustry.annotations.util.*;
+&nbsp;
+&nbsp;import javax.annotation.processing.*;
+&nbsp;import javax.lang.model.element.*;
+&nbsp;
+&nbsp;@SupportedAnnotationTypes(&quot;mindustry.annotations.Annotations.RegisterStatement&quot;)
+<b class="nc">&nbsp;public class LogicStatementProcessor extends BaseProcessor{</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void process(RoundEnvironment env) throws Exception{
+<b class="nc">&nbsp;        TypeSpec.Builder type = TypeSpec.classBuilder(&quot;LogicIO&quot;)</b>
+<b class="nc">&nbsp;            .addModifiers(Modifier.PUBLIC);</b>
+&nbsp;
+<b class="nc">&nbsp;        MethodSpec.Builder writer = MethodSpec.methodBuilder(&quot;write&quot;)</b>
+<b class="nc">&nbsp;            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)</b>
+<b class="nc">&nbsp;            .addParameter(Object.class, &quot;obj&quot;)</b>
+<b class="nc">&nbsp;            .addParameter(StringBuilder.class, &quot;out&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        MethodSpec.Builder reader = MethodSpec.methodBuilder(&quot;read&quot;)</b>
+<b class="nc">&nbsp;            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)</b>
+<b class="nc">&nbsp;            .returns(tname(&quot;mindustry.logic.LStatement&quot;))</b>
+<b class="nc">&nbsp;            .addParameter(String[].class, &quot;tokens&quot;)</b>
+<b class="nc">&nbsp;            .addParameter(int.class, &quot;length&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Stype&gt; types = types(RegisterStatement.class);</b>
+&nbsp;
+<b class="nc">&nbsp;        type.addField(FieldSpec.builder(</b>
+<b class="nc">&nbsp;            ParameterizedTypeName.get(</b>
+<b class="nc">&nbsp;            ClassName.get(Seq.class),</b>
+<b class="nc">&nbsp;            ParameterizedTypeName.get(ClassName.get(Prov.class),</b>
+<b class="nc">&nbsp;                tname(&quot;mindustry.logic.LStatement&quot;))), &quot;allStatements&quot;, Modifier.PUBLIC, Modifier.STATIC)</b>
+<b class="nc">&nbsp;            .initializer(&quot;Seq.with(&quot; + types.toString(&quot;, &quot;, t -&gt; &quot;&quot; + t.toString() + &quot;::new&quot;) + &quot;)&quot;).build());</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean beganWrite = false, beganRead = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Stype c : types){</b>
+<b class="nc">&nbsp;            String name = c.annotation(RegisterStatement.class).value();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(beganWrite){</b>
+<b class="nc">&nbsp;                writer.nextControlFlow(&quot;else if(obj.getClass() == $T.class)&quot;, c.mirror());</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                writer.beginControlFlow(&quot;if(obj.getClass() == $T.class)&quot;, c.mirror());</b>
+<b class="nc">&nbsp;                beganWrite = true;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //write the name &amp; individual fields
+<b class="nc">&nbsp;            writer.addStatement(&quot;out.append($S)&quot;, name);</b>
+&nbsp;
+<b class="nc">&nbsp;            Seq&lt;Svar&gt; fields = c.fields();</b>
+<b class="nc">&nbsp;            fields.addAll(c.superclass().fields());</b>
+&nbsp;
+<b class="nc">&nbsp;            String readSt = &quot;if(tokens[0].equals($S))&quot;;</b>
+<b class="nc">&nbsp;            if(beganRead){</b>
+<b class="nc">&nbsp;                reader.nextControlFlow(&quot;else &quot; + readSt, name);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                reader.beginControlFlow(readSt, name);</b>
+<b class="nc">&nbsp;                beganRead = true;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            reader.addStatement(&quot;$T result = new $T()&quot;, c.mirror(), c.mirror());</b>
+&nbsp;
+<b class="nc">&nbsp;            int index = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Svar field : fields){</b>
+<b class="nc">&nbsp;                if(field.isAny(Modifier.TRANSIENT, Modifier.STATIC)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                writer.addStatement(&quot;out.append(\&quot; \&quot;)&quot;);</b>
+<b class="nc">&nbsp;                writer.addStatement(&quot;out.append((($T)obj).$L$L)&quot;, c.mirror(), field.name(),</b>
+<b class="nc">&nbsp;                    Seq.with(typeu.directSupertypes(field.mirror())).contains(t -&gt; t.toString().contains(&quot;java.lang.Enum&quot;)) ? &quot;.name()&quot; :</b>
+<b class="nc">&nbsp;                    &quot;&quot;);</b>
+&nbsp;
+&nbsp;                //reading primitives, strings and enums is supported; nothing else is
+<b class="nc">&nbsp;                reader.addStatement(&quot;if(length &gt; $L) result.$L = $L(tokens[$L])&quot;,</b>
+<b class="nc">&nbsp;                index + 1,</b>
+<b class="nc">&nbsp;                field.name(),</b>
+<b class="nc">&nbsp;                field.mirror().toString().equals(&quot;java.lang.String&quot;) ?</b>
+<b class="nc">&nbsp;                &quot;&quot; : (field.tname().isPrimitive() ? field.tname().box().toString() :</b>
+<b class="nc">&nbsp;                field.mirror().toString()) + &quot;.valueOf&quot;, //if it&#39;s not a string, it must have a valueOf method</b>
+<b class="nc">&nbsp;                index + 1</b>
+&nbsp;                );
+&nbsp;
+<b class="nc">&nbsp;                index ++;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            reader.addStatement(&quot;result.afterRead()&quot;);</b>
+<b class="nc">&nbsp;            reader.addStatement(&quot;return result&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        reader.endControlFlow();</b>
+<b class="nc">&nbsp;        writer.endControlFlow();</b>
+&nbsp;
+<b class="nc">&nbsp;        reader.addStatement(&quot;return null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        type.addMethod(writer.build());</b>
+<b class="nc">&nbsp;        type.addMethod(reader.build());</b>
+&nbsp;
+<b class="nc">&nbsp;        write(type);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

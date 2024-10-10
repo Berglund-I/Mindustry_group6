@@ -1,0 +1,378 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PhysicsProcess</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.async</a>
+</div>
+
+<h1>Coverage Summary for Class: PhysicsProcess (mindustry.async)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PhysicsProcess</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (3/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.8%
+  </span>
+  <span class="absValue">
+    (8/45)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PhysicsProcess$PhysicRef</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PhysicsProcess$PhysicsWorld</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    19.5%
+  </span>
+  <span class="absValue">
+    (8/41)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PhysicsProcess$PhysicsWorld$PhysicsBody</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (4/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.2%
+  </span>
+  <span class="absValue">
+    (16/93)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.async;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.async.PhysicsProcess.PhysicsWorld.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+<b class="fc">&nbsp;public class PhysicsProcess implements AsyncProcess{</b>
+&nbsp;    public static final int
+&nbsp;    layers = 3,
+&nbsp;    layerGround = 0,
+&nbsp;    layerLegs = 1,
+&nbsp;    layerFlying = 2;
+&nbsp;
+&nbsp;    private PhysicsWorld physics;
+<b class="fc">&nbsp;    private Seq&lt;PhysicRef&gt; refs = new Seq&lt;&gt;(false);</b>
+&nbsp;    //currently only enabled for units
+<b class="fc">&nbsp;    private EntityGroup&lt;Unit&gt; group = Groups.unit;</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void begin(){
+<b class="nc">&nbsp;        if(physics == null) return;</b>
+<b class="nc">&nbsp;        boolean local = !Vars.net.client();</b>
+&nbsp;
+&nbsp;        //remove stale entities
+<b class="nc">&nbsp;        refs.removeAll(ref -&gt; {</b>
+<b class="nc">&nbsp;            if(!ref.entity.isAdded()){</b>
+<b class="nc">&nbsp;                physics.remove(ref.body);</b>
+<b class="nc">&nbsp;                ref.entity.physref(null);</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        });
+&nbsp;
+&nbsp;        //find Units without bodies and assign them
+<b class="nc">&nbsp;        for(Unit entity : group){</b>
+<b class="nc">&nbsp;            if(entity == null || entity.type == null || !entity.type.physics) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(entity.physref == null){</b>
+<b class="nc">&nbsp;                PhysicsBody body = new PhysicsBody();</b>
+<b class="nc">&nbsp;                body.x = entity.x;</b>
+<b class="nc">&nbsp;                body.y = entity.y;</b>
+<b class="nc">&nbsp;                body.mass = entity.mass();</b>
+<b class="nc">&nbsp;                body.radius = entity.hitSize / 2f;</b>
+&nbsp;
+<b class="nc">&nbsp;                PhysicRef ref = new PhysicRef(entity, body);</b>
+<b class="nc">&nbsp;                refs.add(ref);</b>
+&nbsp;
+<b class="nc">&nbsp;                entity.physref = ref;</b>
+&nbsp;
+<b class="nc">&nbsp;                physics.add(body);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //save last position
+<b class="nc">&nbsp;            PhysicRef ref = entity.physref;</b>
+&nbsp;
+<b class="nc">&nbsp;            ref.body.layer = entity.collisionLayer();</b>
+<b class="nc">&nbsp;            ref.x = entity.x;</b>
+<b class="nc">&nbsp;            ref.y = entity.y;</b>
+<b class="nc">&nbsp;            ref.body.local = local || entity.isLocal();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void process(){
+<b class="nc">&nbsp;        if(physics == null) return;</b>
+&nbsp;
+&nbsp;        //get last position vectors before step
+<b class="nc">&nbsp;        for(PhysicRef ref : refs){</b>
+&nbsp;            //force set target position
+<b class="nc">&nbsp;            ref.body.x = ref.x;</b>
+<b class="nc">&nbsp;            ref.body.y = ref.y;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        physics.update();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void end(){
+<b class="nc">&nbsp;        if(physics == null) return;</b>
+&nbsp;
+&nbsp;        //move entities
+<b class="nc">&nbsp;        for(PhysicRef ref : refs){</b>
+<b class="nc">&nbsp;            Physicsc entity = ref.entity;</b>
+&nbsp;
+&nbsp;            //move by delta
+<b class="nc">&nbsp;            entity.move(ref.body.x - ref.x, ref.body.y - ref.y);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void reset(){
+<b class="fc">&nbsp;        if(physics != null){</b>
+<b class="fc">&nbsp;            refs.clear();</b>
+<b class="fc">&nbsp;            physics = null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        reset();</b>
+&nbsp;
+<b class="fc">&nbsp;        physics = new PhysicsWorld(Vars.world.getQuadBounds(new Rect()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class PhysicRef{
+&nbsp;        public Physicsc entity;
+&nbsp;        public PhysicsBody body;
+&nbsp;        public float x, y;
+&nbsp;
+<b class="nc">&nbsp;        public PhysicRef(Physicsc entity, PhysicsBody body){</b>
+<b class="nc">&nbsp;            this.entity = entity;</b>
+<b class="nc">&nbsp;            this.body = body;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //world for simulating physics in a different thread
+&nbsp;    public static class PhysicsWorld{
+&nbsp;        //how much to soften movement by
+&nbsp;        private static final float scl = 1.25f;
+&nbsp;
+<b class="fc">&nbsp;        private final QuadTree&lt;PhysicsBody&gt;[] trees = new QuadTree[layers];</b>
+<b class="fc">&nbsp;        private final Seq&lt;PhysicsBody&gt; bodies = new Seq&lt;&gt;(false, 16, PhysicsBody.class);</b>
+<b class="fc">&nbsp;        private final Seq&lt;PhysicsBody&gt; seq = new Seq&lt;&gt;(PhysicsBody.class);</b>
+<b class="fc">&nbsp;        private final Rect rect = new Rect();</b>
+<b class="fc">&nbsp;        private final Vec2 vec = new Vec2();</b>
+&nbsp;
+<b class="fc">&nbsp;        public PhysicsWorld(Rect bounds){</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; layers; i++){</b>
+<b class="fc">&nbsp;                trees[i] = new QuadTree&lt;&gt;(new Rect(bounds));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void add(PhysicsBody body){
+<b class="nc">&nbsp;            bodies.add(body);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void remove(PhysicsBody body){
+<b class="nc">&nbsp;            bodies.remove(body);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void update(){
+<b class="nc">&nbsp;            for(int i = 0; i &lt; layers; i++){</b>
+<b class="nc">&nbsp;                trees[i].clear();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            var bodyItems = bodies.items;</b>
+<b class="nc">&nbsp;            int bodySize = bodies.size;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; bodySize; i++){</b>
+<b class="nc">&nbsp;                PhysicsBody body = bodyItems[i];</b>
+<b class="nc">&nbsp;                body.collided = false;</b>
+<b class="nc">&nbsp;                trees[body.layer].insert(body);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; bodySize; i++){</b>
+<b class="nc">&nbsp;                PhysicsBody body = bodyItems[i];</b>
+&nbsp;
+&nbsp;                //for clients, the only body that collides is the local one; all other physics simulations are handled by the server.
+<b class="nc">&nbsp;                if(!body.local) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                body.hitbox(rect);</b>
+&nbsp;
+<b class="nc">&nbsp;                seq.size = 0;</b>
+<b class="nc">&nbsp;                trees[body.layer].intersect(rect, seq);</b>
+<b class="nc">&nbsp;                int size = seq.size;</b>
+<b class="nc">&nbsp;                var items = seq.items;</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int j = 0; j &lt; size; j++){</b>
+<b class="nc">&nbsp;                    PhysicsBody other = items[j];</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(other == body || other.collided) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    float rs = body.radius + other.radius;</b>
+<b class="nc">&nbsp;                    float dst = Mathf.dst(body.x, body.y, other.x, other.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(dst &lt; rs){</b>
+<b class="nc">&nbsp;                        vec.set(body.x - other.x, body.y - other.y).setLength(rs - dst);</b>
+<b class="nc">&nbsp;                        float ms = body.mass + other.mass;</b>
+<b class="nc">&nbsp;                        float m1 = other.mass / ms, m2 = body.mass / ms;</b>
+&nbsp;
+&nbsp;                        //first body is always local due to guard check above
+<b class="nc">&nbsp;                        body.x += vec.x * m1 / scl;</b>
+<b class="nc">&nbsp;                        body.y += vec.y * m1 / scl;</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(other.local){</b>
+<b class="nc">&nbsp;                            other.x -= vec.x * m2 / scl;</b>
+<b class="nc">&nbsp;                            other.y -= vec.y * m2 / scl;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;                body.collided = true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public static class PhysicsBody implements QuadTreeObject{</b>
+&nbsp;            public float x, y, radius, mass;
+<b class="nc">&nbsp;            public int layer = 0;</b>
+<b class="nc">&nbsp;            public boolean collided = false, local = true;</b>
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void hitbox(Rect out){
+<b class="nc">&nbsp;                out.setCentered(x, y, radius * 2, radius * 2);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

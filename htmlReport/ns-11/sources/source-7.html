@@ -1,0 +1,228 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapInfoDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: MapInfoDialog (mindustry.editor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapInfoDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/73)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.maps.filters.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class MapInfoDialog extends BaseDialog{
+<b class="nc">&nbsp;    private WaveInfoDialog waveInfo  = new WaveInfoDialog();</b>
+<b class="nc">&nbsp;    private MapGenerateDialog generate = new MapGenerateDialog(false);</b>
+<b class="nc">&nbsp;    private CustomRulesDialog ruleInfo = new CustomRulesDialog();</b>
+<b class="nc">&nbsp;    private MapObjectivesDialog objectives = new MapObjectivesDialog();</b>
+<b class="nc">&nbsp;    private MapLocalesDialog locales = new MapLocalesDialog();</b>
+<b class="nc">&nbsp;    private MapProcessorsDialog processors = new MapProcessorsDialog();</b>
+&nbsp;
+&nbsp;    public MapInfoDialog(){
+<b class="nc">&nbsp;        super(&quot;@editor.mapinfo&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseButton();</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(this::setup);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setup(){
+<b class="nc">&nbsp;        cont.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectMap&lt;String, String&gt; tags = editor.tags;</b>
+&nbsp;        
+<b class="nc">&nbsp;        cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;            t.add(&quot;@editor.mapname&quot;).padRight(8).left();</b>
+<b class="nc">&nbsp;            t.defaults().padTop(15);</b>
+&nbsp;
+<b class="nc">&nbsp;            TextField name = t.field(tags.get(&quot;name&quot;, &quot;&quot;), text -&gt; {</b>
+<b class="nc">&nbsp;                tags.put(&quot;name&quot;, text);</b>
+<b class="nc">&nbsp;            }).size(400, 55f).maxTextLength(50).get();</b>
+<b class="nc">&nbsp;            name.setMessageText(&quot;@unknown&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            t.row();</b>
+<b class="nc">&nbsp;            t.add(&quot;@editor.description&quot;).padRight(8).left();</b>
+&nbsp;
+<b class="nc">&nbsp;            TextArea description = t.area(tags.get(&quot;description&quot;, &quot;&quot;), Styles.areaField, text -&gt; {</b>
+<b class="nc">&nbsp;                tags.put(&quot;description&quot;, text);</b>
+<b class="nc">&nbsp;            }).size(400f, 140f).maxTextLength(1000).get();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.row();</b>
+<b class="nc">&nbsp;            t.add(&quot;@editor.author&quot;).padRight(8).left();</b>
+&nbsp;
+<b class="nc">&nbsp;            TextField author = t.field(tags.get(&quot;author&quot;, &quot;&quot;), text -&gt; {</b>
+<b class="nc">&nbsp;                tags.put(&quot;author&quot;, text);</b>
+<b class="nc">&nbsp;            }).size(400, 55f).maxTextLength(50).get();</b>
+<b class="nc">&nbsp;            author.setMessageText(&quot;@unknown&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.table(Tex.button, r -&gt; {</b>
+<b class="nc">&nbsp;                r.defaults().width(230f).height(60f);</b>
+&nbsp;
+<b class="nc">&nbsp;                var style = Styles.flatt;</b>
+&nbsp;
+<b class="nc">&nbsp;                r.button(&quot;@editor.rules&quot;, Icon.list, style, () -&gt; {</b>
+<b class="nc">&nbsp;                    ruleInfo.show(Vars.state.rules, () -&gt; Vars.state.rules = new Rules());</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                }).marginLeft(10f);</b>
+&nbsp;
+<b class="nc">&nbsp;                r.button(&quot;@editor.waves&quot;, Icon.units, style, () -&gt; {</b>
+<b class="nc">&nbsp;                    waveInfo.show();</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                }).marginLeft(10f);</b>
+&nbsp;
+<b class="nc">&nbsp;                r.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                r.button(&quot;@editor.objectives&quot;, Icon.info, style, () -&gt; {</b>
+<b class="nc">&nbsp;                    objectives.show(state.rules.objectives.all, state.rules.objectives.all::set);</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                }).marginLeft(10f);</b>
+&nbsp;
+<b class="nc">&nbsp;                r.button(&quot;@editor.generation&quot;, Icon.terrain, style, () -&gt; {</b>
+&nbsp;                    //randomize so they&#39;re not all the same seed
+<b class="nc">&nbsp;                    var res = maps.readFilters(editor.tags.get(&quot;genfilters&quot;, &quot;&quot;));</b>
+<b class="nc">&nbsp;                    res.each(GenerateFilter::randomize);</b>
+&nbsp;
+<b class="nc">&nbsp;                    generate.show(res,</b>
+&nbsp;                    filters -&gt; {
+&nbsp;                        //reset seed to 0 so it is not written
+<b class="nc">&nbsp;                        filters.each(f -&gt; f.seed = 0);</b>
+<b class="nc">&nbsp;                        editor.tags.put(&quot;genfilters&quot;, JsonIO.write(filters));</b>
+&nbsp;                    });
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                }).marginLeft(10f);</b>
+&nbsp;
+<b class="nc">&nbsp;                r.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                r.button(&quot;@editor.locales&quot;, Icon.fileText, style, () -&gt; {</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        MapLocales res = JsonIO.read(MapLocales.class, editor.tags.get(&quot;locales&quot;, &quot;{}&quot;));</b>
+<b class="nc">&nbsp;                        locales.show(res);</b>
+<b class="nc">&nbsp;                    }catch(Throwable e){</b>
+<b class="nc">&nbsp;                        locales.show(new MapLocales());</b>
+<b class="nc">&nbsp;                        ui.showException(e);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                }).marginLeft(10f);</b>
+&nbsp;
+<b class="nc">&nbsp;                r.button(&quot;@editor.worldprocessors&quot;, Icon.logic, style, () -&gt; {</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                    processors.show();</b>
+<b class="nc">&nbsp;                }).marginLeft(10f);</b>
+<b class="nc">&nbsp;            }).colspan(2).center();</b>
+&nbsp;
+<b class="nc">&nbsp;            name.change();</b>
+<b class="nc">&nbsp;            description.change();</b>
+<b class="nc">&nbsp;            author.change();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.margin(16f);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

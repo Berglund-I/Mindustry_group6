@@ -1,0 +1,356 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Map</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.maps</a>
+</div>
+
+<h1>Coverage Summary for Class: Map (mindustry.maps)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Map</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (9/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    32.9%
+  </span>
+  <span class="absValue">
+    (25/76)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.maps;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.maps.filters.*;
+&nbsp;import mindustry.mod.Mods.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Map implements Comparable&lt;Map&gt;, Publishable{
+&nbsp;    /** Whether this is a custom map. */
+&nbsp;    public final boolean custom;
+&nbsp;    /** Metadata. Author description, display name, etc. */
+&nbsp;    public final StringMap tags;
+&nbsp;    /** Base file of this map. File can be named anything at all. */
+&nbsp;    public final Fi file;
+&nbsp;    /** Format version. */
+&nbsp;    public final int version;
+&nbsp;    /** Whether this map is managed, e.g. downloaded from the Steam workshop.*/
+&nbsp;    public boolean workshop;
+&nbsp;    /** Map width/height, shorts. */
+&nbsp;    public int width, height;
+&nbsp;    /** Preview texture. */
+&nbsp;    public Texture texture;
+&nbsp;    /** Build that this map was created in. -1 = unknown or custom build. */
+&nbsp;    public int build;
+&nbsp;    /** All teams present on this map.*/
+<b class="fc">&nbsp;    public IntSet teams = new IntSet();</b>
+&nbsp;    /** Number of enemy spawns on this map.*/
+<b class="fc">&nbsp;    public int spawns = 0;</b>
+&nbsp;    /** Associated mod. If null, no mod is associated. */
+&nbsp;    public @Nullable LoadedMod mod;
+&nbsp;
+<b class="fc">&nbsp;    public Map(Fi file, int width, int height, StringMap tags, boolean custom, int version, int build){</b>
+<b class="fc">&nbsp;        this.custom = custom;</b>
+<b class="fc">&nbsp;        this.tags = tags;</b>
+<b class="fc">&nbsp;        this.file = file;</b>
+<b class="fc">&nbsp;        this.width = width;</b>
+<b class="fc">&nbsp;        this.height = height;</b>
+<b class="fc">&nbsp;        this.version = version;</b>
+<b class="fc">&nbsp;        this.build = build;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map(Fi file, int width, int height, StringMap tags, boolean custom, int version){
+<b class="fc">&nbsp;        this(file, width, height, tags, custom, version, -1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map(Fi file, int width, int height, StringMap tags, boolean custom){
+<b class="fc">&nbsp;        this(file, width, height, tags, custom, -1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map(StringMap tags){
+<b class="fc">&nbsp;        this(Vars.customMapDirectory.child(tags.get(&quot;name&quot;, &quot;unknown&quot;)), 0, 0, tags, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getHightScore(){
+<b class="nc">&nbsp;        return Core.settings.getInt(&quot;hiscore&quot; + file.nameWithoutExtension() + tags.get(&quot;steamid&quot;, &quot;&quot;), 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Texture safeTexture(){
+<b class="nc">&nbsp;        return texture == null ? Core.assets.get(&quot;sprites/error.png&quot;) : texture;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Fi previewFile(){
+<b class="nc">&nbsp;        return Vars.mapPreviewDirectory.child((workshop ? file.parent().name() : file.nameWithoutExtension()) + &quot;_v2.png&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Fi cacheFile(){
+<b class="nc">&nbsp;        return Vars.mapPreviewDirectory.child(workshop ? file.parent().name() + &quot;-workshop-cache.dat&quot; : file.nameWithoutExtension() + &quot;-cache_v2.dat&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setHighScore(int score){
+<b class="nc">&nbsp;        Core.settings.put(&quot;hiscore&quot; + file.nameWithoutExtension() + tags.get(&quot;steamid&quot;, &quot;&quot;), score);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the result of applying this map&#39;s rules to the specified gamemode.*/
+&nbsp;    public Rules applyRules(Gamemode mode){
+&nbsp;        //mode specific defaults have been applied
+<b class="nc">&nbsp;        Rules out = new Rules();</b>
+<b class="nc">&nbsp;        mode.apply(out);</b>
+&nbsp;
+&nbsp;        //now apply map-specific overrides
+<b class="nc">&nbsp;        return rules(out);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** This creates a new instance of Rules.*/
+&nbsp;    public Rules rules(){
+<b class="nc">&nbsp;        return rules(new Rules());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Rules rules(Rules base){
+&nbsp;        try{
+&nbsp;            //this replacement is a MASSIVE hack but it fixes some incorrect overwriting of team-specific rules.
+&nbsp;            //may need to be tweaked later
+<b class="nc">&nbsp;            Rules result = JsonIO.read(Rules.class, base, tags.get(&quot;rules&quot;, &quot;{}&quot;).replace(&quot;teams:{2:{infiniteAmmo:true}},&quot;, &quot;&quot;));</b>
+&nbsp;            //replace the default serpulo env with erekir
+<b class="nc">&nbsp;            if(result.planet == Planets.serpulo &amp;&amp; result.hasEnv(Env.scorching)){</b>
+<b class="nc">&nbsp;                result.planet = Planets.erekir;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if(result.spawns.isEmpty()) result.spawns = Vars.waves.get();</b>
+<b class="nc">&nbsp;            return result;</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+&nbsp;            //error reading rules. ignore?
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;            return new Rules();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the generation filters that this map uses on load.*/
+&nbsp;    public Seq&lt;GenerateFilter&gt; filters(){
+<b class="fc">&nbsp;        if(tags.getInt(&quot;build&quot;, -1) &lt; 83 &amp;&amp; tags.getInt(&quot;build&quot;, -1) != -1 &amp;&amp; tags.get(&quot;genfilters&quot;, &quot;&quot;).isEmpty()){</b>
+<b class="nc">&nbsp;            return Seq.with();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return maps.readFilters(tags.get(&quot;genfilters&quot;, &quot;&quot;));</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    public String name(){
+<b class="fc">&nbsp;        return tag(&quot;name&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String author(){
+<b class="nc">&nbsp;        return tag(&quot;author&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String description(){
+<b class="nc">&nbsp;        return tag(&quot;description&quot;);</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    public String plainName() {
+<b class="nc">&nbsp;        return Strings.stripColors(name());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String plainAuthor(){
+<b class="nc">&nbsp;        return Strings.stripColors(author());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String plainDescription(){
+<b class="nc">&nbsp;        return Strings.stripColors(description());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String tag(String name){
+<b class="fc">&nbsp;        return hasTag(name) ? tags.get(name) : Core.bundle.get(&quot;unknown&quot;, &quot;unknown&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasTag(String name){
+<b class="fc">&nbsp;        return tags.containsKey(name) &amp;&amp; !tags.get(name).trim().isEmpty();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String getSteamID(){
+<b class="nc">&nbsp;        return tags.get(&quot;steamid&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void addSteamID(String id){
+<b class="nc">&nbsp;        tags.put(&quot;steamid&quot;, id);</b>
+<b class="nc">&nbsp;        editor.tags.put(&quot;steamid&quot;, id);</b>
+&nbsp;        
+&nbsp;        try{
+<b class="nc">&nbsp;            ui.editor.save();</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;        
+<b class="nc">&nbsp;        Events.fire(new MapPublishEvent());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void removeSteamID(){
+<b class="nc">&nbsp;        tags.remove(&quot;steamid&quot;);</b>
+<b class="nc">&nbsp;        editor.tags.remove(&quot;steamid&quot;);</b>
+&nbsp;        
+&nbsp;        try{
+<b class="nc">&nbsp;            ui.editor.save();</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String steamTitle(){
+<b class="nc">&nbsp;        return name();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String steamDescription(){
+<b class="nc">&nbsp;        return description();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String steamTag(){
+<b class="nc">&nbsp;        return &quot;map&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Fi createSteamFolder(String id){
+<b class="nc">&nbsp;        Fi mapFile = tmpDirectory.child(&quot;map_&quot; + id).child(&quot;map.msav&quot;);</b>
+<b class="nc">&nbsp;        file.copyTo(mapFile);</b>
+<b class="nc">&nbsp;        return mapFile.parent();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Fi createSteamPreview(String id){
+&nbsp;        //I have no idea what the hell I was even thinking with this preview stuff
+<b class="nc">&nbsp;        return Vars.mapPreviewDirectory.child((workshop &amp;&amp; file.parent().exists() &amp;&amp; file.parent().extEquals(&quot;.png&quot;) ? file.parent().name() : file.nameWithoutExtension()) + &quot;_v2.png&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Seq&lt;String&gt; extraTags(){
+<b class="nc">&nbsp;        Gamemode mode = Gamemode.attack.valid(this) ? Gamemode.attack : Gamemode.survival;</b>
+<b class="nc">&nbsp;        return Seq.with(mode.name());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean prePublish(){
+<b class="nc">&nbsp;        tags.put(&quot;author&quot;, player.name);</b>
+<b class="nc">&nbsp;        editor.tags.put(&quot;author&quot;, player.name);</b>
+&nbsp;        
+<b class="nc">&nbsp;        ui.editor.save();</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int compareTo(Map map){
+<b class="fc">&nbsp;        int work = -Boolean.compare(workshop, map.workshop);</b>
+<b class="fc">&nbsp;        if(work != 0) return work;</b>
+<b class="fc">&nbsp;        int type = -Boolean.compare(custom, map.custom);</b>
+<b class="fc">&nbsp;        if(type != 0) return type;</b>
+<b class="fc">&nbsp;        int modes = Boolean.compare(Gamemode.pvp.valid(this), Gamemode.pvp.valid(map));</b>
+<b class="fc">&nbsp;        if(modes != 0) return modes;</b>
+&nbsp;
+<b class="fc">&nbsp;        return name().compareTo(map.name());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return &quot;Map{&quot; +</b>
+&nbsp;        &quot;file=&#39;&quot; + file + &#39;\&#39;&#39; +
+&nbsp;        &quot;, custom=&quot; + custom +
+&nbsp;        &quot;, tags=&quot; + tags +
+&nbsp;        &#39;}&#39;;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,297 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BaseShield</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense</a>
+</div>
+
+<h1>Coverage Summary for Class: BaseShield (mindustry.world.blocks.defense)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BaseShield</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (10/22)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BaseShield$BaseShieldBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (6/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.7%
+  </span>
+  <span class="absValue">
+    (15/36)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    56.2%
+  </span>
+  <span class="absValue">
+    (9/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.1%
+  </span>
+  <span class="absValue">
+    (25/58)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class BaseShield extends Block{
+&nbsp;    //TODO game rule? or field? should vary by base.
+<b class="fc">&nbsp;    public float radius = 200f;</b>
+<b class="fc">&nbsp;    public int sides = 24;</b>
+&nbsp;
+&nbsp;    protected static BaseShieldBuild paramBuild;
+&nbsp;    //protected static Effect paramEffect;
+<b class="fc">&nbsp;    protected static final Cons&lt;Bullet&gt; bulletConsumer = bullet -&gt; {</b>
+<b class="nc">&nbsp;        if(bullet.team != paramBuild.team &amp;&amp; bullet.type.absorbable &amp;&amp; bullet.within(paramBuild, paramBuild.radius())){</b>
+<b class="nc">&nbsp;            bullet.absorb();</b>
+&nbsp;            //paramEffect.at(bullet);
+&nbsp;
+&nbsp;            //TODO effect, shield health go down?
+&nbsp;            //paramBuild.hit = 1f;
+&nbsp;            //paramBuild.buildup += bullet.damage;
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+<b class="fc">&nbsp;    protected static final Cons&lt;Unit&gt; unitConsumer = unit -&gt; {</b>
+&nbsp;        //if this is positive, repel the unit; if it exceeds the unit radius * 2, it&#39;s inside the forcefield and must be killed
+<b class="nc">&nbsp;        float overlapDst = (unit.hitSize/2f + paramBuild.radius()) - unit.dst(paramBuild);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(overlapDst &gt; 0){</b>
+<b class="nc">&nbsp;            if(overlapDst &gt; unit.hitSize * 1.5f){</b>
+&nbsp;                //instakill units that are stuck inside the shield (TODO or maybe damage them instead?)
+<b class="nc">&nbsp;                unit.kill();</b>
+&nbsp;            }else{
+&nbsp;                //stop
+<b class="nc">&nbsp;                unit.vel.setZero();</b>
+&nbsp;                //get out
+<b class="nc">&nbsp;                unit.move(Tmp.v1.set(unit).sub(paramBuild).setLength(overlapDst + 0.01f));</b>
+&nbsp;
+<b class="nc">&nbsp;                if(Mathf.chanceDelta(0.12f * Time.delta)){</b>
+<b class="nc">&nbsp;                    Fx.circleColorSpark.at(unit.x, unit.y, paramBuild.team.color);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+&nbsp;    public BaseShield(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        hasPower = true;</b>
+<b class="fc">&nbsp;        update = solid = true;</b>
+<b class="fc">&nbsp;        rebuildable = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        updateClipRadius(radius);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        super.drawPlace(x, y, rotation, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, radius, player.team().color);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class BaseShieldBuild extends Building{</b>
+<b class="fc">&nbsp;        public boolean broken = false; //TODO</b>
+<b class="fc">&nbsp;        public float hit = 0f;</b>
+&nbsp;        public float smoothRadius;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            smoothRadius = Mathf.lerpDelta(smoothRadius, radius * efficiency, 0.05f);</b>
+&nbsp;
+<b class="fc">&nbsp;            float rad = radius();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(rad &gt; 1){</b>
+<b class="nc">&nbsp;                paramBuild = this;</b>
+&nbsp;                //paramEffect = absorbEffect;
+<b class="nc">&nbsp;                Groups.bullet.intersect(x - rad, y - rad, rad * 2f, rad * 2f, bulletConsumer);</b>
+<b class="nc">&nbsp;                Units.nearbyEnemies(team, x, y, rad + 10f, unitConsumer);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public float radius(){
+<b class="fc">&nbsp;            return smoothRadius;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawSelect(){
+<b class="nc">&nbsp;            super.drawSelect();</b>
+&nbsp;
+<b class="nc">&nbsp;            Drawf.dashCircle(x, y, radius, team.color);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            drawShield();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //always visible due to their shield nature
+&nbsp;        @Override
+&nbsp;        public boolean inFogTo(Team viewer){
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void drawShield(){
+<b class="nc">&nbsp;            if(!broken){</b>
+<b class="nc">&nbsp;                float radius = radius();</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.z(Layer.shields);</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.color(team.color, Color.white, Mathf.clamp(hit));</b>
+&nbsp;
+<b class="nc">&nbsp;                if(renderer.animateShields){</b>
+<b class="nc">&nbsp;                    Fill.poly(x, y, sides, radius);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Lines.stroke(1.5f);</b>
+<b class="nc">&nbsp;                    Draw.alpha(0.09f + Mathf.clamp(0.08f * hit));</b>
+<b class="nc">&nbsp;                    Fill.poly(x, y, sides, radius);</b>
+<b class="nc">&nbsp;                    Draw.alpha(1f);</b>
+<b class="nc">&nbsp;                    Lines.poly(x, y, sides, radius);</b>
+<b class="nc">&nbsp;                    Draw.reset();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            write.f(smoothRadius);</b>
+<b class="fc">&nbsp;            write.bool(broken);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                smoothRadius = read.f();</b>
+<b class="fc">&nbsp;                broken = read.bool();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,398 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ContentRegions</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: ContentRegions (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ContentRegions</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/208)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.Core;
+&nbsp;import arc.graphics.g2d.TextureRegion;
+&nbsp;import mindustry.ctype.MappableContent;
+&nbsp;import mindustry.world.blocks.distribution.Conveyor;
+&nbsp;import mindustry.world.blocks.distribution.Duct;
+&nbsp;import mindustry.world.blocks.distribution.StackConveyor;
+&nbsp;import mindustry.world.blocks.environment.Cliff;
+&nbsp;import mindustry.world.blocks.liquid.Conduit;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+<b class="nc">&nbsp;public class ContentRegions {</b>
+&nbsp;  public static void loadRegions(MappableContent content) {
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.campaign.Accelerator) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.campaign.Accelerator)content).arrowRegion = Core.atlas.find(&quot;launch-arrow&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.AutoDoor) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.AutoDoor)content).openRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-open&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.power.Battery) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.Battery)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.production.BeamDrill) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BeamDrill)content).glowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-glow&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BeamDrill)content).laser = Core.atlas.find(&quot;&quot; + content.name + &quot;-beam&quot;, &quot;drill-laser&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BeamDrill)content).laserBoost = Core.atlas.find(&quot;&quot; + content.name + &quot;-beam-boost&quot;, &quot;drill-laser-boost&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BeamDrill)content).laserCenter = Core.atlas.find(&quot;&quot; + content.name + &quot;-beam-center&quot;, &quot;drill-laser-center&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BeamDrill)content).laserCenterBoost = Core.atlas.find(&quot;&quot; + content.name + &quot;-beam-boost-center&quot;, &quot;drill-laser-boost-center&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BeamDrill)content).laserEnd = Core.atlas.find(&quot;&quot; + content.name + &quot;-beam-end&quot;, &quot;drill-laser-end&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BeamDrill)content).laserEndBoost = Core.atlas.find(&quot;&quot; + content.name + &quot;-beam-boost-end&quot;, &quot;drill-laser-boost-end&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BeamDrill)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.power.BeamNode) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.BeamNode)content).laser = Core.atlas.find(&quot;&quot; + content.name + &quot;-beam&quot;, &quot;power-beam&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.BeamNode)content).laserEnd = Core.atlas.find(&quot;&quot; + content.name + &quot;-beam-end&quot;, &quot;power-beam-end&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.Block) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.Block)content).customShadowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-shadow&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.Block)content).teamRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-team&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.BuildTurret) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.BuildTurret)content).baseRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-base&quot;, &quot;block-&quot; + ((mindustry.world.Block)content).size + &quot;&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.BuildTurret)content).glowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-glow&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.production.BurstDrill) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BurstDrill)content).arrowBlurRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-arrow-blur&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BurstDrill)content).arrowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-arrow&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BurstDrill)content).glowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-glow&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.BurstDrill)content).topInvertRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top-invert&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.logic.CanvasBlock) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.logic.CanvasBlock)content).corner1 = Core.atlas.find(&quot;&quot; + content.name + &quot;-corner1&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.logic.CanvasBlock)content).corner2 = Core.atlas.find(&quot;&quot; + content.name + &quot;-corner2&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.logic.CanvasBlock)content).side1 = Core.atlas.find(&quot;&quot; + content.name + &quot;-side1&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.logic.CanvasBlock)content).side2 = Core.atlas.find(&quot;&quot; + content.name + &quot;-side2&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.environment.Cliff) {</b>
+<b class="nc">&nbsp;      ((Cliff)content).cliffs = new TextureRegion[256];</b>
+<b class="nc">&nbsp;      for(int INDEX0 = 0; INDEX0 &lt; 256; INDEX0 ++) {</b>
+<b class="nc">&nbsp;        ((Cliff)content).cliffs[INDEX0] = Core.atlas.find(&quot;cliffmask&quot; + INDEX0 + &quot;&quot;);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      ((Cliff)content).editorCliffs = new TextureRegion[256];</b>
+<b class="nc">&nbsp;      for(int INDEX0 = 0; INDEX0 &lt; 256; INDEX0 ++) {</b>
+<b class="nc">&nbsp;        ((Cliff)content).editorCliffs[INDEX0] = Core.atlas.find(&quot;editor-cliffmask&quot; + INDEX0 + &quot;&quot;);</b>
+&nbsp;      }
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.liquid.Conduit) {</b>
+<b class="nc">&nbsp;      ((Conduit)content).botRegions = new TextureRegion[5];</b>
+<b class="nc">&nbsp;      for(int INDEX0 = 0; INDEX0 &lt; 5; INDEX0 ++) {</b>
+<b class="nc">&nbsp;        ((Conduit)content).botRegions[INDEX0] = Core.atlas.find(&quot;&quot; + content.name + &quot;-bottom-&quot; + INDEX0 + &quot;&quot;, &quot;conduit-bottom-&quot; + INDEX0 + &quot;&quot;);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      ((mindustry.world.blocks.liquid.Conduit)content).capRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-cap&quot;);</b>
+<b class="nc">&nbsp;      ((Conduit)content).topRegions = new TextureRegion[5];</b>
+<b class="nc">&nbsp;      for(int INDEX0 = 0; INDEX0 &lt; 5; INDEX0 ++) {</b>
+<b class="nc">&nbsp;        ((Conduit)content).topRegions[INDEX0] = Core.atlas.find(&quot;&quot; + content.name + &quot;-top-&quot; + INDEX0 + &quot;&quot;);</b>
+&nbsp;      }
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.Conveyor) {</b>
+<b class="nc">&nbsp;      ((Conveyor)content).regions = new TextureRegion[7][4];</b>
+<b class="nc">&nbsp;      for(int INDEX0 = 0; INDEX0 &lt; 7; INDEX0 ++) {</b>
+<b class="nc">&nbsp;        for(int INDEX1 = 0; INDEX1 &lt; 4; INDEX1 ++) {</b>
+<b class="nc">&nbsp;          ((Conveyor)content).regions[INDEX0][INDEX1] = Core.atlas.find(&quot;&quot; + content.name + &quot;-&quot; + INDEX0 + &quot;-&quot; + INDEX1 + &quot;&quot;);</b>
+&nbsp;        }
+&nbsp;      }
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.storage.CoreBlock) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.storage.CoreBlock)content).thruster1 = Core.atlas.find(&quot;&quot; + content.name + &quot;-thruster1&quot;, &quot;clear-effect&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.storage.CoreBlock)content).thruster2 = Core.atlas.find(&quot;&quot; + content.name + &quot;-thruster2&quot;, &quot;clear-effect&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.DirectionBridge) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.DirectionBridge)content).arrowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-arrow&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.DirectionBridge)content).bridgeBotRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-bridge-bottom&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.DirectionBridge)content).bridgeLiquidRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-bridge-liquid&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.DirectionBridge)content).bridgeRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-bridge&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.DirectionBridge)content).dirRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-dir&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.DirectionLiquidBridge) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.DirectionLiquidBridge)content).bottomRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-bottom&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.DirectionalForceProjector) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.DirectionalForceProjector)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.DirectionalUnloader) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.DirectionalUnloader)content).arrowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-arrow&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.DirectionalUnloader)content).centerRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-center&quot;, &quot;unloader-center&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.DirectionalUnloader)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.Door) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.Door)content).openRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-open&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.production.Drill) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.Drill)content).itemRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-item&quot;, &quot;drill-item-&quot; + ((mindustry.world.Block)content).size + &quot;&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.Drill)content).rimRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-rim&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.Drill)content).rotatorRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-rotator&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.Drill)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.Duct) {</b>
+<b class="nc">&nbsp;      ((Duct)content).botRegions = new TextureRegion[5];</b>
+<b class="nc">&nbsp;      for(int INDEX0 = 0; INDEX0 &lt; 5; INDEX0 ++) {</b>
+<b class="nc">&nbsp;        ((Duct)content).botRegions[INDEX0] = Core.atlas.find(&quot;&quot; + content.name + &quot;-bottom-&quot; + INDEX0 + &quot;&quot;, &quot;duct-bottom-&quot; + INDEX0 + &quot;&quot;);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      ((Duct)content).topRegions = new TextureRegion[5];</b>
+<b class="nc">&nbsp;      for(int INDEX0 = 0; INDEX0 &lt; 5; INDEX0 ++) {</b>
+<b class="nc">&nbsp;        ((Duct)content).topRegions[INDEX0] = Core.atlas.find(&quot;&quot; + content.name + &quot;-top-&quot; + INDEX0 + &quot;&quot;);</b>
+&nbsp;      }
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.DuctRouter) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.DuctRouter)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.ForceProjector) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.ForceProjector)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.ItemBridge) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.ItemBridge)content).arrowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-arrow&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.ItemBridge)content).bridgeRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-bridge&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.ItemBridge)content).endRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-end&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.production.ItemIncinerator) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.ItemIncinerator)content).liquidRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-liquid&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.ItemIncinerator)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.campaign.LaunchPad) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.campaign.LaunchPad)content).lightRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-light&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.campaign.LaunchPad)content).podRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-pod&quot;, &quot;launchpod&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.power.LightBlock) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.LightBlock)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.liquid.LiquidBlock) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.liquid.LiquidBlock)content).bottomRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-bottom&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.liquid.LiquidBlock)content).liquidRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-liquid&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.liquid.LiquidBlock)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.sandbox.LiquidSource) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.sandbox.LiquidSource)content).bottomRegion = Core.atlas.find(&quot;source-bottom&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.sandbox.LiquidSource)content).crossRegion = Core.atlas.find(&quot;cross&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.power.LongPowerNode) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.LongPowerNode)content).glow = Core.atlas.find(&quot;&quot; + content.name + &quot;-glow&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.MassDriver) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.MassDriver)content).baseRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-base&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.MendProjector) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.MendProjector)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.power.NuclearReactor) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.NuclearReactor)content).lightsRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-lights&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.NuclearReactor)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.OverdriveProjector) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.OverdriveProjector)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.OverflowDuct) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.OverflowDuct)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.payloads.PayloadConveyor) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadConveyor)content).edgeRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-edge&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadConveyor)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.payloads.PayloadLoader) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadLoader)content).overRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-over&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.payloads.PayloadMassDriver) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadMassDriver)content).arrow = Core.atlas.find(&quot;bridge-arrow&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadMassDriver)content).baseRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-base&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadMassDriver)content).capOutlineRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-cap-outline&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadMassDriver)content).capRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-cap&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadMassDriver)content).leftOutlineRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-left-outline&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadMassDriver)content).leftRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-left&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadMassDriver)content).rightOutlineRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-right-outline&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadMassDriver)content).rightRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-right&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.payloads.PayloadRouter) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.payloads.PayloadRouter)content).overRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-over&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.turrets.PointDefenseTurret) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.turrets.PointDefenseTurret)content).baseRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-base&quot;, &quot;block-&quot; + ((mindustry.world.Block)content).size + &quot;&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.power.PowerDiode) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.PowerDiode)content).arrow = Core.atlas.find(&quot;&quot; + content.name + &quot;-arrow&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.power.PowerNode) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.PowerNode)content).laser = Core.atlas.find(&quot;&quot; + content.name + &quot;-laser&quot;, &quot;laser&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.PowerNode)content).laserEnd = Core.atlas.find(&quot;&quot; + content.name + &quot;-laser-end&quot;, &quot;laser-end&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.Radar) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.Radar)content).baseRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-base&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.Radar)content).glowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-glow&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.units.RepairTower) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.RepairTower)content).glow = Core.atlas.find(&quot;&quot; + content.name + &quot;-glow&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.units.RepairTurret) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.RepairTurret)content).baseRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-base&quot;, &quot;block-&quot; + ((mindustry.world.Block)content).size + &quot;&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.RepairTurret)content).laser = Core.atlas.find(&quot;laser-white&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.RepairTurret)content).laserEnd = Core.atlas.find(&quot;laser-white-end&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.RepairTurret)content).laserTop = Core.atlas.find(&quot;laser-top&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.RepairTurret)content).laserTopEnd = Core.atlas.find(&quot;laser-top-end&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.environment.SeaBush) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.environment.SeaBush)content).botRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-bot&quot;, &quot;&quot; + content.name + &quot;&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.environment.SeaBush)content).centerRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-center&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.ShieldWall) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.ShieldWall)content).glowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-glow&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.ShockMine) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.ShockMine)content).teamRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-team-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.ShockwaveTower) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.ShockwaveTower)content).heatRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-heat&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.production.SolidPump) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.SolidPump)content).rotatorRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-rotator&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.Sorter) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.Sorter)content).cross = Core.atlas.find(&quot;&quot; + content.name + &quot;-cross&quot;, &quot;cross-full&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.StackConveyor) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.StackConveyor)content).edgeGlowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-edge-glow&quot;, &quot;&quot; + content.name + &quot;-glow&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.StackConveyor)content).edgeRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-edge&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.StackConveyor)content).glowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-glow&quot;);</b>
+<b class="nc">&nbsp;      ((StackConveyor)content).regions = new TextureRegion[3];</b>
+<b class="nc">&nbsp;      for(int INDEX0 = 0; INDEX0 &lt; 3; INDEX0 ++) {</b>
+<b class="nc">&nbsp;        ((StackConveyor)content).regions[INDEX0] = Core.atlas.find(&quot;&quot; + content.name + &quot;-&quot; + INDEX0 + &quot;&quot;);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.StackConveyor)content).stackRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-stack&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.distribution.StackRouter) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.distribution.StackRouter)content).glowRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-glow&quot;, &quot;arrow-glow&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.environment.StaticWall) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.environment.StaticWall)content).large = Core.atlas.find(&quot;&quot; + content.name + &quot;-large&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.logic.SwitchBlock) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.logic.SwitchBlock)content).onRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-on&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.Thruster) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.Thruster)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.defense.turrets.TractorBeamTurret) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.turrets.TractorBeamTurret)content).baseRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-base&quot;, &quot;block-&quot; + ((mindustry.world.Block)content).size + &quot;&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.turrets.TractorBeamTurret)content).laser = Core.atlas.find(&quot;&quot; + content.name + &quot;-laser&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.turrets.TractorBeamTurret)content).laserEnd = Core.atlas.find(&quot;&quot; + content.name + &quot;-laser-end&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.defense.turrets.TractorBeamTurret)content).laserStart = Core.atlas.find(&quot;&quot; + content.name + &quot;-laser-start&quot;, &quot;&quot; + content.name + &quot;-laser-end&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.environment.TreeBlock) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.environment.TreeBlock)content).shadow = Core.atlas.find(&quot;&quot; + content.name + &quot;-shadow&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.units.UnitAssembler) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.UnitAssembler)content).sideRegion1 = Core.atlas.find(&quot;&quot; + content.name + &quot;-side1&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.UnitAssembler)content).sideRegion2 = Core.atlas.find(&quot;&quot; + content.name + &quot;-side2&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.units.UnitAssemblerModule) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.UnitAssemblerModule)content).sideRegion1 = Core.atlas.find(&quot;&quot; + content.name + &quot;-side1&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.UnitAssemblerModule)content).sideRegion2 = Core.atlas.find(&quot;&quot; + content.name + &quot;-side2&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.units.UnitCargoUnloadPoint) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.units.UnitCargoUnloadPoint)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.storage.Unloader) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.storage.Unloader)content).centerRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-center&quot;, &quot;unloader-center&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.power.VariableReactor) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.power.VariableReactor)content).lightsRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-lights&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(content instanceof mindustry.world.blocks.production.WallCrafter) {</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.WallCrafter)content).rotatorBottomRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-rotator-bottom&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.WallCrafter)content).rotatorRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-rotator&quot;);</b>
+<b class="nc">&nbsp;      ((mindustry.world.blocks.production.WallCrafter)content).topRegion = Core.atlas.find(&quot;&quot; + content.name + &quot;-top&quot;);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

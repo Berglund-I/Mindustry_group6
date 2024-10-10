@@ -1,0 +1,316 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PayloadComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: PayloadComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PayloadComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/89)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;
+&nbsp;/** An entity that holds a payload. */
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class PayloadComp implements Posc, Rotc, Hitboxc, Unitc{</b>
+&nbsp;    @Import float x, y, rotation;
+&nbsp;    @Import Team team;
+&nbsp;    @Import UnitType type;
+&nbsp;
+<b class="nc">&nbsp;    Seq&lt;Payload&gt; payloads = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    private transient @Nullable PowerGraph payloadPower;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        if(payloadPower != null){</b>
+<b class="nc">&nbsp;            payloadPower.clear();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //update power graph first, resolve everything
+<b class="nc">&nbsp;        for(Payload pay : payloads){</b>
+<b class="nc">&nbsp;            if(pay instanceof BuildPayload pb &amp;&amp; pb.build.power != null){</b>
+<b class="nc">&nbsp;                if(payloadPower == null) payloadPower = new PowerGraph(false);</b>
+&nbsp;
+&nbsp;                //pb.build.team = team;
+<b class="nc">&nbsp;                pb.build.power.graph = null;</b>
+<b class="nc">&nbsp;                payloadPower.add(pb.build);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(payloadPower != null){</b>
+<b class="nc">&nbsp;            payloadPower.update();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(Payload pay : payloads){</b>
+&nbsp;            //apparently BasedUser doesn&#39;t want this and several plugins use it
+&nbsp;            //if(pay instanceof BuildPayload build){
+&nbsp;            //    build.build.team = team;
+&nbsp;            //}
+<b class="nc">&nbsp;            pay.set(x, y, rotation);</b>
+<b class="nc">&nbsp;            pay.update(self(), null);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void destroy(){
+<b class="nc">&nbsp;        if(Vars.state.rules.unitPayloadsExplode) payloads.each(Payload::destroyed);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    float payloadUsed(){
+<b class="nc">&nbsp;        return payloads.sumf(p -&gt; p.size() * p.size());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean canPickup(Unit unit){
+<b class="nc">&nbsp;        return type.pickupUnits &amp;&amp; payloadUsed() + unit.hitSize * unit.hitSize &lt;= type.payloadCapacity + 0.001f &amp;&amp; unit.team == team() &amp;&amp; unit.isAI();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean canPickup(Building build){
+<b class="nc">&nbsp;        return payloadUsed() + build.block.size * build.block.size * Vars.tilesize * Vars.tilesize &lt;= type.payloadCapacity + 0.001f &amp;&amp; build.canPickup() &amp;&amp; build.team == team;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean canPickupPayload(Payload pay){
+<b class="nc">&nbsp;        return payloadUsed() + pay.size()*pay.size() &lt;= type.payloadCapacity + 0.001f &amp;&amp; (type.pickupUnits || !(pay instanceof UnitPayload));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean hasPayload(){
+<b class="nc">&nbsp;        return payloads.size &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void addPayload(Payload load){
+<b class="nc">&nbsp;        payloads.add(load);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void pickup(Unit unit){
+<b class="nc">&nbsp;        if(unit.isAdded()) unit.team.data().updateCount(unit.type, 1);</b>
+&nbsp;
+<b class="nc">&nbsp;        unit.remove();</b>
+<b class="nc">&nbsp;        addPayload(new UnitPayload(unit));</b>
+<b class="nc">&nbsp;        Fx.unitPickup.at(unit);</b>
+<b class="nc">&nbsp;        if(Vars.net.client()){</b>
+<b class="nc">&nbsp;            Vars.netClient.clearRemovedEntity(unit.id);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Events.fire(new PickupEvent(self(), unit));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void pickup(Building tile){
+<b class="nc">&nbsp;        tile.pickedUp();</b>
+<b class="nc">&nbsp;        tile.tile.remove();</b>
+<b class="nc">&nbsp;        tile.afterPickedUp();</b>
+<b class="nc">&nbsp;        addPayload(new BuildPayload(tile));</b>
+<b class="nc">&nbsp;        Fx.unitPickup.at(tile);</b>
+<b class="nc">&nbsp;        Events.fire(new PickupEvent(self(), tile));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean dropLastPayload(){
+<b class="nc">&nbsp;        if(payloads.isEmpty()) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        Payload load = payloads.peek();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(tryDropPayload(load)){</b>
+<b class="nc">&nbsp;            payloads.pop();</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean tryDropPayload(Payload payload){
+<b class="nc">&nbsp;        Tile on = tileOn();</b>
+&nbsp;
+&nbsp;        //clear removed state of unit so it can be synced
+<b class="nc">&nbsp;        if(Vars.net.client() &amp;&amp; payload instanceof UnitPayload u){</b>
+<b class="nc">&nbsp;            Vars.netClient.clearRemovedEntity(u.unit.id);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //drop off payload on an acceptor if possible
+<b class="nc">&nbsp;        if(on != null &amp;&amp; on.build != null &amp;&amp; on.build.acceptPayload(on.build, payload)){</b>
+<b class="nc">&nbsp;            Fx.unitDrop.at(on.build);</b>
+<b class="nc">&nbsp;            on.build.handlePayload(on.build, payload);</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(payload instanceof BuildPayload b){</b>
+<b class="nc">&nbsp;            return dropBlock(b);</b>
+<b class="nc">&nbsp;        }else if(payload instanceof UnitPayload p){</b>
+<b class="nc">&nbsp;            return dropUnit(p);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean dropUnit(UnitPayload payload){
+<b class="nc">&nbsp;        Unit u = payload.unit;</b>
+&nbsp;
+&nbsp;        //add random offset to prevent unit stacking
+<b class="nc">&nbsp;        Tmp.v1.rnd(Mathf.random(2f));</b>
+&nbsp;
+&nbsp;        //can&#39;t drop ground units
+&nbsp;        //allow stacking for small units for now - otherwise, unit transfer would get annoying
+<b class="nc">&nbsp;        if(!u.canPass(World.toTile(x + Tmp.v1.x), World.toTile(y + Tmp.v1.y)) || Units.count(x, y, u.physicSize(), o -&gt; o.isGrounded() &amp;&amp; o.hitSize &gt; 14f) &gt; 1){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Fx.unitDrop.at(this);</b>
+&nbsp;
+&nbsp;        //clients do not drop payloads
+<b class="nc">&nbsp;        if(Vars.net.client()) return true;</b>
+&nbsp;
+<b class="nc">&nbsp;        u.set(x + Tmp.v1.x, y + Tmp.v1.y);</b>
+<b class="nc">&nbsp;        u.rotation(rotation);</b>
+&nbsp;        //reset the ID to a new value to make sure it&#39;s synced
+<b class="nc">&nbsp;        u.id = EntityGroup.nextId();</b>
+&nbsp;        //decrement count to prevent double increment
+<b class="nc">&nbsp;        if(!u.isAdded()) u.team.data().updateCount(u.type, -1);</b>
+<b class="nc">&nbsp;        u.add();</b>
+<b class="nc">&nbsp;        u.unloaded();</b>
+<b class="nc">&nbsp;        Events.fire(new PayloadDropEvent(self(), u));</b>
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether the tile has been successfully placed. */
+&nbsp;    boolean dropBlock(BuildPayload payload){
+<b class="nc">&nbsp;        Building tile = payload.build;</b>
+<b class="nc">&nbsp;        int tx = World.toTile(x - tile.block.offset), ty = World.toTile(y - tile.block.offset);</b>
+<b class="nc">&nbsp;        Tile on = Vars.world.tile(tx, ty);</b>
+<b class="nc">&nbsp;        if(on != null &amp;&amp; Build.validPlace(tile.block, tile.team, tx, ty, tile.rotation, false)){</b>
+<b class="nc">&nbsp;            payload.place(on, tile.rotation);</b>
+<b class="nc">&nbsp;            Events.fire(new PayloadDropEvent(self(), tile));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(getControllerName() != null){</b>
+<b class="nc">&nbsp;                payload.build.lastAccessed = getControllerName();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Fx.unitDrop.at(tile);</b>
+<b class="nc">&nbsp;            on.block().placeEffect.at(on.drawx(), on.drawy(), on.block().size);</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void contentInfo(Table table, float itemSize, float width){
+<b class="nc">&nbsp;        table.clear();</b>
+<b class="nc">&nbsp;        table.top().left();</b>
+&nbsp;
+<b class="nc">&nbsp;        float pad = 0;</b>
+<b class="nc">&nbsp;        float items = payloads.size;</b>
+<b class="nc">&nbsp;        if(itemSize * items + pad * items &gt; width){</b>
+<b class="nc">&nbsp;            pad = (width - (itemSize) * items) / items;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(Payload p : payloads){</b>
+<b class="nc">&nbsp;            table.image(p.icon()).size(itemSize).padRight(pad);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

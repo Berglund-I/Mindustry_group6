@@ -1,0 +1,191 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Gamemode</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.game</a>
+</div>
+
+<h1>Coverage Summary for Class: Gamemode (mindustry.game)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Gamemode</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (8/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.2%
+  </span>
+  <span class="absValue">
+    (16/43)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.game;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;
+&nbsp;/** Defines preset rule sets. */
+<b class="fc">&nbsp;public enum Gamemode{</b>
+<b class="fc">&nbsp;    survival(rules -&gt; {</b>
+<b class="nc">&nbsp;        rules.waveTimer = true;</b>
+<b class="nc">&nbsp;        rules.waves = true;</b>
+<b class="nc">&nbsp;    }, map -&gt; map.spawns &gt; 0),</b>
+<b class="fc">&nbsp;    sandbox(rules -&gt; {</b>
+<b class="nc">&nbsp;        rules.infiniteResources = true;</b>
+<b class="nc">&nbsp;        rules.allowEditRules = true;</b>
+<b class="nc">&nbsp;        rules.waves = true;</b>
+<b class="nc">&nbsp;        rules.waveTimer = false;</b>
+&nbsp;    }),
+<b class="fc">&nbsp;    attack(rules -&gt; {</b>
+<b class="nc">&nbsp;        rules.attackMode = true;</b>
+&nbsp;        //TODO waves is now a bad idea
+&nbsp;        //rules.waves = true;
+<b class="nc">&nbsp;        rules.waveTimer = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        rules.waveSpacing = 2f * Time.toMinutes;</b>
+<b class="nc">&nbsp;        rules.waveTeam.rules().infiniteResources = true;</b>
+<b class="nc">&nbsp;    }, map -&gt; map.teams.size &gt; 1),</b>
+<b class="fc">&nbsp;    pvp(rules -&gt; {</b>
+<b class="nc">&nbsp;        rules.pvp = true;</b>
+<b class="nc">&nbsp;        rules.enemyCoreBuildRadius = 600f;</b>
+<b class="nc">&nbsp;        rules.buildCostMultiplier = 1f;</b>
+<b class="nc">&nbsp;        rules.buildSpeedMultiplier = 1f;</b>
+<b class="nc">&nbsp;        rules.unitBuildSpeedMultiplier = 2f;</b>
+<b class="nc">&nbsp;        rules.attackMode = true;</b>
+<b class="fc">&nbsp;    }, map -&gt; map.teams.size &gt; 1),</b>
+<b class="fc">&nbsp;    editor(true, rules -&gt; {</b>
+<b class="nc">&nbsp;        rules.infiniteResources = true;</b>
+<b class="nc">&nbsp;        rules.instantBuild = true;</b>
+<b class="nc">&nbsp;        rules.editor = true;</b>
+<b class="nc">&nbsp;        rules.waves = false;</b>
+<b class="nc">&nbsp;        rules.waveTimer = false;</b>
+&nbsp;    });
+&nbsp;
+&nbsp;    private final Cons&lt;Rules&gt; rules;
+&nbsp;    private final Boolf&lt;Map&gt; validator;
+&nbsp;
+&nbsp;    public final boolean hidden;
+<b class="fc">&nbsp;    public final static Gamemode[] all = values();</b>
+&nbsp;
+&nbsp;    Gamemode(Cons&lt;Rules&gt; rules){
+<b class="fc">&nbsp;        this(false, rules);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Gamemode(boolean hidden, Cons&lt;Rules&gt; rules){
+<b class="fc">&nbsp;         this(hidden, rules, m -&gt; true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Gamemode(Cons&lt;Rules&gt; rules, Boolf&lt;Map&gt; validator){
+<b class="fc">&nbsp;        this(false, rules, validator);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    Gamemode(boolean hidden, Cons&lt;Rules&gt; rules, Boolf&lt;Map&gt; validator){</b>
+<b class="fc">&nbsp;        this.rules = rules;</b>
+<b class="fc">&nbsp;        this.hidden = hidden;</b>
+<b class="fc">&nbsp;        this.validator = validator;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Applies this preset to this ruleset. */
+&nbsp;    public Rules apply(Rules in){
+<b class="nc">&nbsp;        rules.get(in);</b>
+<b class="nc">&nbsp;        return in;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this mode can be played on the specified map. */
+&nbsp;    public boolean valid(Map map){
+<b class="fc">&nbsp;        return validator.get(map);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String description(){
+<b class="nc">&nbsp;        return Core.bundle.get(&quot;mode.&quot; + name() + &quot;.description&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return Core.bundle.get(&quot;mode.&quot; + name() + &quot;.name&quot;);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

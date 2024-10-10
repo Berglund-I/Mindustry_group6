@@ -1,0 +1,1210 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Player</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: Player (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Player</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/124)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/371)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import java.nio.*;
+&nbsp;import java.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.async.PhysicsProcess.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.heat.*;
+&nbsp;import mindustry.world.blocks.heat.HeatConductor.*;
+&nbsp;import mindustry.world.blocks.logic.LogicBlock.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.entities.Puddles.*;
+&nbsp;import static mindustry.logic.GlobalVars.*;
+&nbsp;
+&nbsp;import arc.graphics.Color;
+&nbsp;import arc.graphics.g2d.TextureRegion;
+&nbsp;import arc.math.Mathf;
+&nbsp;import arc.math.geom.Position;
+&nbsp;import arc.util.Interval;
+&nbsp;import arc.util.Nullable;
+&nbsp;import arc.util.Ratekeeper;
+&nbsp;import arc.util.Time;
+&nbsp;import arc.util.io.Reads;
+&nbsp;import arc.util.io.Writes;
+&nbsp;import java.nio.FloatBuffer;
+&nbsp;import mindustry.ai.UnitCommand;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.game.Team;
+&nbsp;import mindustry.net.Administration;
+&nbsp;import mindustry.net.NetConnection;
+&nbsp;import mindustry.net.Packets;
+&nbsp;import mindustry.world.Block;
+&nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.world.blocks.environment.Floor;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+&nbsp;public class Player implements Drawc, Entityc, IndexableEntity__all, IndexableEntity__draw, IndexableEntity__player, IndexableEntity__sync, Playerc, Posc, Syncc, Timerc {
+&nbsp;  public static final float deathDelay = 60.0F;
+&nbsp;
+&nbsp;  protected transient boolean added;
+&nbsp;
+&nbsp;  public boolean admin;
+&nbsp;
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public boolean boosting;
+&nbsp;
+<b class="nc">&nbsp;  public Color color = new Color();</b>
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  public transient NetConnection con;
+&nbsp;
+&nbsp;  public transient float deathTimer;
+&nbsp;
+<b class="nc">&nbsp;  public transient int id = EntityGroup.nextId();</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__all = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__draw = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__player = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__sync = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;  public transient Ratekeeper itemDepositRate = new Ratekeeper();</b>
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  public transient Unit justSwitchFrom;
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  public transient Unit justSwitchTo;
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  @Annotations.NoSync
+&nbsp;  public UnitCommand lastCommand;
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  protected transient Unit lastReadUnit;
+&nbsp;
+<b class="nc">&nbsp;  public transient String lastText = &quot;&quot;;</b>
+&nbsp;
+&nbsp;  public transient long lastUpdated;
+&nbsp;
+<b class="nc">&nbsp;  public transient String locale = &quot;en&quot;;</b>
+&nbsp;
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float mouseX;
+&nbsp;
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float mouseY;
+&nbsp;
+<b class="nc">&nbsp;  public String name = &quot;frog&quot;;</b>
+&nbsp;
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public boolean shooting;
+&nbsp;
+<b class="nc">&nbsp;  @Annotations.ReadOnly</b>
+&nbsp;  protected Team team = Team.sharded;
+&nbsp;
+&nbsp;  public transient float textFadeTime;
+&nbsp;
+<b class="nc">&nbsp;  public transient Interval timer = new Interval(6);</b>
+&nbsp;
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public boolean typing;
+&nbsp;
+&nbsp;  @Annotations.ReadOnly
+&nbsp;  @Nullable
+&nbsp;  protected Unit unit;
+&nbsp;
+&nbsp;  public transient long updateSpacing;
+&nbsp;
+&nbsp;  protected transient int wrongReadUnits;
+&nbsp;
+&nbsp;  @Annotations.SyncField(true)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float x;
+&nbsp;
+&nbsp;  private transient float x_LAST_;
+&nbsp;
+&nbsp;  private transient float x_TARGET_;
+&nbsp;
+&nbsp;  @Annotations.SyncField(true)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float y;
+&nbsp;
+&nbsp;  private transient float y_LAST_;
+&nbsp;
+&nbsp;  private transient float y_TARGET_;
+&nbsp;
+<b class="nc">&nbsp;  protected Player() {</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Unit justSwitchFrom() {
+<b class="nc">&nbsp;    return justSwitchFrom;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Unit justSwitchTo() {
+<b class="nc">&nbsp;    return justSwitchTo;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Color color() {
+<b class="nc">&nbsp;    return color;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Interval timer() {
+<b class="nc">&nbsp;    return timer;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Ratekeeper itemDepositRate() {
+<b class="nc">&nbsp;    return itemDepositRate;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean admin() {
+<b class="nc">&nbsp;    return admin;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean boosting() {
+<b class="nc">&nbsp;    return boosting;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean shooting() {
+<b class="nc">&nbsp;    return shooting;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean typing() {
+<b class="nc">&nbsp;    return typing;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float deathTimer() {
+<b class="nc">&nbsp;    return deathTimer;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float mouseX() {
+<b class="nc">&nbsp;    return mouseX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float mouseY() {
+<b class="nc">&nbsp;    return mouseY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float textFadeTime() {
+<b class="nc">&nbsp;    return textFadeTime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float x() {
+<b class="nc">&nbsp;    return x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float y() {
+<b class="nc">&nbsp;    return y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int classId() {
+<b class="nc">&nbsp;    return 12;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int id() {
+<b class="nc">&nbsp;    return id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public String lastText() {
+<b class="nc">&nbsp;    return lastText;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public String locale() {
+<b class="nc">&nbsp;    return locale;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public String name() {
+<b class="nc">&nbsp;    return name;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public String toString() {
+<b class="nc">&nbsp;    return &quot;Player#&quot; + id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public long lastUpdated() {
+<b class="nc">&nbsp;    return lastUpdated;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public long updateSpacing() {
+<b class="nc">&nbsp;    return updateSpacing;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public UnitCommand lastCommand() {
+<b class="nc">&nbsp;    return lastCommand;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Team team() {
+<b class="nc">&nbsp;    return team;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public NetConnection con() {
+<b class="nc">&nbsp;    return con;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void admin(boolean admin) {
+<b class="nc">&nbsp;    this.admin = admin;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void boosting(boolean boosting) {
+<b class="nc">&nbsp;    this.boosting = boosting;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void color(Color color) {
+<b class="nc">&nbsp;    this.color = color;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void con(NetConnection con) {
+<b class="nc">&nbsp;    this.con = con;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void deathTimer(float deathTimer) {
+<b class="nc">&nbsp;    this.deathTimer = deathTimer;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void id(int id) {
+<b class="nc">&nbsp;    this.id = id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void itemDepositRate(Ratekeeper itemDepositRate) {
+<b class="nc">&nbsp;    this.itemDepositRate = itemDepositRate;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void justSwitchFrom(Unit justSwitchFrom) {
+<b class="nc">&nbsp;    this.justSwitchFrom = justSwitchFrom;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void justSwitchTo(Unit justSwitchTo) {
+<b class="nc">&nbsp;    this.justSwitchTo = justSwitchTo;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastCommand(UnitCommand lastCommand) {
+<b class="nc">&nbsp;    this.lastCommand = lastCommand;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastText(String lastText) {
+<b class="nc">&nbsp;    this.lastText = lastText;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastUpdated(long lastUpdated) {
+<b class="nc">&nbsp;    this.lastUpdated = lastUpdated;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void locale(String locale) {
+<b class="nc">&nbsp;    this.locale = locale;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void mouseX(float mouseX) {
+<b class="nc">&nbsp;    this.mouseX = mouseX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void mouseY(float mouseY) {
+<b class="nc">&nbsp;    this.mouseY = mouseY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void name(String name) {
+<b class="nc">&nbsp;    this.name = name;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__all(int index) {
+<b class="nc">&nbsp;    index__all = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__draw(int index) {
+<b class="nc">&nbsp;    index__draw = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__player(int index) {
+<b class="nc">&nbsp;    index__player = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__sync(int index) {
+<b class="nc">&nbsp;    index__sync = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void shooting(boolean shooting) {
+<b class="nc">&nbsp;    this.shooting = shooting;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void textFadeTime(float textFadeTime) {
+<b class="nc">&nbsp;    this.textFadeTime = textFadeTime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void timer(Interval timer) {
+<b class="nc">&nbsp;    this.timer = timer;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void typing(boolean typing) {
+<b class="nc">&nbsp;    this.typing = typing;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void updateSpacing(long updateSpacing) {
+<b class="nc">&nbsp;    this.updateSpacing = updateSpacing;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void x(float x) {
+<b class="nc">&nbsp;    this.x = x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void y(float y) {
+<b class="nc">&nbsp;    this.y = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Annotations.CallSuper
+&nbsp;  public void read(Reads read) {
+<b class="nc">&nbsp;    short REV = read.s();</b>
+<b class="nc">&nbsp;    if(REV == 0) {</b>
+<b class="nc">&nbsp;      this.admin = read.bool();</b>
+<b class="nc">&nbsp;      this.boosting = read.bool();</b>
+<b class="nc">&nbsp;      this.color = mindustry.io.TypeIO.readColor(read, this.color);</b>
+<b class="nc">&nbsp;      this.mouseX = read.f();</b>
+<b class="nc">&nbsp;      this.mouseY = read.f();</b>
+<b class="nc">&nbsp;      this.name = mindustry.io.TypeIO.readString(read);</b>
+<b class="nc">&nbsp;      this.shooting = read.bool();</b>
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.typing = read.bool();</b>
+<b class="nc">&nbsp;      this.unit = mindustry.io.TypeIO.readUnit(read);</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else if(REV == 1) {</b>
+<b class="nc">&nbsp;      this.admin = read.bool();</b>
+<b class="nc">&nbsp;      this.boosting = read.bool();</b>
+<b class="nc">&nbsp;      this.color = mindustry.io.TypeIO.readColor(read, this.color);</b>
+<b class="nc">&nbsp;      this.lastCommand = mindustry.io.TypeIO.readCommand(read);</b>
+<b class="nc">&nbsp;      this.mouseX = read.f();</b>
+<b class="nc">&nbsp;      this.mouseY = read.f();</b>
+<b class="nc">&nbsp;      this.name = mindustry.io.TypeIO.readString(read);</b>
+<b class="nc">&nbsp;      this.shooting = read.bool();</b>
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.typing = read.bool();</b>
+<b class="nc">&nbsp;      this.unit = mindustry.io.TypeIO.readUnit(read);</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      throw new IllegalArgumentException(&quot;Unknown revision &#39;&quot; + REV + &quot;&#39; for entity type &#39;PlayerComp&#39;&quot;);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;        afterRead();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Annotations.CallSuper
+&nbsp;  public void write(Writes write) {
+<b class="nc">&nbsp;    write.s(1);</b>
+<b class="nc">&nbsp;    write.bool(this.admin);</b>
+<b class="nc">&nbsp;    write.bool(this.boosting);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeColor(write, this.color);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeCommand(write, this.lastCommand);</b>
+<b class="nc">&nbsp;    write.f(this.mouseX);</b>
+<b class="nc">&nbsp;    write.f(this.mouseY);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeString(write, this.name);</b>
+<b class="nc">&nbsp;    write.bool(this.shooting);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeTeam(write, this.team);</b>
+<b class="nc">&nbsp;    write.bool(this.typing);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeUnit(write, this.unit);</b>
+<b class="nc">&nbsp;    write.f(this.x);</b>
+<b class="nc">&nbsp;    write.f(this.y);</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public &lt;T extends Entityc&gt; T self() {
+&nbsp;
+<b class="nc">&nbsp;        return (T)this;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public &lt;T&gt; T as() {
+&nbsp;
+<b class="nc">&nbsp;        return (T)this;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Building buildOn() {
+&nbsp;
+<b class="nc">&nbsp;        return world.buildWorld(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Unit unit() {
+&nbsp;
+<b class="nc">&nbsp;        return unit;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public TextureRegion icon() {
+&nbsp;
+<b class="nc">&nbsp;        if (dead()) return core() == null ? UnitTypes.alpha.uiIcon : ((CoreBlock)bestCore().block).unitType.uiIcon;</b>
+<b class="nc">&nbsp;        return unit.icon();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean dead() {
+&nbsp;
+<b class="nc">&nbsp;        return unit == null || !unit.isValid();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean displayAmmo() {
+&nbsp;
+<b class="nc">&nbsp;        return unit instanceof BlockUnitc || state.rules.unitAmmo;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isAdded() {
+&nbsp;
+<b class="nc">&nbsp;        return added;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isBuilder() {
+&nbsp;
+<b class="nc">&nbsp;        return unit != null &amp;&amp; unit.canBuild();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isLocal() {
+&nbsp;
+<b class="nc">&nbsp;        return ((Object)this) == player || ((Object)this) instanceof Unitc u &amp;&amp; u.controller() == player;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isLogicControllable() {
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isRemote() {
+&nbsp;
+<b class="nc">&nbsp;        return ((Object)this) instanceof Unitc u &amp;&amp; u.isPlayer() &amp;&amp; !isLocal();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isSyncHidden(Player player) {
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isValidController() {
+&nbsp;
+<b class="nc">&nbsp;        return isAdded();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean onSolid() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null || tile.solid();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean serialize() {
+<b class="nc">&nbsp;    return false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean timer(int index, float time) {
+&nbsp;
+<b class="nc">&nbsp;        if (Float.isInfinite(time)) return false;</b>
+<b class="nc">&nbsp;        return timer.get(index, time);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float clipSize() {
+&nbsp;
+<b class="nc">&nbsp;        return unit == null ? 20 : unit.type.hitSize * 2.0F;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getX() {
+&nbsp;
+<b class="nc">&nbsp;        return x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getY() {
+&nbsp;
+<b class="nc">&nbsp;        return y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int tileX() {
+&nbsp;
+<b class="nc">&nbsp;        return World.toTile(x);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int tileY() {
+&nbsp;
+<b class="nc">&nbsp;        return World.toTile(y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public String coloredName() {
+&nbsp;
+<b class="nc">&nbsp;        return &quot;[#&quot; + color.toString().toUpperCase() + &quot;]&quot; + name;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public String ip() {
+&nbsp;
+<b class="nc">&nbsp;        return con == null ? &quot;localhost&quot; : con.address;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public String plainName() {
+&nbsp;
+<b class="nc">&nbsp;        return Strings.stripColors(name);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public String usid() {
+&nbsp;
+<b class="nc">&nbsp;        return con == null ? &quot;[LOCAL]&quot; : con.usid;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public String uuid() {
+&nbsp;
+<b class="nc">&nbsp;        return con == null ? &quot;[LOCAL]&quot; : con.uuid;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Administration.PlayerInfo getInfo() {
+&nbsp;
+<b class="nc">&nbsp;        if (isLocal()) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Local players cannot be traced and do not have info.&quot;);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return netServer.admins.getInfo(uuid());</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public Block blockOn() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null ? Blocks.air : tile.block();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Tile tileOn() {
+&nbsp;
+<b class="nc">&nbsp;        return world.tileWorld(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Floor floorOn() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null || tile.block() != Blocks.air ? (Floor)Blocks.air : tile.floor();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public CoreBlock.CoreBuild bestCore() {
+&nbsp;
+<b class="nc">&nbsp;        return team.cores().min(Structs.comps(Structs.comparingInt((c)-&gt;-c.block.size), Structs.comparingFloat((c)-&gt;c.dst(x, y))));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public CoreBlock.CoreBuild closestCore() {
+&nbsp;
+<b class="nc">&nbsp;        return state.teams.closestCore(x, y, team);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public CoreBlock.CoreBuild core() {
+&nbsp;
+<b class="nc">&nbsp;        return team.core();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static Player create() {
+<b class="nc">&nbsp;    return new Player();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void add() {
+<b class="nc">&nbsp;    if(added == true) return;</b>
+<b class="nc">&nbsp;    index__all = Groups.all.addIndex(this);</b>
+<b class="nc">&nbsp;    index__player = Groups.player.addIndex(this);</b>
+<b class="nc">&nbsp;    index__sync = Groups.sync.addIndex(this);</b>
+<b class="nc">&nbsp;    index__draw = Groups.draw.addIndex(this);</b>
+&nbsp;
+<b class="nc">&nbsp;        added = true;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void afterAllRead() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void afterRead() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void afterSync() {
+&nbsp;    player: {
+&nbsp;
+<b class="nc">&nbsp;        if (isLocal() &amp;&amp; unit == justSwitchFrom &amp;&amp; justSwitchFrom != null &amp;&amp; justSwitchTo != null) {</b>
+<b class="nc">&nbsp;            unit = justSwitchTo;</b>
+<b class="nc">&nbsp;            if (++wrongReadUnits &gt;= 2) {</b>
+<b class="nc">&nbsp;                justSwitchFrom = null;</b>
+<b class="nc">&nbsp;                wrongReadUnits = 0;</b>
+&nbsp;            }
+&nbsp;        } else {
+<b class="nc">&nbsp;            justSwitchFrom = null;</b>
+<b class="nc">&nbsp;            justSwitchTo = null;</b>
+<b class="nc">&nbsp;            wrongReadUnits = 0;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Unit set = unit;</b>
+<b class="nc">&nbsp;        unit = lastReadUnit;</b>
+<b class="nc">&nbsp;        unit(set);</b>
+<b class="nc">&nbsp;        lastReadUnit = unit;</b>
+<b class="nc">&nbsp;        if (unit != null) {</b>
+<b class="nc">&nbsp;            unit.aim(mouseX, mouseY);</b>
+<b class="nc">&nbsp;            unit.controlWeapons(shooting, shooting);</b>
+<b class="nc">&nbsp;            unit.controller(this);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    sync: {
+&nbsp;
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void checkSpawn() {
+&nbsp;
+<b class="nc">&nbsp;        CoreBuild core = bestCore();</b>
+<b class="nc">&nbsp;        if (core != null) {</b>
+<b class="nc">&nbsp;            core.requestSpawn(this);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void clearUnit() {
+&nbsp;
+<b class="nc">&nbsp;        unit(null);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void draw() {
+&nbsp;    draw: {
+&nbsp;
+&nbsp;    }
+&nbsp;    player: {
+&nbsp;
+<b class="nc">&nbsp;        if (unit == null || name == null || unit.inFogTo(Vars.player.team())) break player;</b>
+<b class="nc">&nbsp;        Draw.z(Layer.playerName);</b>
+<b class="nc">&nbsp;        float z = Drawf.text();</b>
+<b class="nc">&nbsp;        Font font = Fonts.outline;</b>
+<b class="nc">&nbsp;        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);</b>
+<b class="nc">&nbsp;        final float nameHeight = 11;</b>
+<b class="nc">&nbsp;        final float textHeight = 15;</b>
+<b class="nc">&nbsp;        boolean ints = font.usesIntegerPositions();</b>
+<b class="nc">&nbsp;        font.setUseIntegerPositions(false);</b>
+<b class="nc">&nbsp;        font.getData().setScale(0.25F / Scl.scl(1.0F));</b>
+<b class="nc">&nbsp;        layout.setText(font, name);</b>
+<b class="nc">&nbsp;        if (!isLocal()) {</b>
+<b class="nc">&nbsp;            Draw.color(0.0F, 0.0F, 0.0F, 0.3F);</b>
+<b class="nc">&nbsp;            Fill.rect(unit.x, unit.y + nameHeight - layout.height / 2, layout.width + 2, layout.height + 3);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+<b class="nc">&nbsp;            font.setColor(color);</b>
+<b class="nc">&nbsp;            font.draw(name, unit.x, unit.y + nameHeight, 0, Align.center, false);</b>
+<b class="nc">&nbsp;            if (admin) {</b>
+<b class="nc">&nbsp;                float s = 3.0F;</b>
+<b class="nc">&nbsp;                Draw.color(color.r * 0.5F, color.g * 0.5F, color.b * 0.5F, 1.0F);</b>
+<b class="nc">&nbsp;                Draw.rect(Icon.adminSmall.getRegion(), unit.x + layout.width / 2.0F + 2 + 1, unit.y + nameHeight - 1.5F, s, s);</b>
+<b class="nc">&nbsp;                Draw.color(color);</b>
+<b class="nc">&nbsp;                Draw.rect(Icon.adminSmall.getRegion(), unit.x + layout.width / 2.0F + 2 + 1, unit.y + nameHeight - 1.0F, s, s);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        if (Core.settings.getBool(&quot;playerchat&quot;) &amp;&amp; ((textFadeTime &gt; 0 &amp;&amp; lastText != null) || typing)) {</b>
+<b class="nc">&nbsp;            String text = textFadeTime &lt;= 0 || lastText == null ? &quot;[lightgray]&quot; + Strings.animated(Time.time, 4, 15.0F, &quot;.&quot;) : lastText;</b>
+<b class="nc">&nbsp;            float width = 100.0F;</b>
+<b class="nc">&nbsp;            float visualFadeTime = 1.0F - Mathf.curve(1.0F - textFadeTime, 0.9F);</b>
+<b class="nc">&nbsp;            font.setColor(1.0F, 1.0F, 1.0F, textFadeTime &lt;= 0 || lastText == null ? 1.0F : visualFadeTime);</b>
+<b class="nc">&nbsp;            layout.setText(font, text, Color.white, width, Align.bottom, true);</b>
+<b class="nc">&nbsp;            Draw.color(0.0F, 0.0F, 0.0F, 0.3F * (textFadeTime &lt;= 0 || lastText == null ? 1.0F : visualFadeTime));</b>
+<b class="nc">&nbsp;            Fill.rect(unit.x, unit.y + textHeight + layout.height - layout.height / 2.0F, layout.width + 2, layout.height + 3);</b>
+<b class="nc">&nbsp;            font.draw(text, unit.x - width / 2.0F, unit.y + textHeight + layout.height, width, Align.center, true);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Pools.free(layout);</b>
+<b class="nc">&nbsp;        font.getData().setScale(1.0F);</b>
+<b class="nc">&nbsp;        font.setColor(Color.white);</b>
+<b class="nc">&nbsp;        font.setUseIntegerPositions(ints);</b>
+<b class="nc">&nbsp;        Draw.z(z);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void handleSyncHidden() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void interpolate() {
+<b class="nc">&nbsp;    if(lastUpdated != 0 &amp;&amp; updateSpacing != 0) {</b>
+<b class="nc">&nbsp;      float timeSinceUpdate = Time.timeSinceMillis(lastUpdated);</b>
+<b class="nc">&nbsp;      float alpha = Math.min(timeSinceUpdate / updateSpacing, 2f);</b>
+<b class="nc">&nbsp;      x = (Mathf.lerp(x_LAST_, x_TARGET_, alpha));</b>
+<b class="nc">&nbsp;      y = (Mathf.lerp(y_LAST_, y_TARGET_, alpha));</b>
+<b class="nc">&nbsp;    } else if(lastUpdated != 0) {</b>
+<b class="nc">&nbsp;      x = x_TARGET_;</b>
+<b class="nc">&nbsp;      y = y_TARGET_;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void kick(String reason) {
+&nbsp;
+<b class="nc">&nbsp;        con.kick(reason);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void kick(String reason, long duration) {
+&nbsp;
+<b class="nc">&nbsp;        con.kick(reason, duration);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void kick(Packets.KickReason reason) {
+&nbsp;
+<b class="nc">&nbsp;        con.kick(reason);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void kick(Packets.KickReason reason, long duration) {
+&nbsp;
+<b class="nc">&nbsp;        con.kick(reason, duration);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void readSync(Reads read) {
+<b class="nc">&nbsp;    if(lastUpdated != 0) updateSpacing = Time.timeSinceMillis(lastUpdated);</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    boolean islocal = isLocal();</b>
+<b class="nc">&nbsp;    this.admin = read.bool();</b>
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.boosting = read.bool();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.bool();</b>
+&nbsp;    }
+<b class="nc">&nbsp;    this.color = mindustry.io.TypeIO.readColor(read, this.color);</b>
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.mouseX = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.f();</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.mouseY = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.f();</b>
+&nbsp;    }
+<b class="nc">&nbsp;    this.name = mindustry.io.TypeIO.readString(read);</b>
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.shooting = read.bool();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.bool();</b>
+&nbsp;    }
+<b class="nc">&nbsp;    this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.typing = read.bool();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.bool();</b>
+&nbsp;    }
+<b class="nc">&nbsp;    this.unit = mindustry.io.TypeIO.readUnit(read);</b>
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      x_LAST_ = this.x;</b>
+<b class="nc">&nbsp;      this.x_TARGET_ = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      x_LAST_ = this.x;</b>
+<b class="nc">&nbsp;      x_TARGET_ = this.x;</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      y_LAST_ = this.y;</b>
+<b class="nc">&nbsp;      this.y_TARGET_ = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      y_LAST_ = this.y;</b>
+<b class="nc">&nbsp;      y_TARGET_ = this.y;</b>
+&nbsp;    }
+<b class="nc">&nbsp;    afterSync();</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void readSyncManual(FloatBuffer buffer) {
+<b class="nc">&nbsp;    if(lastUpdated != 0) updateSpacing = Time.timeSinceMillis(lastUpdated);</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    this.x_LAST_ = this.x;</b>
+<b class="nc">&nbsp;    this.x_TARGET_ = buffer.get();</b>
+<b class="nc">&nbsp;    this.y_LAST_ = this.y;</b>
+<b class="nc">&nbsp;    this.y_TARGET_ = buffer.get();</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void remove() {
+<b class="nc">&nbsp;    if(added == false) return;</b>
+<b class="nc">&nbsp;    Groups.all.removeIndex(this, index__all);;</b>
+<b class="nc">&nbsp;    index__all = -1;</b>
+<b class="nc">&nbsp;    Groups.player.removeIndex(this, index__player);;</b>
+<b class="nc">&nbsp;    index__player = -1;</b>
+<b class="nc">&nbsp;    Groups.sync.removeIndex(this, index__sync);;</b>
+<b class="nc">&nbsp;    index__sync = -1;</b>
+<b class="nc">&nbsp;    Groups.draw.removeIndex(this, index__draw);;</b>
+<b class="nc">&nbsp;    index__draw = -1;</b>
+&nbsp;    entity: {
+&nbsp;
+<b class="nc">&nbsp;        added = false;</b>
+&nbsp;    }
+&nbsp;    player: {
+&nbsp;
+<b class="nc">&nbsp;        if (unit != null) {</b>
+<b class="nc">&nbsp;            clearUnit();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        lastReadUnit = null;</b>
+<b class="nc">&nbsp;        justSwitchTo = justSwitchFrom = null;</b>
+&nbsp;    }
+&nbsp;    sync: {
+&nbsp;
+<b class="nc">&nbsp;        if (Vars.net.client()) {</b>
+<b class="nc">&nbsp;            Vars.netClient.addRemovedEntity(id());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void reset() {
+&nbsp;
+<b class="nc">&nbsp;        team = state.rules.defaultTeam;</b>
+<b class="nc">&nbsp;        admin = typing = false;</b>
+<b class="nc">&nbsp;        textFadeTime = 0.0F;</b>
+<b class="nc">&nbsp;        x = y = 0.0F;</b>
+<b class="nc">&nbsp;        if (!dead()) {</b>
+<b class="nc">&nbsp;            unit.resetController();</b>
+<b class="nc">&nbsp;            unit = null;</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void sendMessage(String text) {
+&nbsp;
+<b class="nc">&nbsp;        sendMessage(text, null, null);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void sendMessage(String text, Player from) {
+&nbsp;
+<b class="nc">&nbsp;        sendMessage(text, from, null);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void sendMessage(String text, Player from, String unformatted) {
+&nbsp;
+<b class="nc">&nbsp;        if (isLocal()) {</b>
+<b class="nc">&nbsp;            if (ui != null) {</b>
+<b class="nc">&nbsp;                ui.chatfrag.addMessage(text);</b>
+&nbsp;            }
+&nbsp;        } else {
+<b class="nc">&nbsp;            Call.sendMessage(con, text, unformatted, from);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void sendUnformatted(Player from, String unformatted) {
+&nbsp;
+<b class="nc">&nbsp;        sendMessage(netServer.chatFormatter.format(from, unformatted), from, unformatted);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void sendUnformatted(String unformatted) {
+&nbsp;
+<b class="nc">&nbsp;        sendUnformatted(null, unformatted);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        set(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        this.x = x;</b>
+<b class="nc">&nbsp;        this.y = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void snapInterpolation() {
+<b class="nc">&nbsp;    updateSpacing = 16;</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    x_LAST_ = x;</b>
+<b class="nc">&nbsp;    x_TARGET_ = x;</b>
+<b class="nc">&nbsp;    y_LAST_ = y;</b>
+<b class="nc">&nbsp;    y_TARGET_ = y;</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void snapSync() {
+<b class="nc">&nbsp;    updateSpacing = 16;</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    x_LAST_ = x_TARGET_;</b>
+<b class="nc">&nbsp;    x = x_TARGET_;</b>
+<b class="nc">&nbsp;    y_LAST_ = y_TARGET_;</b>
+<b class="nc">&nbsp;    y = y_TARGET_;</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void team(Team team) {
+&nbsp;
+<b class="nc">&nbsp;        this.team = team;</b>
+<b class="nc">&nbsp;        if (unit != null) {</b>
+<b class="nc">&nbsp;            unit.team(team);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void trns(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        trns(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void trns(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        set(this.x + x, this.y + y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void unit(Unit unit) {
+&nbsp;
+<b class="nc">&nbsp;        if (isLocal() &amp;&amp; unit == justSwitchFrom &amp;&amp; justSwitchFrom != null &amp;&amp; justSwitchTo != null) {</b>
+&nbsp;            return;
+&nbsp;        }
+<b class="nc">&nbsp;        if (this.unit == unit) return;</b>
+<b class="nc">&nbsp;        if (unit != null &amp;&amp; unit.controller() instanceof CommandAI ai) {</b>
+<b class="nc">&nbsp;            lastCommand = ai.command;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (this.unit != null) {</b>
+<b class="nc">&nbsp;            this.unit.resetController();</b>
+<b class="nc">&nbsp;            if (lastCommand != null &amp;&amp; this.unit.controller() instanceof CommandAI ai) {</b>
+<b class="nc">&nbsp;                ai.command(lastCommand);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        this.unit = unit;</b>
+<b class="nc">&nbsp;        if (unit != null) {</b>
+<b class="nc">&nbsp;            unit.team(team);</b>
+<b class="nc">&nbsp;            unit.controller(this);</b>
+<b class="nc">&nbsp;            if (unit.isRemote()) {</b>
+<b class="nc">&nbsp;                unit.snapInterpolation();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if (!headless &amp;&amp; isLocal()) {</b>
+<b class="nc">&nbsp;                control.input.block = null;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        Events.fire(new UnitChangeEvent(this, unit));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void update() {
+&nbsp;    entity: {
+&nbsp;
+&nbsp;    }
+&nbsp;    player: {
+&nbsp;
+<b class="nc">&nbsp;        if (unit != null &amp;&amp; !unit.isValid()) {</b>
+<b class="nc">&nbsp;            clearUnit();</b>
+&nbsp;        }
+&nbsp;        CoreBuild core;
+<b class="nc">&nbsp;        if (!dead()) {</b>
+<b class="nc">&nbsp;            set(unit);</b>
+<b class="nc">&nbsp;            unit.team(team);</b>
+<b class="nc">&nbsp;            deathTimer = 0;</b>
+<b class="nc">&nbsp;            if (unit.type.canBoost) {</b>
+<b class="nc">&nbsp;                unit.elevation = Mathf.approachDelta(unit.elevation, unit.onSolid() || boosting || (unit.isFlying() &amp;&amp; !unit.canLand()) ? 1.0F : 0.0F, unit.type.riseSpeed);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } else if ((core = bestCore()) != null) {</b>
+<b class="nc">&nbsp;            deathTimer += Time.delta;</b>
+<b class="nc">&nbsp;            if (deathTimer &gt;= deathDelay) {</b>
+<b class="nc">&nbsp;                core.requestSpawn(this);</b>
+<b class="nc">&nbsp;                deathTimer = 0;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        textFadeTime -= Time.delta / (60 * 5);</b>
+&nbsp;    }
+&nbsp;    sync: {
+&nbsp;
+<b class="nc">&nbsp;        if ((Vars.net.client() &amp;&amp; !isLocal()) || isRemote()) {</b>
+<b class="nc">&nbsp;            interpolate();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void writeSync(Writes write) {
+<b class="nc">&nbsp;    write.bool(this.admin);</b>
+<b class="nc">&nbsp;    write.bool(this.boosting);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeColor(write, this.color);</b>
+<b class="nc">&nbsp;    write.f(this.mouseX);</b>
+<b class="nc">&nbsp;    write.f(this.mouseY);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeString(write, this.name);</b>
+<b class="nc">&nbsp;    write.bool(this.shooting);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeTeam(write, this.team);</b>
+<b class="nc">&nbsp;    write.bool(this.typing);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeUnit(write, this.unit);</b>
+<b class="nc">&nbsp;    write.f(this.x);</b>
+<b class="nc">&nbsp;    write.f(this.y);</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void writeSyncManual(FloatBuffer buffer) {
+<b class="nc">&nbsp;    buffer.put(this.x);</b>
+<b class="nc">&nbsp;    buffer.put(this.y);</b>
+&nbsp;
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

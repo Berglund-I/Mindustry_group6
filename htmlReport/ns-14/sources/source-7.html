@@ -1,0 +1,186 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ContinuousLaserBulletType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.bullet</a>
+</div>
+
+<h1>Coverage Summary for Class: ContinuousLaserBulletType (mindustry.entities.bullet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ContinuousLaserBulletType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.2%
+  </span>
+  <span class="absValue">
+    (21/41)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.bullet;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;
+&nbsp;public class ContinuousLaserBulletType extends ContinuousBulletType{
+<b class="fc">&nbsp;    public float fadeTime = 16f;</b>
+<b class="fc">&nbsp;    public float lightStroke = 40f;</b>
+<b class="fc">&nbsp;    public int divisions = 13;</b>
+<b class="fc">&nbsp;    public Color[] colors = {Color.valueOf(&quot;ec745855&quot;), Color.valueOf(&quot;ec7458aa&quot;), Color.valueOf(&quot;ff9c5a&quot;), Color.white};</b>
+<b class="fc">&nbsp;    public float strokeFrom = 2f, strokeTo = 0.5f, pointyScaling = 0.75f;</b>
+<b class="fc">&nbsp;    public float backLength = 7f, frontLength = 35f;</b>
+<b class="fc">&nbsp;    public float width = 9f, oscScl = 0.8f, oscMag = 1.5f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public ContinuousLaserBulletType(float damage){</b>
+<b class="fc">&nbsp;        this.damage = damage;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ContinuousLaserBulletType(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    {
+<b class="fc">&nbsp;        shake = 1f;</b>
+<b class="fc">&nbsp;        largeHit = true;</b>
+<b class="fc">&nbsp;        hitEffect = Fx.hitBeam;</b>
+<b class="fc">&nbsp;        hitSize = 4;</b>
+<b class="fc">&nbsp;        drawSize = 420f;</b>
+<b class="fc">&nbsp;        lifetime = 16f;</b>
+<b class="fc">&nbsp;        hitColor = colors[2];</b>
+<b class="fc">&nbsp;        incendAmount = 1;</b>
+<b class="fc">&nbsp;        incendSpread = 5;</b>
+<b class="fc">&nbsp;        incendChance = 0.4f;</b>
+<b class="fc">&nbsp;        lightColor = Color.orange;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Bullet b){
+<b class="nc">&nbsp;        float fout = Mathf.clamp(b.time &gt; b.lifetime - fadeTime ? 1f - (b.time - (lifetime - fadeTime)) / fadeTime : 1f);</b>
+<b class="nc">&nbsp;        float realLength = Damage.findLength(b, length * fout, laserAbsorb, pierceCap);</b>
+<b class="nc">&nbsp;        float rot = b.rotation();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; colors.length; i++){</b>
+<b class="nc">&nbsp;            Draw.color(Tmp.c1.set(colors[i]).mul(1f + Mathf.absin(Time.time, 1f, 0.1f)));</b>
+&nbsp;
+<b class="nc">&nbsp;            float colorFin = i / (float)(colors.length - 1);</b>
+<b class="nc">&nbsp;            float baseStroke = Mathf.lerp(strokeFrom, strokeTo, colorFin);</b>
+<b class="nc">&nbsp;            float stroke = (width + Mathf.absin(Time.time, oscScl, oscMag)) * fout * baseStroke;</b>
+<b class="nc">&nbsp;            float ellipseLenScl = Mathf.lerp(1 - i / (float)(colors.length), 1f, pointyScaling);</b>
+&nbsp;
+<b class="nc">&nbsp;            Lines.stroke(stroke);</b>
+<b class="nc">&nbsp;            Lines.lineAngle(b.x, b.y, rot, realLength - frontLength, false);</b>
+&nbsp;
+&nbsp;            //back ellipse
+<b class="nc">&nbsp;            Drawf.flameFront(b.x, b.y, divisions, rot + 180f, backLength, stroke / 2f);</b>
+&nbsp;
+&nbsp;            //front ellipse
+<b class="nc">&nbsp;            Tmp.v1.trnsExact(rot, realLength - frontLength);</b>
+<b class="nc">&nbsp;            Drawf.flameFront(b.x + Tmp.v1.x, b.y + Tmp.v1.y, divisions, rot, frontLength * ellipseLenScl, stroke / 2f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Tmp.v1.trns(b.rotation(), realLength * 1.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.light(b.x, b.y, b.x + Tmp.v1.x, b.y + Tmp.v1.y, lightStroke, lightColor, 0.7f);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawLight(Bullet b){
+&nbsp;        //no light drawn here
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float currentLength(Bullet b){
+<b class="nc">&nbsp;        float fout = Mathf.clamp(b.time &gt; b.lifetime - fadeTime ? 1f - (b.time - (lifetime - fadeTime)) / fadeTime : 1f);</b>
+<b class="nc">&nbsp;        return length * fout;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

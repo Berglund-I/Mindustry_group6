@@ -1,0 +1,245 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LoadoutDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: LoadoutDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoadoutDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/75)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class LoadoutDialog extends BaseDialog{
+&nbsp;    private Runnable hider;
+&nbsp;    private Runnable resetter;
+&nbsp;    private Runnable updater;
+&nbsp;    //TODO use itemseqs
+<b class="nc">&nbsp;    private Seq&lt;ItemStack&gt; stacks = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    private Seq&lt;ItemStack&gt; originalStacks = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    private Boolf&lt;Item&gt; validator = i -&gt; true;</b>
+&nbsp;    private Table items;
+&nbsp;    private int capacity;
+&nbsp;    private @Nullable ItemSeq total;
+&nbsp;
+&nbsp;    public LoadoutDialog(){
+<b class="nc">&nbsp;        super(&quot;@configure&quot;);</b>
+<b class="nc">&nbsp;        setFillParent(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        keyDown(key -&gt; {</b>
+<b class="nc">&nbsp;            if(key == KeyCode.escape || key == KeyCode.back){</b>
+<b class="nc">&nbsp;                Core.app.post(this::hide);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        cont.pane(t -&gt; items = t.margin(10f)).left();</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(this::setup);</b>
+<b class="nc">&nbsp;        hidden(() -&gt; {</b>
+<b class="nc">&nbsp;            originalStacks.selectFrom(stacks, s -&gt; s.amount &gt; 0);</b>
+<b class="nc">&nbsp;            updater.run();</b>
+<b class="nc">&nbsp;            if(hider != null){</b>
+<b class="nc">&nbsp;                hider.run();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@back&quot;, Icon.left, this::hide).size(210f, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@max&quot;, Icon.export, this::maxItems).size(210f, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@settings.reset&quot;, Icon.refresh, () -&gt; {</b>
+<b class="nc">&nbsp;            resetter.run();</b>
+<b class="nc">&nbsp;            reseed();</b>
+<b class="nc">&nbsp;            updater.run();</b>
+<b class="nc">&nbsp;            setup();</b>
+<b class="nc">&nbsp;        }).size(210f, 64f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void maxItems(){
+<b class="nc">&nbsp;        for(ItemStack stack : stacks){</b>
+<b class="nc">&nbsp;            stack.amount = total == null ? capacity : Math.max(Math.min(capacity, total.get(stack.item)), 0);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void show(int capacity, Seq&lt;ItemStack&gt; stacks, Boolf&lt;Item&gt; validator, Runnable reseter, Runnable updater, Runnable hider){
+<b class="nc">&nbsp;        show(capacity, null, stacks, validator, reseter, updater, hider);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void show(int capacity, ItemSeq total, Seq&lt;ItemStack&gt; stacks, Boolf&lt;Item&gt; validator, Runnable reseter, Runnable updater, Runnable hider){
+<b class="nc">&nbsp;        this.originalStacks = stacks;</b>
+<b class="nc">&nbsp;        this.validator = validator;</b>
+<b class="nc">&nbsp;        this.resetter = reseter;</b>
+<b class="nc">&nbsp;        this.updater = updater;</b>
+<b class="nc">&nbsp;        this.capacity = capacity;</b>
+<b class="nc">&nbsp;        this.total = total;</b>
+<b class="nc">&nbsp;        this.hider = hider;</b>
+<b class="nc">&nbsp;        reseed();</b>
+<b class="nc">&nbsp;        show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void setup(){
+<b class="nc">&nbsp;        items.clearChildren();</b>
+<b class="nc">&nbsp;        items.left();</b>
+<b class="nc">&nbsp;        float bsize = 40f;</b>
+&nbsp;
+<b class="nc">&nbsp;        int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(ItemStack stack : stacks){</b>
+<b class="nc">&nbsp;            items.table(Tex.pane, t -&gt; {</b>
+<b class="nc">&nbsp;                t.margin(4).marginRight(8).left();</b>
+<b class="nc">&nbsp;                t.button(&quot;-&quot;, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    stack.amount = Math.max(stack.amount - step(stack.amount), 0);</b>
+<b class="nc">&nbsp;                    updater.run();</b>
+<b class="nc">&nbsp;                }).size(bsize);</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;+&quot;, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    stack.amount = Math.min(stack.amount + step(stack.amount), capacity);</b>
+<b class="nc">&nbsp;                    updater.run();</b>
+<b class="nc">&nbsp;                }).size(bsize);</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(Icon.pencil, Styles.flati, () -&gt; ui.showTextInput(&quot;@configure&quot;, stack.item.localizedName, 10, stack.amount + &quot;&quot;, true, str -&gt; {</b>
+<b class="nc">&nbsp;                    if(Strings.canParsePositiveInt(str)){</b>
+<b class="nc">&nbsp;                        int amount = Strings.parseInt(str);</b>
+<b class="nc">&nbsp;                        if(amount &gt;= 0 &amp;&amp; amount &lt;= capacity){</b>
+<b class="nc">&nbsp;                            stack.amount = amount;</b>
+<b class="nc">&nbsp;                            updater.run();</b>
+&nbsp;                            return;
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    ui.showInfo(Core.bundle.format(&quot;configure.invalid&quot;, capacity));</b>
+<b class="nc">&nbsp;                })).size(bsize);</b>
+&nbsp;
+<b class="nc">&nbsp;                t.image(stack.item.uiIcon).size(8 * 3).padRight(4).padLeft(4);</b>
+<b class="nc">&nbsp;                t.label(() -&gt; stack.amount + &quot;&quot;).left().width(90f);</b>
+<b class="nc">&nbsp;            }).pad(2).left().fillX();</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;            if(++i % 2 == 0 || (mobile &amp;&amp; Core.graphics.isPortrait())){</b>
+<b class="nc">&nbsp;                items.row();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void reseed(){
+<b class="nc">&nbsp;        this.stacks = originalStacks.map(ItemStack::copy);</b>
+<b class="nc">&nbsp;        this.stacks.addAll(content.items().select(i -&gt; validator.get(i) &amp;&amp; !i.isHidden() &amp;&amp; !stacks.contains(stack -&gt; stack.item == i)).map(i -&gt; new ItemStack(i, 0)));</b>
+<b class="nc">&nbsp;        this.stacks.sort(Structs.comparingInt(s -&gt; s.item.id));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private int step(int amount){
+<b class="nc">&nbsp;        if(amount &lt; 1000){</b>
+<b class="nc">&nbsp;            return 100;</b>
+<b class="nc">&nbsp;        }else if(amount &lt; 2000){</b>
+<b class="nc">&nbsp;            return 200;</b>
+<b class="nc">&nbsp;        }else if(amount &lt; 5000){</b>
+<b class="nc">&nbsp;            return 500;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return 1000;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

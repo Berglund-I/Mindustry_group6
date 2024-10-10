@@ -1,0 +1,1144 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Bullet</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: Bullet (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Bullet</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/131)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/282)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import java.nio.*;
+&nbsp;import java.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.async.PhysicsProcess.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.heat.*;
+&nbsp;import mindustry.world.blocks.heat.HeatConductor.*;
+&nbsp;import mindustry.world.blocks.logic.LogicBlock.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.entities.Puddles.*;
+&nbsp;import static mindustry.logic.GlobalVars.*;
+&nbsp;
+&nbsp;import arc.func.Cons;
+&nbsp;import arc.math.geom.Position;
+&nbsp;import arc.math.geom.QuadTree;
+&nbsp;import arc.math.geom.Rect;
+&nbsp;import arc.math.geom.Vec2;
+&nbsp;import arc.struct.IntSeq;
+&nbsp;import arc.util.Interval;
+&nbsp;import arc.util.Nullable;
+&nbsp;import arc.util.io.Reads;
+&nbsp;import arc.util.io.Writes;
+&nbsp;import arc.util.pooling.Pool;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.entities.EntityCollisions;
+&nbsp;import mindustry.entities.Mover;
+&nbsp;import mindustry.entities.bullet.BulletType;
+&nbsp;import mindustry.game.Team;
+&nbsp;import mindustry.graphics.Trail;
+&nbsp;import mindustry.world.Block;
+&nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.world.blocks.environment.Floor;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+&nbsp;public class Bullet implements Pool.Poolable, Bulletc, Damagec, Drawc, Entityc, Hitboxc, IndexableEntity__all, IndexableEntity__bullet, IndexableEntity__draw, Ownerc, Posc, Shielderc, Teamc, Timedc, Timerc, Velc {
+&nbsp;  public transient boolean absorbed;
+&nbsp;
+&nbsp;  protected transient boolean added;
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  public transient Tile aimTile;
+&nbsp;
+&nbsp;  public transient float aimX;
+&nbsp;
+&nbsp;  public transient float aimY;
+&nbsp;
+<b class="nc">&nbsp;  public IntSeq collided = new IntSeq(6);</b>
+&nbsp;
+&nbsp;  public float damage;
+&nbsp;
+&nbsp;  public Object data;
+&nbsp;
+&nbsp;  public transient float deltaX;
+&nbsp;
+&nbsp;  public transient float deltaY;
+&nbsp;
+<b class="nc">&nbsp;  public transient float drag = 0.0F;</b>
+&nbsp;
+&nbsp;  public float fdata;
+&nbsp;
+&nbsp;  public transient int frags;
+&nbsp;
+&nbsp;  public transient boolean hit;
+&nbsp;
+&nbsp;  public transient float hitSize;
+&nbsp;
+<b class="nc">&nbsp;  public transient int id = EntityGroup.nextId();</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__all = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__bullet = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;  protected transient int index__draw = -1;</b>
+&nbsp;
+&nbsp;  public transient boolean keepAlive;
+&nbsp;
+&nbsp;  public transient float lastX;
+&nbsp;
+&nbsp;  public transient float lastY;
+&nbsp;
+&nbsp;  public float lifetime;
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  public transient Mover mover;
+&nbsp;
+&nbsp;  public transient float originX;
+&nbsp;
+&nbsp;  public transient float originY;
+&nbsp;
+&nbsp;  public Entityc owner;
+&nbsp;
+&nbsp;  @Annotations.ReadOnly
+&nbsp;  protected float rotation;
+&nbsp;
+<b class="nc">&nbsp;  public Team team = Team.derelict;</b>
+&nbsp;
+&nbsp;  public float time;
+&nbsp;
+<b class="nc">&nbsp;  public transient Interval timer = new Interval(6);</b>
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  public transient Trail trail;
+&nbsp;
+&nbsp;  public BulletType type;
+&nbsp;
+<b class="nc">&nbsp;  @Annotations.SyncLocal</b>
+&nbsp;  public Vec2 vel = new Vec2();
+&nbsp;
+&nbsp;  @Annotations.SyncField(true)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float x;
+&nbsp;
+&nbsp;  @Annotations.SyncField(true)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float y;
+&nbsp;
+<b class="nc">&nbsp;  protected Bullet() {</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Vec2 vel() {
+<b class="nc">&nbsp;    return vel;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public IntSeq collided() {
+<b class="nc">&nbsp;    return collided;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Interval timer() {
+<b class="nc">&nbsp;    return timer;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean absorbed() {
+<b class="nc">&nbsp;    return absorbed;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean hit() {
+<b class="nc">&nbsp;    return hit;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean keepAlive() {
+<b class="nc">&nbsp;    return keepAlive;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float aimX() {
+<b class="nc">&nbsp;    return aimX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float aimY() {
+<b class="nc">&nbsp;    return aimY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float damage() {
+<b class="nc">&nbsp;    return damage;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float deltaX() {
+<b class="nc">&nbsp;    return deltaX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float deltaY() {
+<b class="nc">&nbsp;    return deltaY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float drag() {
+<b class="nc">&nbsp;    return drag;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float fdata() {
+<b class="nc">&nbsp;    return fdata;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float lastX() {
+<b class="nc">&nbsp;    return lastX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float lastY() {
+<b class="nc">&nbsp;    return lastY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float lifetime() {
+<b class="nc">&nbsp;    return lifetime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float originX() {
+<b class="nc">&nbsp;    return originX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float originY() {
+<b class="nc">&nbsp;    return originY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float time() {
+<b class="nc">&nbsp;    return time;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float x() {
+<b class="nc">&nbsp;    return x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float y() {
+<b class="nc">&nbsp;    return y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int classId() {
+<b class="nc">&nbsp;    return 7;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int frags() {
+<b class="nc">&nbsp;    return frags;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int id() {
+<b class="nc">&nbsp;    return id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object data() {
+<b class="nc">&nbsp;    return data;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public String toString() {
+<b class="nc">&nbsp;    return &quot;Bullet#&quot; + id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Mover mover() {
+<b class="nc">&nbsp;    return mover;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public BulletType type() {
+<b class="nc">&nbsp;    return type;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Team team() {
+<b class="nc">&nbsp;    return team;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Entityc owner() {
+<b class="nc">&nbsp;    return owner;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Trail trail() {
+<b class="nc">&nbsp;    return trail;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Tile aimTile() {
+<b class="nc">&nbsp;    return aimTile;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void absorbed(boolean absorbed) {
+<b class="nc">&nbsp;    this.absorbed = absorbed;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void aimTile(Tile aimTile) {
+<b class="nc">&nbsp;    this.aimTile = aimTile;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void aimX(float aimX) {
+<b class="nc">&nbsp;    this.aimX = aimX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void aimY(float aimY) {
+<b class="nc">&nbsp;    this.aimY = aimY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void collided(IntSeq collided) {
+<b class="nc">&nbsp;    this.collided = collided;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void damage(float damage) {
+<b class="nc">&nbsp;    this.damage = damage;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void data(Object data) {
+<b class="nc">&nbsp;    this.data = data;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void deltaX(float deltaX) {
+<b class="nc">&nbsp;    this.deltaX = deltaX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void deltaY(float deltaY) {
+<b class="nc">&nbsp;    this.deltaY = deltaY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void drag(float drag) {
+<b class="nc">&nbsp;    this.drag = drag;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void fdata(float fdata) {
+<b class="nc">&nbsp;    this.fdata = fdata;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void frags(int frags) {
+<b class="nc">&nbsp;    this.frags = frags;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void hit(boolean hit) {
+<b class="nc">&nbsp;    this.hit = hit;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void hitSize(float hitSize) {
+<b class="nc">&nbsp;    this.hitSize = hitSize;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void id(int id) {
+<b class="nc">&nbsp;    this.id = id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void keepAlive(boolean keepAlive) {
+<b class="nc">&nbsp;    this.keepAlive = keepAlive;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastX(float lastX) {
+<b class="nc">&nbsp;    this.lastX = lastX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastY(float lastY) {
+<b class="nc">&nbsp;    this.lastY = lastY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lifetime(float lifetime) {
+<b class="nc">&nbsp;    this.lifetime = lifetime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void mover(Mover mover) {
+<b class="nc">&nbsp;    this.mover = mover;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void originX(float originX) {
+<b class="nc">&nbsp;    this.originX = originX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void originY(float originY) {
+<b class="nc">&nbsp;    this.originY = originY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void owner(Entityc owner) {
+<b class="nc">&nbsp;    this.owner = owner;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__all(int index) {
+<b class="nc">&nbsp;    index__all = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__bullet(int index) {
+<b class="nc">&nbsp;    index__bullet = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__draw(int index) {
+<b class="nc">&nbsp;    index__draw = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void team(Team team) {
+<b class="nc">&nbsp;    this.team = team;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void time(float time) {
+<b class="nc">&nbsp;    this.time = time;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void timer(Interval timer) {
+<b class="nc">&nbsp;    this.timer = timer;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void trail(Trail trail) {
+<b class="nc">&nbsp;    this.trail = trail;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void type(BulletType type) {
+<b class="nc">&nbsp;    this.type = type;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void vel(Vec2 vel) {
+<b class="nc">&nbsp;    this.vel = vel;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void x(float x) {
+<b class="nc">&nbsp;    this.x = x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void y(float y) {
+<b class="nc">&nbsp;    this.y = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public &lt;T extends Entityc&gt; T self() {
+&nbsp;
+<b class="nc">&nbsp;        return (T)this;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public &lt;T&gt; T as() {
+&nbsp;
+<b class="nc">&nbsp;        return (T)this;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Building buildOn() {
+&nbsp;
+<b class="nc">&nbsp;        return world.buildWorld(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canPass(int tileX, int tileY) {
+&nbsp;
+<b class="nc">&nbsp;        SolidPred s = solidity();</b>
+<b class="nc">&nbsp;        return s == null || !s.solid(tileX, tileY);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canPassOn() {
+&nbsp;
+<b class="nc">&nbsp;        return canPass(tileX(), tileY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean cheating() {
+&nbsp;
+<b class="nc">&nbsp;        return team.rules().cheat;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean checkUnderBuild(Building build, float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        return (!build.block.underBullets || (aimTile != null &amp;&amp; aimTile.build == build) || (build.team == team) || (type.pierce &amp;&amp; aimTile != null &amp;&amp; Mathf.dst(x, y, originX, originY) &gt; aimTile.dst(originX, originY) + 2.0F) || (aimX == -1.0F &amp;&amp; aimY == -1.0F));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean collides(Hitboxc other) {
+&nbsp;
+<b class="nc">&nbsp;        return type.collides &amp;&amp; (other instanceof Teamc t &amp;&amp; t.team() != team) &amp;&amp; !(other instanceof Flyingc f &amp;&amp; !f.checkTarget(type.collidesAir, type.collidesGround)) &amp;&amp; !(type.pierce &amp;&amp; hasCollided(other.id()));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean hasCollided(int id) {
+&nbsp;
+<b class="nc">&nbsp;        return collided.size != 0 &amp;&amp; collided.contains(id);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean inFogTo(Team viewer) {
+&nbsp;
+<b class="nc">&nbsp;        return this.team != viewer &amp;&amp; !fogControl.isVisible(viewer, x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isAdded() {
+&nbsp;
+<b class="nc">&nbsp;        return added;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isLocal() {
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isRemote() {
+&nbsp;
+<b class="nc">&nbsp;        return ((Object)this) instanceof Unitc u &amp;&amp; u.isPlayer() &amp;&amp; !isLocal();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean moving() {
+&nbsp;
+<b class="nc">&nbsp;        return !vel.isZero(0.01F);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean onSolid() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null || tile.solid();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean serialize() {
+<b class="nc">&nbsp;    return false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean timer(int index, float time) {
+&nbsp;
+<b class="nc">&nbsp;        if (Float.isInfinite(time)) return false;</b>
+<b class="nc">&nbsp;        return timer.get(index, time);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float clipSize() {
+&nbsp;
+<b class="nc">&nbsp;        return type.drawSize;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float damageMultiplier() {
+&nbsp;
+<b class="nc">&nbsp;        return type.damageMultiplier(this);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float deltaAngle() {
+&nbsp;
+<b class="nc">&nbsp;        return Mathf.angle(deltaX, deltaY);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float deltaLen() {
+&nbsp;
+<b class="nc">&nbsp;        return Mathf.len(deltaX, deltaY);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float fin() {
+&nbsp;
+<b class="nc">&nbsp;        return time / lifetime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getX() {
+&nbsp;
+<b class="nc">&nbsp;        return x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getY() {
+&nbsp;
+<b class="nc">&nbsp;        return y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float hitSize() {
+&nbsp;
+<b class="nc">&nbsp;        return hitSize;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float rotation() {
+&nbsp;
+<b class="nc">&nbsp;        return vel.isZero(0.001F) ? rotation : vel.angle();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int tileX() {
+&nbsp;
+<b class="nc">&nbsp;        return World.toTile(x);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int tileY() {
+&nbsp;
+<b class="nc">&nbsp;        return World.toTile(y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public EntityCollisions.SolidPred solidity() {
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Block blockOn() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null ? Blocks.air : tile.block();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Tile tileOn() {
+&nbsp;
+<b class="nc">&nbsp;        return world.tileWorld(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Floor floorOn() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null || tile.block() != Blocks.air ? (Floor)Blocks.air : tile.floor();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public CoreBlock.CoreBuild closestCore() {
+&nbsp;
+<b class="nc">&nbsp;        return state.teams.closestCore(x, y, team);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public CoreBlock.CoreBuild closestEnemyCore() {
+&nbsp;
+<b class="nc">&nbsp;        return state.teams.closestEnemyCore(x, y, team);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public CoreBlock.CoreBuild core() {
+&nbsp;
+<b class="nc">&nbsp;        return team.core();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static Bullet create() {
+<b class="nc">&nbsp;    return Pools.obtain(Bullet.class, Bullet::new);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void absorb() {
+&nbsp;    bullet: {
+&nbsp;
+<b class="nc">&nbsp;        absorbed = true;</b>
+<b class="nc">&nbsp;        remove();</b>
+&nbsp;    }
+&nbsp;    shielder: {
+&nbsp;
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void add() {
+<b class="nc">&nbsp;    if(added == true) return;</b>
+<b class="nc">&nbsp;    index__all = Groups.all.addIndex(this);</b>
+<b class="nc">&nbsp;    index__bullet = Groups.bullet.addIndex(this);</b>
+<b class="nc">&nbsp;    index__draw = Groups.draw.addIndex(this);</b>
+&nbsp;    bullet: {
+&nbsp;
+<b class="nc">&nbsp;        type.init(this);</b>
+&nbsp;    }
+&nbsp;    entity: {
+&nbsp;
+<b class="nc">&nbsp;        added = true;</b>
+&nbsp;    }
+&nbsp;    hitbox: {
+&nbsp;
+<b class="nc">&nbsp;        updateLastPosition();</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void afterAllRead() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void afterRead() {
+&nbsp;    entity: {
+&nbsp;
+&nbsp;    }
+&nbsp;    hitbox: {
+&nbsp;
+<b class="nc">&nbsp;        updateLastPosition();</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void collision(Hitboxc other, float x, float y) {
+&nbsp;    hitbox: {
+&nbsp;
+&nbsp;    }
+&nbsp;    bullet: {
+&nbsp;
+<b class="nc">&nbsp;        type.hit(this, x, y);</b>
+<b class="nc">&nbsp;        if (!type.pierce) {</b>
+<b class="nc">&nbsp;            hit = true;</b>
+<b class="nc">&nbsp;            remove();</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            collided.add(other.id());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        type.hitEntity(this, other, other instanceof Healthc h ? h.health() : 0.0F);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void draw() {
+&nbsp;    bullet: {
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(type.layer);</b>
+<b class="nc">&nbsp;        type.draw(this);</b>
+<b class="nc">&nbsp;        type.drawLight(this);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;    draw: {
+&nbsp;
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void getCollisions(Cons&lt;QuadTree&gt; consumer) {
+&nbsp;    bullet: {
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;TeamData&gt; data = state.teams.present;</b>
+<b class="nc">&nbsp;        for (int i = 0; i &lt; data.size; i++) {</b>
+<b class="nc">&nbsp;            if (data.items[i].team != team) {</b>
+<b class="nc">&nbsp;                consumer.get(data.items[i].tree());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;    hitbox: {
+&nbsp;
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void hitbox(Rect rect) {
+&nbsp;
+<b class="nc">&nbsp;        rect.setCentered(x, y, hitSize, hitSize);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void hitboxTile(Rect rect) {
+&nbsp;
+<b class="nc">&nbsp;        float size = Math.min(hitSize * 0.66F, 7.8F);</b>
+<b class="nc">&nbsp;        rect.setCentered(x, y, size, size);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void initVel(float angle, float amount) {
+&nbsp;
+<b class="nc">&nbsp;        vel.trns(angle, amount);</b>
+<b class="nc">&nbsp;        rotation = angle;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void move(Vec2 v) {
+&nbsp;
+<b class="nc">&nbsp;        move(v.x, v.y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void move(float cx, float cy) {
+&nbsp;
+<b class="nc">&nbsp;        SolidPred check = solidity();</b>
+<b class="nc">&nbsp;        if (check != null) {</b>
+<b class="nc">&nbsp;            collisions.move(this, cx, cy, check);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            x += cx;</b>
+<b class="nc">&nbsp;            y += cy;</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void moveRelative(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        float rot = rotation();</b>
+<b class="nc">&nbsp;        this.x += Angles.trnsx(rot, x * Time.delta, y * Time.delta);</b>
+<b class="nc">&nbsp;        this.y += Angles.trnsy(rot, x * Time.delta, y * Time.delta);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void read(Reads read) {
+&nbsp;
+<b class="nc">&nbsp;        afterRead();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void remove() {
+<b class="nc">&nbsp;    if(added == false) return;</b>
+<b class="nc">&nbsp;    Groups.all.removeIndex(this, index__all);;</b>
+<b class="nc">&nbsp;    index__all = -1;</b>
+<b class="nc">&nbsp;    Groups.bullet.removeIndex(this, index__bullet);;</b>
+<b class="nc">&nbsp;    index__bullet = -1;</b>
+<b class="nc">&nbsp;    Groups.draw.removeIndex(this, index__draw);;</b>
+<b class="nc">&nbsp;    index__draw = -1;</b>
+&nbsp;    bullet: {
+&nbsp;
+<b class="nc">&nbsp;        if (Groups.isClearing) break bullet;</b>
+<b class="nc">&nbsp;        if (!hit) {</b>
+<b class="nc">&nbsp;            type.despawned(this);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        type.removed(this);</b>
+<b class="nc">&nbsp;        collided.clear();</b>
+&nbsp;    }
+&nbsp;    entity: {
+&nbsp;
+<b class="nc">&nbsp;        added = false;</b>
+&nbsp;    }
+<b class="nc">&nbsp;    mindustry.gen.Groups.queueFree((Pool.Poolable)this);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void reset() {
+<b class="nc">&nbsp;    absorbed = false;</b>
+<b class="nc">&nbsp;    added = false;</b>
+<b class="nc">&nbsp;    aimTile = null;</b>
+<b class="nc">&nbsp;    aimX = 0;</b>
+<b class="nc">&nbsp;    aimY = 0;</b>
+<b class="nc">&nbsp;    damage = 0;</b>
+<b class="nc">&nbsp;    data = null;</b>
+<b class="nc">&nbsp;    deltaX = 0;</b>
+<b class="nc">&nbsp;    deltaY = 0;</b>
+<b class="nc">&nbsp;    drag = 0.0F;</b>
+<b class="nc">&nbsp;    fdata = 0;</b>
+<b class="nc">&nbsp;    frags = 0;</b>
+<b class="nc">&nbsp;    hit = false;</b>
+<b class="nc">&nbsp;    hitSize = 0;</b>
+<b class="nc">&nbsp;    id = EntityGroup.nextId();</b>
+<b class="nc">&nbsp;    keepAlive = false;</b>
+<b class="nc">&nbsp;    lastX = 0;</b>
+<b class="nc">&nbsp;    lastY = 0;</b>
+<b class="nc">&nbsp;    lifetime = 0;</b>
+<b class="nc">&nbsp;    mover = null;</b>
+<b class="nc">&nbsp;    originX = 0;</b>
+<b class="nc">&nbsp;    originY = 0;</b>
+<b class="nc">&nbsp;    owner = null;</b>
+<b class="nc">&nbsp;    rotation = 0;</b>
+<b class="nc">&nbsp;    time = 0;</b>
+<b class="nc">&nbsp;    trail = null;</b>
+<b class="nc">&nbsp;    type = null;</b>
+<b class="nc">&nbsp;    x = 0;</b>
+<b class="nc">&nbsp;    y = 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void rotation(float angle) {
+&nbsp;
+<b class="nc">&nbsp;        vel.setAngle(rotation = angle);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        set(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        this.x = x;</b>
+<b class="nc">&nbsp;        this.y = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void tileRaycast(int x1, int y1, int x2, int y2) {
+&nbsp;
+<b class="nc">&nbsp;        int x = x1;</b>
+<b class="nc">&nbsp;        int dx = Math.abs(x2 - x);</b>
+<b class="nc">&nbsp;        int sx = x &lt; x2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int y = y1;</b>
+<b class="nc">&nbsp;        int dy = Math.abs(y2 - y);</b>
+<b class="nc">&nbsp;        int sy = y &lt; y2 ? 1 : -1;</b>
+&nbsp;        int e2;
+<b class="nc">&nbsp;        int err = dx - dy;</b>
+<b class="nc">&nbsp;        int ww = world.width();</b>
+<b class="nc">&nbsp;        int wh = world.height();</b>
+<b class="nc">&nbsp;        while (x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; x &lt; ww &amp;&amp; y &lt; wh) {</b>
+<b class="nc">&nbsp;            Building build = world.build(x, y);</b>
+<b class="nc">&nbsp;            if (type.collideFloor || type.collideTerrain) {</b>
+<b class="nc">&nbsp;                Tile tile = world.tile(x, y);</b>
+<b class="nc">&nbsp;                if (type.collideFloor &amp;&amp; (tile == null || tile.floor().hasSurface() || tile.block() != Blocks.air) || type.collideTerrain &amp;&amp; tile != null &amp;&amp; tile.block() instanceof StaticWall) {</b>
+<b class="nc">&nbsp;                    remove();</b>
+<b class="nc">&nbsp;                    hit = true;</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            if (build != null &amp;&amp; isAdded() &amp;&amp; checkUnderBuild(build, x * tilesize, y * tilesize) &amp;&amp; build.collide(this) &amp;&amp; type.testCollision(this, build) &amp;&amp; !build.dead() &amp;&amp; (type.collidesTeam || build.team != team) &amp;&amp; !(type.pierceBuilding &amp;&amp; hasCollided(build.id))) {</b>
+<b class="nc">&nbsp;                boolean remove = false;</b>
+<b class="nc">&nbsp;                float health = build.health;</b>
+<b class="nc">&nbsp;                if (build.team != team) {</b>
+<b class="nc">&nbsp;                    remove = build.collision(this);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                if (remove || type.collidesTeam) {</b>
+<b class="nc">&nbsp;                    if (Mathf.dst2(lastX, lastY, x * tilesize, y * tilesize) &lt; Mathf.dst2(lastX, lastY, this.x, this.y)) {</b>
+<b class="nc">&nbsp;                        this.x = x * tilesize;</b>
+<b class="nc">&nbsp;                        this.y = y * tilesize;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    if (!type.pierceBuilding) {</b>
+<b class="nc">&nbsp;                        hit = true;</b>
+<b class="nc">&nbsp;                        remove();</b>
+&nbsp;                    } else {
+<b class="nc">&nbsp;                        collided.add(build.id);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;                type.hitTile(this, build, x * tilesize, y * tilesize, health, true);</b>
+<b class="nc">&nbsp;                if (type.pierceBuilding) return;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if (x == x2 &amp;&amp; y == y2) break;</b>
+<b class="nc">&nbsp;            e2 = 2 * err;</b>
+<b class="nc">&nbsp;            if (e2 &gt; -dy) {</b>
+<b class="nc">&nbsp;                err -= dy;</b>
+<b class="nc">&nbsp;                x += sx;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if (e2 &lt; dx) {</b>
+<b class="nc">&nbsp;                err += dx;</b>
+<b class="nc">&nbsp;                y += sy;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void trns(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        trns(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void trns(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        set(this.x + x, this.y + y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void turn(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        float ang = vel.angle();</b>
+<b class="nc">&nbsp;        vel.add(Angles.trnsx(ang, x * Time.delta, y * Time.delta), Angles.trnsy(ang, x * Time.delta, y * Time.delta)).limit(type.speed);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void update() {
+&nbsp;    vel: {
+&nbsp;
+<b class="nc">&nbsp;        if (!net.client() || isLocal()) {</b>
+<b class="nc">&nbsp;            float px = x;</b>
+<b class="nc">&nbsp;            float py = y;</b>
+<b class="nc">&nbsp;            move(vel.x * Time.delta, vel.y * Time.delta);</b>
+<b class="nc">&nbsp;            if (Mathf.equal(px, x)) vel.x = 0;</b>
+<b class="nc">&nbsp;            if (Mathf.equal(py, y)) vel.y = 0;</b>
+<b class="nc">&nbsp;            vel.scl(Math.max(1.0F - drag * Time.delta, 0));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    bullet: {
+&nbsp;
+<b class="nc">&nbsp;        if (mover != null) {</b>
+<b class="nc">&nbsp;            mover.move(this);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        type.update(this);</b>
+<b class="nc">&nbsp;        if (type.collidesTiles &amp;&amp; type.collides &amp;&amp; type.collidesGround) {</b>
+<b class="nc">&nbsp;            tileRaycast(World.toTile(lastX), World.toTile(lastY), tileX(), tileY());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (type.removeAfterPierce &amp;&amp; type.pierceCap != -1 &amp;&amp; collided.size &gt;= type.pierceCap) {</b>
+<b class="nc">&nbsp;            hit = true;</b>
+<b class="nc">&nbsp;            remove();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (keepAlive) {</b>
+<b class="nc">&nbsp;            time -= Time.delta;</b>
+<b class="nc">&nbsp;            keepAlive = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    entity: {
+&nbsp;
+&nbsp;    }
+&nbsp;    hitbox: {
+&nbsp;
+&nbsp;    }
+&nbsp;    timed: {
+&nbsp;
+<b class="nc">&nbsp;        time = Math.min(time + Time.delta, lifetime);</b>
+<b class="nc">&nbsp;        if (time &gt;= lifetime) {</b>
+<b class="nc">&nbsp;            remove();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void updateLastPosition() {
+&nbsp;
+<b class="nc">&nbsp;        deltaX = x - lastX;</b>
+<b class="nc">&nbsp;        deltaY = y - lastY;</b>
+<b class="nc">&nbsp;        lastX = x;</b>
+<b class="nc">&nbsp;        lastY = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void velAddNet(Vec2 v) {
+&nbsp;
+<b class="nc">&nbsp;        vel.add(v);</b>
+<b class="nc">&nbsp;        if (isRemote()) {</b>
+<b class="nc">&nbsp;            x += v.x;</b>
+<b class="nc">&nbsp;            y += v.y;</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void velAddNet(float vx, float vy) {
+&nbsp;
+<b class="nc">&nbsp;        vel.add(vx, vy);</b>
+<b class="nc">&nbsp;        if (isRemote()) {</b>
+<b class="nc">&nbsp;            x += vx;</b>
+<b class="nc">&nbsp;            y += vy;</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void write(Writes write) {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,296 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Sorter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: Sorter (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Sorter</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.5%
+  </span>
+  <span class="absValue">
+    (13/17)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Sorter$SorterBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (9/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70.5%
+  </span>
+  <span class="absValue">
+    (31/44)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    64.7%
+  </span>
+  <span class="absValue">
+    (11/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    72.1%
+  </span>
+  <span class="absValue">
+    (44/61)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Sorter extends Block{
+&nbsp;    public @Load(value = &quot;@-cross&quot;, fallback = &quot;cross-full&quot;) TextureRegion cross;
+&nbsp;    public boolean invert;
+&nbsp;
+&nbsp;    public Sorter(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = false;</b>
+<b class="fc">&nbsp;        destructible = true;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+<b class="fc">&nbsp;        instantTransfer = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.transportation;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        unloadable = false;</b>
+<b class="fc">&nbsp;        saveConfig = true;</b>
+<b class="fc">&nbsp;        clearOnDoubleTap = true;</b>
+&nbsp;
+<b class="fc">&nbsp;        config(Item.class, (SorterBuild tile, Item item) -&gt; tile.sortItem = item);</b>
+<b class="fc">&nbsp;        configClear((SorterBuild tile) -&gt; tile.sortItem = null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanConfig(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        drawPlanConfigCenter(plan, plan.config, &quot;center&quot;, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int minimapColor(Tile tile){
+<b class="nc">&nbsp;        var build = (SorterBuild)tile.build;</b>
+<b class="nc">&nbsp;        return build == null || build.sortItem == null ? 0 : build.sortItem.color.rgba();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{Core.atlas.find(&quot;source-bottom&quot;), region};</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class SorterBuild extends Building{</b>
+&nbsp;        public @Nullable Item sortItem;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void configured(Unit player, Object value){
+<b class="fc">&nbsp;            super.configured(player, value);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(!headless){</b>
+<b class="nc">&nbsp;                renderer.minimap.update(tile);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+&nbsp;
+<b class="nc">&nbsp;            if(sortItem == null){</b>
+<b class="nc">&nbsp;                Draw.rect(cross, x, y);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Draw.color(sortItem.color);</b>
+<b class="nc">&nbsp;                Fill.square(x, y, tilesize/2f - 0.00001f);</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="fc">&nbsp;            Building to = getTileTarget(item, source, false);</b>
+&nbsp;
+<b class="fc">&nbsp;            return to != null &amp;&amp; to.acceptItem(this, item) &amp;&amp; to.team == team;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleItem(Building source, Item item){
+<b class="fc">&nbsp;            getTileTarget(item, source, true).handleItem(this, item);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isSame(Building other){
+<b class="fc">&nbsp;            return other != null &amp;&amp; other.block.instantTransfer;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Building getTileTarget(Item item, Building source, boolean flip){
+<b class="fc">&nbsp;            int dir = source.relativeTo(tile.x, tile.y);</b>
+<b class="fc">&nbsp;            if(dir == -1) return null;</b>
+&nbsp;            Building to;
+&nbsp;
+<b class="fc">&nbsp;            if(((item == sortItem) != invert) == enabled){</b>
+&nbsp;                //prevent 3-chains
+<b class="fc">&nbsp;                if(isSame(source) &amp;&amp; isSame(nearby(dir))){</b>
+<b class="nc">&nbsp;                    return null;</b>
+&nbsp;                }
+<b class="fc">&nbsp;                to = nearby(dir);</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                Building a = nearby(Mathf.mod(dir - 1, 4));</b>
+<b class="fc">&nbsp;                Building b = nearby(Mathf.mod(dir + 1, 4));</b>
+<b class="fc">&nbsp;                boolean ac = a != null &amp;&amp; !(a.block.instantTransfer &amp;&amp; source.block.instantTransfer) &amp;&amp;</b>
+<b class="fc">&nbsp;                a.acceptItem(this, item);</b>
+<b class="fc">&nbsp;                boolean bc = b != null &amp;&amp; !(b.block.instantTransfer &amp;&amp; source.block.instantTransfer) &amp;&amp;</b>
+<b class="fc">&nbsp;                b.acceptItem(this, item);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(ac &amp;&amp; !bc){</b>
+<b class="nc">&nbsp;                    to = a;</b>
+<b class="fc">&nbsp;                }else if(bc &amp;&amp; !ac){</b>
+<b class="nc">&nbsp;                    to = b;</b>
+<b class="fc">&nbsp;                }else if(!bc){</b>
+<b class="nc">&nbsp;                    return null;</b>
+&nbsp;                }else{
+<b class="fc">&nbsp;                    to = (rotation &amp; (1 &lt;&lt; dir)) == 0 ? a : b;</b>
+<b class="fc">&nbsp;                    if(flip) rotation ^= (1 &lt;&lt; dir);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            return to;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            ItemSelection.buildTable(Sorter.this, table, content.items(), () -&gt; sortItem, this::configure, selectionRows, selectionColumns);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Item config(){
+<b class="nc">&nbsp;            return sortItem;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 2;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.s(sortItem == null ? -1 : sortItem.id);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            sortItem = content.item(read.s());</b>
+&nbsp;
+<b class="fc">&nbsp;            if(revision == 1){</b>
+<b class="fc">&nbsp;                new DirectionalItemBuffer(20).read(read);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

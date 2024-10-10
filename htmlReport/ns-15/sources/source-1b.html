@@ -1,0 +1,480 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PlayerComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: PlayerComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PlayerComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/142)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@EntityDef(value = {Playerc.class}, serialize = false)
+&nbsp;@Component(base = true)
+<b class="nc">&nbsp;abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Drawc{</b>
+&nbsp;    static final float deathDelay = 60f;
+&nbsp;
+&nbsp;    @Import float x, y;
+&nbsp;
+&nbsp;    @ReadOnly @Nullable Unit unit;
+&nbsp;    transient @Nullable NetConnection con;
+<b class="nc">&nbsp;    @ReadOnly Team team = Team.sharded;</b>
+&nbsp;    @SyncLocal boolean typing, shooting, boosting;
+&nbsp;    @SyncLocal float mouseX, mouseY;
+&nbsp;    /** command the unit had before it was controlled. */
+&nbsp;    @Nullable @NoSync UnitCommand lastCommand;
+&nbsp;    boolean admin;
+<b class="nc">&nbsp;    String name = &quot;frog&quot;;</b>
+<b class="nc">&nbsp;    Color color = new Color();</b>
+<b class="nc">&nbsp;    transient String locale = &quot;en&quot;;</b>
+&nbsp;    transient float deathTimer;
+<b class="nc">&nbsp;    transient String lastText = &quot;&quot;;</b>
+&nbsp;    transient float textFadeTime;
+<b class="nc">&nbsp;    transient Ratekeeper itemDepositRate = new Ratekeeper();</b>
+&nbsp;
+&nbsp;    transient private @Nullable Unit lastReadUnit;
+&nbsp;    transient private int wrongReadUnits;
+&nbsp;    transient @Nullable Unit justSwitchFrom, justSwitchTo;
+&nbsp;
+&nbsp;    public boolean isBuilder(){
+<b class="nc">&nbsp;        return unit != null &amp;&amp; unit.canBuild();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable CoreBuild closestCore(){
+<b class="nc">&nbsp;        return state.teams.closestCore(x, y, team);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable CoreBuild core(){
+<b class="nc">&nbsp;        return team.core();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return largest/closest core, with largest cores getting priority */
+&nbsp;    @Nullable
+&nbsp;    public CoreBuild bestCore(){
+<b class="nc">&nbsp;        return team.cores().min(Structs.comps(Structs.comparingInt(c -&gt; -c.block.size), Structs.comparingFloat(c -&gt; c.dst(x, y))));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TextureRegion icon(){
+&nbsp;        //display default icon for dead players
+<b class="nc">&nbsp;        if(dead()) return core() == null ? UnitTypes.alpha.uiIcon : ((CoreBlock)bestCore().block).unitType.uiIcon;</b>
+&nbsp;
+<b class="nc">&nbsp;        return unit.icon();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean displayAmmo(){
+<b class="nc">&nbsp;        return unit instanceof BlockUnitc || state.rules.unitAmmo;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reset(){
+<b class="nc">&nbsp;        team = state.rules.defaultTeam;</b>
+<b class="nc">&nbsp;        admin = typing = false;</b>
+<b class="nc">&nbsp;        textFadeTime = 0f;</b>
+<b class="nc">&nbsp;        x = y = 0f;</b>
+<b class="nc">&nbsp;        if(!dead()){</b>
+<b class="nc">&nbsp;            unit.resetController();</b>
+<b class="nc">&nbsp;            unit = null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isValidController(){
+<b class="nc">&nbsp;        return isAdded();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isLogicControllable(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    public float clipSize(){
+<b class="nc">&nbsp;        return unit == null ? 20 : unit.type.hitSize * 2f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void afterSync(){
+&nbsp;        //fix rubberbanding:
+&nbsp;        //when the player recs a unit that they JUST transitioned away from, use the new unit instead
+&nbsp;        //reason: we know the server is lying here, essentially skip the unit snapshot because we know the client&#39;s information is more recent
+<b class="nc">&nbsp;        if(isLocal() &amp;&amp; unit == justSwitchFrom &amp;&amp; justSwitchFrom != null &amp;&amp; justSwitchTo != null){</b>
+<b class="nc">&nbsp;            unit = justSwitchTo;</b>
+&nbsp;            //if several snapshots have passed and this unit is still incorrect, something&#39;s wrong
+<b class="nc">&nbsp;            if(++wrongReadUnits &gt;= 2){</b>
+<b class="nc">&nbsp;                justSwitchFrom = null;</b>
+<b class="nc">&nbsp;                wrongReadUnits = 0;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            justSwitchFrom = null;</b>
+<b class="nc">&nbsp;            justSwitchTo = null;</b>
+<b class="nc">&nbsp;            wrongReadUnits = 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //simulate a unit change after sync
+<b class="nc">&nbsp;        Unit set = unit;</b>
+<b class="nc">&nbsp;        unit = lastReadUnit;</b>
+<b class="nc">&nbsp;        unit(set);</b>
+<b class="nc">&nbsp;        lastReadUnit = unit;</b>
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            unit.aim(mouseX, mouseY);</b>
+&nbsp;            //this is only necessary when the thing being controlled isn&#39;t synced
+<b class="nc">&nbsp;            unit.controlWeapons(shooting, shooting);</b>
+&nbsp;            //extra precaution, necessary for non-synced things
+<b class="nc">&nbsp;            unit.controller(this);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        if(unit != null &amp;&amp; !unit.isValid()){</b>
+<b class="nc">&nbsp;            clearUnit();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        CoreBuild core;
+&nbsp;
+<b class="nc">&nbsp;        if(!dead()){</b>
+<b class="nc">&nbsp;            set(unit);</b>
+<b class="nc">&nbsp;            unit.team(team);</b>
+<b class="nc">&nbsp;            deathTimer = 0;</b>
+&nbsp;
+&nbsp;            //update some basic state to sync things
+<b class="nc">&nbsp;            if(unit.type.canBoost){</b>
+<b class="nc">&nbsp;                unit.elevation = Mathf.approachDelta(unit.elevation, unit.onSolid() || boosting || (unit.isFlying() &amp;&amp; !unit.canLand()) ? 1f : 0f, unit.type.riseSpeed);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if((core = bestCore()) != null){</b>
+&nbsp;            //have a small delay before death to prevent the camera from jumping around too quickly
+&nbsp;            //(this is not for balance, it just looks better this way)
+<b class="nc">&nbsp;            deathTimer += Time.delta;</b>
+<b class="nc">&nbsp;            if(deathTimer &gt;= deathDelay){</b>
+&nbsp;                //request spawn - this happens serverside only
+<b class="nc">&nbsp;                core.requestSpawn(self());</b>
+<b class="nc">&nbsp;                deathTimer = 0;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        textFadeTime -= Time.delta / (60 * 5);</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void checkSpawn(){
+<b class="nc">&nbsp;        CoreBuild core = bestCore();</b>
+<b class="nc">&nbsp;        if(core != null){</b>
+<b class="nc">&nbsp;            core.requestSpawn(self());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void remove(){
+&nbsp;        //clear unit upon removal
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            clearUnit();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        lastReadUnit = null;</b>
+<b class="nc">&nbsp;        justSwitchTo = justSwitchFrom = null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void team(Team team){
+<b class="nc">&nbsp;        this.team = team;</b>
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            unit.team(team);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clearUnit(){
+<b class="nc">&nbsp;        unit(null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Unit unit(){
+<b class="nc">&nbsp;        return unit;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void unit(@Nullable Unit unit){
+&nbsp;        //refuse to switch when the unit was just transitioned from
+<b class="nc">&nbsp;        if(isLocal() &amp;&amp; unit == justSwitchFrom &amp;&amp; justSwitchFrom != null &amp;&amp; justSwitchTo != null){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(this.unit == unit) return;</b>
+&nbsp;
+&nbsp;        //save last command this unit had
+<b class="nc">&nbsp;        if(unit != null &amp;&amp; unit.controller() instanceof CommandAI ai){</b>
+<b class="nc">&nbsp;            lastCommand = ai.command;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(this.unit != null){</b>
+&nbsp;            //un-control the old unit
+<b class="nc">&nbsp;            this.unit.resetController();</b>
+&nbsp;            //restore last command issued before it was controlled
+<b class="nc">&nbsp;            if(lastCommand != null &amp;&amp; this.unit.controller() instanceof CommandAI ai){</b>
+<b class="nc">&nbsp;                ai.command(lastCommand);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        this.unit = unit;</b>
+<b class="nc">&nbsp;        if(unit != null){</b>
+<b class="nc">&nbsp;            unit.team(team);</b>
+<b class="nc">&nbsp;            unit.controller(this);</b>
+&nbsp;
+&nbsp;            //this player just became remote, snap the interpolation so it doesn&#39;t go wild
+<b class="nc">&nbsp;            if(unit.isRemote()){</b>
+<b class="nc">&nbsp;                unit.snapInterpolation();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //reset selected block when switching units
+<b class="nc">&nbsp;            if(!headless &amp;&amp; isLocal()){</b>
+<b class="nc">&nbsp;                control.input.block = null;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Events.fire(new UnitChangeEvent(self(), unit));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean dead(){
+<b class="nc">&nbsp;        return unit == null || !unit.isValid();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    String ip(){
+<b class="nc">&nbsp;        return con == null ? &quot;localhost&quot; : con.address;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    String uuid(){
+<b class="nc">&nbsp;        return con == null ? &quot;[LOCAL]&quot; : con.uuid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    String usid(){
+<b class="nc">&nbsp;        return con == null ? &quot;[LOCAL]&quot; : con.usid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void kick(KickReason reason){
+<b class="nc">&nbsp;        con.kick(reason);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void kick(KickReason reason, long duration){
+<b class="nc">&nbsp;        con.kick(reason, duration);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void kick(String reason){
+<b class="nc">&nbsp;        con.kick(reason);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void kick(String reason, long duration){
+<b class="nc">&nbsp;        con.kick(reason, duration);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        if(unit == null || name == null || unit.inFogTo(Vars.player.team())) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(Layer.playerName);</b>
+<b class="nc">&nbsp;        float z = Drawf.text();</b>
+&nbsp;
+<b class="nc">&nbsp;        Font font = Fonts.outline;</b>
+<b class="nc">&nbsp;        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);</b>
+<b class="nc">&nbsp;        final float nameHeight = 11;</b>
+<b class="nc">&nbsp;        final float textHeight = 15;</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean ints = font.usesIntegerPositions();</b>
+<b class="nc">&nbsp;        font.setUseIntegerPositions(false);</b>
+<b class="nc">&nbsp;        font.getData().setScale(0.25f / Scl.scl(1f));</b>
+<b class="nc">&nbsp;        layout.setText(font, name);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!isLocal()){</b>
+<b class="nc">&nbsp;            Draw.color(0f, 0f, 0f, 0.3f);</b>
+<b class="nc">&nbsp;            Fill.rect(unit.x, unit.y + nameHeight - layout.height / 2, layout.width + 2, layout.height + 3);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+<b class="nc">&nbsp;            font.setColor(color);</b>
+<b class="nc">&nbsp;            font.draw(name, unit.x, unit.y + nameHeight, 0, Align.center, false);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(admin){</b>
+<b class="nc">&nbsp;                float s = 3f;</b>
+<b class="nc">&nbsp;                Draw.color(color.r * 0.5f, color.g * 0.5f, color.b * 0.5f, 1f);</b>
+<b class="nc">&nbsp;                Draw.rect(Icon.adminSmall.getRegion(), unit.x + layout.width / 2f + 2 + 1, unit.y + nameHeight - 1.5f, s, s);</b>
+<b class="nc">&nbsp;                Draw.color(color);</b>
+<b class="nc">&nbsp;                Draw.rect(Icon.adminSmall.getRegion(), unit.x + layout.width / 2f + 2 + 1, unit.y + nameHeight - 1f, s, s);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.settings.getBool(&quot;playerchat&quot;) &amp;&amp; ((textFadeTime &gt; 0 &amp;&amp; lastText != null) || typing)){</b>
+<b class="nc">&nbsp;            String text = textFadeTime &lt;= 0 || lastText == null ? &quot;[lightgray]&quot; + Strings.animated(Time.time, 4, 15f, &quot;.&quot;) : lastText;</b>
+<b class="nc">&nbsp;            float width = 100f;</b>
+<b class="nc">&nbsp;            float visualFadeTime = 1f - Mathf.curve(1f - textFadeTime, 0.9f);</b>
+<b class="nc">&nbsp;            font.setColor(1f, 1f, 1f, textFadeTime &lt;= 0 || lastText == null ? 1f : visualFadeTime);</b>
+&nbsp;
+<b class="nc">&nbsp;            layout.setText(font, text, Color.white, width, Align.bottom, true);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color(0f, 0f, 0f, 0.3f * (textFadeTime &lt;= 0 || lastText == null ? 1f : visualFadeTime));</b>
+<b class="nc">&nbsp;            Fill.rect(unit.x, unit.y + textHeight + layout.height - layout.height / 2f, layout.width + 2, layout.height + 3);</b>
+<b class="nc">&nbsp;            font.draw(text, unit.x - width / 2f, unit.y + textHeight + layout.height, width, Align.center, true);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Pools.free(layout);</b>
+<b class="nc">&nbsp;        font.getData().setScale(1f);</b>
+<b class="nc">&nbsp;        font.setColor(Color.white);</b>
+<b class="nc">&nbsp;        font.setUseIntegerPositions(ints);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.z(z);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return name with a markup color prefix */
+&nbsp;    String coloredName(){
+<b class="nc">&nbsp;        return  &quot;[#&quot; + color.toString().toUpperCase() + &quot;]&quot; + name;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    String plainName(){
+<b class="nc">&nbsp;        return Strings.stripColors(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void sendMessage(String text){
+<b class="nc">&nbsp;        sendMessage(text, null, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void sendMessage(String text, Player from){
+<b class="nc">&nbsp;        sendMessage(text, from, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void sendMessage(String text, Player from, String unformatted){
+<b class="nc">&nbsp;        if(isLocal()){</b>
+<b class="nc">&nbsp;            if(ui != null){</b>
+<b class="nc">&nbsp;                ui.chatfrag.addMessage(text);</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            Call.sendMessage(con, text, unformatted, from);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void sendUnformatted(String unformatted){
+<b class="nc">&nbsp;        sendUnformatted(null, unformatted);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void sendUnformatted(Player from, String unformatted){
+<b class="nc">&nbsp;        sendMessage(netServer.chatFormatter.format(from, unformatted), from, unformatted);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    PlayerInfo getInfo(){
+<b class="nc">&nbsp;        if(isLocal()){</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Local players cannot be traced and do not have info.&quot;);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return netServer.admins.getInfo(uuid());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,433 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PlanetGrid</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics.g3d</a>
+</div>
+
+<h1>Coverage Summary for Class: PlanetGrid (mindustry.graphics.g3d)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PlanetGrid</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (13/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    97.2%
+  </span>
+  <span class="absValue">
+    (103/106)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PlanetGrid$Corner</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PlanetGrid$Edge</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PlanetGrid$Ptile</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/8)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (17/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    97.6%
+  </span>
+  <span class="absValue">
+    (121/124)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics.g3d;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;
+&nbsp;//TODO clean this up somehow
+&nbsp;public class PlanetGrid{
+<b class="fc">&nbsp;    private static final PlanetGrid[] cache = new PlanetGrid[10];</b>
+&nbsp;
+&nbsp;    private static final float x = -0.525731112119133606f;
+&nbsp;    private static final float z = -0.850650808352039932f;
+&nbsp;
+<b class="fc">&nbsp;    private static final Vec3[] iTiles = {</b>
+&nbsp;    new Vec3(-x, 0, z), new Vec3(x, 0, z), new Vec3(-x, 0, -z), new Vec3(x, 0, -z),
+&nbsp;    new Vec3(0, z, x), new Vec3(0, z, -x), new Vec3(0, -z, x), new Vec3(0, -z, -x),
+&nbsp;    new Vec3(z, x, 0), new Vec3(-z, x, 0), new Vec3(z, -x, 0), new Vec3(-z, -x, 0)
+&nbsp;    };
+&nbsp;
+<b class="fc">&nbsp;    private static final int[][] iTilesP = {</b>
+&nbsp;    {9, 4, 1, 6, 11}, {4, 8, 10, 6, 0}, {11, 7, 3, 5, 9}, {2, 7, 10, 8, 5},
+&nbsp;    {9, 5, 8, 1, 0}, {2, 3, 8, 4, 9}, {0, 1, 10, 7, 11}, {11, 6, 10, 3, 2},
+&nbsp;    {5, 3, 10, 1, 4}, {2, 5, 4, 0, 11}, {3, 7, 6, 1, 8}, {7, 2, 9, 0, 6}
+&nbsp;    };
+&nbsp;
+&nbsp;    public int size;
+&nbsp;    public Ptile[] tiles;
+&nbsp;    public Corner[] corners;
+&nbsp;    public Edge[] edges;
+&nbsp;
+&nbsp;    //this is protected so if you want to make strange grids you should know what you&#39;re doing.
+<b class="fc">&nbsp;    protected PlanetGrid(int size){</b>
+<b class="fc">&nbsp;        this.size = size;</b>
+&nbsp;
+<b class="fc">&nbsp;        tiles = new Ptile[tileCount(size)];</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; tiles.length; i++){</b>
+<b class="fc">&nbsp;            tiles[i] = new Ptile(i, i &lt; 12 ? 5 : 6);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        corners = new Corner[cornerCount(size)];</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; corners.length; i++){</b>
+<b class="fc">&nbsp;            corners[i] = new Corner(i);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        edges = new Edge[edgeCount(size)];</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; edges.length; i++){</b>
+<b class="fc">&nbsp;            edges[i] = new Edge(i);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static PlanetGrid create(int size){
+&nbsp;        //cache grids between calls, since only ~5 different grids total are needed
+<b class="fc">&nbsp;        if(size &lt; cache.length &amp;&amp; cache[size] != null){</b>
+<b class="fc">&nbsp;            return cache[size];</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        PlanetGrid result;
+<b class="fc">&nbsp;        if(size == 0){</b>
+<b class="fc">&nbsp;            result = initialGrid();</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            result = subdividedGrid(create(size - 1));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //store grid in cache
+<b class="fc">&nbsp;        if(size &lt; cache.length){</b>
+<b class="fc">&nbsp;            cache[size] = result;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static PlanetGrid initialGrid(){
+<b class="fc">&nbsp;        PlanetGrid grid = new PlanetGrid(0);</b>
+&nbsp;
+<b class="fc">&nbsp;        for(Ptile t : grid.tiles){</b>
+<b class="fc">&nbsp;            t.v = iTiles[t.id];</b>
+<b class="fc">&nbsp;            for(int k = 0; k &lt; 5; k++){</b>
+<b class="fc">&nbsp;                t.tiles[k] = grid.tiles[iTilesP[t.id][k]];</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        for(int i = 0; i &lt; 5; i++){</b>
+<b class="fc">&nbsp;            addCorner(i, grid, 0, iTilesP[0][(i + 4) % 5], iTilesP[0][i]);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        for(int i = 0; i &lt; 5; i++){</b>
+<b class="fc">&nbsp;            addCorner(i + 5, grid, 3, iTilesP[3][(i + 4) % 5], iTilesP[3][i]);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        addCorner(10, grid, 10, 1, 8);</b>
+<b class="fc">&nbsp;        addCorner(11, grid, 1, 10, 6);</b>
+<b class="fc">&nbsp;        addCorner(12, grid, 6, 10, 7);</b>
+<b class="fc">&nbsp;        addCorner(13, grid, 6, 7, 11);</b>
+<b class="fc">&nbsp;        addCorner(14, grid, 11, 7, 2);</b>
+<b class="fc">&nbsp;        addCorner(15, grid, 11, 2, 9);</b>
+<b class="fc">&nbsp;        addCorner(16, grid, 9, 2, 5);</b>
+<b class="fc">&nbsp;        addCorner(17, grid, 9, 5, 4);</b>
+<b class="fc">&nbsp;        addCorner(18, grid, 4, 5, 8);</b>
+<b class="fc">&nbsp;        addCorner(19, grid, 4, 8, 1);</b>
+&nbsp;
+&nbsp;        //add corners to corners
+<b class="fc">&nbsp;        for(Corner c : grid.corners){</b>
+<b class="fc">&nbsp;            for(int k = 0; k &lt; 3; k++){</b>
+<b class="fc">&nbsp;                c.corners[k] = c.tiles[k].corners[(pos(c.tiles[k], c) + 1) % 5];</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;        //new edges
+<b class="fc">&nbsp;        int nextEdge = 0;</b>
+<b class="fc">&nbsp;        for(Ptile t : grid.tiles){</b>
+<b class="fc">&nbsp;            for(int k = 0; k &lt; 5; k++){</b>
+<b class="fc">&nbsp;                if(t.edges[k] == null){</b>
+<b class="fc">&nbsp;                    addEdge(nextEdge++, grid, t.id, iTilesP[t.id][k]);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return grid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static PlanetGrid subdividedGrid(PlanetGrid prev){
+<b class="fc">&nbsp;        PlanetGrid grid = new PlanetGrid(prev.size + 1);</b>
+&nbsp;
+<b class="fc">&nbsp;        int prevTiles = prev.tiles.length;</b>
+<b class="fc">&nbsp;        int prevCorners = prev.corners.length;</b>
+&nbsp;
+&nbsp;        //old tiles
+<b class="fc">&nbsp;        for(int i = 0; i &lt; prevTiles; i++){</b>
+<b class="fc">&nbsp;            grid.tiles[i].v = prev.tiles[i].v;</b>
+<b class="fc">&nbsp;            for(int k = 0; k &lt; grid.tiles[i].edgeCount; k++){</b>
+&nbsp;
+<b class="fc">&nbsp;                grid.tiles[i].tiles[k] = grid.tiles[prev.tiles[i].corners[k].id + prevTiles];</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;        //old corners become tiles
+<b class="fc">&nbsp;        for(int i = 0; i &lt; prevCorners; i++){</b>
+<b class="fc">&nbsp;            grid.tiles[i + prevTiles].v = prev.corners[i].v;</b>
+<b class="fc">&nbsp;            for(int k = 0; k &lt; 3; k++){</b>
+<b class="fc">&nbsp;                grid.tiles[i + prevTiles].tiles[2 * k] = grid.tiles[prev.corners[i].corners[k].id + prevTiles];</b>
+<b class="fc">&nbsp;                grid.tiles[i + prevTiles].tiles[2 * k + 1] = grid.tiles[prev.corners[i].tiles[k].id];</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;        //new corners
+<b class="fc">&nbsp;        int nextCorner = 0;</b>
+<b class="fc">&nbsp;        for(Ptile n : prev.tiles){</b>
+<b class="fc">&nbsp;            Ptile t = grid.tiles[n.id];</b>
+<b class="fc">&nbsp;            for(int k = 0; k &lt; t.edgeCount; k++){</b>
+<b class="fc">&nbsp;                addCorner(nextCorner, grid, t.id, t.tiles[(k + t.edgeCount - 1) % t.edgeCount].id, t.tiles[k].id);</b>
+<b class="fc">&nbsp;                nextCorner++;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;        //connect corners
+<b class="fc">&nbsp;        for(Corner c : grid.corners){</b>
+<b class="fc">&nbsp;            for(int k = 0; k &lt; 3; k++){</b>
+<b class="fc">&nbsp;                c.corners[k] = c.tiles[k].corners[(pos(c.tiles[k], c) + 1) % (c.tiles[k].edgeCount)];</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;        //new edges
+<b class="fc">&nbsp;        int nextEdge = 0;</b>
+<b class="fc">&nbsp;        for(Ptile t : grid.tiles){</b>
+<b class="fc">&nbsp;            for(int k = 0; k &lt; t.edgeCount; k++){</b>
+<b class="fc">&nbsp;                if(t.edges[k] == null){</b>
+<b class="fc">&nbsp;                    addEdge(nextEdge, grid, t.id, t.tiles[k].id);</b>
+<b class="fc">&nbsp;                    nextEdge++;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return grid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static void addCorner(int id, PlanetGrid grid, int t1, int t2, int t3){
+<b class="fc">&nbsp;        Corner c = grid.corners[id];</b>
+<b class="fc">&nbsp;        Ptile[] t = {grid.tiles[t1], grid.tiles[t2], grid.tiles[t3]};</b>
+<b class="fc">&nbsp;        c.v.set(t[0].v).add(t[1].v).add(t[2].v).nor();</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; 3; i++){</b>
+<b class="fc">&nbsp;            t[i].corners[pos(t[i], t[(i + 2) % 3])] = c;</b>
+<b class="fc">&nbsp;            c.tiles[i] = t[i];</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static void addEdge(int id, PlanetGrid grid, int t1, int t2){
+<b class="fc">&nbsp;        Edge e = grid.edges[id];</b>
+<b class="fc">&nbsp;        Ptile[] t = {grid.tiles[t1], grid.tiles[t2]};</b>
+<b class="fc">&nbsp;        Corner[] c = {</b>
+<b class="fc">&nbsp;        grid.corners[t[0].corners[pos(t[0], t[1])].id],</b>
+<b class="fc">&nbsp;        grid.corners[t[0].corners[(pos(t[0], t[1]) + 1) % t[0].edgeCount].id]};</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; 2; i++){</b>
+<b class="fc">&nbsp;            t[i].edges[pos(t[i], t[(i + 1) % 2])] = e;</b>
+<b class="fc">&nbsp;            e.tiles[i] = t[i];</b>
+<b class="fc">&nbsp;            c[i].edges[pos(c[i], c[(i + 1) % 2])] = e;</b>
+<b class="fc">&nbsp;            e.corners[i] = c[i];</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static int pos(Ptile t, Ptile n){
+<b class="fc">&nbsp;        for(int i = 0; i &lt; t.edgeCount; i++){</b>
+<b class="fc">&nbsp;            if(t.tiles[i] == n) return i;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return -1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static int pos(Ptile t, Corner c){
+<b class="fc">&nbsp;        for(int i = 0; i &lt; t.edgeCount; i++){</b>
+<b class="fc">&nbsp;            if(t.corners[i] == c) return i;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return -1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static int pos(Corner c, Corner n){
+<b class="fc">&nbsp;        for(int i = 0; i &lt; 3; i++){</b>
+<b class="fc">&nbsp;            if(c.corners[i] == n) return i;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return -1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static int tileCount(int size){
+<b class="fc">&nbsp;        return 10 * Mathf.pow(3, size) + 2;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static int cornerCount(int size){
+<b class="fc">&nbsp;        return 20 * Mathf.pow(3, size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static int edgeCount(int size){
+<b class="fc">&nbsp;        return 30 * Mathf.pow(3, size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class Ptile{
+<b class="fc">&nbsp;        public static final Ptile empty = new Ptile(0, 0);</b>
+&nbsp;
+&nbsp;        public int id;
+&nbsp;        public int edgeCount;
+&nbsp;
+&nbsp;        public Ptile[] tiles;
+&nbsp;        public Corner[] corners;
+&nbsp;        public Edge[] edges;
+&nbsp;
+<b class="fc">&nbsp;        public Vec3 v = new Vec3();</b>
+&nbsp;
+<b class="fc">&nbsp;        public Ptile(int id, int edgeCount){</b>
+<b class="fc">&nbsp;            this.id = id;</b>
+<b class="fc">&nbsp;            this.edgeCount = edgeCount;</b>
+&nbsp;
+<b class="fc">&nbsp;            tiles = new Ptile[edgeCount];</b>
+<b class="fc">&nbsp;            corners = new Corner[edgeCount];</b>
+<b class="fc">&nbsp;            edges = new Edge[edgeCount];</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class Corner{
+&nbsp;        public int id;
+<b class="fc">&nbsp;        public Ptile[] tiles = new Ptile[3];</b>
+<b class="fc">&nbsp;        public Corner[] corners = new Corner[3];</b>
+<b class="fc">&nbsp;        public Edge[] edges = new Edge[3];</b>
+<b class="fc">&nbsp;        public Vec3 v = new Vec3();</b>
+&nbsp;
+<b class="fc">&nbsp;        public Corner(int id){</b>
+<b class="fc">&nbsp;            this.id = id;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class Edge{
+&nbsp;        public int id;
+<b class="fc">&nbsp;        public Ptile[] tiles = new Ptile[2];</b>
+<b class="fc">&nbsp;        public Corner[] corners = new Corner[2];</b>
+&nbsp;
+<b class="fc">&nbsp;        public Edge(int id){</b>
+<b class="fc">&nbsp;            this.id = id;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

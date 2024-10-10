@@ -1,0 +1,153 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ItemsComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: ItemsComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ItemsComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class ItemsComp implements Posc{</b>
+<b class="nc">&nbsp;    ItemStack stack = new ItemStack();</b>
+&nbsp;    transient float itemTime;
+&nbsp;
+&nbsp;    abstract int itemCapacity();
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        stack.amount = Mathf.clamp(stack.amount, 0, itemCapacity());</b>
+<b class="nc">&nbsp;        itemTime = Mathf.lerpDelta(itemTime, Mathf.num(hasItem()), 0.05f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Item item(){
+<b class="nc">&nbsp;        return stack.item;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void clearItem(){
+<b class="nc">&nbsp;        stack.amount = 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean acceptsItem(Item item){
+<b class="nc">&nbsp;        return !hasItem() || item == stack.item &amp;&amp; stack.amount + 1 &lt;= itemCapacity();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean hasItem(){
+<b class="nc">&nbsp;        return stack.amount &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void addItem(Item item){
+<b class="nc">&nbsp;        addItem(item, 1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void addItem(Item item, int amount){
+<b class="nc">&nbsp;        stack.amount = stack.item == item ? stack.amount + amount : amount;</b>
+<b class="nc">&nbsp;        stack.item = item;</b>
+<b class="nc">&nbsp;        stack.amount = Mathf.clamp(stack.amount, 0, itemCapacity());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int maxAccepted(Item item){
+<b class="nc">&nbsp;        return stack.item != item &amp;&amp; stack.amount &gt; 0 ? 0 : itemCapacity() - stack.amount;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

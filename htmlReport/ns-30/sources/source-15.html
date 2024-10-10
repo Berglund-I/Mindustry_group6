@@ -1,0 +1,362 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > KeybindDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: KeybindDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">KeybindDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/115)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">KeybindDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/126)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.KeyBinds.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.input.InputDevice.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;
+&nbsp;public class KeybindDialog extends Dialog{
+&nbsp;    protected Section section;
+<b class="nc">&nbsp;    protected KeyBind rebindKey = null;</b>
+<b class="nc">&nbsp;    protected boolean rebindAxis = false;</b>
+<b class="nc">&nbsp;    protected boolean rebindMin = true;</b>
+<b class="nc">&nbsp;    protected KeyCode minKey = null;</b>
+&nbsp;    protected Dialog rebindDialog;
+&nbsp;    protected float scroll;
+<b class="nc">&nbsp;    protected ObjectIntMap&lt;Section&gt; sectionControls = new ObjectIntMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public KeybindDialog(){
+<b class="nc">&nbsp;        super(bundle.get(&quot;keybind.title&quot;));</b>
+<b class="nc">&nbsp;        setup();</b>
+<b class="nc">&nbsp;        addCloseButton();</b>
+<b class="nc">&nbsp;        setFillParent(true);</b>
+<b class="nc">&nbsp;        title.setAlignment(Align.center);</b>
+<b class="nc">&nbsp;        titleTable.row();</b>
+<b class="nc">&nbsp;        titleTable.add(new Image()).growX().height(3f).pad(4f).get().setColor(Pal.accent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void addCloseButton(){
+<b class="nc">&nbsp;        buttons.button(&quot;@back&quot;, Icon.left, this::hide).size(210f, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;        keyDown(key -&gt; {</b>
+<b class="nc">&nbsp;            if(key == KeyCode.escape || key == KeyCode.back) hide();</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setup(){
+<b class="nc">&nbsp;        cont.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        Section[] sections = Core.keybinds.getSections();</b>
+&nbsp;
+<b class="nc">&nbsp;        Stack stack = new Stack();</b>
+<b class="nc">&nbsp;        ButtonGroup&lt;TextButton&gt; group = new ButtonGroup&lt;&gt;();</b>
+<b class="nc">&nbsp;        ScrollPane pane = new ScrollPane(stack);</b>
+<b class="nc">&nbsp;        pane.setFadeScrollBars(false);</b>
+<b class="nc">&nbsp;        pane.update(() -&gt; scroll = pane.getScrollY());</b>
+<b class="nc">&nbsp;        this.section = sections[0];</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Section section : sections){</b>
+<b class="nc">&nbsp;            if(!sectionControls.containsKey(section))</b>
+<b class="nc">&nbsp;                sectionControls.put(section, input.getDevices().indexOf(section.device, true));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(sectionControls.get(section, 0) &gt;= input.getDevices().size){</b>
+<b class="nc">&nbsp;                sectionControls.put(section, 0);</b>
+<b class="nc">&nbsp;                section.device = input.getDevices().get(0);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(sections.length != 1){</b>
+<b class="nc">&nbsp;                TextButton button = new TextButton(bundle.get(&quot;section.&quot; + section.name + &quot;.name&quot;, Strings.capitalize(section.name)));</b>
+<b class="nc">&nbsp;                if(section.equals(this.section))</b>
+<b class="nc">&nbsp;                    button.toggle();</b>
+&nbsp;
+<b class="nc">&nbsp;                button.clicked(() -&gt; this.section = section);</b>
+&nbsp;
+<b class="nc">&nbsp;                group.add(button);</b>
+<b class="nc">&nbsp;                cont.add(button).fill();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Table table = new Table();</b>
+&nbsp;
+<b class="nc">&nbsp;            Label device = new Label(&quot;Keyboard&quot;);</b>
+&nbsp;            //device.setColor(style.controllerColor);
+<b class="nc">&nbsp;            device.setAlignment(Align.center);</b>
+&nbsp;
+<b class="nc">&nbsp;            Seq&lt;InputDevice&gt; devices = input.getDevices();</b>
+&nbsp;
+<b class="nc">&nbsp;            Table stable = new Table();</b>
+&nbsp;
+<b class="nc">&nbsp;            stable.button(&quot;&lt;&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                int i = sectionControls.get(section, 0);</b>
+<b class="nc">&nbsp;                if(i - 1 &gt;= 0){</b>
+<b class="nc">&nbsp;                    sectionControls.put(section, i - 1);</b>
+<b class="nc">&nbsp;                    section.device = devices.get(i - 1);</b>
+<b class="nc">&nbsp;                    setup();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }).disabled(sectionControls.get(section, 0) - 1 &lt; 0).size(40);</b>
+&nbsp;
+<b class="nc">&nbsp;            stable.add(device).minWidth(device.getMinWidth() + 60);</b>
+&nbsp;
+<b class="nc">&nbsp;            device.setText(input.getDevices().get(sectionControls.get(section, 0)).name());</b>
+&nbsp;
+<b class="nc">&nbsp;            stable.button(&quot;&gt;&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                int i = sectionControls.get(section, 0);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(i + 1 &lt; devices.size){</b>
+<b class="nc">&nbsp;                    sectionControls.put(section, i + 1);</b>
+<b class="nc">&nbsp;                    section.device = devices.get(i + 1);</b>
+<b class="nc">&nbsp;                    setup();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }).disabled(sectionControls.get(section, 0) + 1 &gt;= devices.size).size(40);</b>
+&nbsp;
+&nbsp;            //no alternate devices until further notice
+&nbsp;            //table.add(stable).colspan(4).row();
+&nbsp;
+<b class="nc">&nbsp;            table.add().height(10);</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            if(section.device.type() == DeviceType.controller){</b>
+<b class="nc">&nbsp;                table.table(info -&gt; info.add(&quot;Controller Type: [lightGray]&quot; +</b>
+<b class="nc">&nbsp;                Strings.capitalize(section.device.name())).left());</b>
+&nbsp;            }
+<b class="nc">&nbsp;            table.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            String lastCategory = null;</b>
+<b class="nc">&nbsp;            var tstyle = Styles.defaultt;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(KeyBind keybind : keybinds.getKeybinds()){</b>
+<b class="nc">&nbsp;                if(lastCategory != keybind.category() &amp;&amp; keybind.category() != null){</b>
+<b class="nc">&nbsp;                    table.add(bundle.get(&quot;category.&quot; + keybind.category() + &quot;.name&quot;, Strings.capitalize(keybind.category()))).color(Color.gray).colspan(4).pad(10).padBottom(4).row();</b>
+<b class="nc">&nbsp;                    table.image().color(Color.gray).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).row();</b>
+<b class="nc">&nbsp;                    lastCategory = keybind.category();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(keybind.defaultValue(section.device.type()) instanceof Axis){</b>
+<b class="nc">&nbsp;                    table.add(bundle.get(&quot;keybind.&quot; + keybind.name() + &quot;.name&quot;, Strings.capitalize(keybind.name())), Color.white).left().padRight(40).padLeft(8);</b>
+&nbsp;
+<b class="nc">&nbsp;                    table.labelWrap(() -&gt; {</b>
+<b class="nc">&nbsp;                        Axis axis = keybinds.get(section, keybind);</b>
+<b class="nc">&nbsp;                        return axis.key != null ? axis.key.toString() : axis.min + &quot; [red]/[] &quot; + axis.max;</b>
+<b class="nc">&nbsp;                    }).color(Pal.accent).left().minWidth(90).fillX().padRight(20);</b>
+&nbsp;
+<b class="nc">&nbsp;                    table.button(&quot;@settings.rebind&quot;, tstyle, () -&gt; {</b>
+<b class="nc">&nbsp;                        rebindAxis = true;</b>
+<b class="nc">&nbsp;                        rebindMin = true;</b>
+<b class="nc">&nbsp;                        openDialog(section, keybind);</b>
+<b class="nc">&nbsp;                    }).width(130f);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    table.add(bundle.get(&quot;keybind.&quot; + keybind.name() + &quot;.name&quot;, Strings.capitalize(keybind.name())), Color.white).left().padRight(40).padLeft(8);</b>
+<b class="nc">&nbsp;                    table.label(() -&gt; keybinds.get(section, keybind).key.toString()).color(Pal.accent).left().minWidth(90).padRight(20);</b>
+&nbsp;
+<b class="nc">&nbsp;                    table.button(&quot;@settings.rebind&quot;, tstyle, () -&gt; {</b>
+<b class="nc">&nbsp;                        rebindAxis = false;</b>
+<b class="nc">&nbsp;                        rebindMin = false;</b>
+<b class="nc">&nbsp;                        openDialog(section, keybind);</b>
+<b class="nc">&nbsp;                    }).width(130f);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                table.button(&quot;@settings.resetKey&quot;, tstyle, () -&gt; keybinds.resetToDefault(section, keybind)).width(130f).pad(2f).padLeft(4f);</b>
+<b class="nc">&nbsp;                table.row();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            table.visible(() -&gt; this.section.equals(section));</b>
+&nbsp;
+<b class="nc">&nbsp;            table.button(&quot;@settings.reset&quot;, () -&gt; keybinds.resetToDefaults()).colspan(4).padTop(4).fill();</b>
+&nbsp;
+<b class="nc">&nbsp;            stack.add(table);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        cont.row();</b>
+<b class="nc">&nbsp;        cont.add(pane).growX().colspan(sections.length);</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    void rebind(Section section, KeyBind bind, KeyCode newKey){
+<b class="nc">&nbsp;        if(rebindKey == null) return;</b>
+<b class="nc">&nbsp;        rebindDialog.hide();</b>
+<b class="nc">&nbsp;        boolean isAxis = bind.defaultValue(section.device.type()) instanceof Axis;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(isAxis){</b>
+<b class="nc">&nbsp;            if(newKey.axis || !rebindMin){</b>
+<b class="nc">&nbsp;                section.binds.get(section.device.type(), OrderedMap::new).put(rebindKey, newKey.axis ? new Axis(newKey) : new Axis(minKey, newKey));</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            section.binds.get(section.device.type(), OrderedMap::new).put(rebindKey, new Axis(newKey));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(rebindAxis &amp;&amp; isAxis &amp;&amp; rebindMin &amp;&amp; !newKey.axis){</b>
+<b class="nc">&nbsp;            rebindMin = false;</b>
+<b class="nc">&nbsp;            minKey = newKey;</b>
+<b class="nc">&nbsp;            openDialog(section, rebindKey);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            rebindKey = null;</b>
+<b class="nc">&nbsp;            rebindAxis = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void openDialog(Section section, KeyBind name){
+<b class="nc">&nbsp;        rebindDialog = new Dialog(rebindAxis ? bundle.get(&quot;keybind.press.axis&quot;) : bundle.get(&quot;keybind.press&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;        rebindKey = name;</b>
+&nbsp;
+<b class="nc">&nbsp;        rebindDialog.titleTable.getCells().first().pad(4);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(section.device.type() == DeviceType.keyboard){</b>
+&nbsp;
+<b class="nc">&nbsp;            rebindDialog.addListener(new InputListener(){</b>
+&nbsp;                @Override
+&nbsp;                public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
+<b class="nc">&nbsp;                    if(Core.app.isAndroid()) return false;</b>
+<b class="nc">&nbsp;                    rebind(section, name, button);</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                @Override
+&nbsp;                public boolean keyDown(InputEvent event, KeyCode keycode){
+<b class="nc">&nbsp;                    rebindDialog.hide();</b>
+<b class="nc">&nbsp;                    rebind(section, name, keycode);</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                @Override
+&nbsp;                public boolean scrolled(InputEvent event, float x, float y, float amountX, float amountY){
+<b class="nc">&nbsp;                    if(!rebindAxis) return false;</b>
+<b class="nc">&nbsp;                    rebindDialog.hide();</b>
+<b class="nc">&nbsp;                    rebind(section, name, KeyCode.scroll);</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        rebindDialog.show();</b>
+<b class="nc">&nbsp;        Time.runTask(1f, () -&gt; getScene().setScrollFocus(rebindDialog));</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

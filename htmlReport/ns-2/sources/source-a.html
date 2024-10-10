@@ -1,0 +1,289 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnitGroup</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai</a>
+</div>
+
+<h1>Coverage Summary for Class: UnitGroup (mindustry.ai)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnitGroup</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/94)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.Pathfinder.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+<b class="nc">&nbsp;public class UnitGroup{</b>
+<b class="nc">&nbsp;    public Seq&lt;Unit&gt; units = new Seq&lt;&gt;();</b>
+&nbsp;    public int collisionLayer;
+&nbsp;    public volatile float[] positions, originalPositions;
+&nbsp;    public volatile boolean valid;
+&nbsp;    
+&nbsp;    public void calculateFormation(Vec2 dest, int collisionLayer){
+<b class="nc">&nbsp;        this.collisionLayer = collisionLayer;</b>
+&nbsp;
+<b class="nc">&nbsp;        float cx = 0f, cy = 0f;</b>
+<b class="nc">&nbsp;        for(Unit unit : units){</b>
+<b class="nc">&nbsp;            cx += unit.x;</b>
+<b class="nc">&nbsp;            cy += unit.y;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        cx /= units.size;</b>
+<b class="nc">&nbsp;        cy /= units.size;</b>
+<b class="nc">&nbsp;        positions = new float[units.size * 2];</b>
+&nbsp;
+&nbsp;
+&nbsp;        //all positions are relative to the center
+<b class="nc">&nbsp;        for(int i = 0; i &lt; units.size; i ++){</b>
+<b class="nc">&nbsp;            Unit unit = units.get(i);</b>
+<b class="nc">&nbsp;            positions[i * 2] = unit.x - cx;</b>
+<b class="nc">&nbsp;            positions[i * 2 + 1] = unit.y - cy;</b>
+<b class="nc">&nbsp;            unit.command().groupIndex = i;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //run on new thread to prevent stutter
+<b class="nc">&nbsp;        Vars.mainExecutor.submit(() -&gt; {</b>
+&nbsp;            //unused space between circles that needs to be reached for compression to end
+<b class="nc">&nbsp;            float maxSpaceUsage = 0.7f;</b>
+<b class="nc">&nbsp;            boolean compress = true;</b>
+&nbsp;
+<b class="nc">&nbsp;            int compressionIterations = 0;</b>
+<b class="nc">&nbsp;            int physicsIterations = 0;</b>
+<b class="nc">&nbsp;            int totalIterations = 0;</b>
+<b class="nc">&nbsp;            int maxPhysicsIterations = Math.min(1 + (int)(Math.pow(units.size, 0.65) / 10), 6);</b>
+&nbsp;
+&nbsp;            //yep, new allocations, because this is a new thread.
+<b class="nc">&nbsp;            IntQuadTree tree = new IntQuadTree(new Rect(0f, 0f, Vars.world.unitWidth(), Vars.world.unitHeight()),</b>
+<b class="nc">&nbsp;                (index, hitbox) -&gt; hitbox.setCentered(positions[index * 2], positions[index * 2 + 1], units.get(index).hitSize));</b>
+<b class="nc">&nbsp;            IntSeq tmpseq = new IntSeq();</b>
+<b class="nc">&nbsp;            Vec2 v1 = new Vec2();</b>
+<b class="nc">&nbsp;            Vec2 v2 = new Vec2();</b>
+&nbsp;
+&nbsp;            //this algorithm basically squeezes all the circle colliders together, then proceeds to simulate physics to push them apart across several iterations.
+&nbsp;            //it&#39;s rather slow, but shouldn&#39;t be too much of an issue when run in a different thread
+<b class="nc">&nbsp;            while(totalIterations++ &lt; 40 &amp;&amp; physicsIterations &lt; maxPhysicsIterations){</b>
+<b class="nc">&nbsp;                float spaceUsed = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(compress){</b>
+<b class="nc">&nbsp;                    compressionIterations ++;</b>
+&nbsp;
+<b class="nc">&nbsp;                    float maxDst = 1f, totalArea = 0f;</b>
+<b class="nc">&nbsp;                    for(int a = 0; a &lt; units.size; a ++){</b>
+<b class="nc">&nbsp;                        v1.set(positions[a * 2], positions[a * 2 + 1]).lerp(v2.set(0f, 0f), 0.3f);</b>
+<b class="nc">&nbsp;                        positions[a * 2] = v1.x;</b>
+<b class="nc">&nbsp;                        positions[a * 2 + 1] = v1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;                        float rad = units.get(a).hitSize/2f;</b>
+&nbsp;
+<b class="nc">&nbsp;                        maxDst = Math.max(maxDst, v1.dst(0f, 0f) + rad);</b>
+<b class="nc">&nbsp;                        totalArea += Mathf.PI * rad * rad;</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //total area of bounding circle
+<b class="nc">&nbsp;                    float boundingArea = Mathf.PI * maxDst * maxDst;</b>
+<b class="nc">&nbsp;                    spaceUsed = totalArea / boundingArea;</b>
+&nbsp;
+&nbsp;                    //ex: 60% (0.6) of the total area is used, this will not be enough to satisfy a maxSpaceUsage of 70% (0.7)
+<b class="nc">&nbsp;                    compress = spaceUsed &lt;= maxSpaceUsage &amp;&amp; compressionIterations &lt; 20;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //uncompress units
+<b class="nc">&nbsp;                if(!compress || spaceUsed &gt; 0.5f){</b>
+<b class="nc">&nbsp;                    physicsIterations++;</b>
+&nbsp;
+<b class="nc">&nbsp;                    tree.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int a = 0; a &lt; units.size; a++){</b>
+<b class="nc">&nbsp;                        tree.insert(a);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    for(int a = 0; a &lt; units.size; a++){</b>
+<b class="nc">&nbsp;                        Unit unit = units.get(a);</b>
+<b class="nc">&nbsp;                        float x = positions[a * 2], y = positions[a * 2 + 1], radius = unit.hitSize/2f;</b>
+&nbsp;
+<b class="nc">&nbsp;                        tmpseq.clear();</b>
+<b class="nc">&nbsp;                        tree.intersect(x - radius, y - radius, radius * 2f, radius * 2f, tmpseq);</b>
+<b class="nc">&nbsp;                        for(int res = 0; res &lt; tmpseq.size; res ++){</b>
+<b class="nc">&nbsp;                            int b = tmpseq.items[res];</b>
+&nbsp;
+&nbsp;                            //simulate collision physics
+<b class="nc">&nbsp;                            if(a != b){</b>
+<b class="nc">&nbsp;                                float ox = positions[b * 2], oy = positions[b * 2 + 1];</b>
+<b class="nc">&nbsp;                                Unit other = units.get(b);</b>
+&nbsp;
+<b class="nc">&nbsp;                                float rs = (radius + other.hitSize/2f) * 1.2f;</b>
+<b class="nc">&nbsp;                                float dst = Mathf.dst(x, y, ox, oy);</b>
+&nbsp;
+<b class="nc">&nbsp;                                if(dst &lt; rs){</b>
+<b class="nc">&nbsp;                                    v2.set(x - ox, y - oy).setLength(rs - dst);</b>
+<b class="nc">&nbsp;                                    float mass1 = unit.hitSize, mass2 = other.hitSize;</b>
+<b class="nc">&nbsp;                                    float ms = mass1 + mass2;</b>
+<b class="nc">&nbsp;                                    float m1 = mass2 / ms, m2 = mass1 / ms;</b>
+<b class="nc">&nbsp;                                    float scl = 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;                                    positions[a * 2] += v2.x * m1 * scl;</b>
+<b class="nc">&nbsp;                                    positions[a * 2 + 1] += v2.y * m1 * scl;</b>
+&nbsp;
+<b class="nc">&nbsp;                                    positions[b * 2] -= v2.x * m2 * scl;</b>
+<b class="nc">&nbsp;                                    positions[b * 2 + 1] -= v2.y * m2 * scl;</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            originalPositions = positions.clone();</b>
+&nbsp;
+&nbsp;            //raycast from the destination to the offset to make sure it&#39;s reachable
+<b class="nc">&nbsp;            for(int a = 0; a &lt; units.size; a ++){</b>
+<b class="nc">&nbsp;                updateRaycast(a, dest, v1);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            valid = true;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(ControlPathfinder.showDebug){</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; units.size; i ++){</b>
+<b class="nc">&nbsp;                        float x = positions[i * 2], y = positions[i * 2 + 1];</b>
+&nbsp;
+<b class="nc">&nbsp;                        Fx.placeBlock.at(x + dest.x, y + dest.y, 1f, Color.green);</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateRaycast(int index, Vec2 dest){
+<b class="nc">&nbsp;        updateRaycast(index, dest, Tmp.v1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateRaycast(int index, Vec2 dest, Vec2 v1){
+<b class="nc">&nbsp;        if(collisionLayer != PhysicsProcess.layerFlying){</b>
+&nbsp;
+&nbsp;            //coordinates in world space
+&nbsp;            float
+<b class="nc">&nbsp;                x = originalPositions[index * 2] + dest.x,</b>
+<b class="nc">&nbsp;                y = originalPositions[index * 2 + 1] + dest.y;</b>
+&nbsp;
+<b class="nc">&nbsp;            Unit unit = units.get(index);</b>
+&nbsp;
+<b class="nc">&nbsp;            PathCost cost = unit.type.pathCost;</b>
+<b class="nc">&nbsp;            int res = ControlPathfinder.raycastFastAvoid(unit.team.id, cost, World.toTile(dest.x), World.toTile(dest.y), World.toTile(x), World.toTile(y));</b>
+&nbsp;
+&nbsp;            //collision found, make the destination the point right before the collision
+<b class="nc">&nbsp;            if(res != 0){</b>
+<b class="nc">&nbsp;                v1.set(Point2.x(res) * Vars.tilesize - dest.x, Point2.y(res) * Vars.tilesize - dest.y);</b>
+<b class="nc">&nbsp;                v1.setLength(Math.max(v1.len() - Vars.tilesize - 4f, 0));</b>
+<b class="nc">&nbsp;                positions[index * 2] = v1.x;</b>
+<b class="nc">&nbsp;                positions[index * 2 + 1] = v1.y;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(ControlPathfinder.showDebug){</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; Fx.debugLine.at(unit.x, unit.y, 0f, Color.green, new Vec2[]{new Vec2(dest.x, dest.y), new Vec2(x, y)}));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

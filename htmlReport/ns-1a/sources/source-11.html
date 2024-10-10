@@ -1,0 +1,258 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Team</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.game</a>
+</div>
+
+<h1>Coverage Summary for Class: Team (mindustry.game)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Team</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (12/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.2%
+  </span>
+  <span class="absValue">
+    (45/51)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.game;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.game.Rules.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class Team implements Comparable&lt;Team&gt;{
+&nbsp;    public final int id;
+&nbsp;    public final Color color;
+&nbsp;    public final Color[] palette;
+<b class="fc">&nbsp;    public final int[] palettei = new int[3];</b>
+<b class="fc">&nbsp;    public String emoji = &quot;&quot;;</b>
+&nbsp;    public boolean hasPalette;
+&nbsp;    public String name;
+&nbsp;
+&nbsp;    /** All 256 registered teams. */
+<b class="fc">&nbsp;    public static final Team[] all = new Team[256];</b>
+&nbsp;    /** The 6 base teams used in the editor. */
+<b class="fc">&nbsp;    public static final Team[] baseTeams = new Team[6];</b>
+&nbsp;
+&nbsp;    public final static Team
+<b class="fc">&nbsp;        derelict = new Team(0, &quot;derelict&quot;, Color.valueOf(&quot;4d4e58&quot;)),</b>
+<b class="fc">&nbsp;        sharded = new Team(1, &quot;sharded&quot;, Pal.accent.cpy(), Color.valueOf(&quot;ffd37f&quot;), Color.valueOf(&quot;eab678&quot;), Color.valueOf(&quot;d4816b&quot;)),</b>
+<b class="fc">&nbsp;        crux = new Team(2, &quot;crux&quot;, Color.valueOf(&quot;f25555&quot;), Color.valueOf(&quot;fc8e6c&quot;), Color.valueOf(&quot;f25555&quot;), Color.valueOf(&quot;a04553&quot;)),</b>
+<b class="fc">&nbsp;        malis = new Team(3, &quot;malis&quot;, Color.valueOf(&quot;a27ce5&quot;), Color.valueOf(&quot;c7a4f5&quot;), Color.valueOf(&quot;896fd6&quot;), Color.valueOf(&quot;504cba&quot;)),</b>
+&nbsp;
+&nbsp;        //TODO temporarily no palettes for these teams.
+<b class="fc">&nbsp;        green = new Team(4, &quot;green&quot;, Color.valueOf(&quot;54d67d&quot;)),//Color.valueOf(&quot;96f58c&quot;), Color.valueOf(&quot;54d67d&quot;), Color.valueOf(&quot;28785c&quot;)),</b>
+<b class="fc">&nbsp;        blue = new Team(5, &quot;blue&quot;, Color.valueOf(&quot;6c87fd&quot;)), //Color.valueOf(&quot;85caf9&quot;), Color.valueOf(&quot;6c87fd&quot;), Color.valueOf(&quot;3b3392&quot;)</b>
+<b class="fc">&nbsp;        neoplastic = new Team(6, &quot;neoplastic&quot;, Color.valueOf(&quot;e05438&quot;)); //yes, it looks very similar to crux, you&#39;re not supposed to use this team for block regions anyway</b>
+&nbsp;
+&nbsp;    static{
+<b class="fc">&nbsp;        Mathf.rand.setSeed(8);</b>
+&nbsp;        //fix random seed shift caused by new team
+<b class="fc">&nbsp;        for(int i = 0; i &lt; 3; i++){</b>
+<b class="fc">&nbsp;            Mathf.random();</b>
+&nbsp;        }
+&nbsp;        //create the whole 256 placeholder teams
+<b class="fc">&nbsp;        for(int i = 7; i &lt; all.length; i++){</b>
+<b class="fc">&nbsp;            new Team(i, &quot;team#&quot; + i, Color.HSVtoRGB(360f * Mathf.random(), 100f * Mathf.random(0.4f, 1f), 100f * Mathf.random(0.6f, 1f), 1f));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        Mathf.rand.setSeed(new Rand().nextLong());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Team get(int id){
+<b class="fc">&nbsp;        return all[((byte)id) &amp; 0xff];</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected Team(int id, String name, Color color){</b>
+<b class="fc">&nbsp;        this.name = name;</b>
+<b class="fc">&nbsp;        this.color = color;</b>
+<b class="fc">&nbsp;        this.id = id;</b>
+&nbsp;
+<b class="fc">&nbsp;        if(id &lt; 6) baseTeams[id] = this;</b>
+<b class="fc">&nbsp;        all[id] = this;</b>
+&nbsp;
+<b class="fc">&nbsp;        palette = new Color[3];</b>
+<b class="fc">&nbsp;        palette[0] = color;</b>
+<b class="fc">&nbsp;        palette[1] = color.cpy().mul(0.75f);</b>
+<b class="fc">&nbsp;        palette[2] = color.cpy().mul(0.5f);</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; 3; i++){</b>
+<b class="fc">&nbsp;            palettei[i] = palette[i].rgba();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Specifies a 3-color team palette. */
+&nbsp;    protected Team(int id, String name, Color color, Color pal1, Color pal2, Color pal3){
+<b class="fc">&nbsp;        this(id, name, color);</b>
+&nbsp;
+<b class="fc">&nbsp;        palette[0] = pal1;</b>
+<b class="fc">&nbsp;        palette[1] = pal2;</b>
+<b class="fc">&nbsp;        palette[2] = pal3;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; 3; i++){</b>
+<b class="fc">&nbsp;            palettei[i] = palette[i].rgba();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        hasPalette = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the core items for this team, or an empty item module.
+&nbsp;     * Never add to the resulting item module, as it is mutable. */
+&nbsp;    public ItemModule items(){
+<b class="nc">&nbsp;        return core() == null ? ItemModule.empty : core().items;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the team-specific rules. */
+&nbsp;    public TeamRule rules(){
+<b class="fc">&nbsp;        return state.rules.teams.get(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TeamData data(){
+<b class="fc">&nbsp;        return state.teams.get(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public CoreBuild core(){
+<b class="fc">&nbsp;        return data().core();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean active(){
+<b class="nc">&nbsp;        return state.teams.isActive(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this team is supposed to be AI-controlled. */
+&nbsp;    public boolean isAI(){
+<b class="fc">&nbsp;        return (state.rules.waves || state.rules.attackMode) &amp;&amp; this != state.rules.defaultTeam &amp;&amp; !state.rules.pvp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this team is solely comprised of AI (with no players possible). */
+&nbsp;    public boolean isOnlyAI(){
+<b class="fc">&nbsp;        return isAI() &amp;&amp; data().players.size == 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this team needs a flow field for &quot;dumb&quot; wave pathfinding. */
+&nbsp;    public boolean needsFlowField(){
+<b class="fc">&nbsp;        return isAI() &amp;&amp; !rules().rtsAi;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated There is absolutely no reason to use this. */
+&nbsp;    @Deprecated
+&nbsp;    public boolean isEnemy(Team other){
+<b class="nc">&nbsp;        return this != other;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;CoreBuild&gt; cores(){
+<b class="fc">&nbsp;        return state.teams.cores(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String localized(){
+<b class="nc">&nbsp;        return Core.bundle.get(&quot;team.&quot; + name + &quot;.name&quot;, name);</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    public String coloredName(){
+<b class="nc">&nbsp;        return emoji + &quot;[#&quot; + color + &quot;]&quot; + localized() + &quot;[]&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int compareTo(Team team){
+<b class="nc">&nbsp;        return Integer.compare(id, team.id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="fc">&nbsp;        return name;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,177 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > RemoteProcess</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.remote</a>
+</div>
+
+<h1>Coverage Summary for Class: RemoteProcess (mindustry.annotations.remote)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RemoteProcess</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/25)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.remote;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.annotations.*;
+&nbsp;import mindustry.annotations.util.*;
+&nbsp;import mindustry.annotations.util.TypeIOResolver.*;
+&nbsp;
+&nbsp;import javax.annotation.processing.*;
+&nbsp;import javax.lang.model.element.*;
+&nbsp;
+&nbsp;
+&nbsp;/** The annotation processor for generating remote method call code. */
+&nbsp;@SupportedAnnotationTypes({
+&nbsp;&quot;mindustry.annotations.Annotations.Remote&quot;,
+&nbsp;&quot;mindustry.annotations.Annotations.TypeIOHandler&quot;
+&nbsp;})
+<b class="nc">&nbsp;public class RemoteProcess extends BaseProcessor{</b>
+&nbsp;    /** Simple class name of generated class name. */
+&nbsp;    public static final String callLocation = &quot;Call&quot;;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void process(RoundEnvironment roundEnv) throws Exception{
+&nbsp;        //get serializers
+&nbsp;        //class serializers
+<b class="nc">&nbsp;        ClassSerializer serializer = TypeIOResolver.resolve(this);</b>
+&nbsp;        //last method ID used
+<b class="nc">&nbsp;        int lastMethodID = 0;</b>
+&nbsp;        //find all elements with the Remote annotation
+&nbsp;        //all elements with the Remote annotation
+<b class="nc">&nbsp;        Seq&lt;Smethod&gt; elements = methods(Remote.class);</b>
+&nbsp;        //list of all method entries
+<b class="nc">&nbsp;        Seq&lt;MethodEntry&gt; methods = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Smethod&gt; orderedElements = elements.copy();</b>
+<b class="nc">&nbsp;        orderedElements.sortComparing(Selement::toString);</b>
+&nbsp;
+&nbsp;        //create methods
+<b class="nc">&nbsp;        for(Smethod element : orderedElements){</b>
+<b class="nc">&nbsp;            Remote annotation = element.annotation(Remote.class);</b>
+&nbsp;
+&nbsp;            //check for static
+<b class="nc">&nbsp;            if(!element.is(Modifier.STATIC) || !element.is(Modifier.PUBLIC)){</b>
+<b class="nc">&nbsp;                err(&quot;All @Remote methods must be public and static&quot;, element);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //can&#39;t generate none methods
+<b class="nc">&nbsp;            if(annotation.targets() == Loc.none){</b>
+<b class="nc">&nbsp;                err(&quot;A @Remote method&#39;s targets() cannot be equal to &#39;none&#39;&quot;, element);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            String packetName = Strings.capitalize(element.name()) + &quot;CallPacket&quot;;</b>
+<b class="nc">&nbsp;            int[] index = {1};</b>
+&nbsp;
+<b class="nc">&nbsp;            while(methods.contains(m -&gt; m.packetClassName.equals(packetName + (index[0] == 1 ? &quot;&quot; : index[0])))){</b>
+<b class="nc">&nbsp;                index[0] ++;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //create and add entry
+<b class="nc">&nbsp;            MethodEntry method = new MethodEntry(</b>
+<b class="nc">&nbsp;                callLocation, BaseProcessor.getMethodName(element.e), packetName + (index[0] == 1 ? &quot;&quot; : index[0]),</b>
+<b class="nc">&nbsp;                annotation.targets(), annotation.variants(),</b>
+<b class="nc">&nbsp;                annotation.called(), annotation.unreliable(), annotation.forward(), lastMethodID++,</b>
+<b class="nc">&nbsp;                element, annotation.priority()</b>
+&nbsp;            );
+&nbsp;
+<b class="nc">&nbsp;            methods.add(method);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //generate the methods to invoke, as well as the packet classes
+<b class="nc">&nbsp;        CallGenerator.generate(serializer, methods);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

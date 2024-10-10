@@ -1,0 +1,233 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PointLaserBulletType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.bullet</a>
+</div>
+
+<h1>Coverage Summary for Class: PointLaserBulletType (mindustry.entities.bullet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PointLaserBulletType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.1%
+  </span>
+  <span class="absValue">
+    (1/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.9%
+  </span>
+  <span class="absValue">
+    (21/54)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.bullet;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** A continuous bullet type that only damages in a point. */
+&nbsp;public class PointLaserBulletType extends BulletType{
+<b class="fc">&nbsp;    public String sprite = &quot;point-laser&quot;;</b>
+&nbsp;    public TextureRegion laser, laserEnd;
+&nbsp;
+<b class="fc">&nbsp;    public Color color = Color.white;</b>
+&nbsp;
+<b class="fc">&nbsp;    public Effect beamEffect = Fx.colorTrail;</b>
+<b class="fc">&nbsp;    public float beamEffectInterval = 3f, beamEffectSize = 3.5f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float oscScl = 2f, oscMag = 0.3f;</b>
+<b class="fc">&nbsp;    public float damageInterval = 5f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float shake = 0f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public PointLaserBulletType(){</b>
+<b class="fc">&nbsp;        removeAfterPierce = false;</b>
+<b class="fc">&nbsp;        speed = 0f;</b>
+<b class="fc">&nbsp;        despawnEffect = Fx.none;</b>
+<b class="fc">&nbsp;        lifetime = 20f;</b>
+<b class="fc">&nbsp;        impact = true;</b>
+<b class="fc">&nbsp;        keepVelocity = false;</b>
+<b class="fc">&nbsp;        collides = false;</b>
+<b class="fc">&nbsp;        pierce = true;</b>
+<b class="fc">&nbsp;        hittable = false;</b>
+<b class="fc">&nbsp;        absorbable = false;</b>
+<b class="fc">&nbsp;        optimalLifeFract = 0.5f;</b>
+<b class="fc">&nbsp;        shootEffect = smokeEffect = Fx.none;</b>
+&nbsp;
+&nbsp;        //just make it massive, users of this bullet can adjust as necessary
+<b class="fc">&nbsp;        drawSize = 1000f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float continuousDamage(){
+<b class="nc">&nbsp;        return damage / damageInterval * 60f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float estimateDPS(){
+<b class="nc">&nbsp;        return damage * 100f / damageInterval * 3f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        laser = Core.atlas.find(sprite);</b>
+<b class="nc">&nbsp;        laserEnd = Core.atlas.find(sprite + &quot;-end&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Bullet b){
+<b class="nc">&nbsp;        super.draw(b);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        Drawf.laser(laser, laserEnd, b.x, b.y, b.aimX, b.aimY, b.fslope() * (1f - oscMag + Mathf.absin(Time.time, oscScl, oscMag)));</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(Bullet b){
+<b class="nc">&nbsp;        updateTrail(b);</b>
+<b class="nc">&nbsp;        updateTrailEffects(b);</b>
+<b class="nc">&nbsp;        updateBulletInterval(b);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(b.timer.get(0, damageInterval)){</b>
+<b class="nc">&nbsp;            Damage.collidePoint(b, b.team, hitEffect, b.aimX, b.aimY);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(b.timer.get(1, beamEffectInterval)){</b>
+<b class="nc">&nbsp;            beamEffect.at(b.aimX, b.aimY, beamEffectSize * b.fslope(), hitColor);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(shake &gt; 0){</b>
+<b class="nc">&nbsp;            Effect.shake(shake, shake, b);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateTrailEffects(Bullet b){
+<b class="nc">&nbsp;        if(trailChance &gt; 0){</b>
+<b class="nc">&nbsp;            if(Mathf.chanceDelta(trailChance)){</b>
+<b class="nc">&nbsp;                trailEffect.at(b.aimX, b.aimY, trailRotation ? b.angleTo(b.aimX, b.aimY) : (trailParam * b.fslope()), trailColor);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(trailInterval &gt; 0f){</b>
+<b class="nc">&nbsp;            if(b.timer(0, trailInterval)){</b>
+<b class="nc">&nbsp;                trailEffect.at(b.aimX, b.aimY, trailRotation ? b.angleTo(b.aimX, b.aimY) : (trailParam * b.fslope()), trailColor);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateTrail(Bullet b){
+<b class="nc">&nbsp;        if(!headless &amp;&amp; trailLength &gt; 0){</b>
+<b class="nc">&nbsp;            if(b.trail == null){</b>
+<b class="nc">&nbsp;                b.trail = new Trail(trailLength);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            b.trail.length = trailLength;</b>
+<b class="nc">&nbsp;            b.trail.update(b.aimX, b.aimY, b.fslope() * (1f - (trailSinMag &gt; 0 ? Mathf.absin(Time.time, trailSinScl, trailSinMag) : 0f)));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateBulletInterval(Bullet b){
+<b class="nc">&nbsp;        if(intervalBullet != null &amp;&amp; b.time &gt;= intervalDelay &amp;&amp; b.timer.get(2, bulletInterval)){</b>
+<b class="nc">&nbsp;            float ang = b.rotation();</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; intervalBullets; i++){</b>
+<b class="nc">&nbsp;                intervalBullet.create(b, b.aimX, b.aimY, ang + Mathf.range(intervalRandomSpread) + intervalAngle + ((i - (intervalBullets - 1f)/2f) * intervalSpread));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

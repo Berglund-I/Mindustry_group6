@@ -1,0 +1,258 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Router</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: Router (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Router</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (10/10)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Router$RouterBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (5/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (23/46)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    54.5%
+  </span>
+  <span class="absValue">
+    (6/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.9%
+  </span>
+  <span class="absValue">
+    (33/56)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class Router extends Block{
+<b class="fc">&nbsp;    public float speed = 8f;</b>
+&nbsp;
+&nbsp;    public Router(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        solid = false;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        itemCapacity = 1;</b>
+<b class="fc">&nbsp;        group = BlockGroup.transportation;</b>
+<b class="fc">&nbsp;        unloadable = false;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class RouterBuild extends Building implements ControlBlock{</b>
+&nbsp;        public Item lastItem;
+&nbsp;        public Tile lastInput;
+&nbsp;        public float time;
+&nbsp;        public @Nullable BlockUnitc unit;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Unit unit(){
+<b class="nc">&nbsp;            if(unit == null){</b>
+<b class="nc">&nbsp;                unit = (BlockUnitc)UnitTypes.block.create(team);</b>
+<b class="nc">&nbsp;                unit.tile(this);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return (Unit)unit;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean canControl(){
+<b class="nc">&nbsp;            return size == 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldAutoTarget(){
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(lastItem == null &amp;&amp; items.any()){</b>
+<b class="nc">&nbsp;                lastItem = items.first();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(lastItem != null){</b>
+<b class="fc">&nbsp;                time += 1f / speed * delta();</b>
+<b class="fc">&nbsp;                Building target = getTileTarget(lastItem, lastInput, false);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(target != null &amp;&amp; (time &gt;= 1f || !(target.block instanceof Router || target.block.instantTransfer))){</b>
+<b class="fc">&nbsp;                    getTileTarget(lastItem, lastInput, true);</b>
+<b class="fc">&nbsp;                    target.handleItem(this, lastItem);</b>
+<b class="fc">&nbsp;                    items.remove(lastItem, 1);</b>
+<b class="fc">&nbsp;                    lastItem = null;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int acceptStack(Item item, int amount, Teamc source){
+<b class="nc">&nbsp;            return 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="fc">&nbsp;            return team == source.team &amp;&amp; lastItem == null &amp;&amp; items.total() == 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handleItem(Building source, Item item){
+<b class="fc">&nbsp;            items.add(item, 1);</b>
+<b class="fc">&nbsp;            lastItem = item;</b>
+<b class="fc">&nbsp;            time = 0f;</b>
+<b class="fc">&nbsp;            lastInput = source.tile();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int removeStack(Item item, int amount){
+<b class="nc">&nbsp;            int result = super.removeStack(item, amount);</b>
+<b class="nc">&nbsp;            if(result != 0 &amp;&amp; item == lastItem){</b>
+<b class="nc">&nbsp;                lastItem = null;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Building getTileTarget(Item item, Tile from, boolean set){
+<b class="fc">&nbsp;            if(unit != null &amp;&amp; isControlled()){</b>
+<b class="nc">&nbsp;                unit.health(health);</b>
+<b class="nc">&nbsp;                unit.ammo(unit.type().ammoCapacity * (items.total() &gt; 0 ? 1f : 0f));</b>
+<b class="nc">&nbsp;                unit.team(team);</b>
+<b class="nc">&nbsp;                unit.set(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;                int angle = Mathf.mod((int)((angleTo(unit.aimX(), unit.aimY()) + 45) / 90), 4);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(unit.isShooting()){</b>
+<b class="nc">&nbsp;                    Building other = nearby(rotation = angle);</b>
+<b class="nc">&nbsp;                    if(other != null &amp;&amp; other.acceptItem(this, item)){</b>
+<b class="nc">&nbsp;                        return other;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return null;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            int counter = rotation;</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; proximity.size; i++){</b>
+<b class="fc">&nbsp;                Building other = proximity.get((i + counter) % proximity.size);</b>
+<b class="fc">&nbsp;                if(set) rotation = ((byte)((rotation + 1) % proximity.size));</b>
+<b class="fc">&nbsp;                if(other.tile == from &amp;&amp; from.block() == Blocks.overflowGate) continue;</b>
+<b class="fc">&nbsp;                if(other.acceptItem(this, item)){</b>
+<b class="fc">&nbsp;                    return other;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

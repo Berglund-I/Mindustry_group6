@@ -1,0 +1,134 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SaveMeta</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.io</a>
+</div>
+
+<h1>Coverage Summary for Class: SaveMeta (mindustry.io)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SaveMeta</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.io;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class SaveMeta{
+&nbsp;    public int version;
+&nbsp;    public int build;
+&nbsp;    public long timestamp;
+&nbsp;    public long timePlayed;
+&nbsp;    public Map map;
+&nbsp;    public int wave;
+&nbsp;    public Rules rules;
+&nbsp;    public StringMap tags;
+&nbsp;    public String[] mods;
+&nbsp;
+<b class="nc">&nbsp;    public SaveMeta(int version, long timestamp, long timePlayed, int build, String map, int wave, Rules rules, StringMap tags){</b>
+<b class="nc">&nbsp;        this.version = version;</b>
+<b class="nc">&nbsp;        this.build = build;</b>
+<b class="nc">&nbsp;        this.timestamp = timestamp;</b>
+<b class="nc">&nbsp;        this.timePlayed = timePlayed;</b>
+<b class="nc">&nbsp;        this.map = maps.all().find(m -&gt; m.name().equals(map));</b>
+<b class="nc">&nbsp;        this.wave = wave;</b>
+<b class="nc">&nbsp;        this.rules = rules;</b>
+<b class="nc">&nbsp;        this.tags = tags;</b>
+<b class="nc">&nbsp;        this.mods = JsonIO.read(String[].class, tags.get(&quot;mods&quot;, &quot;[]&quot;));</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

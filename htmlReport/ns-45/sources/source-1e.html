@@ -1,0 +1,138 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawSideRegion</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawSideRegion (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawSideRegion</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (1/6)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+<b class="fc">&nbsp;public class DrawSideRegion extends DrawBlock{</b>
+&nbsp;    public TextureRegion top1, top2;
+&nbsp;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+<b class="nc">&nbsp;        Draw.rect(build.rotation &gt; 1 ? top2 : top1, build.x, build.y, build.rotdeg());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlan(Block block, BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        Draw.rect(plan.rotation &gt; 1 ? top2 : top1, plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(Block block){
+<b class="nc">&nbsp;        top1 = Core.atlas.find(block.name + &quot;-top1&quot;);</b>
+<b class="nc">&nbsp;        top2 = Core.atlas.find(block.name + &quot;-top2&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(Block block){
+<b class="nc">&nbsp;        return new TextureRegion[]{top1};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

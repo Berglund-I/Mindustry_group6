@@ -1,0 +1,490 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapView</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: MapView (mindustry.editor)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapView</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/129)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MapView$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/53)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/182)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.input.GestureDetector.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class MapView extends Element implements GestureListener{
+<b class="nc">&nbsp;    EditorTool tool = EditorTool.pencil;</b>
+&nbsp;    private float offsetx, offsety;
+<b class="nc">&nbsp;    private float zoom = 1f;</b>
+<b class="nc">&nbsp;    private boolean grid = false;</b>
+<b class="nc">&nbsp;    private GridImage image = new GridImage(0, 0);</b>
+<b class="nc">&nbsp;    private Vec2 vec = new Vec2();</b>
+<b class="nc">&nbsp;    private Rect rect = new Rect();</b>
+<b class="nc">&nbsp;    private Vec2[][] brushPolygons = new Vec2[MapEditor.brushSizes.length][0];</b>
+&nbsp;
+&nbsp;    boolean drawing;
+&nbsp;    int lastx, lasty;
+&nbsp;    int startx, starty;
+&nbsp;    float mousex, mousey;
+&nbsp;    EditorTool lastTool;
+&nbsp;
+<b class="nc">&nbsp;    public MapView(){</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; MapEditor.brushSizes.length; i++){</b>
+<b class="nc">&nbsp;            float size = MapEditor.brushSizes[i];</b>
+<b class="nc">&nbsp;            float mod = size % 1f;</b>
+<b class="nc">&nbsp;            brushPolygons[i] = Geometry.pixelCircle(size, (index, x, y) -&gt; Mathf.dst(x, y, index - mod, index - mod) &lt;= size - 0.5f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Core.input.getInputProcessors().insert(0, new GestureDetector(20, 0.5f, 2, 0.15f, this));</b>
+<b class="nc">&nbsp;        this.touchable = Touchable.enabled;</b>
+&nbsp;
+<b class="nc">&nbsp;        Point2 firstTouch = new Point2();</b>
+&nbsp;
+<b class="nc">&nbsp;        addListener(new InputListener(){</b>
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public boolean mouseMoved(InputEvent event, float x, float y){
+<b class="nc">&nbsp;                mousex = x;</b>
+<b class="nc">&nbsp;                mousey = y;</b>
+<b class="nc">&nbsp;                requestScroll();</b>
+&nbsp;
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void enter(InputEvent event, float x, float y, int pointer, Element fromActor){
+<b class="nc">&nbsp;                requestScroll();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
+<b class="nc">&nbsp;                if(pointer != 0){</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(!mobile &amp;&amp; button != KeyCode.mouseLeft &amp;&amp; button != KeyCode.mouseMiddle &amp;&amp; button != KeyCode.mouseRight){</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+&nbsp;                
+<b class="nc">&nbsp;                if(button == KeyCode.mouseRight){</b>
+<b class="nc">&nbsp;                    lastTool = tool;</b>
+<b class="nc">&nbsp;                    tool = EditorTool.eraser;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(button == KeyCode.mouseMiddle){</b>
+<b class="nc">&nbsp;                    lastTool = tool;</b>
+<b class="nc">&nbsp;                    tool = EditorTool.zoom;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                mousex = x;</b>
+<b class="nc">&nbsp;                mousey = y;</b>
+&nbsp;
+<b class="nc">&nbsp;                Point2 p = project(x, y);</b>
+<b class="nc">&nbsp;                lastx = p.x;</b>
+<b class="nc">&nbsp;                lasty = p.y;</b>
+<b class="nc">&nbsp;                startx = p.x;</b>
+<b class="nc">&nbsp;                starty = p.y;</b>
+<b class="nc">&nbsp;                tool.touched(p.x, p.y);</b>
+<b class="nc">&nbsp;                firstTouch.set(p);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(tool.edit){</b>
+<b class="nc">&nbsp;                    ui.editor.resetSaved();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                drawing = true;</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button){
+<b class="nc">&nbsp;                if(!mobile &amp;&amp; button != KeyCode.mouseLeft &amp;&amp; button != KeyCode.mouseMiddle &amp;&amp; button != KeyCode.mouseRight){</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                drawing = false;</b>
+&nbsp;
+<b class="nc">&nbsp;                Point2 p = project(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(tool == EditorTool.line){</b>
+<b class="nc">&nbsp;                    ui.editor.resetSaved();</b>
+<b class="nc">&nbsp;                    tool.touchedLine(startx, starty, p.x, p.y);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                editor.flushOp();</b>
+&nbsp;
+<b class="nc">&nbsp;                if((button == KeyCode.mouseMiddle || button == KeyCode.mouseRight) &amp;&amp; lastTool != null){</b>
+<b class="nc">&nbsp;                    tool = lastTool;</b>
+<b class="nc">&nbsp;                    lastTool = null;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void touchDragged(InputEvent event, float x, float y, int pointer){
+<b class="nc">&nbsp;                mousex = x;</b>
+<b class="nc">&nbsp;                mousey = y;</b>
+&nbsp;
+<b class="nc">&nbsp;                Point2 p = project(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(drawing &amp;&amp; tool.draggable &amp;&amp; !(p.x == lastx &amp;&amp; p.y == lasty)){</b>
+<b class="nc">&nbsp;                    ui.editor.resetSaved();</b>
+<b class="nc">&nbsp;                    Bresenham2.line(lastx, lasty, p.x, p.y, (cx, cy) -&gt; tool.touched(cx, cy));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(tool == EditorTool.line &amp;&amp; tool.mode == 1){</b>
+<b class="nc">&nbsp;                    if(Math.abs(p.x - firstTouch.x) &gt; Math.abs(p.y - firstTouch.y)){</b>
+<b class="nc">&nbsp;                        lastx = p.x;</b>
+<b class="nc">&nbsp;                        lasty = firstTouch.y;</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        lastx = firstTouch.x;</b>
+<b class="nc">&nbsp;                        lasty = p.y;</b>
+&nbsp;                    }
+&nbsp;                }else{
+<b class="nc">&nbsp;                    lastx = p.x;</b>
+<b class="nc">&nbsp;                    lasty = p.y;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public EditorTool getTool(){
+<b class="nc">&nbsp;        return tool;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTool(EditorTool tool){
+<b class="nc">&nbsp;        this.tool = tool;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isGrid(){
+<b class="nc">&nbsp;        return grid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setGrid(boolean grid){
+<b class="nc">&nbsp;        this.grid = grid;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void center(){
+<b class="nc">&nbsp;        offsetx = offsety = 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void act(float delta){
+<b class="nc">&nbsp;        super.act(delta);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.scene.getKeyboardFocus() == null || !Core.scene.hasField() &amp;&amp; !Core.input.keyDown(KeyCode.controlLeft)){</b>
+<b class="nc">&nbsp;            float ax = Core.input.axis(Binding.move_x);</b>
+<b class="nc">&nbsp;            float ay = Core.input.axis(Binding.move_y);</b>
+<b class="nc">&nbsp;            offsetx -= ax * 15 * Time.delta / zoom;</b>
+<b class="nc">&nbsp;            offsety -= ay * 15 * Time.delta / zoom;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(KeyCode.shiftLeft) || Core.input.keyTap(KeyCode.altLeft)){</b>
+<b class="nc">&nbsp;            lastTool = tool;</b>
+<b class="nc">&nbsp;            tool = EditorTool.pick;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if((Core.input.keyRelease(KeyCode.shiftLeft) || Core.input.keyRelease(KeyCode.altLeft)) &amp;&amp; lastTool != null){</b>
+<b class="nc">&nbsp;            tool = lastTool;</b>
+<b class="nc">&nbsp;            lastTool = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.scene.getScrollFocus() != this) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        zoom += Core.input.axis(Binding.zoom) / 10f * zoom;</b>
+<b class="nc">&nbsp;        clampZoom();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void clampZoom(){
+<b class="nc">&nbsp;        zoom = Mathf.clamp(zoom, 0.2f, 20f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Point2 project(float x, float y){
+<b class="nc">&nbsp;        float ratio = 1f / ((float)editor.width() / editor.height());</b>
+<b class="nc">&nbsp;        float size = Math.min(width, height);</b>
+<b class="nc">&nbsp;        float sclwidth = size * zoom;</b>
+<b class="nc">&nbsp;        float sclheight = size * zoom * ratio;</b>
+<b class="nc">&nbsp;        x = (x - getWidth() / 2 + sclwidth / 2 - offsetx * zoom) / sclwidth * editor.width();</b>
+<b class="nc">&nbsp;        y = (y - getHeight() / 2 + sclheight / 2 - offsety * zoom) / sclheight * editor.height();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(editor.drawBlock.size % 2 == 0 &amp;&amp; tool != EditorTool.eraser){</b>
+<b class="nc">&nbsp;            return Tmp.p1.set((int)(x - 0.5f), (int)(y - 0.5f));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return Tmp.p1.set((int)x, (int)y);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Vec2 unproject(int x, int y){
+<b class="nc">&nbsp;        float ratio = 1f / ((float)editor.width() / editor.height());</b>
+<b class="nc">&nbsp;        float size = Math.min(width, height);</b>
+<b class="nc">&nbsp;        float sclwidth = size * zoom;</b>
+<b class="nc">&nbsp;        float sclheight = size * zoom * ratio;</b>
+<b class="nc">&nbsp;        float px = ((float)x / editor.width()) * sclwidth + offsetx * zoom - sclwidth / 2 + getWidth() / 2;</b>
+<b class="nc">&nbsp;        float py = ((float)(y) / editor.height()) * sclheight</b>
+<b class="nc">&nbsp;        + offsety * zoom - sclheight / 2 + getHeight() / 2;</b>
+<b class="nc">&nbsp;        return vec.set(px, py);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        float ratio = 1f / ((float)editor.width() / editor.height());</b>
+<b class="nc">&nbsp;        float size = Math.min(width, height);</b>
+<b class="nc">&nbsp;        float sclwidth = size * zoom;</b>
+<b class="nc">&nbsp;        float sclheight = size * zoom * ratio;</b>
+<b class="nc">&nbsp;        float centerx = x + width / 2 + offsetx * zoom;</b>
+<b class="nc">&nbsp;        float centery = y + height / 2 + offsety * zoom;</b>
+&nbsp;
+<b class="nc">&nbsp;        image.setImageSize(editor.width(), editor.height());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!ScissorStack.push(rect.set(x + Core.scene.marginLeft, y + Core.scene.marginBottom, width, height))){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Pal.remove);</b>
+<b class="nc">&nbsp;        Lines.stroke(2f);</b>
+<b class="nc">&nbsp;        Lines.rect(centerx - sclwidth / 2 - 1, centery - sclheight / 2 - 1, sclwidth + 2, sclheight + 2);</b>
+<b class="nc">&nbsp;        editor.renderer.draw(centerx - sclwidth / 2 + Core.scene.marginLeft, centery - sclheight / 2 + Core.scene.marginBottom, sclwidth, sclheight);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(grid){</b>
+<b class="nc">&nbsp;            Draw.color(Color.gray);</b>
+<b class="nc">&nbsp;            image.setBounds(centerx - sclwidth / 2, centery - sclheight / 2, sclwidth, sclheight);</b>
+<b class="nc">&nbsp;            image.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            Lines.stroke(2f);</b>
+<b class="nc">&nbsp;            Draw.color(Pal.bulletYellowBack);</b>
+<b class="nc">&nbsp;            Lines.line(centerx - sclwidth/2f, centery - sclheight/4f, centerx + sclwidth/2f, centery - sclheight/4f);</b>
+<b class="nc">&nbsp;            Lines.line(centerx - sclwidth/4f, centery - sclheight/2f, centerx - sclwidth/4f, centery + sclheight/2f);</b>
+<b class="nc">&nbsp;            Lines.line(centerx - sclwidth/2f, centery + sclheight/4f, centerx + sclwidth/2f, centery + sclheight/4f);</b>
+<b class="nc">&nbsp;            Lines.line(centerx + sclwidth/4f, centery - sclheight/2f, centerx + sclwidth/4f, centery + sclheight/2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Lines.stroke(3f);</b>
+<b class="nc">&nbsp;            Draw.color(Pal.accent);</b>
+<b class="nc">&nbsp;            Lines.line(centerx - sclwidth/2f, centery, centerx + sclwidth/2f, centery);</b>
+<b class="nc">&nbsp;            Lines.line(centerx, centery - sclheight/2f, centerx, centery + sclheight/2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int index = 0;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; MapEditor.brushSizes.length; i++){</b>
+<b class="nc">&nbsp;            if(editor.brushSize == MapEditor.brushSizes[i]){</b>
+<b class="nc">&nbsp;                index = i;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float scaling = zoom * Math.min(width, height) / editor.width();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Pal.accent);</b>
+<b class="nc">&nbsp;        Lines.stroke(Scl.scl(2f));</b>
+&nbsp;
+<b class="nc">&nbsp;        if((!editor.drawBlock.isMultiblock() || tool == EditorTool.eraser) &amp;&amp; tool != EditorTool.fill){</b>
+<b class="nc">&nbsp;            if(tool == EditorTool.line &amp;&amp; drawing){</b>
+<b class="nc">&nbsp;                Vec2 v1 = unproject(startx, starty).add(x, y);</b>
+<b class="nc">&nbsp;                float sx = v1.x, sy = v1.y;</b>
+<b class="nc">&nbsp;                Vec2 v2 = unproject(lastx, lasty).add(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;                Lines.poly(brushPolygons[index], sx, sy, scaling);</b>
+<b class="nc">&nbsp;                Lines.poly(brushPolygons[index], v2.x, v2.y, scaling);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if((tool.edit || (tool == EditorTool.line &amp;&amp; !drawing)) &amp;&amp; (!mobile || drawing)){</b>
+<b class="nc">&nbsp;                Point2 p = project(mousex, mousey);</b>
+<b class="nc">&nbsp;                Vec2 v = unproject(p.x, p.y).add(x, y);</b>
+&nbsp;
+&nbsp;                //pencil square outline
+<b class="nc">&nbsp;                if(tool == EditorTool.pencil &amp;&amp; tool.mode == 1){</b>
+<b class="nc">&nbsp;                    Lines.square(v.x + scaling/2f, v.y + scaling/2f, scaling * ((editor.brushSize == 1.5f ? 1f : editor.brushSize) + 0.5f));</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Lines.poly(brushPolygons[index], v.x, v.y, scaling);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            if((tool.edit || tool == EditorTool.line) &amp;&amp; (!mobile || drawing)){</b>
+<b class="nc">&nbsp;                Point2 p = project(mousex, mousey);</b>
+<b class="nc">&nbsp;                Vec2 v = unproject(p.x, p.y).add(x, y);</b>
+<b class="nc">&nbsp;                float offset = (editor.drawBlock.size % 2 == 0 ? scaling / 2f : 0f);</b>
+<b class="nc">&nbsp;                Lines.square(</b>
+&nbsp;                v.x + scaling / 2f + offset,
+&nbsp;                v.y + scaling / 2f + offset,
+&nbsp;                scaling * editor.drawBlock.size / 2f);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(Pal.accent);</b>
+<b class="nc">&nbsp;        Lines.stroke(Scl.scl(3f));</b>
+<b class="nc">&nbsp;        Lines.rect(x, y, width, height);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;        ScissorStack.pop();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean active(){
+<b class="nc">&nbsp;        return Core.scene != null &amp;&amp; Core.scene.getKeyboardFocus() != null</b>
+<b class="nc">&nbsp;        &amp;&amp; Core.scene.getKeyboardFocus().isDescendantOf(ui.editor)</b>
+<b class="nc">&nbsp;        &amp;&amp; ui.editor.isShown() &amp;&amp; tool == EditorTool.zoom &amp;&amp;</b>
+<b class="nc">&nbsp;        Core.scene.getHoverElement() == this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean pan(float x, float y, float deltaX, float deltaY){
+<b class="nc">&nbsp;        if(!active()) return false;</b>
+<b class="nc">&nbsp;        offsetx += deltaX / zoom;</b>
+<b class="nc">&nbsp;        offsety += deltaY / zoom;</b>
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean zoom(float initialDistance, float distance){
+<b class="nc">&nbsp;        if(!active()) return false;</b>
+<b class="nc">&nbsp;        float nzoom = distance - initialDistance;</b>
+<b class="nc">&nbsp;        zoom += nzoom / 10000f / Scl.scl(1f) * zoom;</b>
+<b class="nc">&nbsp;        clampZoom();</b>
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean pinch(Vec2 initialPointer1, Vec2 initialPointer2, Vec2 pointer1, Vec2 pointer2){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void pinchStop(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

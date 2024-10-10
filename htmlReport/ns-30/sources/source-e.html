@@ -1,0 +1,383 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > EffectsDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: EffectsDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EffectsDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/55)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">EffectsDialog$BoundsBatch</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/23)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">EffectsDialog$EffectCell</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/34)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/112)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.logic.LogicFx.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;public class EffectsDialog extends BaseDialog{
+<b class="nc">&nbsp;    static BoundsBatch bounds = new BoundsBatch();</b>
+&nbsp;
+&nbsp;    Iterable&lt;EffectEntry&gt; entries;
+&nbsp;    @Nullable Cons&lt;EffectEntry&gt; listener;
+&nbsp;
+&nbsp;    public EffectsDialog(Iterable&lt;EffectEntry&gt; entries){
+<b class="nc">&nbsp;        super(&quot;Effects&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        this.entries = entries;</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseButton();</b>
+<b class="nc">&nbsp;        makeButtonOverlay();</b>
+<b class="nc">&nbsp;        onResize(this::setup);</b>
+<b class="nc">&nbsp;        shown(this::setup);</b>
+&nbsp;
+<b class="nc">&nbsp;        setup();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public EffectsDialog(){
+<b class="nc">&nbsp;        this(LogicFx.entries());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static EffectsDialog withAllEffects(){
+<b class="nc">&nbsp;        return new EffectsDialog(Seq.select(Fx.class.getFields(), f -&gt; f.getType() == Effect.class).map(f -&gt; new EffectEntry(Reflect.get(f)).name(f.getName())));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Dialog show(Cons&lt;EffectEntry&gt; listener){
+<b class="nc">&nbsp;        this.listener = listener;</b>
+<b class="nc">&nbsp;        return super.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Dialog show(){
+<b class="nc">&nbsp;        this.listener = null;</b>
+<b class="nc">&nbsp;        return super.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void setup(){
+<b class="nc">&nbsp;        float size = 280f;</b>
+<b class="nc">&nbsp;        int cols = (int)Math.max(1, Core.graphics.getWidth() / Scl.scl(size + 12f));</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.clearChildren();</b>
+<b class="nc">&nbsp;        cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+<b class="nc">&nbsp;            for(var entry : entries){</b>
+<b class="nc">&nbsp;                float bounds = calculateSize(entry);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(bounds &lt;= 0) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                ClickListener cl = new ClickListener();</b>
+&nbsp;
+<b class="nc">&nbsp;                t.stack(</b>
+&nbsp;                new EffectCell(entry, cl),
+<b class="nc">&nbsp;                new Table(af -&gt; af.add(entry.name).grow().labelAlign(Align.bottomLeft).style(Styles.outlineLabel).bottom().left())</b>
+<b class="nc">&nbsp;                ).size(size).with(a -&gt; {</b>
+<b class="nc">&nbsp;                    a.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;                        if(listener != null){</b>
+<b class="nc">&nbsp;                            listener.get(entry);</b>
+<b class="nc">&nbsp;                            hide();</b>
+&nbsp;                        }
+&nbsp;                    });
+<b class="nc">&nbsp;                    a.addListener(cl);</b>
+<b class="nc">&nbsp;                    a.addListener(new HandCursorListener(() -&gt; listener != null, true));</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                if(++i % cols == 0) t.row();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }).grow().scrollX(false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static Object getData(Class&lt;?&gt; type){
+<b class="nc">&nbsp;        if(type == Block.class) return Blocks.router;</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static float calculateSize(EffectEntry entry){
+<b class="nc">&nbsp;        if(entry.bounds &gt;= 0) return entry.bounds;</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        var effect = entry.effect;</b>
+&nbsp;        try{
+<b class="nc">&nbsp;            effect.init();</b>
+<b class="nc">&nbsp;            Batch prev = Core.batch;</b>
+<b class="nc">&nbsp;            bounds.reset();</b>
+<b class="nc">&nbsp;            Core.batch = bounds;</b>
+<b class="nc">&nbsp;            Object data = getData(entry.data);</b>
+&nbsp;
+<b class="nc">&nbsp;            float lifetime = effect.lifetime;</b>
+<b class="nc">&nbsp;            float rot = 1f;</b>
+<b class="nc">&nbsp;            int steps = 60;</b>
+<b class="nc">&nbsp;            int seeds = 4;</b>
+<b class="nc">&nbsp;            for(int s = 0; s &lt; seeds; s++){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt;= steps; i++){</b>
+<b class="nc">&nbsp;                    effect.render(1, Color.white, i / (float)steps * lifetime, lifetime, rot, 0f, 0f, data);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Core.batch = prev;</b>
+&nbsp;
+<b class="nc">&nbsp;            return entry.bounds = bounds.max * 2f;</b>
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+&nbsp;            //might crash with invalid data
+<b class="nc">&nbsp;            return -1f;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static class BoundsBatch extends Batch{</b>
+&nbsp;        float max;
+&nbsp;
+&nbsp;        void reset(){
+<b class="nc">&nbsp;            max = 0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        void max(float... xs){
+<b class="nc">&nbsp;            for(float f : xs){</b>
+<b class="nc">&nbsp;                if(Float.isNaN(f)) continue;</b>
+<b class="nc">&nbsp;                max = Math.max(max, Math.abs(f));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void draw(Texture texture, float[] spriteVertices, int offset, int count){
+<b class="nc">&nbsp;            for(int i = offset; i &lt; count; i += SpriteBatch.VERTEX_SIZE){</b>
+<b class="nc">&nbsp;                max(spriteVertices[i], spriteVertices[i + 1]);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        protected void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
+<b class="nc">&nbsp;            float worldOriginX = x + originX;</b>
+<b class="nc">&nbsp;            float worldOriginY = y + originY;</b>
+<b class="nc">&nbsp;            float fx = -originX;</b>
+<b class="nc">&nbsp;            float fy = -originY;</b>
+<b class="nc">&nbsp;            float fx2 = width - originX;</b>
+<b class="nc">&nbsp;            float fy2 = height - originY;</b>
+<b class="nc">&nbsp;            float cos = Mathf.cosDeg(rotation);</b>
+<b class="nc">&nbsp;            float sin = Mathf.sinDeg(rotation);</b>
+<b class="nc">&nbsp;            float x1 = cos * fx - sin * fy + worldOriginX;</b>
+<b class="nc">&nbsp;            float y1 = sin * fx + cos * fy + worldOriginY;</b>
+<b class="nc">&nbsp;            float x2 = cos * fx - sin * fy2 + worldOriginX;</b>
+<b class="nc">&nbsp;            float y2 = sin * fx + cos * fy2 + worldOriginY;</b>
+<b class="nc">&nbsp;            float x3 = cos * fx2 - sin * fy2 + worldOriginX;</b>
+<b class="nc">&nbsp;            float y3 = sin * fx2 + cos * fy2 + worldOriginY;</b>
+&nbsp;
+<b class="nc">&nbsp;            max(x1, y1, x2, y2, x3, y3, x1 + (x3 - x2), y3 - (y2 - y1));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+<b class="nc">&nbsp;        protected void flush(){}</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    class EffectCell extends Element{
+&nbsp;        EffectEntry effect;
+<b class="nc">&nbsp;        float size = -1f;</b>
+&nbsp;
+<b class="nc">&nbsp;        int id = 1;</b>
+<b class="nc">&nbsp;        float time = 0f;</b>
+&nbsp;        float lifetime;
+<b class="nc">&nbsp;        float rotation = 1f;</b>
+&nbsp;        Object data;
+&nbsp;        ClickListener cl;
+&nbsp;
+<b class="nc">&nbsp;        public EffectCell(EffectEntry effect, ClickListener cl){</b>
+<b class="nc">&nbsp;            this.effect = effect;</b>
+<b class="nc">&nbsp;            this.lifetime = effect.effect.lifetime;</b>
+<b class="nc">&nbsp;            this.cl = cl;</b>
+&nbsp;
+<b class="nc">&nbsp;            data = getData(effect.data);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            if(size &lt; 0){</b>
+<b class="nc">&nbsp;                size = calculateSize(effect) + 1f;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            color.fromHsv((Time.globalTime * 2f) % 360f, 1f, 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(clipBegin(x, y, width, height)){</b>
+<b class="nc">&nbsp;                Draw.colorl(cl.isOver() &amp;&amp; listener != null ? 0.4f : 0.5f);</b>
+<b class="nc">&nbsp;                Draw.alpha(parentAlpha);</b>
+<b class="nc">&nbsp;                Tex.alphaBg.draw(x, y, width, height);</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+<b class="nc">&nbsp;                Draw.flush();</b>
+&nbsp;
+<b class="nc">&nbsp;                float scale = width / size;</b>
+<b class="nc">&nbsp;                Tmp.m1.set(Draw.trans());</b>
+<b class="nc">&nbsp;                Draw.trans().translate(x + width/2f, y + height/2f).scale(scale, scale);</b>
+<b class="nc">&nbsp;                Draw.flush();</b>
+<b class="nc">&nbsp;                this.lifetime = effect.effect.render(id, color, time, lifetime, rotation, 0f, 0f, data);</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.flush();</b>
+<b class="nc">&nbsp;                Draw.trans().set(Tmp.m1);</b>
+<b class="nc">&nbsp;                clipEnd();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Lines.stroke(Scl.scl(3f), Color.black);</b>
+<b class="nc">&nbsp;            Lines.rect(x, y, width, height);</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void act(float delta){
+<b class="nc">&nbsp;            super.act(delta);</b>
+&nbsp;
+<b class="nc">&nbsp;            time += Time.delta;</b>
+<b class="nc">&nbsp;            if(time &gt;= lifetime){</b>
+<b class="nc">&nbsp;                id ++;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            time %= lifetime;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

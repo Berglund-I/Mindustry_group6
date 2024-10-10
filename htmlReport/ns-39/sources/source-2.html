@@ -1,0 +1,137 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Cliff</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.environment</a>
+</div>
+
+<h1>Coverage Summary for Class: Cliff (mindustry.world.blocks.environment)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Cliff</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (7/11)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.environment;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;public class Cliff extends Block{
+<b class="fc">&nbsp;    public float size = 11f;</b>
+&nbsp;    public @Load(value = &quot;cliffmask#&quot;, length = 256) TextureRegion[] cliffs;
+&nbsp;    public @Load(value = &quot;editor-cliffmask#&quot;, length = 256) TextureRegion[] editorCliffs;
+&nbsp;
+&nbsp;    public Cliff(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        breakable = alwaysReplace = false;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        cacheLayer = CacheLayer.walls;</b>
+<b class="fc">&nbsp;        fillsTile = false;</b>
+<b class="fc">&nbsp;        hasShadow = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawBase(Tile tile){
+<b class="nc">&nbsp;        Draw.color(Tmp.c1.set(tile.floor().mapColor).mul(1.6f));</b>
+<b class="nc">&nbsp;        Draw.rect(cliffs[tile.data &amp; 0xff], tile.worldx(), tile.worldy());</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public int minimapColor(Tile tile){
+<b class="nc">&nbsp;        return Tmp.c1.set(tile.floor().mapColor).mul(1.2f).rgba();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,159 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SoundLoop</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.audio</a>
+</div>
+
+<h1>Coverage Summary for Class: SoundLoop (mindustry.audio)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SoundLoop</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (5/20)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.audio;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;
+&nbsp;/** A simple class for playing a looping sound at a position.*/
+&nbsp;public class SoundLoop{
+&nbsp;    private static final float fadeSpeed = 0.05f;
+&nbsp;
+&nbsp;    private final Sound sound;
+<b class="fc">&nbsp;    private int id = -1;</b>
+&nbsp;    private float volume, baseVolume;
+&nbsp;
+<b class="fc">&nbsp;    public SoundLoop(Sound sound, float baseVolume){</b>
+<b class="fc">&nbsp;        this.sound = sound;</b>
+<b class="fc">&nbsp;        this.baseVolume = baseVolume;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(float x, float y, boolean play){
+<b class="nc">&nbsp;        update(x, y, play, 1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(float x, float y, boolean play, float volumeScl){
+<b class="nc">&nbsp;        if(baseVolume &lt;= 0) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(id &lt; 0){</b>
+<b class="nc">&nbsp;            if(play){</b>
+<b class="nc">&nbsp;                id = sound.loop(sound.calcVolume(x, y) * volume * baseVolume * volumeScl, 1f, sound.calcPan(x, y));</b>
+&nbsp;            }
+&nbsp;        }else{
+&nbsp;            //fade the sound in or out
+<b class="nc">&nbsp;            if(play){</b>
+<b class="nc">&nbsp;                volume = Mathf.clamp(volume + fadeSpeed * Time.delta);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                volume = Mathf.clamp(volume - fadeSpeed * Time.delta);</b>
+<b class="nc">&nbsp;                if(volume &lt;= 0.001f){</b>
+<b class="nc">&nbsp;                    Core.audio.stop(id);</b>
+<b class="nc">&nbsp;                    id = -1;</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Core.audio.set(id, sound.calcPan(x, y), sound.calcVolume(x, y) * volume * baseVolume * volumeScl);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void stop(){
+<b class="fc">&nbsp;        if(id != -1){</b>
+<b class="nc">&nbsp;            Core.audio.stop(id);</b>
+<b class="nc">&nbsp;            id = -1;</b>
+<b class="nc">&nbsp;            volume = baseVolume = -1;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

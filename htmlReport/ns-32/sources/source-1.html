@@ -1,0 +1,437 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BranchTreeLayout</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.layout</a>
+</div>
+
+<h1>Coverage Summary for Class: BranchTreeLayout (mindustry.ui.layout)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BranchTreeLayout</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/148)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BranchTreeLayout$TreeAlignment</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">BranchTreeLayout$TreeLocation</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/152)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.layout;
+&nbsp;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Algorithm taken from &lt;a href=&quot;https://github.com/abego/treelayout&quot;&gt;TreeLayout&lt;/a&gt;.
+&nbsp; */
+<b class="nc">&nbsp;public class BranchTreeLayout implements TreeLayout{</b>
+<b class="nc">&nbsp;    public TreeLocation rootLocation = TreeLocation.top;</b>
+<b class="nc">&nbsp;    public TreeAlignment alignment = TreeAlignment.awayFromRoot;</b>
+<b class="nc">&nbsp;    public float gapBetweenLevels = 10;</b>
+<b class="nc">&nbsp;    public float gapBetweenNodes = 10f;</b>
+&nbsp;
+<b class="nc">&nbsp;    private final FloatSeq sizeOfLevel = new FloatSeq();</b>
+<b class="nc">&nbsp;    private float boundsLeft = Float.MAX_VALUE;</b>
+<b class="nc">&nbsp;    private float boundsRight = Float.MIN_VALUE;</b>
+<b class="nc">&nbsp;    private float boundsTop = Float.MAX_VALUE;</b>
+<b class="nc">&nbsp;    private float boundsBottom = Float.MIN_VALUE;</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void layout(TreeNode root){
+<b class="nc">&nbsp;        firstWalk(root, null);</b>
+<b class="nc">&nbsp;        calcSizeOfLevels(root, 0);</b>
+<b class="nc">&nbsp;        secondWalk(root, -root.prelim, 0, 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private float getWidthOrHeightOfNode(TreeNode treeNode, boolean returnWidth){
+<b class="nc">&nbsp;        return returnWidth ? treeNode.calcWidth() : treeNode.height;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private float getNodeThickness(TreeNode treeNode){
+<b class="nc">&nbsp;        return getWidthOrHeightOfNode(treeNode, !isLevelChangeInYAxis());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private float getNodeSize(TreeNode treeNode){
+<b class="nc">&nbsp;        return getWidthOrHeightOfNode(treeNode, isLevelChangeInYAxis());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isLevelChangeInYAxis(){
+<b class="nc">&nbsp;        return rootLocation == TreeLocation.top || rootLocation == TreeLocation.bottom;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private int getLevelChangeSign(){
+<b class="nc">&nbsp;        return rootLocation == TreeLocation.bottom || rootLocation == TreeLocation.right ? -1 : 1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateBounds(TreeNode node, float centerX, float centerY){
+<b class="nc">&nbsp;        float width = node.width;</b>
+<b class="nc">&nbsp;        float height = node.height;</b>
+<b class="nc">&nbsp;        float left = centerX - width / 2;</b>
+<b class="nc">&nbsp;        float right = centerX + width / 2;</b>
+<b class="nc">&nbsp;        float top = centerY - height / 2;</b>
+<b class="nc">&nbsp;        float bottom = centerY + height / 2;</b>
+<b class="nc">&nbsp;        if(boundsLeft &gt; left){</b>
+<b class="nc">&nbsp;            boundsLeft = left;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(boundsRight &lt; right){</b>
+<b class="nc">&nbsp;            boundsRight = right;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(boundsTop &gt; top){</b>
+<b class="nc">&nbsp;            boundsTop = top;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(boundsBottom &lt; bottom){</b>
+<b class="nc">&nbsp;            boundsBottom = bottom;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Rect getBounds(){
+<b class="nc">&nbsp;        return new Rect(boundsLeft, boundsBottom, boundsRight - boundsLeft, boundsTop - boundsBottom);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void calcSizeOfLevels(TreeNode node, int level){
+&nbsp;        float oldSize;
+<b class="nc">&nbsp;        if(sizeOfLevel.size &lt;= level){</b>
+<b class="nc">&nbsp;            sizeOfLevel.add(0);</b>
+<b class="nc">&nbsp;            oldSize = 0;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            oldSize = sizeOfLevel.get(level);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float size = getNodeThickness(node);</b>
+<b class="nc">&nbsp;        if(oldSize &lt; size){</b>
+<b class="nc">&nbsp;            sizeOfLevel.set(level, size);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!node.isLeaf()){</b>
+<b class="nc">&nbsp;            for(TreeNode child : node.children){</b>
+<b class="nc">&nbsp;                calcSizeOfLevels(child, level + 1);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getLevelCount(){
+<b class="nc">&nbsp;        return sizeOfLevel.size;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getGapBetweenNodes(TreeNode a, TreeNode b){
+<b class="nc">&nbsp;        return gapBetweenNodes;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getSizeOfLevel(int level){
+<b class="nc">&nbsp;        if(!(level &gt;= 0)) throw new IllegalArgumentException(&quot;level must be &gt;= 0&quot;);</b>
+<b class="nc">&nbsp;        if(!(level &lt; getLevelCount())) throw new IllegalArgumentException(&quot;level must be &lt; levelCount&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        return sizeOfLevel.get(level);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private TreeNode getAncestor(TreeNode node){
+<b class="nc">&nbsp;        return node.ancestor != null ? node.ancestor : node;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private float getDistance(TreeNode v, TreeNode w){
+<b class="nc">&nbsp;        float sizeOfNodes = getNodeSize(v) + getNodeSize(w);</b>
+&nbsp;
+<b class="nc">&nbsp;        return sizeOfNodes / 2 + getGapBetweenNodes(v, w);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private TreeNode nextLeft(TreeNode v){
+<b class="nc">&nbsp;        return v.isLeaf() ? v.thread : v.children[0];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private TreeNode nextRight(TreeNode v){
+<b class="nc">&nbsp;        return v.isLeaf() ? v.thread : v.children[v.children.length - 1];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private int getNumber(TreeNode node, TreeNode parentNode){
+<b class="nc">&nbsp;        if(node.number == -1){</b>
+<b class="nc">&nbsp;            int number = 1;</b>
+<b class="nc">&nbsp;            for(TreeNode child : parentNode.children){</b>
+<b class="nc">&nbsp;                child.number = number++;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return node.number;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private TreeNode ancestor(TreeNode vIMinus, TreeNode parentOfV, TreeNode defaultAncestor){
+<b class="nc">&nbsp;        TreeNode ancestor = getAncestor(vIMinus);</b>
+<b class="nc">&nbsp;        return ancestor.parent == parentOfV ? ancestor : defaultAncestor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void moveSubtree(TreeNode wMinus, TreeNode wPlus, TreeNode parent, float shift){
+<b class="nc">&nbsp;        int subtrees = getNumber(wPlus, parent) - getNumber(wMinus, parent);</b>
+<b class="nc">&nbsp;        wPlus.change = wPlus.change - shift / subtrees;</b>
+<b class="nc">&nbsp;        wPlus.shift = wPlus.shift + shift;</b>
+<b class="nc">&nbsp;        wMinus.change = wMinus.change + shift / subtrees;</b>
+<b class="nc">&nbsp;        wPlus.prelim = wPlus.prelim + shift;</b>
+<b class="nc">&nbsp;        wPlus.mode = wPlus.mode + shift;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private TreeNode apportion(TreeNode v, TreeNode defaultAncestor, TreeNode leftSibling, TreeNode parentOfV){
+<b class="nc">&nbsp;        if(leftSibling == null){</b>
+<b class="nc">&nbsp;            return defaultAncestor;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        TreeNode vOPlus = v;</b>
+<b class="nc">&nbsp;        TreeNode vIPlus = v;</b>
+<b class="nc">&nbsp;        TreeNode vIMinus = leftSibling;</b>
+&nbsp;
+<b class="nc">&nbsp;        TreeNode vOMinus = parentOfV.children[0];</b>
+&nbsp;
+<b class="nc">&nbsp;        float sIPlus = (vIPlus).mode;</b>
+<b class="nc">&nbsp;        float sOPlus = (vOPlus).mode;</b>
+<b class="nc">&nbsp;        float sIMinus = (vIMinus).mode;</b>
+<b class="nc">&nbsp;        float sOMinus = (vOMinus).mode;</b>
+&nbsp;
+<b class="nc">&nbsp;        TreeNode nextRightVIMinus = nextRight(vIMinus);</b>
+<b class="nc">&nbsp;        TreeNode nextLeftVIPlus = nextLeft(vIPlus);</b>
+&nbsp;
+<b class="nc">&nbsp;        while(nextRightVIMinus != null &amp;&amp; nextLeftVIPlus != null){</b>
+<b class="nc">&nbsp;            vIMinus = nextRightVIMinus;</b>
+<b class="nc">&nbsp;            vIPlus = nextLeftVIPlus;</b>
+<b class="nc">&nbsp;            vOMinus = nextLeft(vOMinus);</b>
+<b class="nc">&nbsp;            vOPlus = nextRight(vOPlus);</b>
+<b class="nc">&nbsp;            vOPlus.ancestor = v;</b>
+<b class="nc">&nbsp;            float shift = (vIMinus.prelim + sIMinus)</b>
+&nbsp;            - (vIPlus.prelim + sIPlus)
+<b class="nc">&nbsp;            + getDistance(vIMinus, vIPlus);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(shift &gt; 0){</b>
+<b class="nc">&nbsp;                moveSubtree(ancestor(vIMinus, parentOfV, defaultAncestor),</b>
+&nbsp;                v, parentOfV, shift);
+<b class="nc">&nbsp;                sIPlus = sIPlus + shift;</b>
+<b class="nc">&nbsp;                sOPlus = sOPlus + shift;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            sIMinus += vIMinus.mode;</b>
+<b class="nc">&nbsp;            sIPlus += vIPlus.mode;</b>
+<b class="nc">&nbsp;            sOMinus += vOMinus.mode;</b>
+<b class="nc">&nbsp;            sOPlus += vOPlus.mode;</b>
+&nbsp;
+<b class="nc">&nbsp;            nextRightVIMinus = nextRight(vIMinus);</b>
+<b class="nc">&nbsp;            nextLeftVIPlus = nextLeft(vIPlus);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(nextRightVIMinus != null &amp;&amp; nextRight(vOPlus) == null){</b>
+<b class="nc">&nbsp;            vOPlus.thread = nextRightVIMinus;</b>
+<b class="nc">&nbsp;            vOPlus.mode += sIMinus - sOPlus;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(nextLeftVIPlus != null &amp;&amp; nextLeft(vOMinus) == null){</b>
+<b class="nc">&nbsp;            vOMinus.thread = nextLeftVIPlus;</b>
+<b class="nc">&nbsp;            vOMinus.mode += sIPlus - sOMinus;</b>
+<b class="nc">&nbsp;            defaultAncestor = v;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return defaultAncestor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void executeShifts(TreeNode v){
+<b class="nc">&nbsp;        float shift = 0;</b>
+<b class="nc">&nbsp;        float change = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = v.children.length - 1; i &gt;= 0; i--){</b>
+<b class="nc">&nbsp;            TreeNode w = v.children[i];</b>
+<b class="nc">&nbsp;            change = change + w.change;</b>
+<b class="nc">&nbsp;            w.prelim += shift;</b>
+<b class="nc">&nbsp;            w.mode += shift;</b>
+<b class="nc">&nbsp;            shift += w.shift + change;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void firstWalk(TreeNode v, TreeNode leftSibling){
+<b class="nc">&nbsp;        if(v.isLeaf()){</b>
+<b class="nc">&nbsp;            if(leftSibling != null){</b>
+<b class="nc">&nbsp;                v.prelim = leftSibling.prelim + getDistance(v, leftSibling);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }else{
+<b class="nc">&nbsp;            TreeNode defaultAncestor = v.children[0];</b>
+<b class="nc">&nbsp;            TreeNode previousChild = null;</b>
+<b class="nc">&nbsp;            for(TreeNode w : v.children){</b>
+<b class="nc">&nbsp;                firstWalk(w, previousChild);</b>
+<b class="nc">&nbsp;                defaultAncestor = apportion(w, defaultAncestor, previousChild, v);</b>
+<b class="nc">&nbsp;                previousChild = w;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            executeShifts(v);</b>
+<b class="nc">&nbsp;            float midpoint = (v.children[0].prelim + v.children[v.children.length - 1].prelim) / 2f;</b>
+<b class="nc">&nbsp;            if(leftSibling != null){</b>
+<b class="nc">&nbsp;                v.prelim = leftSibling.prelim + getDistance(v, leftSibling);</b>
+<b class="nc">&nbsp;                v.mode = v.prelim - midpoint;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                v.prelim = midpoint;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void secondWalk(TreeNode v, float m, int level, float levelStart){
+<b class="nc">&nbsp;        float levelChangeSign = getLevelChangeSign();</b>
+<b class="nc">&nbsp;        boolean levelChangeOnYAxis = isLevelChangeInYAxis();</b>
+<b class="nc">&nbsp;        float levelSize = getSizeOfLevel(level);</b>
+&nbsp;
+<b class="nc">&nbsp;        float x = v.prelim + m;</b>
+&nbsp;
+&nbsp;        float y;
+<b class="nc">&nbsp;        if(alignment == TreeAlignment.center){</b>
+<b class="nc">&nbsp;            y = levelStart + levelChangeSign * (levelSize / 2);</b>
+<b class="nc">&nbsp;        }else if(alignment == TreeAlignment.towardsRoot){</b>
+<b class="nc">&nbsp;            y = levelStart + levelChangeSign * (getNodeThickness(v) / 2);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            y = levelStart + levelSize - levelChangeSign * (getNodeThickness(v) / 2);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!levelChangeOnYAxis){</b>
+<b class="nc">&nbsp;            float t = x;</b>
+<b class="nc">&nbsp;            x = y;</b>
+<b class="nc">&nbsp;            y = t;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        v.x = x;</b>
+<b class="nc">&nbsp;        v.y = y;</b>
+<b class="nc">&nbsp;        updateBounds(v, x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!v.isLeaf()){</b>
+<b class="nc">&nbsp;            float nextLevelStart = levelStart</b>
+&nbsp;            + (levelSize + gapBetweenLevels)
+&nbsp;            * levelChangeSign;
+<b class="nc">&nbsp;            for(TreeNode w : v.children){</b>
+<b class="nc">&nbsp;                secondWalk(w, m + v.mode, level + 1, nextLevelStart);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public enum TreeLocation{</b>
+<b class="nc">&nbsp;        top, left, bottom, right</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public enum TreeAlignment{</b>
+<b class="nc">&nbsp;        center, towardsRoot, awayFromRoot</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

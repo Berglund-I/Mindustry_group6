@@ -1,0 +1,448 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LogicDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: LogicDialog (mindustry.logic)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LogicDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/170)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LogicDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">LogicDialog$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">LogicDialog$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/176)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.logic;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.scene.actions.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.TextButton.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.core.GameState.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.LExecutor.*;
+&nbsp;import mindustry.logic.LStatements.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;import mindustry.world.blocks.logic.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.logic.LCanvas.*;
+&nbsp;
+&nbsp;public class LogicDialog extends BaseDialog{
+&nbsp;    public LCanvas canvas;
+<b class="nc">&nbsp;    Cons&lt;String&gt; consumer = s -&gt; {};</b>
+&nbsp;    boolean privileged;
+&nbsp;    @Nullable LExecutor executor;
+<b class="nc">&nbsp;    GlobalVarsDialog globalsDialog = new GlobalVarsDialog();</b>
+&nbsp;    boolean wasRows, wasPortrait;
+&nbsp;
+&nbsp;    public LogicDialog(){
+<b class="nc">&nbsp;        super(&quot;logic&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        clearChildren();</b>
+&nbsp;
+<b class="nc">&nbsp;        canvas = new LCanvas();</b>
+<b class="nc">&nbsp;        shouldPause = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseListener();</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(this::setup);</b>
+<b class="nc">&nbsp;        shown(() -&gt; {</b>
+<b class="nc">&nbsp;            wasRows = LCanvas.useRows();</b>
+<b class="nc">&nbsp;            wasPortrait = Core.graphics.isPortrait();</b>
+&nbsp;        });
+<b class="nc">&nbsp;        hidden(() -&gt; consumer.get(canvas.save()));</b>
+<b class="nc">&nbsp;        onResize(() -&gt; {</b>
+<b class="nc">&nbsp;            if(wasRows != LCanvas.useRows() || wasPortrait != Core.graphics.isPortrait()){</b>
+<b class="nc">&nbsp;                setup();</b>
+<b class="nc">&nbsp;                canvas.rebuild();</b>
+<b class="nc">&nbsp;                wasPortrait = Core.graphics.isPortrait();</b>
+<b class="nc">&nbsp;                wasRows = LCanvas.useRows();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        add(canvas).grow().name(&quot;canvas&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        row();</b>
+&nbsp;
+<b class="nc">&nbsp;        add(buttons).growX().name(&quot;canvas&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Color typeColor(LVar s, Color color){
+<b class="nc">&nbsp;        return color.set(</b>
+<b class="nc">&nbsp;            !s.isobj ? Pal.place :</b>
+<b class="nc">&nbsp;            s.objval == null ? Color.darkGray :</b>
+<b class="nc">&nbsp;            s.objval instanceof String ? Pal.ammo :</b>
+<b class="nc">&nbsp;            s.objval instanceof Content ? Pal.logicOperations :</b>
+<b class="nc">&nbsp;            s.objval instanceof Building ? Pal.logicBlocks :</b>
+<b class="nc">&nbsp;            s.objval instanceof Unit ? Pal.logicUnits :</b>
+<b class="nc">&nbsp;            s.objval instanceof Team ? Pal.logicUnits :</b>
+<b class="nc">&nbsp;            s.objval instanceof Enum&lt;?&gt; ? Pal.logicIo :</b>
+<b class="nc">&nbsp;            Color.white</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String typeName(LVar s){
+&nbsp;        return
+<b class="nc">&nbsp;            !s.isobj ? &quot;number&quot; :</b>
+<b class="nc">&nbsp;            s.objval == null ? &quot;null&quot; :</b>
+<b class="nc">&nbsp;            s.objval instanceof String ? &quot;string&quot; :</b>
+<b class="nc">&nbsp;            s.objval instanceof Content ? &quot;content&quot; :</b>
+<b class="nc">&nbsp;            s.objval instanceof Building ? &quot;building&quot; :</b>
+<b class="nc">&nbsp;            s.objval instanceof Team ? &quot;team&quot; :</b>
+<b class="nc">&nbsp;            s.objval instanceof Unit ? &quot;unit&quot; :</b>
+<b class="nc">&nbsp;            s.objval instanceof Enum&lt;?&gt; ? &quot;enum&quot; :</b>
+<b class="nc">&nbsp;            &quot;unknown&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setup(){
+<b class="nc">&nbsp;        buttons.clearChildren();</b>
+<b class="nc">&nbsp;        buttons.defaults().size(160f, 64f);</b>
+<b class="nc">&nbsp;        buttons.button(&quot;@back&quot;, Icon.left, this::hide).name(&quot;back&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@edit&quot;, Icon.edit, () -&gt; {</b>
+<b class="nc">&nbsp;            BaseDialog dialog = new BaseDialog(&quot;@editor.export&quot;);</b>
+<b class="nc">&nbsp;            dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;                p.margin(10f);</b>
+<b class="nc">&nbsp;                p.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                    TextButtonStyle style = Styles.flatt;</b>
+<b class="nc">&nbsp;                    t.defaults().size(280f, 60f).left();</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(privileged &amp;&amp; executor != null &amp;&amp; executor.build != null &amp;&amp; !ui.editor.isShown()){</b>
+<b class="nc">&nbsp;                        t.button(&quot;@editor.worldprocessors.editname&quot;, Icon.edit, style, () -&gt; {</b>
+<b class="nc">&nbsp;                            ui.showTextInput(&quot;&quot;, &quot;@editor.name&quot;, LogicBlock.maxNameLength, executor.build.tag == null ? &quot;&quot; : executor.build.tag, tag -&gt; {</b>
+<b class="nc">&nbsp;                                if(privileged &amp;&amp; executor != null &amp;&amp; executor.build != null){</b>
+<b class="nc">&nbsp;                                    executor.build.configure(tag);</b>
+&nbsp;                                    //just in case of privilege shenanigans...
+<b class="nc">&nbsp;                                    executor.build.tag = tag;</b>
+&nbsp;                                }
+&nbsp;                            });
+<b class="nc">&nbsp;                            dialog.hide();</b>
+<b class="nc">&nbsp;                        }).marginLeft(12f).row();</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    t.button(&quot;@clear&quot;, Icon.cancel, style, () -&gt; {</b>
+<b class="nc">&nbsp;                        ui.showConfirm(&quot;@logic.clear.confirm&quot;, () -&gt; canvas.clearStatements());</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+<b class="nc">&nbsp;                    }).marginLeft(12f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.button(&quot;@schematic.copy&quot;, Icon.copy, style, () -&gt; {</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+<b class="nc">&nbsp;                        Core.app.setClipboardText(canvas.save());</b>
+<b class="nc">&nbsp;                    }).marginLeft(12f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.button(&quot;@schematic.copy.import&quot;, Icon.download, style, () -&gt; {</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+&nbsp;                        try{
+<b class="nc">&nbsp;                            canvas.load(Core.app.getClipboardText().replace(&quot;\r\n&quot;, &quot;\n&quot;));</b>
+<b class="nc">&nbsp;                        }catch(Throwable e){</b>
+<b class="nc">&nbsp;                            ui.showException(e);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }).marginLeft(12f).disabled(b -&gt; Core.app.getClipboardText() == null);</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            dialog.addCloseButton();</b>
+<b class="nc">&nbsp;            dialog.show();</b>
+<b class="nc">&nbsp;        }).name(&quot;edit&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.graphics.isPortrait()) buttons.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@variables&quot;, Icon.menu, () -&gt; {</b>
+<b class="nc">&nbsp;            BaseDialog dialog = new BaseDialog(&quot;@variables&quot;);</b>
+<b class="nc">&nbsp;            dialog.hidden(() -&gt; {</b>
+<b class="nc">&nbsp;                if(!wasPaused &amp;&amp; !net.active()){</b>
+<b class="nc">&nbsp;                    state.set(State.paused);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            dialog.shown(() -&gt; {</b>
+<b class="nc">&nbsp;                if(!wasPaused &amp;&amp; !net.active()){</b>
+<b class="nc">&nbsp;                    state.set(State.playing);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;                p.margin(10f).marginRight(16f);</b>
+<b class="nc">&nbsp;                p.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                    t.defaults().fillX().height(45f);</b>
+<b class="nc">&nbsp;                    for(var s : executor.vars){</b>
+<b class="nc">&nbsp;                        if(s.constant) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                        Color varColor = Pal.gray;</b>
+<b class="nc">&nbsp;                        float stub = 8f, mul = 0.5f, pad = 4;</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.add(new Image(Tex.whiteui, varColor.cpy().mul(mul))).width(stub);</b>
+<b class="nc">&nbsp;                        t.stack(new Image(Tex.whiteui, varColor), new Label(&quot; &quot; + s.name + &quot; &quot;, Styles.outlineLabel){{</b>
+<b class="nc">&nbsp;                            setColor(Pal.accent);</b>
+<b class="nc">&nbsp;                        }}).padRight(pad);</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.add(new Image(Tex.whiteui, Pal.gray.cpy().mul(mul))).width(stub);</b>
+<b class="nc">&nbsp;                        t.table(Tex.pane, out -&gt; {</b>
+<b class="nc">&nbsp;                            float period = 15f;</b>
+<b class="nc">&nbsp;                            float[] counter = {-1f};</b>
+<b class="nc">&nbsp;                            Label label = out.add(&quot;&quot;).style(Styles.outlineLabel).padLeft(4).padRight(4).width(140f).wrap().get();</b>
+<b class="nc">&nbsp;                            label.update(() -&gt; {</b>
+<b class="nc">&nbsp;                                if(counter[0] &lt; 0 || (counter[0] += Time.delta) &gt;= period){</b>
+<b class="nc">&nbsp;                                    String text = s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) &lt; 0.00001 ? (long)s.numval + &quot;&quot; : s.numval + &quot;&quot;;</b>
+<b class="nc">&nbsp;                                    if(!label.textEquals(text)){</b>
+<b class="nc">&nbsp;                                        label.setText(text);</b>
+<b class="nc">&nbsp;                                        if(counter[0] &gt;= 0f){</b>
+<b class="nc">&nbsp;                                            label.actions(Actions.color(Pal.accent), Actions.color(Color.white, 0.2f));</b>
+&nbsp;                                        }
+&nbsp;                                    }
+<b class="nc">&nbsp;                                    counter[0] = 0f;</b>
+&nbsp;                                }
+&nbsp;                            });
+<b class="nc">&nbsp;                            label.act(1f);</b>
+<b class="nc">&nbsp;                        }).padRight(pad);</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.add(new Image(Tex.whiteui, typeColor(s, new Color()).mul(mul))).update(i -&gt; i.setColor(typeColor(s, i.color).mul(mul))).width(stub);</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.stack(new Image(Tex.whiteui, typeColor(s, new Color())){{</b>
+<b class="nc">&nbsp;                            update(() -&gt; setColor(typeColor(s, color)));</b>
+<b class="nc">&nbsp;                        }}, new Label(() -&gt; &quot; &quot; + typeName(s) + &quot; &quot;){{</b>
+<b class="nc">&nbsp;                            setStyle(Styles.outlineLabel);</b>
+&nbsp;                        }});
+&nbsp;
+<b class="nc">&nbsp;                        t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.add().growX().colspan(6).height(4).row();</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            dialog.addCloseButton();</b>
+<b class="nc">&nbsp;            dialog.buttons.button(&quot;@logic.globals&quot;, Icon.list, () -&gt; globalsDialog.show()).size(210f, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;            dialog.show();</b>
+<b class="nc">&nbsp;        }).name(&quot;variables&quot;).disabled(b -&gt; executor == null || executor.vars.length == 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@add&quot;, Icon.add, () -&gt; {</b>
+<b class="nc">&nbsp;            BaseDialog dialog = new BaseDialog(&quot;@add&quot;);</b>
+<b class="nc">&nbsp;            dialog.cont.table(table -&gt; {</b>
+<b class="nc">&nbsp;                table.background(Tex.button);</b>
+<b class="nc">&nbsp;                table.pane(t -&gt; {</b>
+<b class="nc">&nbsp;                    for(Prov&lt;LStatement&gt; prov : LogicIO.allStatements){</b>
+<b class="nc">&nbsp;                        LStatement example = prov.get();</b>
+<b class="nc">&nbsp;                        if(example instanceof InvalidStatement || example.hidden() || (example.privileged() &amp;&amp; !privileged) || (example.nonPrivileged() &amp;&amp; privileged)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                        LCategory category = example.category();</b>
+<b class="nc">&nbsp;                        Table cat = t.find(category.name);</b>
+<b class="nc">&nbsp;                        if(cat == null){</b>
+<b class="nc">&nbsp;                            t.table(s -&gt; {</b>
+<b class="nc">&nbsp;                                if(category.icon != null){</b>
+<b class="nc">&nbsp;                                    s.image(category.icon, Pal.darkishGray).left().size(15f).padRight(10f);</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                                s.add(category.localized()).color(Pal.darkishGray).left().tooltip(category.description());</b>
+<b class="nc">&nbsp;                                s.image(Tex.whiteui, Pal.darkishGray).left().height(5f).growX().padLeft(10f);</b>
+<b class="nc">&nbsp;                            }).growX().pad(5f).padTop(10f);</b>
+&nbsp;
+<b class="nc">&nbsp;                            t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;                            cat = t.table(c -&gt; {</b>
+<b class="nc">&nbsp;                                c.top().left();</b>
+<b class="nc">&nbsp;                            }).name(category.name).top().left().growX().fillY().get();</b>
+<b class="nc">&nbsp;                            t.row();</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        TextButtonStyle style = new TextButtonStyle(Styles.flatt);</b>
+<b class="nc">&nbsp;                        style.fontColor = category.color;</b>
+<b class="nc">&nbsp;                        style.font = Fonts.outline;</b>
+&nbsp;
+<b class="nc">&nbsp;                        cat.button(example.name(), style, () -&gt; {</b>
+<b class="nc">&nbsp;                            canvas.add(prov.get());</b>
+<b class="nc">&nbsp;                            dialog.hide();</b>
+<b class="nc">&nbsp;                        }).size(130f, 50f).self(c -&gt; tooltip(c, &quot;lst.&quot; + example.name())).top().left();</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(cat.getChildren().size % 3 == 0) cat.row();</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }).grow();</b>
+<b class="nc">&nbsp;            }).fill().maxHeight(Core.graphics.getHeight() * 0.8f);</b>
+<b class="nc">&nbsp;            dialog.addCloseButton();</b>
+<b class="nc">&nbsp;            dialog.show();</b>
+<b class="nc">&nbsp;        }).disabled(t -&gt; canvas.statements.getChildren().size &gt;= LExecutor.maxInstructions);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void show(String code, LExecutor executor, boolean privileged, Cons&lt;String&gt; modified){
+<b class="nc">&nbsp;        this.executor = executor;</b>
+<b class="nc">&nbsp;        this.privileged = privileged;</b>
+<b class="nc">&nbsp;        canvas.statements.clearChildren();</b>
+<b class="nc">&nbsp;        canvas.rebuild();</b>
+<b class="nc">&nbsp;        canvas.privileged = privileged;</b>
+&nbsp;        try{
+<b class="nc">&nbsp;            canvas.load(code);</b>
+<b class="nc">&nbsp;        }catch(Throwable t){</b>
+<b class="nc">&nbsp;            Log.err(t);</b>
+<b class="nc">&nbsp;            canvas.load(&quot;&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        this.consumer = result -&gt; {</b>
+<b class="nc">&nbsp;            if(!result.equals(code)){</b>
+<b class="nc">&nbsp;                modified.get(result);</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        show();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

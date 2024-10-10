@@ -1,0 +1,250 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Trail</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: Trail (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Trail</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (2/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.4%
+  </span>
+  <span class="absValue">
+    (5/68)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;
+&nbsp;public class Trail{
+&nbsp;    public int length;
+&nbsp;
+&nbsp;    protected FloatSeq points;
+<b class="fc">&nbsp;    protected float lastX = -1, lastY = -1, lastAngle = -1, counter = 0f, lastW = 0f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public Trail(int length){</b>
+<b class="fc">&nbsp;        this.length = length;</b>
+<b class="fc">&nbsp;        points = new FloatSeq(length*3);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Trail copy(){
+<b class="nc">&nbsp;        Trail out = new Trail(length);</b>
+<b class="nc">&nbsp;        out.points.addAll(points);</b>
+<b class="nc">&nbsp;        out.lastX = lastX;</b>
+<b class="nc">&nbsp;        out.lastY = lastY;</b>
+<b class="nc">&nbsp;        out.lastAngle = lastAngle;</b>
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float width(){
+<b class="nc">&nbsp;        return lastW;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clear(){
+<b class="fc">&nbsp;        points.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int size(){
+<b class="nc">&nbsp;        return points.size/3;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawCap(Color color, float width){
+<b class="nc">&nbsp;        if(points.size &gt; 0){</b>
+<b class="nc">&nbsp;            Draw.color(color);</b>
+<b class="nc">&nbsp;            float[] items = points.items;</b>
+<b class="nc">&nbsp;            int i = points.size - 3;</b>
+<b class="nc">&nbsp;            float x1 = items[i], y1 = items[i + 1], w1 = items[i + 2], w = w1 * width / (points.size/3) * i/3f * 2f;</b>
+<b class="nc">&nbsp;            if(w1 &lt;= 0.001f) return;</b>
+<b class="nc">&nbsp;            Draw.rect(&quot;hcircle&quot;, x1, y1, w, w, -Mathf.radDeg * lastAngle + 180f);</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(Color color, float width){
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        float[] items = points.items;</b>
+<b class="nc">&nbsp;        float lastAngle = this.lastAngle;</b>
+<b class="nc">&nbsp;        float size = width / (points.size / 3);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; points.size; i += 3){</b>
+<b class="nc">&nbsp;            float x1 = items[i], y1 = items[i + 1], w1 = items[i + 2];</b>
+&nbsp;            float x2, y2, w2;
+&nbsp;
+&nbsp;            //last position is always lastX/Y/W
+<b class="nc">&nbsp;            if(i &lt; points.size - 3){</b>
+<b class="nc">&nbsp;                x2 = items[i + 3];</b>
+<b class="nc">&nbsp;                y2 = items[i + 4];</b>
+<b class="nc">&nbsp;                w2 = items[i + 5];</b>
+&nbsp;
+<b class="nc">&nbsp;                if(i == 0 &amp;&amp; points.size &gt;= (length - 1) * 3){</b>
+<b class="nc">&nbsp;                    x1 = Mathf.lerp(x1, x2, counter);</b>
+<b class="nc">&nbsp;                    y1 = Mathf.lerp(y1, y2, counter);</b>
+<b class="nc">&nbsp;                    w1 = Mathf.lerp(w1, w2, counter);</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="nc">&nbsp;                x2 = lastX;</b>
+<b class="nc">&nbsp;                y2 = lastY;</b>
+<b class="nc">&nbsp;                w2 = lastW;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            float z2 = -Angles.angleRad(x1, y1, x2, y2);</b>
+&nbsp;            //end of the trail (i = 0) has the same angle as the next.
+<b class="nc">&nbsp;            float z1 = i == 0 ? z2 : lastAngle;</b>
+<b class="nc">&nbsp;            if(w1 &lt;= 0.001f || w2 &lt;= 0.001f) continue;</b>
+&nbsp;
+&nbsp;            float
+<b class="nc">&nbsp;                cx = Mathf.sin(z1) * i/3f * size * w1,</b>
+<b class="nc">&nbsp;                cy = Mathf.cos(z1) * i/3f * size * w1,</b>
+<b class="nc">&nbsp;                nx = Mathf.sin(z2) * (i/3f + 1) * size * w2,</b>
+<b class="nc">&nbsp;                ny = Mathf.cos(z2) * (i/3f + 1) * size * w2;</b>
+&nbsp;
+<b class="nc">&nbsp;            Fill.quad(</b>
+&nbsp;                x1 - cx, y1 - cy,
+&nbsp;                x1 + cx, y1 + cy,
+&nbsp;                x2 + nx, y2 + ny,
+&nbsp;                x2 - nx, y2 - ny
+&nbsp;            );
+&nbsp;
+<b class="nc">&nbsp;            lastAngle = z2;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Removes the last point from the trail at intervals. */
+&nbsp;    public void shorten(){
+<b class="nc">&nbsp;        int count = (int)(counter += Time.delta);</b>
+<b class="nc">&nbsp;        counter -= count;</b>
+&nbsp;
+<b class="nc">&nbsp;       if(count &gt; 0 &amp;&amp; points.size &gt; 0){</b>
+<b class="nc">&nbsp;           points.removeRange(0, Math.min(count * 3 - 1, points.size - 1));</b>
+&nbsp;       }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a new point to the trail at intervals. */
+&nbsp;    public void update(float x, float y){
+<b class="nc">&nbsp;        update(x, y, 1f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a new point to the trail at intervals. */
+&nbsp;    public void update(float x, float y, float width){
+<b class="nc">&nbsp;        int count = (int)(counter += Time.delta);</b>
+<b class="nc">&nbsp;        counter -= count;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(count &gt; 0){</b>
+<b class="nc">&nbsp;            int toRemove = points.size + (count - 1 - length) * 3;</b>
+<b class="nc">&nbsp;            if(toRemove &gt; 0 &amp;&amp; points.size &gt; 0){</b>
+<b class="nc">&nbsp;                points.removeRange(0, Math.min(toRemove - 1, points.size - 1));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //if lastX is -1, this trail has never updated, so only add one point - there is nothing to interpolate with
+<b class="nc">&nbsp;            if(count == 1 || lastX == -1f){</b>
+<b class="nc">&nbsp;                points.add(x, y, width);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                for(int i = 0; i &lt; count; i++){</b>
+<b class="nc">&nbsp;                    float f = (i + 1f) / count;</b>
+<b class="nc">&nbsp;                    points.add(Mathf.lerp(lastX, x, f), Mathf.lerp(lastY, y, f), Mathf.lerp(lastW, width, f));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //update last position regardless, so it joins at the origin
+<b class="nc">&nbsp;        lastAngle = -Angles.angleRad(x, y, lastX, lastY);</b>
+<b class="nc">&nbsp;        lastX = x;</b>
+<b class="nc">&nbsp;        lastY = y;</b>
+<b class="nc">&nbsp;        lastW = width;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

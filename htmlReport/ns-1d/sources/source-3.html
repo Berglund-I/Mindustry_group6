@@ -1,0 +1,193 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > HexSkyMesh</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics.g3d</a>
+</div>
+
+<h1>Coverage Summary for Class: HexSkyMesh (mindustry.graphics.g3d)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HexSkyMesh</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">HexSkyMesh$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/21)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics.g3d;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;public class HexSkyMesh extends PlanetMesh{
+<b class="nc">&nbsp;    static Mat3D mat = new Mat3D();</b>
+&nbsp;
+<b class="nc">&nbsp;    public float speed = 0f;</b>
+&nbsp;
+&nbsp;    public HexSkyMesh(Planet planet, int seed, float speed, float radius, int divisions, Color color, int octaves, float persistence, float scl, float thresh){
+<b class="nc">&nbsp;        super(planet, MeshBuilder.buildHex(new HexMesher(){</b>
+&nbsp;            @Override
+&nbsp;            public float getHeight(Vec3 position){
+<b class="nc">&nbsp;                return 1f;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public Color getColor(Vec3 position){
+<b class="nc">&nbsp;                return color;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public boolean skip(Vec3 position){
+<b class="nc">&nbsp;                return Simplex.noise3d(planet.id + seed, octaves, persistence, scl, position.x, position.y * 3f, position.z) &gt;= thresh;</b>
+&nbsp;            }
+&nbsp;        }, divisions, false, planet.radius, radius), Shaders.clouds);
+&nbsp;
+<b class="nc">&nbsp;        this.speed = speed;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public HexSkyMesh(){</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float relRot(){
+<b class="nc">&nbsp;        return Time.globalTime * speed / 40f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void render(PlanetParams params, Mat3D projection, Mat3D transform){
+&nbsp;        //don&#39;t waste performance rendering 0-alpha clouds
+<b class="nc">&nbsp;        if(params.planet == planet &amp;&amp; Mathf.zero(1f - params.uiAlpha, 0.01f)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        preRender(params);</b>
+<b class="nc">&nbsp;        shader.bind();</b>
+<b class="nc">&nbsp;        shader.setUniformMatrix4(&quot;u_proj&quot;, projection.val);</b>
+<b class="nc">&nbsp;        shader.setUniformMatrix4(&quot;u_trans&quot;, mat.setToTranslation(planet.position).rotate(Vec3.Y, planet.getRotation() + relRot()).val);</b>
+<b class="nc">&nbsp;        shader.apply();</b>
+<b class="nc">&nbsp;        mesh.render(shader, Gl.triangles);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void preRender(PlanetParams params){
+<b class="nc">&nbsp;        Shaders.clouds.planet = planet;</b>
+<b class="nc">&nbsp;        Shaders.clouds.lightDir.set(planet.solarSystem.position).sub(planet.position).rotate(Vec3.Y, planet.getRotation() + relRot()).nor();</b>
+<b class="nc">&nbsp;        Shaders.clouds.ambientColor.set(planet.solarSystem.lightColor);</b>
+<b class="nc">&nbsp;        Shaders.clouds.alpha = params.planet == planet ? 1f - params.uiAlpha : 1f;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

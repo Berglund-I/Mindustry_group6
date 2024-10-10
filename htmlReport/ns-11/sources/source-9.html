@@ -1,0 +1,941 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapLocalesDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: MapLocalesDialog (mindustry.editor)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapLocalesDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/87)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/470)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MapLocalesDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MapLocalesDialog$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MapLocalesDialog$PropertyStatus</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/91)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/482)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.Core;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.TextButton.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.scene.utils.*;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class MapLocalesDialog extends BaseDialog{
+&nbsp;    /** Width of UI property card. */
+&nbsp;    private static final float cardWidth = 400f;
+&nbsp;    /** Style for filter options buttons */
+<b class="nc">&nbsp;    private static final TextButtonStyle filterStyle = new TextButtonStyle(){{</b>
+<b class="nc">&nbsp;        up = down = checked = over = Tex.whitePane;</b>
+<b class="nc">&nbsp;        font = Fonts.outline;</b>
+<b class="nc">&nbsp;        fontColor = Color.lightGray;</b>
+<b class="nc">&nbsp;        overFontColor = Pal.accent;</b>
+<b class="nc">&nbsp;        disabledFontColor = Color.gray;</b>
+<b class="nc">&nbsp;        disabled = Styles.black;</b>
+&nbsp;    }};
+&nbsp;    /** Icons for use in map locales dialog. */
+<b class="nc">&nbsp;    private static final ContentType[] contentIcons = {ContentType.item, ContentType.block, ContentType.liquid, ContentType.status, ContentType.unit};</b>
+&nbsp;
+&nbsp;    private MapLocales locales;
+&nbsp;    private MapLocales lastSaved;
+<b class="nc">&nbsp;    private boolean saved = true;</b>
+&nbsp;    private Table langs;
+&nbsp;    private Table main;
+&nbsp;    private Table propView;
+&nbsp;    private String selectedLocale;
+&nbsp;
+<b class="nc">&nbsp;    private boolean applytoall = true;</b>
+<b class="nc">&nbsp;    private boolean collapsed = false;</b>
+<b class="nc">&nbsp;    private String searchString = &quot;&quot;;</b>
+<b class="nc">&nbsp;    private boolean searchByValue = false;</b>
+<b class="nc">&nbsp;    private boolean showCorrect = true;</b>
+<b class="nc">&nbsp;    private boolean showMissing = true;</b>
+<b class="nc">&nbsp;    private boolean showSame = true;</b>
+&nbsp;
+&nbsp;    public MapLocalesDialog(){
+<b class="nc">&nbsp;        super(&quot;@editor.locales&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        selectedLocale = MapLocales.currentLocale();</b>
+&nbsp;
+<b class="nc">&nbsp;        langs = new Table(Tex.button);</b>
+<b class="nc">&nbsp;        main = new Table();</b>
+<b class="nc">&nbsp;        propView = new Table();</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.add(&quot;&quot;).uniform();</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.defaults().pad(3).center();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@back&quot;, Icon.left, () -&gt; {</b>
+<b class="nc">&nbsp;                if(!saved) ui.showConfirm(&quot;@editor.locales&quot;, &quot;@editor.savechanges&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                    editor.tags.put(&quot;locales&quot;, JsonIO.write(locales));</b>
+<b class="nc">&nbsp;                    state.mapLocales = locales;</b>
+&nbsp;                });
+<b class="nc">&nbsp;                hide();</b>
+<b class="nc">&nbsp;            }).size(210f, 64f);</b>
+<b class="nc">&nbsp;            closeOnBack(() -&gt; {</b>
+<b class="nc">&nbsp;                if(!saved) ui.showConfirm(&quot;@editor.locales&quot;, &quot;@editor.savechanges&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                    editor.tags.put(&quot;locales&quot;, JsonIO.write(locales));</b>
+<b class="nc">&nbsp;                    state.mapLocales = locales;</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@editor.apply&quot;, Icon.ok, () -&gt; {</b>
+<b class="nc">&nbsp;                editor.tags.put(&quot;locales&quot;, JsonIO.write(locales));</b>
+<b class="nc">&nbsp;                state.mapLocales = locales;</b>
+<b class="nc">&nbsp;                lastSaved = locales.copy();</b>
+<b class="nc">&nbsp;                saved = true;</b>
+<b class="nc">&nbsp;            }).size(210f, 64f).disabled(b -&gt; saved);</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@edit&quot;, Icon.edit, this::editDialog).size(210f, 64f);</b>
+<b class="nc">&nbsp;        }).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;        resized(this::buildMain);</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;?&quot;, () -&gt; ui.showInfo(&quot;@locales.info&quot;)).size(60f, 64f).uniform();</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(this::setup);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void show(MapLocales locales){
+<b class="nc">&nbsp;        this.locales = locales;</b>
+<b class="nc">&nbsp;        lastSaved = locales.copy();</b>
+<b class="nc">&nbsp;        saved = true;</b>
+<b class="nc">&nbsp;        show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setup(){
+<b class="nc">&nbsp;        cont.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        buildTables();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.add(langs).left();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.table(t -&gt; {</b>
+&nbsp;            // search/collapse all/filter
+<b class="nc">&nbsp;            t.table(a -&gt; {</b>
+<b class="nc">&nbsp;                a.button(Icon.downOpen, Styles.emptyTogglei, () -&gt; {</b>
+<b class="nc">&nbsp;                    collapsed = !collapsed;</b>
+<b class="nc">&nbsp;                    buildMain();</b>
+<b class="nc">&nbsp;                }).update(b -&gt; {</b>
+<b class="nc">&nbsp;                    b.replaceImage(new Image(collapsed ? Icon.upOpen : Icon.downOpen));</b>
+<b class="nc">&nbsp;                    b.setChecked(collapsed);</b>
+<b class="nc">&nbsp;                }).size(35f);</b>
+&nbsp;
+<b class="nc">&nbsp;                a.button(Icon.filter, Styles.emptyi, () -&gt; filterDialog(this::buildMain)).padLeft(10f).size(35f);</b>
+&nbsp;
+<b class="nc">&nbsp;                var field = a.field(&quot;&quot;, v -&gt; {</b>
+<b class="nc">&nbsp;                    searchString = v;</b>
+<b class="nc">&nbsp;                    buildMain();</b>
+<b class="nc">&nbsp;                }).update(f -&gt; f.setText(searchString)).maxTextLength(64).padLeft(10f).width(250f).update(f -&gt; f.setMessageText(searchByValue ? &quot;@locales.searchvalue&quot;: &quot;@locales.searchname&quot;)).get();</b>
+&nbsp;
+<b class="nc">&nbsp;                a.button(Icon.cancel, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                    searchString = &quot;&quot;;</b>
+<b class="nc">&nbsp;                    field.setText(&quot;&quot;);</b>
+<b class="nc">&nbsp;                    buildMain();</b>
+<b class="nc">&nbsp;                }).padLeft(10f).size(35f);</b>
+<b class="nc">&nbsp;            }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.check(&quot;@locales.applytoall&quot;, applytoall, b -&gt; applytoall = b).pad(10f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.add(main).center().grow().row();</b>
+<b class="nc">&nbsp;        }).pad(10f).grow();</b>
+&nbsp;
+&nbsp;        // property addition
+<b class="nc">&nbsp;        cont.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;            TextField name = t.field(&quot;name&quot;, s -&gt; {}).maxTextLength(64).fillX().padTop(10f).get();</b>
+<b class="nc">&nbsp;            t.row();</b>
+<b class="nc">&nbsp;            TextField value = t.area(&quot;text&quot;, s -&gt; {}).maxTextLength(1000).fillX().height(140f).get();</b>
+<b class="nc">&nbsp;            t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(&quot;@add&quot;, Icon.add, () -&gt; {</b>
+<b class="nc">&nbsp;                if(applytoall){</b>
+<b class="nc">&nbsp;                    for(var locale : locales.values()){</b>
+<b class="nc">&nbsp;                        locale.put(name.getText(), value.getText());</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    locales.get(selectedLocale).put(name.getText(), value.getText());</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                saved = false;</b>
+<b class="nc">&nbsp;                buildMain();</b>
+<b class="nc">&nbsp;            }).padTop(10f).size(cardWidth, 50f).fillX().row();</b>
+<b class="nc">&nbsp;        }).right();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void buildTables(){
+<b class="nc">&nbsp;        if(!locales.containsKey(selectedLocale)){</b>
+<b class="nc">&nbsp;            locales.put(selectedLocale, new StringMap());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        buildLocalesTable();</b>
+<b class="nc">&nbsp;        buildMain();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void buildLocalesTable(){
+<b class="nc">&nbsp;        langs.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        langs.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            for(var loc : Vars.locales){</b>
+<b class="nc">&nbsp;                String name = loc.toString();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(locales.containsKey(name)){</b>
+<b class="nc">&nbsp;                    p.button(loc.getDisplayName(Core.bundle.getLocale()), Styles.flatTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                        if(name.equals(selectedLocale)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                        selectedLocale = name;</b>
+<b class="nc">&nbsp;                        buildTables();</b>
+<b class="nc">&nbsp;                    }).update(b -&gt; b.setChecked(selectedLocale.equals(name))).width(200f).minHeight(50f);</b>
+<b class="nc">&nbsp;                    p.button(Icon.edit, Styles.flati, () -&gt; localeEditDialog(name)).size(50f);</b>
+<b class="nc">&nbsp;                    p.button(Icon.trash, Styles.flati, () -&gt; ui.showConfirm(&quot;@confirm&quot;, &quot;@locales.deletelocale&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                        locales.remove(name);</b>
+&nbsp;
+<b class="nc">&nbsp;                        selectedLocale = (locales.size != 0 ? locales.keys().next() : Core.settings.getString(&quot;locale&quot;));</b>
+<b class="nc">&nbsp;                        saved = false;</b>
+<b class="nc">&nbsp;                        buildTables();</b>
+<b class="nc">&nbsp;                    })).size(50f).row();</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }).row();</b>
+<b class="nc">&nbsp;        langs.button(&quot;@add&quot;, Icon.add, this::addLocaleDialog).padTop(10f).width(250f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void buildMain(){
+<b class="nc">&nbsp;        main.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        StringMap props = locales.get(selectedLocale);</b>
+&nbsp;
+<b class="nc">&nbsp;        main.image().color(Pal.gray).height(3f).growX().expandY().top().row();</b>
+<b class="nc">&nbsp;        main.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            int cols = Math.max(1, (int)((Core.graphics.getWidth() / Scl.scl() - 410f) / cardWidth) - 1);</b>
+<b class="nc">&nbsp;            if(props.size == 0){</b>
+<b class="nc">&nbsp;                main.add(&quot;@empty&quot;).center().row();</b>
+&nbsp;                return;
+&nbsp;            }
+<b class="nc">&nbsp;            p.defaults().top();</b>
+&nbsp;
+<b class="nc">&nbsp;            Table[] colTables = new Table[cols];</b>
+<b class="nc">&nbsp;            for(var i = 0; i &lt; cols; i++){</b>
+<b class="nc">&nbsp;                colTables[i] = new Table();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            int i = 0;</b>
+&nbsp;
+&nbsp;            // To sort properties in alphabetic order
+<b class="nc">&nbsp;            Seq&lt;String&gt; keys = props.keys().toSeq().sort();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(var key : keys){</b>
+<b class="nc">&nbsp;                var comparsionString = (searchByValue ? props.get(key).toLowerCase() : key.toLowerCase());</b>
+<b class="nc">&nbsp;                if(!searchString.isEmpty() &amp;&amp; !comparsionString.contains(searchString.toLowerCase())) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                PropertyStatus status = getPropertyStatus(key, props.get(key), selectedLocale, false);</b>
+<b class="nc">&nbsp;                if(status == PropertyStatus.correct &amp;&amp; !showCorrect) continue;</b>
+<b class="nc">&nbsp;                if(status == PropertyStatus.missing &amp;&amp; !showMissing) continue;</b>
+<b class="nc">&nbsp;                if(status == PropertyStatus.same &amp;&amp; !showSame) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                colTables[i].table(Tex.whitePane, t -&gt; {</b>
+<b class="nc">&nbsp;                    boolean[] shown = {!collapsed};</b>
+<b class="nc">&nbsp;                    String[] propKey = {key};</b>
+<b class="nc">&nbsp;                    String[] propValue = {props.get(key)};</b>
+&nbsp;
+&nbsp;                    // collapse button
+<b class="nc">&nbsp;                    t.button(Icon.downOpen, Styles.emptyTogglei, () -&gt; shown[0] = !shown[0]).update(b -&gt; {</b>
+<b class="nc">&nbsp;                        b.replaceImage(new Image(shown[0] ? Icon.upOpen : Icon.downOpen));</b>
+<b class="nc">&nbsp;                        b.setChecked(shown[0]);</b>
+<b class="nc">&nbsp;                    }).size(35f);</b>
+&nbsp;
+&nbsp;                    // property name field
+<b class="nc">&nbsp;                    t.field(propKey[0], (f, c) -&gt; c != &#39;=&#39; &amp;&amp; c != &#39;:&#39;, v -&gt; {</b>
+<b class="nc">&nbsp;                        if(props.containsKey(v)){</b>
+<b class="nc">&nbsp;                            t.setColor(Color.valueOf(&quot;f25555&quot;));</b>
+&nbsp;                            return;
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        if(applytoall){</b>
+<b class="nc">&nbsp;                            for(var bundle : locales.values()){</b>
+<b class="nc">&nbsp;                                if(!bundle.containsKey(v)){</b>
+<b class="nc">&nbsp;                                    String value = bundle.get(propKey[0]);</b>
+<b class="nc">&nbsp;                                    if(value == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                                    bundle.remove(propKey[0]);</b>
+<b class="nc">&nbsp;                                    bundle.put(v, value);</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            if(!props.containsKey(v)){</b>
+<b class="nc">&nbsp;                                props.remove(propKey[0]);</b>
+<b class="nc">&nbsp;                                props.put(v, propValue[0]);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        propKey[0] = v;</b>
+<b class="nc">&nbsp;                        updateCard(t, v, propValue[0]);</b>
+<b class="nc">&nbsp;                        saved = false;</b>
+<b class="nc">&nbsp;                    }).maxTextLength(64).width(cardWidth - 125f);</b>
+&nbsp;
+&nbsp;                    // remove button
+<b class="nc">&nbsp;                    t.button(Icon.trash, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                        if(applytoall){</b>
+<b class="nc">&nbsp;                            for(var bundle : locales.values()){</b>
+<b class="nc">&nbsp;                                bundle.remove(propKey[0]);</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            props.remove(propKey[0]);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        saved = false;</b>
+<b class="nc">&nbsp;                        buildMain();</b>
+<b class="nc">&nbsp;                    }).size(35f);</b>
+&nbsp;
+&nbsp;                    // more actions
+<b class="nc">&nbsp;                    t.button(Icon.edit, Styles.emptyi, () -&gt; propEditDialog(t, propKey[0], propValue[0])).size(35f).row();</b>
+&nbsp;
+&nbsp;                    // property value area
+<b class="nc">&nbsp;                    t.collapser(c -&gt; c.area(propValue[0], v -&gt; {</b>
+<b class="nc">&nbsp;                        props.put(propKey[0], v);</b>
+<b class="nc">&nbsp;                        updateCard(t, propKey[0], v);</b>
+<b class="nc">&nbsp;                        saved = false;</b>
+<b class="nc">&nbsp;                    }).maxTextLength(1000).height(140f).update(a -&gt; {</b>
+<b class="nc">&nbsp;                        propValue[0] = props.get(propKey[0]);</b>
+<b class="nc">&nbsp;                        a.setText(props.get(propKey[0]));</b>
+<b class="nc">&nbsp;                    }).growX(), () -&gt; shown[0]).colspan(4).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;                    updateCard(t, propKey[0], propValue[0]);</b>
+<b class="nc">&nbsp;                }).top().width(cardWidth).pad(5f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                i = ++i % cols;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!colTables[0].hasChildren()){</b>
+<b class="nc">&nbsp;                main.add(&quot;@empty&quot;).center().row();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                p.add(colTables);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).growX().row();</b>
+<b class="nc">&nbsp;        main.image().color(Pal.gray).height(3f).growX().expandY().bottom().row();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateCard(Table table, String propKey, String propValue){
+<b class="nc">&nbsp;        updateCard(table, propKey, propValue, selectedLocale, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateCard(Table table, String propKey, String propValue, String locale, boolean viewCard){
+<b class="nc">&nbsp;        switch(getPropertyStatus(propKey, propValue, locale, viewCard)){</b>
+<b class="nc">&nbsp;            case missing -&gt; table.setColor(Pal.accent);</b>
+<b class="nc">&nbsp;            case same -&gt; table.setColor(Pal.techBlue);</b>
+<b class="nc">&nbsp;            case correct -&gt; table.setColor(Pal.gray);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    // Property statuses for main dialog and property view dialog are a bit different
+&nbsp;    private PropertyStatus getPropertyStatus(String propKey, String propValue, String locale, boolean forView){
+<b class="nc">&nbsp;        if(forView &amp;&amp; propValue == null) return PropertyStatus.missing;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var bundle : locales.entries()){</b>
+<b class="nc">&nbsp;            if(!forView &amp;&amp; bundle.key.equals(selectedLocale)) continue;</b>
+<b class="nc">&nbsp;            if(forView &amp;&amp; bundle.key.equals(locale)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            StringMap props = bundle.value;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!props.containsKey(propKey)){</b>
+<b class="nc">&nbsp;                if(!forView) return PropertyStatus.missing;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                if(props.get(propKey).equals(propValue)){</b>
+<b class="nc">&nbsp;                    return PropertyStatus.same;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return PropertyStatus.correct;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void addLocaleDialog(){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;@add&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;            for(var loc : Vars.locales){</b>
+<b class="nc">&nbsp;                String name = loc.toString();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!locales.containsKey(name)){</b>
+<b class="nc">&nbsp;                    t.button(loc.getDisplayName(Core.bundle.getLocale()), Styles.flatTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                        if(name.equals(selectedLocale)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;                        locales.put(name, new StringMap());</b>
+&nbsp;
+<b class="nc">&nbsp;                        selectedLocale = name;</b>
+<b class="nc">&nbsp;                        saved = false;</b>
+<b class="nc">&nbsp;                        buildTables();</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+<b class="nc">&nbsp;                    }).update(b -&gt; b.setChecked(selectedLocale.equals(name))).size(400f, 50f).row();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void propEditDialog(Table card, String key, String value){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;@edit&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            p.margin(10f);</b>
+<b class="nc">&nbsp;            p.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                t.defaults().size(450f, 60f).left();</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;@locales.addtoother&quot;, Icon.add, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    for(var bundle : locales.values()){</b>
+<b class="nc">&nbsp;                        if(!bundle.containsKey(key)){</b>
+<b class="nc">&nbsp;                            bundle.put(key, value);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    saved = false;</b>
+<b class="nc">&nbsp;                    updateCard(card, key, value);</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).marginLeft(12f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;@locales.viewproperty&quot;, Icon.zoom, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    viewPropertyDialog(key);</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).marginLeft(12f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;@locales.addicon&quot;, Icon.image, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    addIconDialog(res -&gt; {</b>
+<b class="nc">&nbsp;                        locales.get(selectedLocale).put(key, value + res);</b>
+<b class="nc">&nbsp;                        saved = false;</b>
+&nbsp;                    });
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).marginLeft(12f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;@locales.rollback&quot;, Icon.undo, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    locales.get(selectedLocale).put(key, lastSaved.get(selectedLocale).get(key));</b>
+<b class="nc">&nbsp;                    buildTables();</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).disabled(b -&gt; {</b>
+<b class="nc">&nbsp;                    if(!lastSaved.containsKey(selectedLocale)) return true;</b>
+<b class="nc">&nbsp;                    StringMap savedMap = lastSaved.get(selectedLocale);</b>
+<b class="nc">&nbsp;                    return !savedMap.containsKey(key) || savedMap.get(key).equals(locales.get(selectedLocale).get(key));</b>
+<b class="nc">&nbsp;                }).marginLeft(12f).row();</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void localeEditDialog(String locale){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;@edit&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            p.margin(10f);</b>
+<b class="nc">&nbsp;            p.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                t.defaults().size(350f, 60f).left();</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;@waves.copy&quot;, Icon.copy, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    Core.app.setClipboardText(writeLocale(locale));</b>
+<b class="nc">&nbsp;                    ui.showInfoFade(&quot;@copied&quot;);</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).marginLeft(12f).row();</b>
+<b class="nc">&nbsp;                t.button(&quot;@waves.load&quot;, Icon.download, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    locales.put(locale, readLocale(Core.app.getClipboardText()));</b>
+<b class="nc">&nbsp;                    buildTables();</b>
+<b class="nc">&nbsp;                    saved = false;</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).disabled(Core.app.getClipboardText() == null).marginLeft(12f).row();</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void editDialog(){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;@edit&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            p.margin(10f);</b>
+<b class="nc">&nbsp;            p.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                t.defaults().size(450f, 60f).left();</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;@waves.copy&quot;, Icon.copy, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    Core.app.setClipboardText(writeBundles());</b>
+<b class="nc">&nbsp;                    ui.showInfoFade(&quot;@copied&quot;);</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).marginLeft(12f).row();</b>
+<b class="nc">&nbsp;                t.button(&quot;@waves.load&quot;, Icon.download, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    locales = readBundles(Core.app.getClipboardText());</b>
+<b class="nc">&nbsp;                    buildTables();</b>
+<b class="nc">&nbsp;                    saved = false;</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).disabled(Core.app.getClipboardText() == null).marginLeft(12f).row();</b>
+<b class="nc">&nbsp;                t.button(&quot;@locales.rollback&quot;, Icon.undo, Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    locales = lastSaved.copy();</b>
+<b class="nc">&nbsp;                    saved = true;</b>
+<b class="nc">&nbsp;                    buildTables();</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).disabled(b -&gt; saved).marginLeft(12f).row();</b>
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void viewPropertyDialog(String key){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(Core.bundle.format(&quot;locales.viewing&quot;, key));</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.button(Icon.filter, Styles.emptyi, () -&gt; filterDialog(() -&gt; buildPropView(key))).size(35f);</b>
+&nbsp;
+<b class="nc">&nbsp;            var field = t.field(searchString, v -&gt; {</b>
+<b class="nc">&nbsp;                searchString = v;</b>
+<b class="nc">&nbsp;                buildPropView(key);</b>
+<b class="nc">&nbsp;            }).update(f -&gt; f.setText(searchString)).maxTextLength(64).padLeft(10f).width(250f).update(f -&gt; f.setMessageText(searchByValue ? &quot;@locales.searchvalue&quot; : &quot;@locales.searchlocale&quot;)).get();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(Icon.cancel, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                searchString = &quot;&quot;;</b>
+<b class="nc">&nbsp;                field.setText(&quot;&quot;);</b>
+<b class="nc">&nbsp;                buildPropView(key);</b>
+<b class="nc">&nbsp;            }).padLeft(10f).size(35f);</b>
+<b class="nc">&nbsp;        }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;        buildPropView(key);</b>
+<b class="nc">&nbsp;        dialog.cont.add(propView).grow().center().row();</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.closeOnBack();</b>
+<b class="nc">&nbsp;        dialog.hidden(this::buildMain);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void buildPropView(String key){
+<b class="nc">&nbsp;        propView.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        propView.image().color(Pal.gray).height(3f).fillX().top().row();</b>
+<b class="nc">&nbsp;        propView.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            int cols = Math.max(1, (int)((Core.graphics.getWidth() / Scl.scl() - 100f) / cardWidth));</b>
+<b class="nc">&nbsp;            if(cols == 0){</b>
+<b class="nc">&nbsp;                propView.add(&quot;@empty&quot;).center().row();</b>
+&nbsp;                return;
+&nbsp;            }
+<b class="nc">&nbsp;            p.defaults().top();</b>
+&nbsp;
+<b class="nc">&nbsp;            Table[] colTables = new Table[cols];</b>
+<b class="nc">&nbsp;            for(var i = 0; i &lt; cols; i++){</b>
+<b class="nc">&nbsp;                colTables[i] = new Table();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(var loc : Vars.locales){</b>
+<b class="nc">&nbsp;                String name = loc.toString();</b>
+<b class="nc">&nbsp;                if(!locales.containsKey(name)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                PropertyStatus status = getPropertyStatus(key, locales.get(name).get(key), name, true);</b>
+<b class="nc">&nbsp;                if(status == PropertyStatus.correct &amp;&amp; !showCorrect) continue;</b>
+<b class="nc">&nbsp;                if(status == PropertyStatus.missing &amp;&amp; !showMissing) continue;</b>
+<b class="nc">&nbsp;                if(status == PropertyStatus.same &amp;&amp; !showSame) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(status != PropertyStatus.missing){</b>
+<b class="nc">&nbsp;                    var comparsionString = (searchByValue ? locales.get(name).get(key).toLowerCase() : loc.getDisplayName(Core.bundle.getLocale()).toLowerCase());</b>
+<b class="nc">&nbsp;                    if(!searchString.isEmpty() &amp;&amp; !comparsionString.contains(searchString.toLowerCase())) continue;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                colTables[i].table(Tex.whitePane, t -&gt; {</b>
+<b class="nc">&nbsp;                    t.add(loc.getDisplayName(Core.bundle.getLocale())).left().color(Pal.accent).row();</b>
+<b class="nc">&nbsp;                    t.image().color(Pal.accent).fillX().row();</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(status == PropertyStatus.missing){</b>
+<b class="nc">&nbsp;                        t.table(b -&gt;</b>
+<b class="nc">&nbsp;                        b.button(&quot;@add&quot;, Icon.add, () -&gt; {</b>
+<b class="nc">&nbsp;                            locales.get(name).put(key, &quot;moai&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                            t.getCells().get(2).clearElement();</b>
+<b class="nc">&nbsp;                            t.getCells().remove(2);</b>
+&nbsp;
+<b class="nc">&nbsp;                            t.area(locales.get(name).get(key), v -&gt; {</b>
+<b class="nc">&nbsp;                                locales.get(name).put(key, v);</b>
+<b class="nc">&nbsp;                                saved = false;</b>
+<b class="nc">&nbsp;                            }).maxTextLength(1000).height(140f).growX().row();</b>
+<b class="nc">&nbsp;                        }).size(160f, 50f)).height(140f).growX().row();</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        t.area(locales.get(name).get(key), v -&gt; {</b>
+<b class="nc">&nbsp;                            locales.get(name).put(key, v);</b>
+<b class="nc">&nbsp;                            saved = false;</b>
+<b class="nc">&nbsp;                        }).maxTextLength(1000).height(140f).growX().row();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }).update(t -&gt; updateCard(t, key, locales.get(name).get(key), name, true)).top().width(cardWidth).pad(5f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                i = ++i % cols;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!colTables[0].hasChildren()){</b>
+<b class="nc">&nbsp;                propView.add(&quot;@empty&quot;).center().row();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                p.add(colTables);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).grow().row();</b>
+<b class="nc">&nbsp;        propView.image().color(Pal.gray).height(3f).fillX().bottom().row();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void filterDialog(Runnable hidden){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;@locales.filter&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.add(&quot;@search&quot;).row();</b>
+<b class="nc">&nbsp;            t.table(b -&gt; {</b>
+<b class="nc">&nbsp;                b.button(&quot;@locales.byname&quot;, Styles.togglet, () -&gt; searchByValue = false).size(300f, 50f).checked(v -&gt; !searchByValue);</b>
+<b class="nc">&nbsp;                b.button(&quot;@locales.byvalue&quot;, Styles.togglet, () -&gt; searchByValue = true).padLeft(10f).size(300f, 50f).checked(v -&gt; searchByValue);</b>
+<b class="nc">&nbsp;            }).padTop(5f);</b>
+<b class="nc">&nbsp;        }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.button(&quot;@locales.showcorrect&quot;, Icon.ok, filterStyle, () -&gt; showCorrect = !showCorrect).update(b -&gt; {</b>
+<b class="nc">&nbsp;            ((Image)b.getChildren().get(1)).setDrawable(showCorrect ? Icon.ok : Icon.cancel);</b>
+<b class="nc">&nbsp;            b.setChecked(showCorrect);</b>
+<b class="nc">&nbsp;        }).size(450f, 100f).color(Pal.gray).padTop(65f);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.button(&quot;@locales.showmissing&quot;, Icon.ok, filterStyle, () -&gt; showMissing = !showMissing).update(b -&gt; {</b>
+<b class="nc">&nbsp;            ((Image)b.getChildren().get(1)).setDrawable(showMissing ? Icon.ok : Icon.cancel);</b>
+<b class="nc">&nbsp;            b.setChecked(showMissing);</b>
+<b class="nc">&nbsp;        }).size(450f, 100f).color(Pal.accent).padTop(65f);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.button(&quot;@locales.showsame&quot;, Icon.ok, filterStyle, () -&gt; showSame = !showSame).update(b -&gt; {</b>
+<b class="nc">&nbsp;            ((Image)b.getChildren().get(1)).setDrawable(showSame ? Icon.ok : Icon.cancel);</b>
+<b class="nc">&nbsp;            b.setChecked(showSame);</b>
+<b class="nc">&nbsp;        }).size(450f, 100f).color(Pal.techBlue).padTop(65f);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.buttons.button(&quot;@back&quot;, Icon.left, () -&gt; {</b>
+<b class="nc">&nbsp;            hidden.run();</b>
+<b class="nc">&nbsp;            dialog.hide();</b>
+<b class="nc">&nbsp;        }).size(210f, 64f);</b>
+<b class="nc">&nbsp;        dialog.closeOnBack(hidden);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void addIconDialog(Cons&lt;String&gt; cons){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;@locales.addicon&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        Table icons = new Table();</b>
+<b class="nc">&nbsp;        TextField search = Elem.newField(&quot;&quot;, v -&gt; iconsTable(icons, v.replace(&quot; &quot;, &quot;&quot;).toLowerCase(), dialog, cons));</b>
+<b class="nc">&nbsp;        search.setMessageText(&quot;@search&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.add(search).maxTextLength(64).padLeft(10f).width(250f);</b>
+&nbsp;
+<b class="nc">&nbsp;            t.button(Icon.cancel, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                search.setText(&quot;&quot;);</b>
+<b class="nc">&nbsp;                iconsTable(icons, &quot;&quot;, dialog, cons);</b>
+<b class="nc">&nbsp;            }).padLeft(10f).size(35f);</b>
+<b class="nc">&nbsp;        }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.cont.pane(icons).scrollX(false);</b>
+<b class="nc">&nbsp;        dialog.resized(true, () -&gt; iconsTable(icons, search.getText().replace(&quot; &quot;, &quot;&quot;).toLowerCase(), dialog, cons));</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.closeOnBack();</b>
+<b class="nc">&nbsp;        dialog.setFillParent(true);</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void iconsTable(Table table, String search, Dialog dialog, Cons&lt;String&gt; cons){
+<b class="nc">&nbsp;        table.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        table.marginRight(19f).marginLeft(12f);</b>
+<b class="nc">&nbsp;        table.defaults().size(48f);</b>
+&nbsp;
+<b class="nc">&nbsp;        int cols = (int)Math.min(20, Core.graphics.getWidth() / Scl.scl(52f));</b>
+&nbsp;
+<b class="nc">&nbsp;        int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        var codes = new ObjectIntMap&lt;&gt;(Iconc.codes);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var name : codes.keys()){</b>
+<b class="nc">&nbsp;            if(!name.toLowerCase().contains(search)) codes.remove(name);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(codes.size &gt; 0) table.image().colspan(cols).growX().width(-1f).height(3f).color(Pal.accent).row();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var icon : codes){</b>
+<b class="nc">&nbsp;            String res = (char)icon.value + &quot;&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;            table.button(Icon.icons.get(icon.key), Styles.flati, iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                cons.get(res);</b>
+<b class="nc">&nbsp;                dialog.hide();</b>
+<b class="nc">&nbsp;            }).tooltip(icon.key);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(++i % cols == 0) table.row();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        for(ContentType ctype : contentIcons){</b>
+<b class="nc">&nbsp;            var all = content.getBy(ctype).&lt;UnlockableContent&gt;as().select(u -&gt; u.localizedName.replace(&quot; &quot;, &quot;&quot;).toLowerCase().contains(search) &amp;&amp; u.uiIcon.found());</b>
+&nbsp;
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            if(all.size &gt; 0) table.image().colspan(cols).growX().width(-1f).height(3f).color(Pal.accent).row();</b>
+&nbsp;
+<b class="nc">&nbsp;            i = 0;</b>
+<b class="nc">&nbsp;            for(UnlockableContent u : all){</b>
+<b class="nc">&nbsp;                table.button(new TextureRegionDrawable(u.uiIcon), Styles.flati, iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                    cons.get(u.emoji() + &quot;&quot;);</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).tooltip(u.localizedName);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(++i % cols == 0) table.row();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var teams = new Seq&lt;&gt;(Team.baseTeams);</b>
+<b class="nc">&nbsp;        teams = teams.select(u -&gt; u.localized().toLowerCase().contains(search) &amp;&amp; Core.atlas.has(&quot;team-&quot; + u.name));</b>
+&nbsp;
+<b class="nc">&nbsp;        table.row();</b>
+<b class="nc">&nbsp;        if(teams.size &gt; 0) table.image().colspan(cols).growX().width(-1f).height(3f).color(Pal.accent).row();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Team team : teams){</b>
+<b class="nc">&nbsp;            var region = Core.atlas.find(&quot;team-&quot; + team.name);</b>
+&nbsp;
+<b class="nc">&nbsp;            table.button(new TextureRegionDrawable(region), Styles.flati, iconMed, () -&gt; {</b>
+<b class="nc">&nbsp;                cons.get(team.emoji);</b>
+<b class="nc">&nbsp;                dialog.hide();</b>
+<b class="nc">&nbsp;            }).tooltip(team.localized());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(++i % cols == 0) table.row();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String writeBundles(){
+<b class="nc">&nbsp;        StringBuilder data = new StringBuilder();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var locale : locales.keys()){</b>
+<b class="nc">&nbsp;            data.append(locale).append(&quot;:\n&quot;).append(writeLocale(locale));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return data.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String writeLocale(String key){
+<b class="nc">&nbsp;        StringBuilder data = new StringBuilder();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!locales.containsKey(key)) return &quot;&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var prop : locales.get(key).entries()){</b>
+&nbsp;            // Convert \n in plain text to \\n, then convert newlines to \n
+<b class="nc">&nbsp;            data.append(prop.key).append(&quot; = &quot;).append(prop.value</b>
+<b class="nc">&nbsp;            .replace(&quot;\\n&quot;, &quot;\\\\n&quot;).replace(&quot;\n&quot;, &quot;\\n&quot;)).append(&quot;\n&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return data.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private MapLocales readBundles(String data){
+<b class="nc">&nbsp;        MapLocales bundles = new MapLocales();</b>
+&nbsp;
+<b class="nc">&nbsp;        String currentLocale = &quot;&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var line : data.split(&quot;\\r?\\n|\\r&quot;)){</b>
+<b class="nc">&nbsp;            if(line.endsWith(&quot;:&quot;) &amp;&amp; !line.contains(&quot;=&quot;)){</b>
+<b class="nc">&nbsp;                currentLocale = line.substring(0, line.length() - 1);</b>
+<b class="nc">&nbsp;                bundles.put(currentLocale, new StringMap());</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                int sepIndex = line.indexOf(&quot; = &quot;);</b>
+<b class="nc">&nbsp;                if(sepIndex != -1 &amp;&amp; !currentLocale.isEmpty()){</b>
+&nbsp;                    // Convert \n in file to newlines in text, then revert newlines with escape characters
+<b class="nc">&nbsp;                    bundles.get(currentLocale).put(line.substring(0, sepIndex), line.substring(sepIndex + 3)</b>
+<b class="nc">&nbsp;                    .replace(&quot;\\n&quot;, &quot;\n&quot;).replace(&quot;\\\n&quot;, &quot;\\n&quot;));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return bundles;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private StringMap readLocale(String data){
+<b class="nc">&nbsp;        StringMap map = new StringMap();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var line : data.split(&quot;\\r?\\n|\\r&quot;)){</b>
+<b class="nc">&nbsp;            int sepIndex = line.indexOf(&quot; = &quot;);</b>
+<b class="nc">&nbsp;            if(sepIndex != -1){</b>
+&nbsp;                // Convert \n in file to newlines in text, then revert newlines with escape characters
+<b class="nc">&nbsp;                map.put(line.substring(0, sepIndex), line.substring(sepIndex + 3)</b>
+<b class="nc">&nbsp;                .replace(&quot;\\n&quot;, &quot;\n&quot;).replace(&quot;\\\n&quot;, &quot;\\n&quot;));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return map;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private enum PropertyStatus{</b>
+<b class="nc">&nbsp;        correct,</b>
+<b class="nc">&nbsp;        missing,</b>
+<b class="nc">&nbsp;        same</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

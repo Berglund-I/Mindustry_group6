@@ -1,0 +1,252 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ItemSource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.sandbox</a>
+</div>
+
+<h1>Coverage Summary for Class: ItemSource (mindustry.world.blocks.sandbox)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ItemSource</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (16/20)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ItemSource$ItemSourceBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    59.1%
+  </span>
+  <span class="absValue">
+    (13/22)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (7/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    69%
+  </span>
+  <span class="absValue">
+    (29/42)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.sandbox;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class ItemSource extends Block{
+<b class="fc">&nbsp;    public int itemsPerSecond = 100;</b>
+&nbsp;
+&nbsp;    public ItemSource(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.transportation;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        saveConfig = true;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+<b class="fc">&nbsp;        envEnabled = Env.any;</b>
+<b class="fc">&nbsp;        clearOnDoubleTap = true;</b>
+&nbsp;
+<b class="fc">&nbsp;        config(Item.class, (ItemSourceBuild tile, Item item) -&gt; tile.outputItem = item);</b>
+<b class="fc">&nbsp;        configClear((ItemSourceBuild tile) -&gt; tile.outputItem = null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+<b class="fc">&nbsp;        removeBar(&quot;items&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.output, itemsPerSecond, StatUnit.itemsSecond);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{Core.atlas.find(&quot;source-bottom&quot;), region};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanConfig(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        drawPlanConfigCenter(plan, plan.config, &quot;center&quot;, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ItemSourceBuild extends Building{</b>
+&nbsp;        public float counter;
+&nbsp;        public Item outputItem;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            if(outputItem == null){</b>
+<b class="nc">&nbsp;                Draw.rect(&quot;cross-full&quot;, x, y);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Draw.color(outputItem.color);</b>
+<b class="nc">&nbsp;                Fill.square(x, y, tilesize/2f - 0.00001f);</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(outputItem == null) return;</b>
+&nbsp;
+<b class="fc">&nbsp;            counter += edelta();</b>
+<b class="fc">&nbsp;            float limit = 60f / itemsPerSecond;</b>
+&nbsp;
+<b class="fc">&nbsp;            while(counter &gt;= limit){</b>
+<b class="fc">&nbsp;                items.set(outputItem, 1);</b>
+<b class="fc">&nbsp;                dump(outputItem);</b>
+<b class="fc">&nbsp;                items.set(outputItem, 0);</b>
+<b class="fc">&nbsp;                counter -= limit;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            ItemSelection.buildTable(ItemSource.this, table, content.items(), () -&gt; outputItem, this::configure, selectionRows, selectionColumns);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Item config(){
+<b class="nc">&nbsp;            return outputItem;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.s(outputItem == null ? -1 : outputItem.id);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            outputItem = content.item(read.s());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

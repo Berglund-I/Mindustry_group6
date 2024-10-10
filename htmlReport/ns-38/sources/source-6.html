@@ -1,0 +1,285 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DirectionalUnloader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: DirectionalUnloader (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DirectionalUnloader</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (21/28)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DirectionalUnloader$DirectionalUnloaderBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (12/40)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    46.2%
+  </span>
+  <span class="absValue">
+    (6/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48.5%
+  </span>
+  <span class="absValue">
+    (33/68)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.blocks.storage.StorageBlock.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class DirectionalUnloader extends Block{
+&nbsp;    public @Load(value = &quot;@-center&quot;, fallback = &quot;unloader-center&quot;) TextureRegion centerRegion;
+&nbsp;    public @Load(&quot;@-top&quot;) TextureRegion topRegion;
+&nbsp;    public @Load(&quot;@-arrow&quot;) TextureRegion arrowRegion;
+&nbsp;
+<b class="fc">&nbsp;    public float speed = 1f;</b>
+<b class="fc">&nbsp;    public boolean allowCoreUnload = false;</b>
+&nbsp;
+&nbsp;    public DirectionalUnloader(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        group = BlockGroup.transportation;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        saveConfig = true;</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        itemCapacity = 0;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+<b class="fc">&nbsp;        unloadable = false;</b>
+<b class="fc">&nbsp;        isDuct = true;</b>
+<b class="fc">&nbsp;        envDisabled = Env.none;</b>
+<b class="fc">&nbsp;        clearOnDoubleTap = true;</b>
+<b class="fc">&nbsp;        priority = TargetPriority.transport;</b>
+&nbsp;
+<b class="fc">&nbsp;        config(Item.class, (DirectionalUnloaderBuild tile, Item item) -&gt; tile.unloadItem = item);</b>
+<b class="fc">&nbsp;        configClear((DirectionalUnloaderBuild tile) -&gt; tile.unloadItem = null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+<b class="nc">&nbsp;        stats.add(Stat.speed, 60f / speed, StatUnit.itemsSecond);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy());</b>
+<b class="nc">&nbsp;        Draw.rect(topRegion, plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+<b class="nc">&nbsp;        drawPlanConfig(plan, list);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanConfig(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        drawPlanConfigCenter(plan, plan.config, &quot;duct-unloader-center&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+<b class="fc">&nbsp;        removeBar(&quot;items&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{region, topRegion, arrowRegion};</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class DirectionalUnloaderBuild extends Building{</b>
+<b class="fc">&nbsp;        public float unloadTimer = 0f;</b>
+<b class="fc">&nbsp;        public Item unloadItem = null;</b>
+<b class="fc">&nbsp;        public int offset = 0;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if((unloadTimer += edelta()) &gt;= speed){</b>
+<b class="nc">&nbsp;                Building front = front(), back = back();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(front != null &amp;&amp; back != null &amp;&amp; back.items != null &amp;&amp; front.team == team &amp;&amp; back.team == team &amp;&amp; back.canUnload() &amp;&amp; (allowCoreUnload || !(back instanceof CoreBuild || (back instanceof StorageBuild sb &amp;&amp; sb.linkedCore != null)))){</b>
+<b class="nc">&nbsp;                    if(unloadItem == null){</b>
+<b class="nc">&nbsp;                        var itemseq = content.items();</b>
+<b class="nc">&nbsp;                        int itemc = itemseq.size;</b>
+<b class="nc">&nbsp;                        for(int i = 0; i &lt; itemc; i++){</b>
+<b class="nc">&nbsp;                            Item item = itemseq.get((i + offset) % itemc);</b>
+<b class="nc">&nbsp;                            if(back.items.has(item) &amp;&amp; front.acceptItem(this, item)){</b>
+<b class="nc">&nbsp;                                front.handleItem(this, item);</b>
+<b class="nc">&nbsp;                                back.items.remove(item, 1);</b>
+<b class="nc">&nbsp;                                back.itemTaken(item);</b>
+<b class="nc">&nbsp;                                offset ++;</b>
+<b class="nc">&nbsp;                                offset %= itemc;</b>
+<b class="nc">&nbsp;                                break;</b>
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                    }else if(back.items.has(unloadItem) &amp;&amp; front.acceptItem(this, unloadItem)){</b>
+<b class="nc">&nbsp;                        front.handleItem(this, unloadItem);</b>
+<b class="nc">&nbsp;                        back.items.remove(unloadItem, 1);</b>
+<b class="nc">&nbsp;                        back.itemTaken(unloadItem);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                unloadTimer %= speed;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y, rotdeg());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(unloadItem != null){</b>
+<b class="nc">&nbsp;                Draw.color(unloadItem.color);</b>
+<b class="nc">&nbsp;                Draw.rect(centerRegion, x, y);</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Draw.rect(arrowRegion, x, y, rotdeg());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            ItemSelection.buildTable(DirectionalUnloader.this, table, content.items(), () -&gt; unloadItem, this::configure);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Item config(){
+<b class="nc">&nbsp;            return unloadItem;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.s(unloadItem == null ? -1 : unloadItem.id);</b>
+<b class="fc">&nbsp;            write.s(offset);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            int id = read.s();</b>
+<b class="fc">&nbsp;            unloadItem = id == -1 ? null : content.items().get(id);</b>
+<b class="fc">&nbsp;            offset = read.s();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

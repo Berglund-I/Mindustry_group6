@@ -1,0 +1,136 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MultiReqImage</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui</a>
+</div>
+
+<h1>Coverage Summary for Class: MultiReqImage (mindustry.ui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MultiReqImage</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui;
+&nbsp;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;
+<b class="nc">&nbsp;public class MultiReqImage extends Stack{</b>
+<b class="nc">&nbsp;    private Seq&lt;ReqImage&gt; displays = new Seq&lt;&gt;();</b>
+&nbsp;    private float time;
+&nbsp;
+&nbsp;    public void add(ReqImage display){
+<b class="nc">&nbsp;        displays.add(display);</b>
+<b class="nc">&nbsp;        super.add(display);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void act(float delta){
+<b class="nc">&nbsp;        super.act(delta);</b>
+&nbsp;
+<b class="nc">&nbsp;        time += Time.delta / 60f;</b>
+&nbsp;
+<b class="nc">&nbsp;        displays.each(req -&gt; req.visible = false);</b>
+&nbsp;
+<b class="nc">&nbsp;        ReqImage valid = displays.find(ReqImage::valid);</b>
+<b class="nc">&nbsp;        if(valid != null){</b>
+<b class="nc">&nbsp;            valid.visible = true;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            if(displays.size &gt; 0){</b>
+<b class="nc">&nbsp;                displays.get((int)time % displays.size).visible = true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

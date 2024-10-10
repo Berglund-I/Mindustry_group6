@@ -1,0 +1,140 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > WarningBar</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui</a>
+</div>
+
+<h1>Coverage Summary for Class: WarningBar (mindustry.ui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WarningBar</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;
+<b class="nc">&nbsp;public class WarningBar extends Element{</b>
+<b class="nc">&nbsp;    public float barWidth = 40f, spacing = barWidth*2, skew = barWidth;</b>
+&nbsp;
+&nbsp;    {
+<b class="nc">&nbsp;        setColor(Pal.accent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        Draw.alpha(parentAlpha);</b>
+&nbsp;
+<b class="nc">&nbsp;        int amount = (int)(width / spacing) + 2;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; amount; i++){</b>
+<b class="nc">&nbsp;            float rx = x + (i - 1)*spacing;</b>
+<b class="nc">&nbsp;            Fill.quad(</b>
+&nbsp;            rx, y,
+&nbsp;            rx + skew, y + height,
+&nbsp;            rx + skew + barWidth, y + height,
+&nbsp;            rx + barWidth, y
+&nbsp;            );
+&nbsp;        }
+<b class="nc">&nbsp;        Lines.stroke(Scl.scl(3f));</b>
+<b class="nc">&nbsp;        Lines.line(x, y, x + width, y);</b>
+<b class="nc">&nbsp;        Lines.line(x, y + height, x + width, y + height);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

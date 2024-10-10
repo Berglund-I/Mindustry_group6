@@ -1,0 +1,237 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ThermalGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.power</a>
+</div>
+
+<h1>Coverage Summary for Class: ThermalGenerator (mindustry.world.blocks.power)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ThermalGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.2%
+  </span>
+  <span class="absValue">
+    (13/24)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ThermalGenerator$ThermalGeneratorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (9/12)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (5/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    61.1%
+  </span>
+  <span class="absValue">
+    (22/36)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.power;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class ThermalGenerator extends PowerGenerator{
+<b class="fc">&nbsp;    public Effect generateEffect = Fx.none;</b>
+<b class="fc">&nbsp;    public float effectChance = 0.05f;</b>
+<b class="fc">&nbsp;    public float minEfficiency = 0f;</b>
+<b class="fc">&nbsp;    public float displayEfficiencyScale = 1f;</b>
+<b class="fc">&nbsp;    public boolean displayEfficiency = true;</b>
+&nbsp;    public @Nullable LiquidStack outputLiquid;
+<b class="fc">&nbsp;    public Attribute attribute = Attribute.heat;</b>
+&nbsp;
+&nbsp;    public ThermalGenerator(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float getDisplayedPowerProduction(){
+<b class="nc">&nbsp;        return powerProduction / displayEfficiencyScale;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        if(outputLiquid != null){</b>
+<b class="fc">&nbsp;            outputsLiquid = true;</b>
+<b class="fc">&nbsp;            hasLiquids = true;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;        //proper light clipping
+<b class="fc">&nbsp;        clipSize = Math.max(clipSize, 45f * size * 2f * 2f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.tiles, attribute, floating, size * size * displayEfficiencyScale, !displayEfficiency);</b>
+<b class="nc">&nbsp;        stats.remove(generationType);</b>
+<b class="nc">&nbsp;        stats.add(generationType, powerProduction * 60.0f / displayEfficiencyScale, StatUnit.powerSecond);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(outputLiquid != null){</b>
+<b class="nc">&nbsp;            stats.add(Stat.output, StatValues.liquid(outputLiquid.liquid, outputLiquid.amount * size * size * 60f, true));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        super.drawPlace(x, y, rotation, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(displayEfficiency){</b>
+<b class="nc">&nbsp;            drawPlaceText(Core.bundle.formatFloat(&quot;bar.efficiency&quot;, sumAttribute(attribute, x, y) * 100, 1), x, y, valid);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean canPlaceOn(Tile tile, Team team, int rotation){
+&nbsp;        //make sure there&#39;s heat at this location
+<b class="nc">&nbsp;        return tile.getLinkedTilesAs(this, tempTiles).sumf(other -&gt; other.floor().attributes.get(attribute)) &gt; minEfficiency;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ThermalGeneratorBuild extends GeneratorBuild{</b>
+&nbsp;        public float sum;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            productionEfficiency = sum + attribute.env();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(productionEfficiency &gt; 0.1f &amp;&amp; Mathf.chanceDelta(effectChance)){</b>
+<b class="nc">&nbsp;                generateEffect.at(x + Mathf.range(3f), y + Mathf.range(3f));</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(outputLiquid != null){</b>
+<b class="fc">&nbsp;                float added = Math.min(productionEfficiency * delta() * outputLiquid.amount, liquidCapacity - liquids.get(outputLiquid.liquid));</b>
+<b class="fc">&nbsp;                liquids.add(outputLiquid.liquid, added);</b>
+<b class="fc">&nbsp;                dumpLiquid(outputLiquid.liquid);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float totalProgress(){
+<b class="nc">&nbsp;            return enabled ? super.totalProgress() : 0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawLight(){
+<b class="nc">&nbsp;            Drawf.light(x, y, (40f + Mathf.absin(10f, 5f)) * Math.min(productionEfficiency, 2f) * size, Color.scarlet, 0.4f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityAdded(){
+<b class="fc">&nbsp;            super.onProximityAdded();</b>
+&nbsp;
+<b class="fc">&nbsp;            sum = sumAttribute(attribute, tile.x, tile.y);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

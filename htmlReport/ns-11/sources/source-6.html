@@ -1,0 +1,638 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MapGenerateDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: MapGenerateDialog (mindustry.editor)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapGenerateDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/40)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/253)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MapGenerateDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MapGenerateDialog$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MapGenerateDialog$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/46)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/266)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.ImageButton.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.maps.filters.*;
+&nbsp;import mindustry.maps.filters.GenerateFilter.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import java.util.concurrent.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;public class MapGenerateDialog extends BaseDialog{
+&nbsp;    final boolean applied;
+&nbsp;
+&nbsp;    Pixmap pixmap;
+&nbsp;    Texture texture;
+<b class="nc">&nbsp;    GenerateInput input = new GenerateInput();</b>
+<b class="nc">&nbsp;    Seq&lt;GenerateFilter&gt; filters = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    int scaling = mobile ? 3 : 1;</b>
+&nbsp;    Table filterTable;
+&nbsp;
+&nbsp;    Future&lt;?&gt; result;
+&nbsp;    boolean generating;
+&nbsp;
+&nbsp;    long[] buffer1, buffer2;
+&nbsp;    Cons&lt;Seq&lt;GenerateFilter&gt;&gt; applier;
+<b class="nc">&nbsp;    CachedTile ctile = new CachedTile(){</b>
+&nbsp;        //nothing.
+&nbsp;        @Override
+&nbsp;        protected void changeBuild(Team team, Prov&lt;Building&gt; entityprov, int rotation){
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void setBlock(Block type, Team team, int rotation, Prov&lt;Building&gt; entityprov){
+<b class="nc">&nbsp;            this.block = type;</b>
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+&nbsp;    /** @param applied whether or not to use the applied in-game mode. */
+&nbsp;    public MapGenerateDialog(boolean applied){
+<b class="nc">&nbsp;        super(&quot;@editor.generate&quot;);</b>
+<b class="nc">&nbsp;        this.applied = applied;</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(this::setup);</b>
+<b class="nc">&nbsp;        addCloseListener();</b>
+&nbsp;
+<b class="nc">&nbsp;        var style = Styles.flatt;</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.defaults().size(180f, 64f).pad(2f);</b>
+<b class="nc">&nbsp;        buttons.button(&quot;@back&quot;, Icon.left, this::hide);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(applied){</b>
+<b class="nc">&nbsp;            buttons.button(&quot;@editor.apply&quot;, Icon.ok, () -&gt; {</b>
+<b class="nc">&nbsp;                ui.loadAnd(() -&gt; {</b>
+<b class="nc">&nbsp;                    apply();</b>
+<b class="nc">&nbsp;                    hide();</b>
+&nbsp;                });
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@editor.randomize&quot;, Icon.refresh, () -&gt; {</b>
+<b class="nc">&nbsp;            for(GenerateFilter filter : filters){</b>
+<b class="nc">&nbsp;                filter.randomize();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;            update();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@edit&quot;, Icon.edit, () -&gt; {</b>
+<b class="nc">&nbsp;            BaseDialog dialog = new BaseDialog(&quot;@editor.export&quot;);</b>
+<b class="nc">&nbsp;            dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;                p.margin(10f);</b>
+<b class="nc">&nbsp;                p.table(Tex.button, in -&gt; {</b>
+<b class="nc">&nbsp;                    in.defaults().size(280f, 60f).left();</b>
+&nbsp;
+<b class="nc">&nbsp;                    in.button(&quot;@waves.copy&quot;, Icon.copy, style, () -&gt; {</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+&nbsp;
+<b class="nc">&nbsp;                        Core.app.setClipboardText(JsonIO.write(filters));</b>
+<b class="nc">&nbsp;                    }).marginLeft(12f).row();</b>
+<b class="nc">&nbsp;                    in.button(&quot;@waves.load&quot;, Icon.download, style, () -&gt; {</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+&nbsp;                        try{
+<b class="nc">&nbsp;                            filters.set(JsonIO.read(Seq.class, Core.app.getClipboardText()));</b>
+&nbsp;
+<b class="nc">&nbsp;                            rebuildFilters();</b>
+<b class="nc">&nbsp;                            update();</b>
+<b class="nc">&nbsp;                        }catch(Throwable e){</b>
+<b class="nc">&nbsp;                            ui.showException(e);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }).marginLeft(12f).disabled(b -&gt; Core.app.getClipboardText() == null).row();</b>
+<b class="nc">&nbsp;                    in.button(&quot;@clear&quot;, Icon.none, style, () -&gt; {</b>
+<b class="nc">&nbsp;                        dialog.hide();</b>
+<b class="nc">&nbsp;                        filters.clear();</b>
+<b class="nc">&nbsp;                        rebuildFilters();</b>
+<b class="nc">&nbsp;                        update();</b>
+<b class="nc">&nbsp;                    }).marginLeft(12f).row();</b>
+<b class="nc">&nbsp;                    if(!applied){</b>
+<b class="nc">&nbsp;                        in.button(&quot;@settings.reset&quot;, Icon.refresh, style, () -&gt; {</b>
+<b class="nc">&nbsp;                            dialog.hide();</b>
+<b class="nc">&nbsp;                            filters.set(maps.readFilters(&quot;&quot;));</b>
+<b class="nc">&nbsp;                            rebuildFilters();</b>
+<b class="nc">&nbsp;                            update();</b>
+<b class="nc">&nbsp;                        }).marginLeft(12f).row();</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            dialog.addCloseButton();</b>
+<b class="nc">&nbsp;            dialog.show();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@add&quot;, Icon.add, this::showAdd);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!applied){</b>
+<b class="nc">&nbsp;            hidden(this::apply);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        onResize(this::rebuildFilters);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void show(Seq&lt;GenerateFilter&gt; filters, Cons&lt;Seq&lt;GenerateFilter&gt;&gt; applier){
+<b class="nc">&nbsp;        this.filters = filters;</b>
+<b class="nc">&nbsp;        this.applier = applier;</b>
+<b class="nc">&nbsp;        show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void show(Cons&lt;Seq&lt;GenerateFilter&gt;&gt; applier){
+<b class="nc">&nbsp;        show(this.filters, applier);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Applies the specified filters to the editor. */
+&nbsp;    public void applyToEditor(Seq&lt;GenerateFilter&gt; filters){
+&nbsp;        //writeback buffer
+<b class="nc">&nbsp;        long[] writeTiles = new long[editor.width() * editor.height()];</b>
+&nbsp;
+<b class="nc">&nbsp;        for(GenerateFilter filter : filters){</b>
+<b class="nc">&nbsp;            input.begin(editor.width(), editor.height(), editor::tile);</b>
+&nbsp;
+&nbsp;            //write to buffer
+<b class="nc">&nbsp;            for(int x = 0; x &lt; editor.width(); x++){</b>
+<b class="nc">&nbsp;                for(int y = 0; y &lt; editor.height(); y++){</b>
+<b class="nc">&nbsp;                    Tile tile = editor.tile(x, y);</b>
+<b class="nc">&nbsp;                    input.set(x, y, tile.block(), tile.floor(), tile.overlay());</b>
+<b class="nc">&nbsp;                    filter.apply(input);</b>
+<b class="nc">&nbsp;                    writeTiles[x + y*world.width()] = PackTile.get(input.block.id, input.floor.id, input.overlay.id);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            editor.load(() -&gt; {</b>
+&nbsp;                //read from buffer back into tiles
+<b class="nc">&nbsp;                for(int i = 0; i &lt; editor.width() * editor.height(); i++){</b>
+<b class="nc">&nbsp;                    Tile tile = world.tiles.geti(i);</b>
+<b class="nc">&nbsp;                    long write = writeTiles[i];</b>
+&nbsp;
+<b class="nc">&nbsp;                    Block block = content.block(PackTile.block(write)), floor = content.block(PackTile.floor(write)), overlay = content.block(PackTile.overlay(write));</b>
+&nbsp;
+&nbsp;                    //don&#39;t mess up synthetic stuff.
+<b class="nc">&nbsp;                    if(!tile.synthetic() &amp;&amp; !block.synthetic()){</b>
+<b class="nc">&nbsp;                        tile.setBlock(block);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    tile.setFloor((Floor)floor);</b>
+<b class="nc">&nbsp;                    tile.setOverlay(overlay);</b>
+&nbsp;                }
+&nbsp;            });
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //reset undo stack as generation... messes things up
+<b class="nc">&nbsp;        editor.renderer.updateAll();</b>
+<b class="nc">&nbsp;        editor.clearOp();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void setup(){
+<b class="nc">&nbsp;        if(pixmap != null){</b>
+<b class="nc">&nbsp;            pixmap.dispose();</b>
+<b class="nc">&nbsp;            texture.dispose();</b>
+<b class="nc">&nbsp;            pixmap = null;</b>
+<b class="nc">&nbsp;            texture = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        pixmap = new Pixmap(editor.width() / scaling, editor.height() / scaling);</b>
+<b class="nc">&nbsp;        texture = new Texture(pixmap);</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.clear();</b>
+<b class="nc">&nbsp;        cont.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.margin(8f);</b>
+<b class="nc">&nbsp;            t.stack(new BorderImage(texture){</b>
+&nbsp;                {
+<b class="nc">&nbsp;                    setScaling(Scaling.fit);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                @Override
+&nbsp;                public void draw(){
+<b class="nc">&nbsp;                    super.draw();</b>
+<b class="nc">&nbsp;                    for(var filter : filters){</b>
+<b class="nc">&nbsp;                        filter.draw(this);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }, new Stack(){{</b>
+<b class="nc">&nbsp;                add(new Image(Styles.black8));</b>
+<b class="nc">&nbsp;                add(new Image(Icon.refresh, Scaling.none));</b>
+<b class="nc">&nbsp;                visible(() -&gt; generating &amp;&amp; !updateEditorOnChange);</b>
+<b class="nc">&nbsp;            }}).uniformX().grow().padRight(10);</b>
+<b class="nc">&nbsp;            t.pane(p -&gt; filterTable = p.marginRight(6)).update(pane -&gt; {</b>
+<b class="nc">&nbsp;                if(Core.scene.getKeyboardFocus() instanceof Dialog &amp;&amp; Core.scene.getKeyboardFocus() != this){</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Vec2 v = pane.stageToLocalCoordinates(Core.input.mouse());</b>
+&nbsp;
+<b class="nc">&nbsp;                if(v.x &gt;= 0 &amp;&amp; v.y &gt;= 0 &amp;&amp; v.x &lt;= pane.getWidth() &amp;&amp; v.y &lt;= pane.getHeight()){</b>
+<b class="nc">&nbsp;                    Core.scene.setScrollFocus(pane);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Core.scene.setScrollFocus(null);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }).grow().uniformX().scrollX(false);</b>
+<b class="nc">&nbsp;        }).grow();</b>
+&nbsp;
+<b class="nc">&nbsp;        buffer1 = create();</b>
+<b class="nc">&nbsp;        buffer2 = create();</b>
+&nbsp;
+<b class="nc">&nbsp;        update();</b>
+<b class="nc">&nbsp;        rebuildFilters();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    long[] create(){
+<b class="nc">&nbsp;        return new long[(editor.width() / scaling) * (editor.height() / scaling)];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void rebuildFilters(){
+<b class="nc">&nbsp;        int cols = Math.max((int)(Core.graphics.getWidth()/2f / Scl.scl(290f)), 1);</b>
+<b class="nc">&nbsp;        filterTable.clearChildren();</b>
+<b class="nc">&nbsp;        filterTable.top().left();</b>
+<b class="nc">&nbsp;        int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var filter : filters){</b>
+&nbsp;
+&nbsp;            //main container
+<b class="nc">&nbsp;            filterTable.table(Tex.pane, c -&gt; {</b>
+<b class="nc">&nbsp;                c.margin(0);</b>
+&nbsp;
+&nbsp;                //icons to perform actions
+<b class="nc">&nbsp;                c.table(Tex.whiteui, t -&gt; {</b>
+<b class="nc">&nbsp;                    t.setColor(Pal.gray);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.top().left();</b>
+<b class="nc">&nbsp;                    t.add(filter.name()).left().padLeft(6).width(100f).wrap();</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.add().growX();</b>
+&nbsp;
+<b class="nc">&nbsp;                    ImageButtonStyle style = Styles.geni;</b>
+<b class="nc">&nbsp;                    t.defaults().size(42f).padLeft(-5f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.button(Icon.refresh, style, () -&gt; {</b>
+<b class="nc">&nbsp;                        filter.randomize();</b>
+<b class="nc">&nbsp;                        update();</b>
+<b class="nc">&nbsp;                    }).padLeft(-16f).tooltip(&quot;@editor.randomize&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(filter != filters.first()){</b>
+<b class="nc">&nbsp;                        t.button(Icon.upOpen, style, () -&gt; {</b>
+<b class="nc">&nbsp;                            int idx = filters.indexOf(filter);</b>
+<b class="nc">&nbsp;                            filters.swap(idx, Math.max(0, idx - 1));</b>
+<b class="nc">&nbsp;                            rebuildFilters();</b>
+<b class="nc">&nbsp;                            update();</b>
+<b class="nc">&nbsp;                        }).tooltip(&quot;@editor.moveup&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(filter != filters.peek()){</b>
+<b class="nc">&nbsp;                        t.button(Icon.downOpen, style, () -&gt; {</b>
+<b class="nc">&nbsp;                            int idx = filters.indexOf(filter);</b>
+<b class="nc">&nbsp;                            filters.swap(idx, Math.min(filters.size - 1, idx + 1));</b>
+<b class="nc">&nbsp;                            rebuildFilters();</b>
+<b class="nc">&nbsp;                            update();</b>
+<b class="nc">&nbsp;                        }).tooltip(&quot;@editor.movedown&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    t.button(Icon.copy, style, () -&gt; {</b>
+<b class="nc">&nbsp;                        GenerateFilter copy = filter.copy();</b>
+<b class="nc">&nbsp;                        copy.randomize();</b>
+<b class="nc">&nbsp;                        filters.insert(filters.indexOf(filter) + 1, copy);</b>
+<b class="nc">&nbsp;                        rebuildFilters();</b>
+<b class="nc">&nbsp;                        update();</b>
+<b class="nc">&nbsp;                    }).tooltip(&quot;@editor.copy&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.button(Icon.cancel, style, () -&gt; {</b>
+<b class="nc">&nbsp;                        filters.remove(filter);</b>
+<b class="nc">&nbsp;                        rebuildFilters();</b>
+<b class="nc">&nbsp;                        update();</b>
+<b class="nc">&nbsp;                    }).tooltip(&quot;@waves.remove&quot;);</b>
+<b class="nc">&nbsp;                }).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;                c.row();</b>
+&nbsp;                //all the options
+<b class="nc">&nbsp;                c.table(f -&gt; {</b>
+<b class="nc">&nbsp;                    f.left().top();</b>
+<b class="nc">&nbsp;                    for(FilterOption option : filter.options()){</b>
+<b class="nc">&nbsp;                        option.changed = this::update;</b>
+&nbsp;
+<b class="nc">&nbsp;                        f.table(t -&gt; {</b>
+<b class="nc">&nbsp;                            t.left();</b>
+<b class="nc">&nbsp;                            option.build(t);</b>
+<b class="nc">&nbsp;                        }).growX().left();</b>
+<b class="nc">&nbsp;                        f.row();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }).grow().left().pad(6).top();</b>
+<b class="nc">&nbsp;            }).width(280f).pad(3).top().left().fillY();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(++i % cols == 0){</b>
+<b class="nc">&nbsp;                filterTable.row();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(filters.isEmpty()){</b>
+<b class="nc">&nbsp;            filterTable.add(&quot;@filters.empty&quot;).wrap().width(200f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void showAdd(){
+<b class="nc">&nbsp;        var selection = new BaseDialog(&quot;@add&quot;);</b>
+<b class="nc">&nbsp;        selection.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            p.background(Tex.button);</b>
+<b class="nc">&nbsp;            p.marginRight(14);</b>
+<b class="nc">&nbsp;            p.defaults().size(195f, 56f);</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+<b class="nc">&nbsp;            for(var gen : Maps.allFilterTypes){</b>
+<b class="nc">&nbsp;                var filter = gen.get();</b>
+<b class="nc">&nbsp;                var icon = filter.icon();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(filter.isPost() &amp;&amp; applied) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                p.button((icon == &#39;\0&#39; ? &quot;&quot; : icon + &quot; &quot;) + filter.name(), Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                    filter.randomize();</b>
+<b class="nc">&nbsp;                    filters.add(filter);</b>
+<b class="nc">&nbsp;                    rebuildFilters();</b>
+<b class="nc">&nbsp;                    update();</b>
+<b class="nc">&nbsp;                    selection.hide();</b>
+<b class="nc">&nbsp;                }).with(Table::left).get().getLabelCell().growX().left().padLeft(5).labelAlign(Align.left);</b>
+<b class="nc">&nbsp;                if(++i % 3 == 0) p.row();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            p.button(Iconc.refresh + &quot; &quot; + Core.bundle.get(&quot;filter.defaultores&quot;), Styles.flatt, () -&gt; {</b>
+<b class="nc">&nbsp;                maps.addDefaultOres(filters);</b>
+<b class="nc">&nbsp;                rebuildFilters();</b>
+<b class="nc">&nbsp;                update();</b>
+<b class="nc">&nbsp;                selection.hide();</b>
+<b class="nc">&nbsp;            }).with(Table::left).get().getLabelCell().growX().left().padLeft(5).labelAlign(Align.left);</b>
+<b class="nc">&nbsp;        }).scrollX(false);</b>
+&nbsp;
+<b class="nc">&nbsp;        selection.addCloseButton();</b>
+<b class="nc">&nbsp;        selection.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    long pack(Tile tile){
+<b class="nc">&nbsp;        return PackTile.get(tile.blockID(), tile.floorID(), tile.overlayID());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Tile unpack(long tile){
+<b class="nc">&nbsp;        ctile.setFloor((Floor)content.block(PackTile.floor(tile)));</b>
+<b class="nc">&nbsp;        ctile.setBlock(content.block(PackTile.block(tile)));</b>
+<b class="nc">&nbsp;        ctile.setOverlay(content.block(PackTile.overlay(tile)));</b>
+<b class="nc">&nbsp;        return ctile;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void apply(){
+<b class="nc">&nbsp;        if(result != null){</b>
+&nbsp;            //ignore errors yay
+&nbsp;            try{
+<b class="nc">&nbsp;                result.get();</b>
+<b class="nc">&nbsp;            }catch(Exception e){}</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        buffer1 = null;</b>
+<b class="nc">&nbsp;        buffer2 = null;</b>
+<b class="nc">&nbsp;        generating = false;</b>
+<b class="nc">&nbsp;        if(pixmap != null){</b>
+<b class="nc">&nbsp;            pixmap.dispose();</b>
+<b class="nc">&nbsp;            texture.dispose();</b>
+<b class="nc">&nbsp;            pixmap = null;</b>
+<b class="nc">&nbsp;            texture = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        applier.get(filters);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void update(){
+&nbsp;
+<b class="nc">&nbsp;        if(generating){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var copy = filters.copy();</b>
+&nbsp;
+<b class="nc">&nbsp;        result = mainExecutor.submit(() -&gt; {</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                int w = pixmap.width;</b>
+<b class="nc">&nbsp;                world.setGenerating(true);</b>
+<b class="nc">&nbsp;                generating = true;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!filters.isEmpty()){</b>
+&nbsp;                    //write to buffer1 for reading
+<b class="nc">&nbsp;                    for(int px = 0; px &lt; pixmap.width; px++){</b>
+<b class="nc">&nbsp;                        for(int py = 0; py &lt; pixmap.height; py++){</b>
+<b class="nc">&nbsp;                            buffer1[px + py*w] = pack(editor.tile(px * scaling, py * scaling));</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                for(var filter : copy){</b>
+<b class="nc">&nbsp;                    input.begin(editor.width(), editor.height(), (x, y) -&gt; unpack(buffer1[Mathf.clamp(x / scaling, 0, pixmap.width -1) + w* Mathf.clamp(y / scaling, 0, pixmap.height -1)]));</b>
+&nbsp;
+&nbsp;                    //read from buffer1 and write to buffer2
+<b class="nc">&nbsp;                    pixmap.each((px, py) -&gt; {</b>
+<b class="nc">&nbsp;                        int x = px * scaling, y = py * scaling;</b>
+<b class="nc">&nbsp;                        long tile = buffer1[px + py * w];</b>
+<b class="nc">&nbsp;                        input.set(x, y, content.block(PackTile.block(tile)), content.block(PackTile.floor(tile)), content.block(PackTile.overlay(tile)));</b>
+<b class="nc">&nbsp;                        filter.apply(input);</b>
+<b class="nc">&nbsp;                        buffer2[px + py * w] = PackTile.get(input.block.id, input.floor.id, input.overlay.id);</b>
+&nbsp;                    });
+&nbsp;
+<b class="nc">&nbsp;                    pixmap.each((px, py) -&gt; buffer1[px + py*w] = buffer2[px + py*w]);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int px = 0; px &lt; pixmap.width; px++){</b>
+<b class="nc">&nbsp;                    for(int py = 0; py &lt; pixmap.height; py++){</b>
+&nbsp;                        int color;
+&nbsp;                        //get result from buffer1 if there&#39;s filters left, otherwise get from editor directly
+<b class="nc">&nbsp;                        if(filters.isEmpty()){</b>
+<b class="nc">&nbsp;                            Tile tile = editor.tile(px * scaling, py * scaling);</b>
+<b class="nc">&nbsp;                            color = MapIO.colorFor(tile.block(), tile.floor(), tile.overlay(), Team.derelict);</b>
+<b class="nc">&nbsp;                        }else{</b>
+<b class="nc">&nbsp;                            long tile = buffer1[px + py*w];</b>
+<b class="nc">&nbsp;                            color = MapIO.colorFor(content.block(PackTile.block(tile)), content.block(PackTile.floor(tile)), content.block(PackTile.overlay(tile)), Team.derelict);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        pixmap.set(px, pixmap.height - 1 - py, color);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                    if(pixmap == null || texture == null){</b>
+&nbsp;                        return;
+&nbsp;                    }
+<b class="nc">&nbsp;                    texture.draw(pixmap);</b>
+<b class="nc">&nbsp;                    generating = false;</b>
+&nbsp;                });
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                generating = false;</b>
+<b class="nc">&nbsp;                Log.err(e);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;            world.setGenerating(false);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

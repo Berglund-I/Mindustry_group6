@@ -1,0 +1,280 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnitPayload</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.payloads</a>
+</div>
+
+<h1>Coverage Summary for Class: UnitPayload (mindustry.world.blocks.payloads)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnitPayload</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.9%
+  </span>
+  <span class="absValue">
+    (1/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.3%
+  </span>
+  <span class="absValue">
+    (3/57)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.payloads;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class UnitPayload implements Payload{
+&nbsp;    public static final float overlayDuration = 40f;
+&nbsp;
+&nbsp;    public Unit unit;
+<b class="fc">&nbsp;    public float overlayTime = 0f;</b>
+&nbsp;    public @Nullable TextureRegion overlayRegion;
+&nbsp;
+<b class="fc">&nbsp;    public UnitPayload(Unit unit){</b>
+<b class="fc">&nbsp;        this.unit = unit;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Flashes a red overlay region. */
+&nbsp;    public void showOverlay(TextureRegion icon){
+<b class="nc">&nbsp;        overlayRegion = icon;</b>
+<b class="nc">&nbsp;        overlayTime = 1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Flashes a red overlay region. */
+&nbsp;    public void showOverlay(TextureRegionDrawable icon){
+<b class="nc">&nbsp;        if(icon == null || headless) return;</b>
+<b class="nc">&nbsp;        showOverlay(icon.getRegion());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(@Nullable Unit unitHolder, @Nullable Building buildingHolder){
+<b class="nc">&nbsp;        unit.type.updatePayload(unit, unitHolder, buildingHolder);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public UnlockableContent content(){
+<b class="nc">&nbsp;        return unit.type;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ItemStack[] requirements(){
+<b class="nc">&nbsp;        return unit.type.getTotalRequirements();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float buildTime(){
+<b class="nc">&nbsp;        return unit.type.getBuildTime();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void write(Writes write){
+<b class="nc">&nbsp;        write.b(payloadUnit);</b>
+<b class="nc">&nbsp;        write.b(unit.classId());</b>
+<b class="nc">&nbsp;        unit.write(write);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void set(float x, float y, float rotation){
+<b class="nc">&nbsp;        unit.set(x, y);</b>
+<b class="nc">&nbsp;        unit.rotation = rotation;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float x(){
+<b class="nc">&nbsp;        return unit.x;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float y(){
+<b class="nc">&nbsp;        return unit.y;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float rotation(){
+<b class="nc">&nbsp;        return unit.rotation;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float size(){
+<b class="nc">&nbsp;        return unit.hitSize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean dump(){
+&nbsp;        //TODO should not happen
+<b class="nc">&nbsp;        if(unit.type == null) return true;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!Units.canCreate(unit.team, unit.type)){</b>
+<b class="nc">&nbsp;            overlayTime = 1f;</b>
+<b class="nc">&nbsp;            overlayRegion = null;</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //check if unit can be dumped here
+<b class="nc">&nbsp;        SolidPred solid = unit.solidity();</b>
+<b class="nc">&nbsp;        if(solid != null){</b>
+<b class="nc">&nbsp;            Tmp.v1.trns(unit.rotation, 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            int tx = World.toTile(unit.x + Tmp.v1.x), ty = World.toTile(unit.y + Tmp.v1.y);</b>
+&nbsp;
+&nbsp;            //cannot dump on solid blocks
+<b class="nc">&nbsp;            if(solid.solid(tx, ty)) return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //cannot dump when there&#39;s a lot of overlap going on
+<b class="nc">&nbsp;        if(!unit.type.flying &amp;&amp; Units.count(unit.x, unit.y, unit.physicSize(), o -&gt; o.isGrounded() &amp;&amp; (o.type.allowLegStep == unit.type.allowLegStep)) &gt; 0){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //no client dumping
+<b class="nc">&nbsp;        if(Vars.net.client()) return true;</b>
+&nbsp;
+&nbsp;        //prevents stacking
+<b class="nc">&nbsp;        unit.vel.add(Mathf.range(0.5f), Mathf.range(0.5f));</b>
+<b class="nc">&nbsp;        unit.add();</b>
+<b class="nc">&nbsp;        unit.unloaded();</b>
+<b class="nc">&nbsp;        Events.fire(new UnitUnloadEvent(unit));</b>
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawShadow(float alpha){
+&nbsp;        //TODO should not happen
+<b class="nc">&nbsp;        if(unit.type == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        unit.type.drawSoftShadow(unit, alpha);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(){
+&nbsp;        //TODO should not happen
+<b class="nc">&nbsp;        if(unit.type == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float e = unit.elevation;</b>
+<b class="nc">&nbsp;        unit.elevation = 0f;</b>
+<b class="nc">&nbsp;        unit.type.draw(unit);</b>
+<b class="nc">&nbsp;        unit.elevation = e;</b>
+&nbsp;
+&nbsp;        //draw warning
+<b class="nc">&nbsp;        if(overlayTime &gt; 0){</b>
+<b class="nc">&nbsp;            float z = Draw.z();</b>
+<b class="nc">&nbsp;            Draw.z(Layer.groundUnit + 1f);</b>
+<b class="nc">&nbsp;            var region = overlayRegion == null ? Icon.warning.getRegion() : overlayRegion;</b>
+<b class="nc">&nbsp;            Draw.color(Color.scarlet);</b>
+<b class="nc">&nbsp;            Draw.alpha(0.8f * Interp.exp5Out.apply(overlayTime));</b>
+&nbsp;
+<b class="nc">&nbsp;            float size = 8f;</b>
+<b class="nc">&nbsp;            Draw.rect(region, unit.x, unit.y, size, size);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;            overlayTime = Math.max(overlayTime - Time.delta/overlayDuration, 0f);</b>
+<b class="nc">&nbsp;            Draw.z(z);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion icon(){
+<b class="nc">&nbsp;        return unit.type.fullIcon;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

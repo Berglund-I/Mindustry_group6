@@ -1,0 +1,195 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > RailBulletType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.bullet</a>
+</div>
+
+<h1>Coverage Summary for Class: RailBulletType (mindustry.entities.bullet)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RailBulletType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41%
+  </span>
+  <span class="absValue">
+    (16/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.bullet;
+&nbsp;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;public class RailBulletType extends BulletType{
+<b class="fc">&nbsp;    public Effect pierceEffect = Fx.hitBulletSmall, pointEffect = Fx.none, lineEffect = Fx.none;</b>
+<b class="fc">&nbsp;    public Effect endEffect = Fx.none;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float length = 100f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float pointEffectSpace = 20f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public RailBulletType(){</b>
+<b class="fc">&nbsp;        speed = 0f;</b>
+<b class="fc">&nbsp;        pierceBuilding = true;</b>
+<b class="fc">&nbsp;        pierce = true;</b>
+<b class="fc">&nbsp;        reflectable = false;</b>
+<b class="fc">&nbsp;        hitEffect = Fx.none;</b>
+<b class="fc">&nbsp;        despawnEffect = Fx.none;</b>
+<b class="fc">&nbsp;        collides = false;</b>
+<b class="fc">&nbsp;        keepVelocity = false;</b>
+<b class="fc">&nbsp;        lifetime = 1f;</b>
+<b class="fc">&nbsp;        delayFrags = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected float calculateRange(){
+<b class="fc">&nbsp;        return length;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void handlePierce(Bullet b, float initialHealth, float x, float y){
+<b class="nc">&nbsp;        float sub = Math.max(initialHealth * pierceDamageFactor, 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(b.damage &lt;= 0){</b>
+<b class="nc">&nbsp;            b.fdata = Math.min(b.fdata, b.dst(x, y));</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(b.damage &gt; 0){</b>
+<b class="nc">&nbsp;            pierceEffect.at(x, y, b.rotation());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //subtract health from each consecutive pierce
+<b class="nc">&nbsp;        b.damage -= Math.min(b.damage, sub);</b>
+&nbsp;
+&nbsp;        //bullet was stopped, decrease furthest distance
+<b class="nc">&nbsp;        if(b.damage &lt;= 0f){</b>
+<b class="nc">&nbsp;            b.fdata = Math.min(b.fdata, b.dst(x, y));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(Bullet b){
+<b class="nc">&nbsp;        super.init(b);</b>
+&nbsp;
+<b class="nc">&nbsp;        b.fdata = length;</b>
+<b class="nc">&nbsp;        Damage.collideLine(b, b.team, b.type.hitEffect, b.x, b.y, b.rotation(), length, false, false, pierceCap);</b>
+<b class="nc">&nbsp;        float resultLen = b.fdata;</b>
+&nbsp;
+<b class="nc">&nbsp;        Vec2 nor = Tmp.v1.trns(b.rotation(), 1f).nor();</b>
+<b class="nc">&nbsp;        if(pointEffect != Fx.none){</b>
+<b class="nc">&nbsp;            for(float i = 0; i &lt;= resultLen; i += pointEffectSpace){</b>
+<b class="nc">&nbsp;                pointEffect.at(b.x + nor.x * i, b.y + nor.y * i, b.rotation(), trailColor);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean any = b.collided.size &gt; 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!any &amp;&amp; endEffect != Fx.none){</b>
+<b class="nc">&nbsp;            endEffect.at(b.x + nor.x * resultLen, b.y + nor.y * resultLen, b.rotation(), hitColor);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(lineEffect != Fx.none){</b>
+<b class="nc">&nbsp;            lineEffect.at(b.x, b.y, b.rotation(), hitColor, new Vec2(b.x, b.y).mulAdd(nor, resultLen));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean testCollision(Bullet bullet, Building tile){
+<b class="nc">&nbsp;        return bullet.team != tile.team;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void hitTile(Bullet b, Building build, float x, float y, float initialHealth, boolean direct){
+<b class="nc">&nbsp;        handlePierce(b, initialHealth, x, y);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

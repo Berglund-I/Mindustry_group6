@@ -1,0 +1,130 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > GameStats</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.game</a>
+</div>
+
+<h1>Coverage Summary for Class: GameStats (mindustry.game)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GameStats</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.game;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+<b class="fc">&nbsp;public class GameStats{</b>
+&nbsp;    /** Enemy (red team) units destroyed. */
+&nbsp;    public int enemyUnitsDestroyed;
+&nbsp;    /** Total waves lasted. */
+&nbsp;    public int wavesLasted;
+&nbsp;    /** Friendly buildings fully built. */
+&nbsp;    public int buildingsBuilt;
+&nbsp;    /** Friendly buildings fully deconstructed. */
+&nbsp;    public int buildingsDeconstructed;
+&nbsp;    /** Friendly buildings destroyed. */
+&nbsp;    public int buildingsDestroyed;
+&nbsp;    /** Total units created by any means. */
+&nbsp;    public int unitsCreated;
+&nbsp;    /** Record of blocks that have been placed by count. Used for objectives only. */
+<b class="fc">&nbsp;    public ObjectIntMap&lt;Block&gt; placedBlockCount = new ObjectIntMap&lt;&gt;();</b>
+&nbsp;    /**
+&nbsp;     * Record of items that have entered the core through transport blocks. Used for objectives only.
+&nbsp;     * This can easily be &quot;&quot;spoofed&quot;&quot; with unloaders, so don&#39;t use it for anything remotely important.
+&nbsp;     * */
+<b class="fc">&nbsp;    public ObjectIntMap&lt;Item&gt; coreItemCount = new ObjectIntMap&lt;&gt;();</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

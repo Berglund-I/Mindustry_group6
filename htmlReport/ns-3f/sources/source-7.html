@@ -1,0 +1,177 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LongPowerNode</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.power</a>
+</div>
+
+<h1>Coverage Summary for Class: LongPowerNode (mindustry.world.blocks.power)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LongPowerNode</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LongPowerNode$LongPowerNodeBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (8/14)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.power;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;
+&nbsp;public class LongPowerNode extends PowerNode{
+&nbsp;    public @Load(&quot;@-glow&quot;) TextureRegion glow;
+<b class="fc">&nbsp;    public Color glowColor = Color.valueOf(&quot;cbfd81&quot;).a(0.45f);</b>
+<b class="fc">&nbsp;    public float glowScl = 16f, glowMag = 0.6f;</b>
+&nbsp;
+&nbsp;    public LongPowerNode(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        drawRange = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        laser = Core.atlas.find(name + &quot;-beam&quot;, Core.atlas.find(&quot;power-beam&quot;));</b>
+<b class="nc">&nbsp;        laserEnd = Core.atlas.find(name + &quot;-beam-end&quot;, Core.atlas.find(&quot;power-beam-end&quot;));</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class LongPowerNodeBuild extends PowerNodeBuild{</b>
+<b class="fc">&nbsp;        public float warmup = 0f;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            super.updateTile();</b>
+&nbsp;
+<b class="fc">&nbsp;            warmup = Mathf.lerpDelta(warmup, power.links.size &gt; 0 ? 1f : 0f, 0.05f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(warmup &gt; 0.001f){</b>
+<b class="nc">&nbsp;                Drawf.additive(glow, Tmp.c1.set(glowColor).mula(warmup).mula(1f - glowMag + Mathf.absin(glowScl, glowMag)), x, y);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

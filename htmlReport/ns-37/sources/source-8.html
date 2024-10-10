@@ -1,0 +1,258 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PointDefenseTurret</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense.turrets</a>
+</div>
+
+<h1>Coverage Summary for Class: PointDefenseTurret (mindustry.world.blocks.defense.turrets)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PointDefenseTurret</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    82.4%
+  </span>
+  <span class="absValue">
+    (14/17)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PointDefenseTurret$PointDefenseBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (5/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.7%
+  </span>
+  <span class="absValue">
+    (11/30)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (6/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    53.2%
+  </span>
+  <span class="absValue">
+    (25/47)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense.turrets;
+&nbsp;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class PointDefenseTurret extends ReloadTurret{
+<b class="fc">&nbsp;    public final int timerTarget = timers++;</b>
+<b class="fc">&nbsp;    public float retargetTime = 5f;</b>
+&nbsp;
+&nbsp;    public @Load(value = &quot;@-base&quot;, fallback = &quot;block-@size&quot;) TextureRegion baseRegion;
+&nbsp;
+<b class="fc">&nbsp;    public Color color = Color.white;</b>
+<b class="fc">&nbsp;    public Effect beamEffect = Fx.pointBeam;</b>
+<b class="fc">&nbsp;    public Effect hitEffect = Fx.pointHit;</b>
+<b class="fc">&nbsp;    public Effect shootEffect = Fx.sparkShoot;</b>
+&nbsp;
+<b class="fc">&nbsp;    public Sound shootSound = Sounds.lasershoot;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float shootCone = 5f;</b>
+<b class="fc">&nbsp;    public float bulletDamage = 10f;</b>
+<b class="fc">&nbsp;    public float shootLength = 3f;</b>
+&nbsp;
+&nbsp;    public PointDefenseTurret(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        rotateSpeed = 20f;</b>
+<b class="fc">&nbsp;        reload = 30f;</b>
+&nbsp;
+<b class="fc">&nbsp;        coolantMultiplier = 2f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{baseRegion, region};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.reload, 60f / reload, StatUnit.perSecond);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class PointDefenseBuild extends ReloadTurretBuild{</b>
+&nbsp;        public @Nullable Bullet target;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+&nbsp;
+&nbsp;            //retarget
+<b class="fc">&nbsp;            if(timer(timerTarget, retargetTime)){</b>
+<b class="fc">&nbsp;                target = Groups.bullet.intersect(x - range, y - range, range*2, range*2).min(b -&gt; b.team != team &amp;&amp; b.type().hittable, b -&gt; b.dst2(this));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //pooled bullets
+<b class="fc">&nbsp;            if(target != null &amp;&amp; !target.isAdded()){</b>
+<b class="nc">&nbsp;                target = null;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(coolant != null){</b>
+<b class="nc">&nbsp;                updateCooling();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //look at target
+<b class="fc">&nbsp;            if(target != null &amp;&amp; target.within(this, range) &amp;&amp; target.team != team &amp;&amp; target.type() != null &amp;&amp; target.type().hittable){</b>
+<b class="nc">&nbsp;                float dest = angleTo(target);</b>
+<b class="nc">&nbsp;                rotation = Angles.moveToward(rotation, dest, rotateSpeed * edelta());</b>
+<b class="nc">&nbsp;                reloadCounter += edelta();</b>
+&nbsp;
+&nbsp;                //shoot when possible
+<b class="nc">&nbsp;                if(Angles.within(rotation, dest, shootCone) &amp;&amp; reloadCounter &gt;= reload){</b>
+<b class="nc">&nbsp;                    float realDamage = bulletDamage * state.rules.blockDamage(team);</b>
+<b class="nc">&nbsp;                    if(target.damage() &gt; realDamage){</b>
+<b class="nc">&nbsp;                        target.damage(target.damage() - realDamage);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        target.remove();</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Tmp.v1.trns(rotation, shootLength);</b>
+&nbsp;
+<b class="nc">&nbsp;                    beamEffect.at(x + Tmp.v1.x, y + Tmp.v1.y, rotation, color, new Vec2().set(target));</b>
+<b class="nc">&nbsp;                    shootEffect.at(x + Tmp.v1.x, y + Tmp.v1.y, rotation, color);</b>
+<b class="nc">&nbsp;                    hitEffect.at(target.x, target.y, color);</b>
+<b class="nc">&nbsp;                    shootSound.at(x + Tmp.v1.x, y + Tmp.v1.y, Mathf.random(0.9f, 1.1f));</b>
+<b class="nc">&nbsp;                    reloadCounter = 0;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return super.shouldConsume() &amp;&amp; target != null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(baseRegion, x, y);</b>
+<b class="nc">&nbsp;            Drawf.shadow(region, x - (size / 2f), y - (size / 2f), rotation - 90);</b>
+<b class="nc">&nbsp;            Draw.rect(region, x, y, rotation - 90);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            write.f(rotation);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            rotation = read.f();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

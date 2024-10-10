@@ -1,0 +1,296 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > CargoAI</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai.types</a>
+</div>
+
+<h1>Coverage Summary for Class: CargoAI (mindustry.ai.types)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CargoAI</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/83)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai.types;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.blocks.units.UnitCargoUnloadPoint.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class CargoAI extends AIController{</b>
+<b class="nc">&nbsp;    static Seq&lt;Item&gt; orderedItems = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    static Seq&lt;UnitCargoUnloadPointBuild&gt; targets = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;    public static float emptyWaitTime = 60f * 2f, dropSpacing = 60f * 1.5f;</b>
+<b class="nc">&nbsp;    public static float transferRange = 20f, moveRange = 6f, moveSmoothing = 20f;</b>
+&nbsp;
+&nbsp;    public @Nullable UnitCargoUnloadPointBuild unloadTarget;
+&nbsp;    public @Nullable Item itemTarget;
+<b class="nc">&nbsp;    public float noDestTimer = 0f;</b>
+<b class="nc">&nbsp;    public int targetIndex = 0;</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateMovement(){
+<b class="nc">&nbsp;        if(!(unit instanceof BuildingTetherc tether) || tether.building() == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        var build = tether.building();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(build.items == null) return;</b>
+&nbsp;
+&nbsp;        //empty, approach the loader, even if there&#39;s nothing to pick up (units hanging around doing nothing looks bad)
+<b class="nc">&nbsp;        if(!unit.hasItem()){</b>
+<b class="nc">&nbsp;            moveTo(build, moveRange, moveSmoothing);</b>
+&nbsp;
+&nbsp;            //check if ready to pick up
+<b class="nc">&nbsp;            if(build.items.any() &amp;&amp; unit.within(build, transferRange)){</b>
+<b class="nc">&nbsp;                if(retarget()){</b>
+<b class="nc">&nbsp;                    findAnyTarget(build);</b>
+&nbsp;
+&nbsp;                    //target has been found, grab items and go
+<b class="nc">&nbsp;                    if(unloadTarget != null){</b>
+<b class="nc">&nbsp;                        Call.takeItems(build, itemTarget, Math.min(unit.type.itemCapacity, build.items.get(itemTarget)), unit);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }else{ //the unit has an item, deposit it somewhere.
+&nbsp;
+&nbsp;            //there may be no current target, try to find one
+<b class="nc">&nbsp;            if(unloadTarget == null){</b>
+<b class="nc">&nbsp;                if(retarget()){</b>
+<b class="nc">&nbsp;                    findDropTarget(unit.item(), 0, null);</b>
+&nbsp;
+&nbsp;                    //if there is not even a single place to unload, dump items.
+<b class="nc">&nbsp;                    if(unloadTarget == null){</b>
+<b class="nc">&nbsp;                        unit.clearItem();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }else{
+&nbsp;
+&nbsp;                //what if some prankster reconfigures or picks up the target while the unit is moving? we can&#39;t have that!
+<b class="nc">&nbsp;                if(unloadTarget.item != itemTarget || unloadTarget.isPayload()){</b>
+<b class="nc">&nbsp;                    unloadTarget = null;</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                moveTo(unloadTarget, moveRange, moveSmoothing);</b>
+&nbsp;
+&nbsp;                //deposit in bursts, unloading can take a while
+<b class="nc">&nbsp;                if(unit.within(unloadTarget, transferRange) &amp;&amp; timer.get(timerTarget2, dropSpacing)){</b>
+<b class="nc">&nbsp;                    int max = unloadTarget.acceptStack(unit.item(), unit.stack.amount, unit);</b>
+&nbsp;
+&nbsp;                    //deposit items when it&#39;s possible
+<b class="nc">&nbsp;                    if(max &gt; 0){</b>
+<b class="nc">&nbsp;                        noDestTimer = 0f;</b>
+<b class="nc">&nbsp;                        Call.transferItemTo(unit, unit.item(), max, unit.x, unit.y, unloadTarget);</b>
+&nbsp;
+&nbsp;                        //try the next target later
+<b class="nc">&nbsp;                        if(!unit.hasItem()){</b>
+<b class="nc">&nbsp;                            targetIndex ++;</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }else if((noDestTimer += dropSpacing) &gt;= emptyWaitTime){</b>
+&nbsp;                        //oh no, it&#39;s out of space - wait for a while, and if nothing changes, try the next destination
+&nbsp;
+&nbsp;                        //next targeting attempt will try the next destination point
+<b class="nc">&nbsp;                        targetIndex = findDropTarget(unit.item(), targetIndex, unloadTarget) + 1;</b>
+&nbsp;
+&nbsp;                        //nothing found at all, clear item
+<b class="nc">&nbsp;                        if(unloadTarget == null){</b>
+<b class="nc">&nbsp;                            unit.clearItem();</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** find target for the unit&#39;s current item */
+&nbsp;    public int findDropTarget(Item item, int offset, UnitCargoUnloadPointBuild ignore){
+<b class="nc">&nbsp;        unloadTarget = null;</b>
+<b class="nc">&nbsp;        itemTarget = item;</b>
+&nbsp;
+&nbsp;        //autocast for convenience... I know all of these must be cargo unload points anyway
+<b class="nc">&nbsp;        targets.selectFrom((Seq&lt;UnitCargoUnloadPointBuild&gt;)(Seq)Vars.indexer.getFlagged(unit.team, BlockFlag.unitCargoUnloadPoint), u -&gt; u.item == item);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(targets.isEmpty()) return 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        UnitCargoUnloadPointBuild lastStale = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        offset %= targets.size;</b>
+&nbsp;
+<b class="nc">&nbsp;        int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var target : targets){</b>
+<b class="nc">&nbsp;            if(i &gt;= offset &amp;&amp; target != ignore){</b>
+<b class="nc">&nbsp;                if(target.stale){</b>
+<b class="nc">&nbsp;                    lastStale = target;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    unloadTarget = target;</b>
+<b class="nc">&nbsp;                    targets.clear();</b>
+<b class="nc">&nbsp;                    return i;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            i ++;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //it&#39;s still possible that the ignored target may become available at some point, try that, so it doesn&#39;t waste items
+<b class="nc">&nbsp;        if(ignore != null){</b>
+<b class="nc">&nbsp;            unloadTarget = ignore;</b>
+<b class="nc">&nbsp;        }else if(lastStale != null){ //a stale target is better than nothing</b>
+<b class="nc">&nbsp;            unloadTarget = lastStale;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        targets.clear();</b>
+<b class="nc">&nbsp;        return -1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void findAnyTarget(Building build){
+<b class="nc">&nbsp;        unloadTarget = null;</b>
+<b class="nc">&nbsp;        itemTarget = null;</b>
+&nbsp;
+&nbsp;        //autocast for convenience... I know all of these must be cargo unload points anyway
+<b class="nc">&nbsp;        var baseTargets = (Seq&lt;UnitCargoUnloadPointBuild&gt;)(Seq)Vars.indexer.getFlagged(unit.team, BlockFlag.unitCargoUnloadPoint);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(baseTargets.isEmpty()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        orderedItems.size = 0;</b>
+<b class="nc">&nbsp;        for(Item item : content.items()){</b>
+<b class="nc">&nbsp;            if(build.items.get(item) &gt; 0){</b>
+<b class="nc">&nbsp;                orderedItems.add(item);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //sort by most items in descending order, and try each one.
+<b class="nc">&nbsp;        orderedItems.sort(i -&gt; -build.items.get(i));</b>
+&nbsp;
+<b class="nc">&nbsp;        UnitCargoUnloadPointBuild lastStale = null;</b>
+&nbsp;
+&nbsp;        outer:
+<b class="nc">&nbsp;        for(Item item : orderedItems){</b>
+<b class="nc">&nbsp;            targets.selectFrom(baseTargets, u -&gt; u.item == item);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(targets.size &gt; 0) itemTarget = item;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; targets.size; i ++){</b>
+<b class="nc">&nbsp;                var target = targets.get((i + targetIndex) % targets.size);</b>
+&nbsp;
+<b class="nc">&nbsp;                lastStale = target;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!target.stale){</b>
+<b class="nc">&nbsp;                    unloadTarget = target;</b>
+<b class="nc">&nbsp;                    break outer;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //if the only thing that was found was a &quot;stale&quot; target, at least try that...
+<b class="nc">&nbsp;        if(unloadTarget == null &amp;&amp; lastStale != null){</b>
+<b class="nc">&nbsp;            unloadTarget = lastStale;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        targets.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //unused, might change later
+&nbsp;    void sortTargets(Seq&lt;UnitCargoUnloadPointBuild&gt; targets){
+&nbsp;        //find sort by &quot;most desirable&quot; first
+<b class="nc">&nbsp;        targets.sort(Structs.comps(Structs.comparingInt(b -&gt; b.items.total()), Structs.comparingFloat(b -&gt; b.dst2(unit))));</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

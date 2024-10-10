@@ -1,0 +1,794 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Control</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.core</a>
+</div>
+
+<h1>Coverage Summary for Class: Control (mindustry.core)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Control</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/45)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/346)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.core;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.assets.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.content.TechTree.*;
+&nbsp;import mindustry.core.GameState.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.Objectives.*;
+&nbsp;import mindustry.game.Saves.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.io.SaveIO.*;
+&nbsp;import mindustry.maps.Map;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.text.*;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Control module.
+&nbsp; * Handles all input, saving and keybinds.
+&nbsp; * Should &lt;i&gt;not&lt;/i&gt; handle any logic-critical state.
+&nbsp; * This class is not created in the headless server.
+&nbsp; */
+&nbsp;public class Control implements ApplicationListener, Loadable{
+&nbsp;    public Saves saves;
+&nbsp;    public SoundControl sound;
+&nbsp;    public InputHandler input;
+&nbsp;    public AttackIndicators indicators;
+&nbsp;
+<b class="nc">&nbsp;    private Interval timer = new Interval(2);</b>
+<b class="nc">&nbsp;    private boolean hiscore = false;</b>
+<b class="nc">&nbsp;    private boolean wasPaused = false, backgroundPaused = false;</b>
+<b class="nc">&nbsp;    private Seq&lt;Building&gt; toBePlaced = new Seq&lt;&gt;(false);</b>
+&nbsp;
+<b class="nc">&nbsp;    public Control(){</b>
+<b class="nc">&nbsp;        saves = new Saves();</b>
+<b class="nc">&nbsp;        sound = new SoundControl();</b>
+<b class="nc">&nbsp;        indicators = new AttackIndicators();</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(BuildDamageEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.build.team == Vars.player.team()){</b>
+<b class="nc">&nbsp;                indicators.add(e.build.tileX(), e.build.tileY());</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;        //show dialog saying that mod loading was skipped.
+<b class="nc">&nbsp;        Events.on(ClientLoadEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(Vars.mods.skipModLoading() &amp;&amp; Vars.mods.list().any()){</b>
+<b class="nc">&nbsp;                Time.runTask(4f, () -&gt; {</b>
+<b class="nc">&nbsp;                    ui.showInfo(&quot;@mods.initfailed&quot;);</b>
+&nbsp;                });
+&nbsp;            }
+<b class="nc">&nbsp;            checkAutoUnlocks();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(StateChangeEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            if((event.from == State.playing &amp;&amp; event.to == State.menu) || (event.from == State.menu &amp;&amp; event.to != State.menu)){</b>
+<b class="nc">&nbsp;                Time.runTask(5f, platform::updateRPC);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(PlayEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            player.team(netServer.assignTeam(player));</b>
+<b class="nc">&nbsp;            player.add();</b>
+&nbsp;
+<b class="nc">&nbsp;            state.set(State.playing);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(WorldLoadEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            if(Mathf.zero(player.x) &amp;&amp; Mathf.zero(player.y)){</b>
+<b class="nc">&nbsp;                Building core = player.bestCore();</b>
+<b class="nc">&nbsp;                if(core != null){</b>
+<b class="nc">&nbsp;                    player.set(core);</b>
+<b class="nc">&nbsp;                    camera.position.set(core);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                camera.position.set(player);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(SaveLoadEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            input.checkUnit();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ResetEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            player.reset();</b>
+<b class="nc">&nbsp;            toBePlaced.clear();</b>
+<b class="nc">&nbsp;            indicators.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;            hiscore = false;</b>
+<b class="nc">&nbsp;            saves.resetSave();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(WaveEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            if(state.map.getHightScore() &lt; state.wave){</b>
+<b class="nc">&nbsp;                hiscore = true;</b>
+<b class="nc">&nbsp;                state.map.setHighScore(state.wave);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Sounds.wave.play();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(GameOverEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            state.stats.wavesLasted = state.wave;</b>
+<b class="nc">&nbsp;            Effect.shake(5, 6, Core.camera.position.x, Core.camera.position.y);</b>
+&nbsp;            //the restart dialog can show info for any number of scenarios
+<b class="nc">&nbsp;            Call.gameOver(event.winner);</b>
+&nbsp;        });
+&nbsp;
+&nbsp;        //add player when world loads regardless
+<b class="nc">&nbsp;        Events.on(WorldLoadEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            player.add();</b>
+&nbsp;            //make player admin on any load when hosting
+<b class="nc">&nbsp;            if(net.active() &amp;&amp; net.server()){</b>
+<b class="nc">&nbsp;                player.admin = true;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;        //autohost for pvp maps
+<b class="nc">&nbsp;        Events.on(WorldLoadEvent.class, event -&gt; app.post(() -&gt; {</b>
+<b class="nc">&nbsp;            if(state.rules.pvp &amp;&amp; !net.active()){</b>
+&nbsp;                try{
+<b class="nc">&nbsp;                    net.host(port);</b>
+<b class="nc">&nbsp;                    player.admin = true;</b>
+<b class="nc">&nbsp;                }catch(IOException e){</b>
+<b class="nc">&nbsp;                    ui.showException(&quot;@server.error&quot;, e);</b>
+<b class="nc">&nbsp;                    state.set(State.menu);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }));
+&nbsp;
+<b class="nc">&nbsp;        Events.on(UnlockEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.content.showUnlock()){</b>
+<b class="nc">&nbsp;                ui.hudfrag.showUnlock(e.content);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            checkAutoUnlocks();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(e.content instanceof SectorPreset){</b>
+<b class="nc">&nbsp;                for(TechNode node : TechTree.all){</b>
+<b class="nc">&nbsp;                    if(!node.content.unlocked() &amp;&amp; node.objectives.contains(o -&gt; o instanceof SectorComplete sec &amp;&amp; sec.preset == e.content) &amp;&amp; !node.objectives.contains(o -&gt; !o.complete())){</b>
+<b class="nc">&nbsp;                        ui.hudfrag.showToast(new TextureRegionDrawable(node.content.uiIcon), iconLarge, bundle.get(&quot;available&quot;));</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(SectorCaptureEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            app.post(this::checkAutoUnlocks);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!net.client() &amp;&amp; e.sector.preset != null &amp;&amp; e.sector.preset.isLastSector &amp;&amp; e.initialCapture){</b>
+<b class="nc">&nbsp;                Time.run(60f * 2f, () -&gt; {</b>
+<b class="nc">&nbsp;                    ui.campaignComplete.show(e.sector.planet);</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;        //delete save on campaign game over
+<b class="nc">&nbsp;        Events.on(GameOverEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(state.isCampaign() &amp;&amp; !net.client() &amp;&amp; !headless){</b>
+&nbsp;
+&nbsp;                //save gameover sate immediately
+<b class="nc">&nbsp;                if(saves.getCurrent() != null){</b>
+<b class="nc">&nbsp;                    saves.getCurrent().save();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.newGame, () -&gt; {</b>
+<b class="nc">&nbsp;            var core = player.bestCore();</b>
+<b class="nc">&nbsp;            if(core == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            camera.position.set(core);</b>
+<b class="nc">&nbsp;            player.set(core);</b>
+&nbsp;
+<b class="nc">&nbsp;            float coreDelay = 0f;</b>
+<b class="nc">&nbsp;            if(!settings.getBool(&quot;skipcoreanimation&quot;) &amp;&amp; !state.rules.pvp){</b>
+<b class="nc">&nbsp;                coreDelay = core.landDuration();</b>
+&nbsp;                //delay player respawn so animation can play.
+<b class="nc">&nbsp;                player.deathTimer = Player.deathDelay - core.landDuration();</b>
+&nbsp;                //TODO this sounds pretty bad due to conflict
+<b class="nc">&nbsp;                if(settings.getInt(&quot;musicvol&quot;) &gt; 0){</b>
+&nbsp;                    //TODO what to do if another core with different music is already playing?
+<b class="nc">&nbsp;                    Music music = core.landMusic();</b>
+<b class="nc">&nbsp;                    music.stop();</b>
+<b class="nc">&nbsp;                    music.play();</b>
+<b class="nc">&nbsp;                    music.setVolume(settings.getInt(&quot;musicvol&quot;) / 100f);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                renderer.showLanding(core);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(state.isCampaign()){</b>
+&nbsp;                //don&#39;t run when hosting, that doesn&#39;t really work.
+<b class="nc">&nbsp;                if(state.rules.sector.planet.prebuildBase){</b>
+<b class="nc">&nbsp;                    toBePlaced.clear();</b>
+<b class="nc">&nbsp;                    float unitsPerTick = 2f;</b>
+<b class="nc">&nbsp;                    float buildRadius = state.rules.enemyCoreBuildRadius * 1.5f;</b>
+&nbsp;
+&nbsp;                    //TODO if the save is unloaded or map is hosted, these blocks do not get built.
+<b class="nc">&nbsp;                    boolean anyBuilds = false;</b>
+<b class="nc">&nbsp;                    for(var build : state.rules.defaultTeam.data().buildings.copy()){</b>
+<b class="nc">&nbsp;                        if(!(build instanceof CoreBuild) &amp;&amp; !build.block.privileged){</b>
+<b class="nc">&nbsp;                            var ccore = build.closestCore();</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(ccore != null){</b>
+<b class="nc">&nbsp;                                anyBuilds = true;</b>
+&nbsp;
+<b class="nc">&nbsp;                                if(!net.active()){</b>
+<b class="nc">&nbsp;                                    build.pickedUp();</b>
+<b class="nc">&nbsp;                                    build.tile.remove();</b>
+&nbsp;
+<b class="nc">&nbsp;                                    toBePlaced.add(build);</b>
+&nbsp;
+<b class="nc">&nbsp;                                    Time.run(build.dst(ccore) / unitsPerTick + coreDelay, () -&gt; {</b>
+<b class="nc">&nbsp;                                        if(build.tile.build != build){</b>
+<b class="nc">&nbsp;                                            placeLandBuild(build);</b>
+&nbsp;
+<b class="nc">&nbsp;                                            toBePlaced.remove(build);</b>
+&nbsp;                                        }
+&nbsp;                                    });
+&nbsp;                                }else{
+&nbsp;                                    //when already hosting, instantly build everything. this looks bad but it&#39;s better than a desync
+<b class="nc">&nbsp;                                    Fx.coreBuildBlock.at(build.x, build.y, 0f, build.block);</b>
+<b class="nc">&nbsp;                                    build.block.placeEffect.at(build.x, build.y, build.block.size);</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(anyBuilds){</b>
+<b class="nc">&nbsp;                        for(var ccore : state.rules.defaultTeam.data().cores){</b>
+<b class="nc">&nbsp;                            Time.run(coreDelay, () -&gt; {</b>
+<b class="nc">&nbsp;                                Fx.coreBuildShockwave.at(ccore.x, ccore.y, buildRadius);</b>
+&nbsp;                            });
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(SaveWriteEvent.class, e -&gt; forcePlaceAll());</b>
+<b class="nc">&nbsp;        Events.on(HostEvent.class, e -&gt; forcePlaceAll());</b>
+<b class="nc">&nbsp;        Events.on(HostEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            state.set(State.playing);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void forcePlaceAll(){
+&nbsp;        //force set buildings when a save is done or map is hosted, to prevent desyncs
+<b class="nc">&nbsp;        for(var build : toBePlaced){</b>
+<b class="nc">&nbsp;            placeLandBuild(build);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        toBePlaced.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void placeLandBuild(Building build){
+<b class="nc">&nbsp;        build.tile.setBlock(build.block, build.team, build.rotation, () -&gt; build);</b>
+<b class="nc">&nbsp;        build.dropped();</b>
+&nbsp;
+<b class="nc">&nbsp;        Fx.coreBuildBlock.at(build.x, build.y, 0f, build.block);</b>
+<b class="nc">&nbsp;        build.block.placeEffect.at(build.x, build.y, build.block.size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void loadAsync(){
+<b class="nc">&nbsp;        Draw.scl = 1f / Core.atlas.find(&quot;scale_marker&quot;).width;</b>
+&nbsp;
+<b class="nc">&nbsp;        Core.input.setCatch(KeyCode.back, true);</b>
+&nbsp;
+<b class="nc">&nbsp;        Core.settings.defaults(</b>
+&nbsp;        &quot;ip&quot;, &quot;localhost&quot;,
+<b class="nc">&nbsp;        &quot;color-0&quot;, playerColors[8].rgba(),</b>
+&nbsp;        &quot;name&quot;, &quot;&quot;,
+<b class="nc">&nbsp;        &quot;lastBuild&quot;, 0</b>
+&nbsp;        );
+&nbsp;
+<b class="nc">&nbsp;        createPlayer();</b>
+&nbsp;
+<b class="nc">&nbsp;        saves.load();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Automatically unlocks things with no requirements and no locked parents. */
+&nbsp;    public void checkAutoUnlocks(){
+<b class="nc">&nbsp;        if(net.client()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(TechNode node : TechTree.all){</b>
+<b class="nc">&nbsp;            if(!node.content.unlocked() &amp;&amp; (node.parent == null || node.parent.content.unlocked()) &amp;&amp; node.requirements.length == 0 &amp;&amp; !node.objectives.contains(o -&gt; !o.complete())){</b>
+<b class="nc">&nbsp;                node.content.unlock();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void createPlayer(){
+<b class="nc">&nbsp;        player = Player.create();</b>
+<b class="nc">&nbsp;        player.name = Core.settings.getString(&quot;name&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        String locale = Core.settings.getString(&quot;locale&quot;);</b>
+<b class="nc">&nbsp;        if(locale.equals(&quot;default&quot;)){</b>
+<b class="nc">&nbsp;            locale = Locale.getDefault().toString();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        player.locale = locale;</b>
+&nbsp;
+<b class="nc">&nbsp;        player.color.set(Core.settings.getInt(&quot;color-0&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(mobile){</b>
+<b class="nc">&nbsp;            input = new MobileInput();</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            input = new DesktopInput();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.isGame()){</b>
+<b class="nc">&nbsp;            player.add();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ClientLoadEvent.class, e -&gt; input.add());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setInput(InputHandler newInput){
+<b class="nc">&nbsp;        Block block = input.block;</b>
+<b class="nc">&nbsp;        boolean added = Core.input.getInputProcessors().contains(input);</b>
+<b class="nc">&nbsp;        input.remove();</b>
+<b class="nc">&nbsp;        this.input = newInput;</b>
+<b class="nc">&nbsp;        newInput.block = block;</b>
+<b class="nc">&nbsp;        if(added){</b>
+<b class="nc">&nbsp;            newInput.add();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void playMap(Map map, Rules rules){
+<b class="nc">&nbsp;        playMap(map, rules, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void playMap(Map map, Rules rules, boolean playtest){
+<b class="nc">&nbsp;        ui.loadAnd(() -&gt; {</b>
+<b class="nc">&nbsp;            logic.reset();</b>
+<b class="nc">&nbsp;            world.loadMap(map, rules);</b>
+<b class="nc">&nbsp;            state.rules = rules;</b>
+<b class="nc">&nbsp;            if(playtest) state.playtestingMap = map;</b>
+<b class="nc">&nbsp;            state.rules.sector = null;</b>
+<b class="nc">&nbsp;            state.rules.editor = false;</b>
+<b class="nc">&nbsp;            logic.play();</b>
+<b class="nc">&nbsp;            if(settings.getBool(&quot;savecreate&quot;) &amp;&amp; !world.isInvalidMap() &amp;&amp; !playtest){</b>
+<b class="nc">&nbsp;                control.saves.addSave(map.name() + &quot; &quot; + new SimpleDateFormat(&quot;MMM dd h:mm&quot;, Locale.getDefault()).format(new Date()));</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Events.fire(Trigger.newGame);</b>
+&nbsp;
+&nbsp;            //booted out of map, resume editing
+<b class="nc">&nbsp;            if(world.isInvalidMap() &amp;&amp; playtest){</b>
+<b class="nc">&nbsp;                Dialog current = scene.getDialog();</b>
+<b class="nc">&nbsp;                ui.editor.resumeAfterPlaytest(map);</b>
+<b class="nc">&nbsp;                if(current != null){</b>
+<b class="nc">&nbsp;                    current.update(current::toFront);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void playSector(Sector sector){
+<b class="nc">&nbsp;        playSector(sector, sector);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void playSector(@Nullable Sector origin, Sector sector){
+<b class="nc">&nbsp;        playSector(origin, sector, new WorldReloader());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void playSector(@Nullable Sector origin, Sector sector, WorldReloader reloader){
+<b class="nc">&nbsp;        ui.loadAnd(() -&gt; {</b>
+<b class="nc">&nbsp;            if(saves.getCurrent() != null &amp;&amp; state.isGame()){</b>
+<b class="nc">&nbsp;                control.saves.getCurrent().save();</b>
+<b class="nc">&nbsp;                control.saves.resetSave();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //for planet launches, mostly
+<b class="nc">&nbsp;            if(sector.preset != null){</b>
+<b class="nc">&nbsp;                sector.preset.quietUnlock();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            ui.planet.hide();</b>
+<b class="nc">&nbsp;            SaveSlot slot = sector.save;</b>
+<b class="nc">&nbsp;            sector.planet.setLastSector(sector);</b>
+<b class="nc">&nbsp;            if(slot != null &amp;&amp; !clearSectors &amp;&amp; (!(sector.planet.clearSectorOnLose || sector.info.hasWorldProcessor) || sector.info.hasCore)){</b>
+&nbsp;
+&nbsp;                try{
+<b class="nc">&nbsp;                    boolean hadNoCore = !sector.info.hasCore;</b>
+<b class="nc">&nbsp;                    reloader.begin();</b>
+<b class="nc">&nbsp;                    slot.load();</b>
+<b class="nc">&nbsp;                    slot.setAutosave(true);</b>
+<b class="nc">&nbsp;                    state.rules.sector = sector;</b>
+<b class="nc">&nbsp;                    state.rules.cloudColor = sector.planet.landCloudColor;</b>
+&nbsp;
+&nbsp;                    //if there is no base, simulate a new game and place the right loadout at the spawn position
+<b class="nc">&nbsp;                    if(state.rules.defaultTeam.cores().isEmpty() || hadNoCore){</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(sector.planet.clearSectorOnLose || sector.info.hasWorldProcessor){</b>
+<b class="nc">&nbsp;                            playNewSector(origin, sector, reloader);</b>
+&nbsp;                        }else{
+&nbsp;                            //no spawn set -&gt; delete the sector save
+<b class="nc">&nbsp;                            if(sector.info.spawnPosition == 0){</b>
+&nbsp;                                //delete old save
+<b class="nc">&nbsp;                                sector.save = null;</b>
+<b class="nc">&nbsp;                                slot.delete();</b>
+&nbsp;                                //play again
+<b class="nc">&nbsp;                                playSector(origin, sector, reloader);</b>
+&nbsp;                                return;
+&nbsp;                            }
+&nbsp;
+&nbsp;                            //set spawn for sector damage to use
+<b class="nc">&nbsp;                            Tile spawn = world.tile(sector.info.spawnPosition);</b>
+<b class="nc">&nbsp;                            spawn.setBlock(sector.planet.defaultCore, state.rules.defaultTeam);</b>
+&nbsp;
+&nbsp;                            //add extra damage.
+<b class="nc">&nbsp;                            SectorDamage.apply(1f);</b>
+&nbsp;
+&nbsp;                            //reset wave so things are more fair
+<b class="nc">&nbsp;                            state.wave = 1;</b>
+&nbsp;                            //set up default wave time
+<b class="nc">&nbsp;                            state.wavetime = state.rules.initialWaveSpacing &lt;= 0f ? (state.rules.waveSpacing * (sector.preset == null ? 2f : sector.preset.startWaveTimeMultiplier)) : state.rules.initialWaveSpacing;</b>
+<b class="nc">&nbsp;                            state.wavetime *= sector.planet.campaignRules.difficulty.waveTimeMultiplier;</b>
+&nbsp;                            //reset captured state
+<b class="nc">&nbsp;                            sector.info.wasCaptured = false;</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(state.rules.sector.planet.allowWaves){</b>
+&nbsp;                                //re-enable waves
+<b class="nc">&nbsp;                                state.rules.waves = true;</b>
+&nbsp;                                //reset win wave??
+<b class="nc">&nbsp;                                state.rules.winWave = state.rules.attackMode ? -1 : sector.preset != null &amp;&amp; sector.preset.captureWave &gt; 0 ? sector.preset.captureWave : state.rules.winWave &gt; state.wave ? state.rules.winWave : 30;</b>
+&nbsp;                            }
+&nbsp;
+&nbsp;                            //if there&#39;s still an enemy base left, fix it
+<b class="nc">&nbsp;                            if(state.rules.attackMode){</b>
+&nbsp;                                //replace all broken blocks
+<b class="nc">&nbsp;                                for(var plan : state.rules.waveTeam.data().plans){</b>
+<b class="nc">&nbsp;                                    Tile tile = world.tile(plan.x, plan.y);</b>
+<b class="nc">&nbsp;                                    if(tile != null){</b>
+<b class="nc">&nbsp;                                        tile.setBlock(content.block(plan.block), state.rules.waveTeam, plan.rotation);</b>
+<b class="nc">&nbsp;                                        if(plan.config != null &amp;&amp; tile.build != null){</b>
+<b class="nc">&nbsp;                                            tile.build.configureAny(plan.config);</b>
+&nbsp;                                        }
+&nbsp;                                    }
+<b class="nc">&nbsp;                                }</b>
+<b class="nc">&nbsp;                                state.rules.waveTeam.data().plans.clear();</b>
+&nbsp;                            }
+&nbsp;
+&nbsp;                            //kill all units, since they should be dead anyway
+<b class="nc">&nbsp;                            Groups.unit.clear();</b>
+<b class="nc">&nbsp;                            Groups.fire.clear();</b>
+<b class="nc">&nbsp;                            Groups.puddle.clear();</b>
+&nbsp;
+&nbsp;                            //reset to 0, so replaced cores don&#39;t count
+<b class="nc">&nbsp;                            state.rules.defaultTeam.data().unitCap = 0;</b>
+<b class="nc">&nbsp;                            Schematics.placeLaunchLoadout(spawn.x, spawn.y);</b>
+&nbsp;
+&nbsp;                            //set up camera/player locations
+<b class="nc">&nbsp;                            player.set(spawn.x * tilesize, spawn.y * tilesize);</b>
+<b class="nc">&nbsp;                            camera.position.set(player);</b>
+&nbsp;
+<b class="nc">&nbsp;                            Events.fire(new SectorLaunchEvent(sector));</b>
+<b class="nc">&nbsp;                            Events.fire(Trigger.newGame);</b>
+&nbsp;
+<b class="nc">&nbsp;                            state.set(State.playing);</b>
+<b class="nc">&nbsp;                            reloader.end();</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        state.set(State.playing);</b>
+<b class="nc">&nbsp;                        reloader.end();</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                }catch(SaveException e){</b>
+<b class="nc">&nbsp;                    Log.err(e);</b>
+<b class="nc">&nbsp;                    sector.save = null;</b>
+<b class="nc">&nbsp;                    Time.runTask(10f, () -&gt; ui.showErrorMessage(&quot;@save.corrupted&quot;));</b>
+<b class="nc">&nbsp;                    slot.delete();</b>
+<b class="nc">&nbsp;                    playSector(origin, sector);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;                ui.planet.hide();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                playNewSector(origin, sector, reloader);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void playNewSector(@Nullable Sector origin, Sector sector, WorldReloader reloader){
+<b class="nc">&nbsp;        reloader.begin();</b>
+<b class="nc">&nbsp;        world.loadSector(sector);</b>
+<b class="nc">&nbsp;        state.rules.sector = sector;</b>
+&nbsp;        //assign origin when launching
+<b class="nc">&nbsp;        sector.info.origin = origin;</b>
+<b class="nc">&nbsp;        sector.info.destination = origin;</b>
+<b class="nc">&nbsp;        logic.play();</b>
+<b class="nc">&nbsp;        control.saves.saveSector(sector);</b>
+<b class="nc">&nbsp;        Events.fire(new SectorLaunchEvent(sector));</b>
+<b class="nc">&nbsp;        Events.fire(Trigger.newGame);</b>
+<b class="nc">&nbsp;        reloader.end();</b>
+<b class="nc">&nbsp;        state.set(State.playing);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isHighScore(){
+<b class="nc">&nbsp;        return hiscore;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+&nbsp;        //try to save when exiting
+<b class="nc">&nbsp;        if(saves != null &amp;&amp; saves.getCurrent() != null &amp;&amp; saves.getCurrent().isAutosave() &amp;&amp; !net.client() &amp;&amp; !state.isMenu() &amp;&amp; !state.gameOver){</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                SaveIO.save(control.saves.getCurrent().file);</b>
+<b class="nc">&nbsp;                Log.info(&quot;Saved on exit.&quot;);</b>
+<b class="nc">&nbsp;            }catch(Throwable t){</b>
+<b class="nc">&nbsp;                Log.err(t);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(Music music : assets.getAll(Music.class, new Seq&lt;&gt;())){</b>
+<b class="nc">&nbsp;            music.stop();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        net.dispose();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void pause(){
+<b class="nc">&nbsp;        if(settings.getBool(&quot;backgroundpause&quot;, true) &amp;&amp; !net.active()){</b>
+<b class="nc">&nbsp;            backgroundPaused = true;</b>
+<b class="nc">&nbsp;            wasPaused = state.is(State.paused);</b>
+<b class="nc">&nbsp;            if(state.is(State.playing)) state.set(State.paused);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void resume(){
+<b class="nc">&nbsp;        if(state.is(State.paused) &amp;&amp; !wasPaused &amp;&amp; settings.getBool(&quot;backgroundpause&quot;, true) &amp;&amp; !net.active()){</b>
+<b class="nc">&nbsp;            state.set(State.playing);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        backgroundPaused = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="nc">&nbsp;        platform.updateRPC();</b>
+&nbsp;
+&nbsp;        //display UI scale changed dialog
+<b class="nc">&nbsp;        if(Core.settings.getBool(&quot;uiscalechanged&quot;, false)){</b>
+<b class="nc">&nbsp;            Core.app.post(() -&gt; Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                BaseDialog dialog = new BaseDialog(&quot;@confirm&quot;);</b>
+<b class="nc">&nbsp;                dialog.setFillParent(true);</b>
+&nbsp;
+<b class="nc">&nbsp;                float[] countdown = {60 * 11};</b>
+<b class="nc">&nbsp;                Runnable exit = () -&gt; {</b>
+<b class="nc">&nbsp;                    Core.settings.put(&quot;uiscale&quot;, 100);</b>
+<b class="nc">&nbsp;                    Core.settings.put(&quot;uiscalechanged&quot;, false);</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                    Core.app.exit();</b>
+&nbsp;                };
+&nbsp;
+<b class="nc">&nbsp;                dialog.cont.label(() -&gt; {</b>
+<b class="nc">&nbsp;                    if(countdown[0] &lt;= 0){</b>
+<b class="nc">&nbsp;                        exit.run();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    return Core.bundle.format(&quot;uiscale.reset&quot;, (int)((countdown[0] -= Time.delta) / 60f));</b>
+<b class="nc">&nbsp;                }).pad(10f).expand().center();</b>
+&nbsp;
+<b class="nc">&nbsp;                dialog.buttons.defaults().size(200f, 60f);</b>
+<b class="nc">&nbsp;                dialog.buttons.button(&quot;@uiscale.cancel&quot;, exit);</b>
+&nbsp;
+<b class="nc">&nbsp;                dialog.buttons.button(&quot;@ok&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                    Core.settings.put(&quot;uiscalechanged&quot;, false);</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                dialog.show();</b>
+&nbsp;            }));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+&nbsp;        //this happens on Android and nobody knows why
+<b class="nc">&nbsp;        if(assets == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        saves.update();</b>
+&nbsp;
+&nbsp;        //update and load any requested assets
+&nbsp;        try{
+<b class="nc">&nbsp;            assets.update();</b>
+<b class="nc">&nbsp;        }catch(Exception ignored){</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        input.updateState();</b>
+&nbsp;
+<b class="nc">&nbsp;        sound.update();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.fullscreen)){</b>
+<b class="nc">&nbsp;            boolean full = settings.getBool(&quot;fullscreen&quot;);</b>
+<b class="nc">&nbsp;            if(full){</b>
+<b class="nc">&nbsp;                graphics.setWindowedMode(graphics.getWidth(), graphics.getHeight());</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                graphics.setFullscreen();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            settings.put(&quot;fullscreen&quot;, !full);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Float.isNaN(Vars.player.x) || Float.isNaN(Vars.player.y)){</b>
+<b class="nc">&nbsp;            player.set(0, 0);</b>
+<b class="nc">&nbsp;            if(!player.dead()) player.unit().kill();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(Float.isNaN(camera.position.x)) camera.position.x = world.unitWidth()/2f;</b>
+<b class="nc">&nbsp;        if(Float.isNaN(camera.position.y)) camera.position.y = world.unitHeight()/2f;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.isGame()){</b>
+<b class="nc">&nbsp;            input.update();</b>
+<b class="nc">&nbsp;            if(!state.isPaused()){</b>
+<b class="nc">&nbsp;                indicators.update();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //auto-update rpc every 5 seconds
+<b class="nc">&nbsp;            if(timer.get(0, 60 * 5)){</b>
+<b class="nc">&nbsp;                platform.updateRPC();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //unlock core items
+<b class="nc">&nbsp;            var core = state.rules.defaultTeam.core();</b>
+<b class="nc">&nbsp;            if(!net.client() &amp;&amp; core != null &amp;&amp; state.isCampaign()){</b>
+<b class="nc">&nbsp;                core.items.each((i, a) -&gt; i.unlock());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(backgroundPaused &amp;&amp; settings.getBool(&quot;backgroundpause&quot;) &amp;&amp; !net.active()){</b>
+<b class="nc">&nbsp;                state.set(State.paused);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //cannot launch while paused
+<b class="nc">&nbsp;            if(state.isPaused() &amp;&amp; renderer.isCutscene()){</b>
+<b class="nc">&nbsp;                state.set(State.playing);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!net.client() &amp;&amp; Core.input.keyTap(Binding.pause) &amp;&amp; !renderer.isCutscene() &amp;&amp; !scene.hasDialog() &amp;&amp; !scene.hasKeyboard() &amp;&amp; !ui.restart.isShown() &amp;&amp; (state.is(State.paused) || state.is(State.playing))){</b>
+<b class="nc">&nbsp;                state.set(state.isPaused() ? State.playing : State.paused);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Core.input.keyTap(Binding.menu) &amp;&amp; !ui.restart.isShown() &amp;&amp; !ui.minimapfrag.shown()){</b>
+<b class="nc">&nbsp;                if(ui.chatfrag.shown()){</b>
+<b class="nc">&nbsp;                    ui.chatfrag.hide();</b>
+<b class="nc">&nbsp;                }else if(!ui.paused.isShown() &amp;&amp; !scene.hasDialog()){</b>
+<b class="nc">&nbsp;                    ui.paused.show();</b>
+<b class="nc">&nbsp;                    if(!net.active()){</b>
+<b class="nc">&nbsp;                        state.set(State.paused);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!mobile &amp;&amp; Core.input.keyTap(Binding.screenshot) &amp;&amp; !scene.hasField() &amp;&amp; !scene.hasKeyboard()){</b>
+<b class="nc">&nbsp;                renderer.takeMapScreenshot();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        }else{</b>
+&nbsp;            //this runs in the menu
+<b class="nc">&nbsp;            if(!state.isPaused()){</b>
+<b class="nc">&nbsp;                Time.update();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!scene.hasDialog() &amp;&amp; !scene.root.getChildren().isEmpty() &amp;&amp; !(scene.root.getChildren().peek() instanceof Dialog) &amp;&amp; Core.input.keyTap(KeyCode.back)){</b>
+<b class="nc">&nbsp;                platform.hide();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

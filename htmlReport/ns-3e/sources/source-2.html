@@ -1,0 +1,227 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BuildPayload</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.payloads</a>
+</div>
+
+<h1>Coverage Summary for Class: BuildPayload (mindustry.world.blocks.payloads)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BuildPayload</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21.1%
+  </span>
+  <span class="absValue">
+    (4/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.8%
+  </span>
+  <span class="absValue">
+    (12/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.payloads;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class BuildPayload implements Payload{
+&nbsp;    public Building build;
+&nbsp;
+<b class="fc">&nbsp;    public BuildPayload(Block block, Team team){</b>
+<b class="fc">&nbsp;        this.build = block.newBuilding().create(block, team);</b>
+<b class="fc">&nbsp;        this.build.tile = emptyTile;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public BuildPayload(Building build){</b>
+<b class="nc">&nbsp;        this.build = build;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Block block(){
+<b class="nc">&nbsp;        return build.block;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void place(Tile tile){
+<b class="nc">&nbsp;        place(tile, 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void place(Tile tile, int rotation){
+<b class="nc">&nbsp;        tile.setBlock(build.block, build.team, rotation, () -&gt; build);</b>
+<b class="nc">&nbsp;        build.dropped();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public UnlockableContent content(){
+<b class="nc">&nbsp;        return build.block;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(@Nullable Unit unitHolder, @Nullable Building buildingHolder){
+<b class="fc">&nbsp;        if(unitHolder != null &amp;&amp; (!build.block.updateInUnits || (!state.rules.unitPayloadUpdate &amp;&amp; !build.block.alwaysUpdateInUnits))) return;</b>
+&nbsp;
+<b class="fc">&nbsp;        build.tile = emptyTile;</b>
+<b class="fc">&nbsp;        build.updatePayload(unitHolder, buildingHolder);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void destroyed(){
+<b class="nc">&nbsp;        build.dead = true;</b>
+<b class="nc">&nbsp;        build.onDestroyed();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ItemStack[] requirements(){
+<b class="nc">&nbsp;        return build.block.requirements;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float buildTime(){
+<b class="nc">&nbsp;        return build.block.buildCost;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float x(){
+<b class="nc">&nbsp;        return build.x;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float y(){
+<b class="nc">&nbsp;        return build.y;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float size(){
+<b class="nc">&nbsp;        return build.block.size * tilesize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void write(Writes write){
+<b class="fc">&nbsp;        write.b(payloadBlock);</b>
+<b class="fc">&nbsp;        write.s(build.block.id);</b>
+<b class="fc">&nbsp;        write.b(build.version());</b>
+<b class="fc">&nbsp;        build.writeAll(write);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void set(float x, float y, float rotation){
+<b class="fc">&nbsp;        build.set(x, y);</b>
+<b class="fc">&nbsp;        build.payloadRotation = rotation;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawShadow(float alpha){
+<b class="nc">&nbsp;        Drawf.squareShadow(build.x, build.y, build.block.size * tilesize * 1.85f, alpha);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        float prevZ = Draw.z();</b>
+<b class="nc">&nbsp;        Draw.z(prevZ - 0.001f);</b>
+<b class="nc">&nbsp;        drawShadow(1f);</b>
+<b class="nc">&nbsp;        Draw.z(prevZ);</b>
+<b class="nc">&nbsp;        Draw.zTransform(z -&gt;</b>
+<b class="nc">&nbsp;            z &gt;= Layer.flyingUnitLow + 1f ? z :</b>
+<b class="nc">&nbsp;            0.0011f + Math.min(Mathf.clamp((z - prevZ)/100f, -0.0009f, 0.9f) + prevZ, Layer.flyingUnitLow - 1f)</b>
+&nbsp;        );
+<b class="nc">&nbsp;        build.tile = emptyTile;</b>
+<b class="nc">&nbsp;        build.payloadDraw();</b>
+<b class="nc">&nbsp;        Draw.zTransform();</b>
+<b class="nc">&nbsp;        Draw.z(prevZ);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion icon(){
+<b class="nc">&nbsp;        return block().fullIcon;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

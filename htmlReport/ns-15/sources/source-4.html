@@ -1,0 +1,2283 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BuildingComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: BuildingComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BuildingComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/220)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/865)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BuildingComp$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/221)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/866)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.heat.*;
+&nbsp;import mindustry.world.blocks.heat.HeatConductor.*;
+&nbsp;import mindustry.world.blocks.logic.LogicBlock.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@EntityDef(value = {Buildingc.class}, isFinal = false, genio = false, serialize = false)
+&nbsp;@Component(base = true)
+<b class="nc">&nbsp;abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, QuadTreeObject, Displayable, Sized, Senseable, Controllable, Settable{</b>
+&nbsp;    //region vars and initialization
+&nbsp;    static final float timeToSleep = 60f * 1, recentDamageTime = 60f * 5f;
+<b class="nc">&nbsp;    static final ObjectSet&lt;Building&gt; tmpTiles = new ObjectSet&lt;&gt;();</b>
+<b class="nc">&nbsp;    static final Seq&lt;Building&gt; tempBuilds = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;    static final BuildTeamChangeEvent teamChangeEvent = new BuildTeamChangeEvent();</b>
+<b class="nc">&nbsp;    static final BuildDamageEvent bulletDamageEvent = new BuildDamageEvent();</b>
+<b class="nc">&nbsp;    static int sleepingEntities = 0;</b>
+&nbsp;    
+&nbsp;    @Import float x, y, health, maxHealth;
+&nbsp;    @Import Team team;
+&nbsp;    @Import boolean dead;
+&nbsp;
+&nbsp;    transient Tile tile;
+&nbsp;    transient Block block;
+<b class="nc">&nbsp;    transient Seq&lt;Building&gt; proximity = new Seq&lt;&gt;(6);</b>
+&nbsp;    transient int cdump;
+&nbsp;    transient int rotation;
+&nbsp;    transient float payloadRotation;
+&nbsp;    transient String lastAccessed;
+&nbsp;    transient boolean wasDamaged; //used only by the indexer
+&nbsp;    transient float visualLiquid;
+&nbsp;
+&nbsp;    /** TODO Each bit corresponds to a team ID. Only 64 are supported. Does not work on servers. */
+&nbsp;    transient long visibleFlags;
+&nbsp;    transient boolean wasVisible; //used only by the block renderer when fog is on (TODO replace with discovered check?)
+&nbsp;
+<b class="nc">&nbsp;    transient boolean enabled = true;</b>
+&nbsp;    transient @Nullable Building lastDisabler;
+&nbsp;
+&nbsp;    @Nullable PowerModule power;
+&nbsp;    @Nullable ItemModule items;
+&nbsp;    @Nullable LiquidModule liquids;
+&nbsp;
+&nbsp;    /** Base efficiency. Takes the minimum value of all consumers. */
+&nbsp;    transient float efficiency;
+&nbsp;    /** Same as efficiency, but for optional consumers only. */
+&nbsp;    transient float optionalEfficiency;
+&nbsp;    /** The efficiency this block *would* have if shouldConsume() returned true. */
+&nbsp;    transient float potentialEfficiency;
+&nbsp;    /** Whether there are any consumers (aside from power) that have efficiency &gt; 0. */
+&nbsp;    transient boolean shouldConsumePower;
+&nbsp;
+<b class="nc">&nbsp;    transient float healSuppressionTime = -1f;</b>
+<b class="nc">&nbsp;    transient float lastHealTime = -120f * 10f;</b>
+<b class="nc">&nbsp;    transient Color suppressColor = Pal.sapBullet;</b>
+&nbsp;
+<b class="nc">&nbsp;    private transient float lastDamageTime = -recentDamageTime;</b>
+<b class="nc">&nbsp;    private transient float timeScale = 1f, timeScaleDuration;</b>
+&nbsp;    private transient float dumpAccum;
+&nbsp;
+&nbsp;    private transient @Nullable SoundLoop sound;
+&nbsp;
+&nbsp;    private transient boolean sleeping;
+&nbsp;    private transient float sleepTime;
+&nbsp;    private transient boolean initialized;
+&nbsp;
+&nbsp;    /** Sets this tile entity data to this and adds it if necessary. */
+&nbsp;    public Building init(Tile tile, Team team, boolean shouldAdd, int rotation){
+<b class="nc">&nbsp;        if(!initialized){</b>
+<b class="nc">&nbsp;            create(tile.block(), team);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            if(block.hasPower){</b>
+<b class="nc">&nbsp;                power.init = false;</b>
+&nbsp;                //reinit power graph
+<b class="nc">&nbsp;                new PowerGraph().add(self());</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        proximity.clear();</b>
+<b class="nc">&nbsp;        this.rotation = rotation;</b>
+<b class="nc">&nbsp;        this.tile = tile;</b>
+&nbsp;
+<b class="nc">&nbsp;        set(tile.drawx(), tile.drawy());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(shouldAdd){</b>
+<b class="nc">&nbsp;            add();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        created();</b>
+&nbsp;
+<b class="nc">&nbsp;        return self();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Sets up all the necessary variables, but does not add this entity anywhere. */
+&nbsp;    public Building create(Block block, Team team){
+<b class="nc">&nbsp;        this.block = block;</b>
+<b class="nc">&nbsp;        this.team = team;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(block.loopSound != Sounds.none){</b>
+<b class="nc">&nbsp;            sound = new SoundLoop(block.loopSound, block.loopSoundVolume);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        health = block.health;</b>
+<b class="nc">&nbsp;        maxHealth(block.health);</b>
+<b class="nc">&nbsp;        timer(new Interval(block.timers));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(block.hasItems) items = new ItemModule();</b>
+<b class="nc">&nbsp;        if(block.hasLiquids) liquids = new LiquidModule();</b>
+<b class="nc">&nbsp;        if(block.hasPower){</b>
+<b class="nc">&nbsp;            power = new PowerModule();</b>
+<b class="nc">&nbsp;            power.graph.add(self());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        initialized = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        return self();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void add(){
+<b class="nc">&nbsp;        if(power != null){</b>
+<b class="nc">&nbsp;            power.graph.checkAdd();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public int tileX(){
+<b class="nc">&nbsp;        return tile.x;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public int tileY(){
+<b class="nc">&nbsp;        return tile.y;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;    //region io
+&nbsp;
+&nbsp;    public final void writeBase(Writes write){
+<b class="nc">&nbsp;        boolean writeVisibility = state.rules.fog &amp;&amp; visibleFlags != 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        write.f(health);</b>
+<b class="nc">&nbsp;        write.b(rotation | 0b10000000);</b>
+<b class="nc">&nbsp;        write.b(team.id);</b>
+<b class="nc">&nbsp;        write.b(writeVisibility ? 4 : 3); //version</b>
+<b class="nc">&nbsp;        write.b(enabled ? 1 : 0);</b>
+&nbsp;        //write presence of items/power/liquids/cons, so removing/adding them does not corrupt future saves.
+<b class="nc">&nbsp;        write.b(moduleBitmask());</b>
+<b class="nc">&nbsp;        if(items != null) items.write(write);</b>
+<b class="nc">&nbsp;        if(power != null) power.write(write);</b>
+<b class="nc">&nbsp;        if(liquids != null) liquids.write(write);</b>
+&nbsp;
+&nbsp;        //efficiency is written as two bytes to save space
+<b class="nc">&nbsp;        write.b((byte)(Mathf.clamp(efficiency) * 255f));</b>
+<b class="nc">&nbsp;        write.b((byte)(Mathf.clamp(optionalEfficiency) * 255f));</b>
+&nbsp;
+&nbsp;        //only write visibility when necessary, saving 8 bytes - implies new version
+<b class="nc">&nbsp;        if(writeVisibility){</b>
+<b class="nc">&nbsp;            write.l(visibleFlags);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public final void readBase(Reads read){
+&nbsp;        //cap health by block health in case of nerfs
+<b class="nc">&nbsp;        health = Math.min(read.f(), block.health);</b>
+<b class="nc">&nbsp;        byte rot = read.b();</b>
+<b class="nc">&nbsp;        team = Team.get(read.b());</b>
+&nbsp;
+<b class="nc">&nbsp;        rotation = rot &amp; 0b01111111;</b>
+&nbsp;
+<b class="nc">&nbsp;        int moduleBits = moduleBitmask();</b>
+<b class="nc">&nbsp;        boolean legacy = true;</b>
+<b class="nc">&nbsp;        byte version = 0;</b>
+&nbsp;
+&nbsp;        //new version
+<b class="nc">&nbsp;        if((rot &amp; 0b10000000) != 0){</b>
+<b class="nc">&nbsp;            version = read.b(); //version of entity save</b>
+<b class="nc">&nbsp;            if(version &gt;= 1){</b>
+<b class="nc">&nbsp;                byte on = read.b();</b>
+<b class="nc">&nbsp;                this.enabled = on == 1;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //get which modules should actually be read; this was added in version 2
+<b class="nc">&nbsp;            if(version &gt;= 2){</b>
+<b class="nc">&nbsp;                moduleBits = read.b();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            legacy = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if((moduleBits &amp; 1) != 0) (items == null ? new ItemModule() : items).read(read, legacy);</b>
+<b class="nc">&nbsp;        if((moduleBits &amp; 2) != 0) (power == null ? new PowerModule() : power).read(read, legacy);</b>
+<b class="nc">&nbsp;        if((moduleBits &amp; 4) != 0) (liquids == null ? new LiquidModule() : liquids).read(read, legacy);</b>
+&nbsp;
+&nbsp;        //unnecessary consume module read in version 2 and below
+<b class="nc">&nbsp;        if(version &lt;= 2) read.bool();</b>
+&nbsp;
+&nbsp;        //version 3 has efficiency numbers instead of bools
+<b class="nc">&nbsp;        if(version &gt;= 3){</b>
+<b class="nc">&nbsp;            efficiency = potentialEfficiency = read.ub() / 255f;</b>
+<b class="nc">&nbsp;            optionalEfficiency = read.ub() / 255f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //version 4 (and only 4 at the moment) has visibility flags
+<b class="nc">&nbsp;        if(version == 4){</b>
+<b class="nc">&nbsp;            visibleFlags = read.l();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int moduleBitmask(){
+<b class="nc">&nbsp;        return (items != null ? 1 : 0) | (power != null ? 2 : 0) | (liquids != null ? 4 : 0) | 8;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeAll(Writes write){
+<b class="nc">&nbsp;        writeBase(write);</b>
+<b class="nc">&nbsp;        write(write);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readAll(Reads read, byte revision){
+<b class="nc">&nbsp;        readBase(read);</b>
+<b class="nc">&nbsp;        read(read, revision);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeSync(Writes write){
+<b class="nc">&nbsp;        writeAll(write);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void readSync(Reads read, byte revision){
+<b class="nc">&nbsp;        readAll(read, revision);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @CallSuper
+&nbsp;    public void write(Writes write){
+&nbsp;        //overriden by subclasses!
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @CallSuper
+&nbsp;    public void read(Reads read, byte revision){
+&nbsp;        //overriden by subclasses!
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    //endregion
+&nbsp;    //region utility methods
+&nbsp;
+&nbsp;    public boolean isDiscovered(Team viewer){
+<b class="nc">&nbsp;        if(state.rules.limitMapArea &amp;&amp; world.getDarkness(tile.x, tile.y) &gt;= 3){</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(viewer == null || !state.rules.staticFog || !state.rules.fog){</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if(block.size &lt;= 2){</b>
+<b class="nc">&nbsp;            return fogControl.isDiscovered(viewer, tile.x, tile.y);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            int s = block.size / 2;</b>
+<b class="nc">&nbsp;            return fogControl.isDiscovered(viewer, tile.x, tile.y) ||</b>
+<b class="nc">&nbsp;                fogControl.isDiscovered(viewer, tile.x - s, tile.y - s) ||</b>
+<b class="nc">&nbsp;                fogControl.isDiscovered(viewer, tile.x - s, tile.y + s) ||</b>
+<b class="nc">&nbsp;                fogControl.isDiscovered(viewer, tile.x + s, tile.y + s) ||</b>
+<b class="nc">&nbsp;                fogControl.isDiscovered(viewer, tile.x + s, tile.y - s);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addPlan(boolean checkPrevious){
+<b class="nc">&nbsp;        addPlan(checkPrevious, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addPlan(boolean checkPrevious, boolean ignoreConditions){
+<b class="nc">&nbsp;        if(!ignoreConditions &amp;&amp; (!block.rebuildable || (team == state.rules.defaultTeam &amp;&amp; state.isCampaign() &amp;&amp; !block.isVisible()))) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Object overrideConfig = null;</b>
+<b class="nc">&nbsp;        Block toAdd = this.block;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(self() instanceof ConstructBuild entity){</b>
+&nbsp;            //update block to reflect the fact that something was being constructed
+<b class="nc">&nbsp;            if(entity.current != null &amp;&amp; entity.current.synthetic() &amp;&amp; entity.wasConstructing){</b>
+<b class="nc">&nbsp;                toAdd = entity.current;</b>
+<b class="nc">&nbsp;                overrideConfig = entity.lastConfig;</b>
+&nbsp;            }else{
+&nbsp;                //otherwise this was a deconstruction that was interrupted, don&#39;t want to rebuild that
+&nbsp;                return;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        TeamData data = team.data();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(checkPrevious){</b>
+&nbsp;            //remove existing blocks that have been placed here.
+&nbsp;            //painful O(n) iteration + copy
+<b class="nc">&nbsp;            for(int i = 0; i &lt; data.plans.size; i++){</b>
+<b class="nc">&nbsp;                BlockPlan b = data.plans.get(i);</b>
+<b class="nc">&nbsp;                if(b.x == tile.x &amp;&amp; b.y == tile.y){</b>
+<b class="nc">&nbsp;                    data.plans.removeIndex(i);</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        data.plans.addFirst(new BlockPlan(tile.x, tile.y, (short)rotation, toAdd.id, overrideConfig == null ? config() : overrideConfig));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Tile findClosestEdge(Position to, Boolf&lt;Tile&gt; solid){
+<b class="nc">&nbsp;        Tile best = null;</b>
+<b class="nc">&nbsp;        float mindst = 0f;</b>
+<b class="nc">&nbsp;        for(var point : Edges.getEdges(block.size)){</b>
+<b class="nc">&nbsp;            Tile other = Vars.world.tile(tile.x + point.x, tile.y + point.y);</b>
+<b class="nc">&nbsp;            if(other != null &amp;&amp; !solid.get(other) &amp;&amp; (best == null || to.dst2(other) &lt; mindst)){</b>
+<b class="nc">&nbsp;                best = other;</b>
+<b class="nc">&nbsp;                mindst = other.dst2(other);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return best;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Configure with the current, local player. */
+&nbsp;    public void configure(Object value){
+&nbsp;        //save last used config
+<b class="nc">&nbsp;        block.lastConfig = value;</b>
+<b class="nc">&nbsp;        Call.tileConfig(player, self(), value);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Configure from a server. */
+&nbsp;    public void configureAny(Object value){
+<b class="nc">&nbsp;        Call.tileConfig(null, self(), value);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Deselect this tile from configuration. */
+&nbsp;    public void deselect(){
+<b class="nc">&nbsp;        if(!headless &amp;&amp; control.input.config.getSelected() == self()){</b>
+<b class="nc">&nbsp;            control.input.config.hideConfig();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called clientside when the client taps a block to config.
+&nbsp;     * @return whether the configuration UI should be shown. */
+&nbsp;    public boolean configTapped(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float calculateHeat(float[] sideHeat){
+<b class="nc">&nbsp;        return calculateHeat(sideHeat, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float calculateHeat(float[] sideHeat, @Nullable IntSet cameFrom){
+<b class="nc">&nbsp;        Arrays.fill(sideHeat, 0f);</b>
+<b class="nc">&nbsp;        if(cameFrom != null) cameFrom.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        float heat = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var build : proximity){</b>
+<b class="nc">&nbsp;            if(build != null &amp;&amp; build.team == team &amp;&amp; build instanceof HeatBlock heater){</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;                boolean split = build.block instanceof HeatConductor cond &amp;&amp; cond.splitHeat;</b>
+&nbsp;                // non-routers must face us, routers must face away - next to a redirector, they&#39;re forced to face away due to cycles anyway
+<b class="nc">&nbsp;                if(!build.block.rotate || (!split &amp;&amp; (relativeTo(build) + 2) % 4 == build.rotation) || (split &amp;&amp; relativeTo(build) != build.rotation)){ //TODO hacky</b>
+&nbsp;
+&nbsp;                    //if there&#39;s a cycle, ignore its heat
+<b class="nc">&nbsp;                    if(!(build instanceof HeatConductorBuild hc &amp;&amp; hc.cameFrom.contains(id()))){</b>
+&nbsp;                        //x/y coordinate difference across point of contact
+<b class="nc">&nbsp;                        float diff = (Math.min(Math.abs(build.x - x), Math.abs(build.y - y)) / tilesize);</b>
+&nbsp;                        //number of points that this block had contact with
+<b class="nc">&nbsp;                        int contactPoints = Math.min((int)(block.size/2f + build.block.size/2f - diff), Math.min(build.block.size, block.size));</b>
+&nbsp;
+&nbsp;                        //heat is distributed across building size
+<b class="nc">&nbsp;                        float add = heater.heat() / build.block.size * contactPoints;</b>
+<b class="nc">&nbsp;                        if(split){</b>
+&nbsp;                            //heat routers split heat across 3 surfaces
+<b class="nc">&nbsp;                            add /= 3f;</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        sideHeat[Mathf.mod(relativeTo(build), 4)] += add;</b>
+<b class="nc">&nbsp;                        heat += add;</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //register traversed cycles
+<b class="nc">&nbsp;                    if(cameFrom != null){</b>
+<b class="nc">&nbsp;                        cameFrom.add(build.id);</b>
+<b class="nc">&nbsp;                        if(build instanceof HeatConductorBuild hc){</b>
+<b class="nc">&nbsp;                            cameFrom.addAll(hc.cameFrom);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //massive hack but I don&#39;t really care anymore
+<b class="nc">&nbsp;                    if(heater instanceof HeatConductorBuild cond){</b>
+<b class="nc">&nbsp;                        cond.updateHeat();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return heat;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void applyBoost(float intensity, float duration){
+&nbsp;        //do not refresh time scale when getting a weaker intensity
+<b class="nc">&nbsp;        if(intensity &gt;= this.timeScale - 0.001f){</b>
+<b class="nc">&nbsp;            timeScaleDuration = Math.max(timeScaleDuration, duration);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        timeScale = Math.max(timeScale, intensity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void applySlowdown(float intensity, float duration){
+&nbsp;        //do not refresh time scale when getting a weaker intensity
+<b class="nc">&nbsp;        if(intensity &lt;= this.timeScale - 0.001f){</b>
+<b class="nc">&nbsp;            timeScaleDuration = Math.max(timeScaleDuration, duration);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        timeScale = Math.min(timeScale, intensity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void applyHealSuppression(float amount){
+<b class="nc">&nbsp;        applyHealSuppression(amount, Pal.sapBullet);</b>
+&nbsp;    }
+&nbsp;    public void applyHealSuppression(float amount, Color suppressColor){
+<b class="nc">&nbsp;        healSuppressionTime = Math.max(healSuppressionTime, Time.time + amount);</b>
+<b class="nc">&nbsp;        this.suppressColor = suppressColor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isHealSuppressed(){
+<b class="nc">&nbsp;        return block.suppressable &amp;&amp; Time.time &lt;= healSuppressionTime;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void recentlyHealed(){
+<b class="nc">&nbsp;        lastHealTime = Time.time;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean wasRecentlyHealed(float duration){
+<b class="nc">&nbsp;        return lastHealTime + duration &gt;= Time.time;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean wasRecentlyDamaged(){
+<b class="nc">&nbsp;        return lastDamageTime + recentDamageTime &gt;= Time.time;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Building nearby(int dx, int dy){
+<b class="nc">&nbsp;        return world.build(tile.x + dx, tile.y + dy);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Building nearby(int rotation){
+<b class="nc">&nbsp;        return switch(rotation){</b>
+<b class="nc">&nbsp;            case 0 -&gt; world.build(tile.x + 1, tile.y);</b>
+<b class="nc">&nbsp;            case 1 -&gt; world.build(tile.x, tile.y + 1);</b>
+<b class="nc">&nbsp;            case 2 -&gt; world.build(tile.x - 1, tile.y);</b>
+<b class="nc">&nbsp;            case 3 -&gt; world.build(tile.x, tile.y - 1);</b>
+<b class="nc">&nbsp;            default -&gt; null;</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public byte relativeTo(Tile tile){
+<b class="nc">&nbsp;        return relativeTo(tile.x, tile.y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public byte relativeTo(Building build){
+<b class="nc">&nbsp;        if(Math.abs(x - build.x) &gt; Math.abs(y - build.y)){</b>
+<b class="nc">&nbsp;            if(x &lt;= build.x - 1) return 0;</b>
+<b class="nc">&nbsp;            if(x &gt;= build.x + 1) return 2;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            if(y &lt;= build.y - 1) return 1;</b>
+<b class="nc">&nbsp;            if(y &gt;= build.y + 1) return 3;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return -1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public byte relativeToEdge(Tile other){
+<b class="nc">&nbsp;        return relativeTo(Edges.getFacingEdge(other, tile));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public byte relativeTo(int cx, int cy){
+<b class="nc">&nbsp;        return tile.absoluteRelativeTo(cx, cy);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Multiblock front. */
+&nbsp;    public @Nullable Building front(){
+<b class="nc">&nbsp;        int trns = block.size/2 + 1;</b>
+<b class="nc">&nbsp;        return nearby(Geometry.d4(rotation).x * trns, Geometry.d4(rotation).y * trns);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Multiblock back. */
+&nbsp;    public @Nullable Building back(){
+<b class="nc">&nbsp;        int trns = block.size/2 + 1;</b>
+<b class="nc">&nbsp;        return nearby(Geometry.d4(rotation + 2).x * trns, Geometry.d4(rotation + 2).y * trns);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Multiblock left. */
+&nbsp;    public @Nullable Building left(){
+<b class="nc">&nbsp;        int trns = block.size/2 + 1;</b>
+<b class="nc">&nbsp;        return nearby(Geometry.d4(rotation + 1).x * trns, Geometry.d4(rotation + 1).y * trns);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Multiblock right. */
+&nbsp;    public @Nullable Building right(){
+<b class="nc">&nbsp;        int trns = block.size/2 + 1;</b>
+<b class="nc">&nbsp;        return nearby(Geometry.d4(rotation + 3).x * trns, Geometry.d4(rotation + 3).y * trns);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Any class that overrides this method and changes the value must call Vars.fogControl.forceUpdate(team). */
+&nbsp;    public float fogRadius(){
+<b class="nc">&nbsp;        return block.fogRadius;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int pos(){
+<b class="nc">&nbsp;        return tile.pos();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float rotdeg(){
+<b class="nc">&nbsp;        return rotation * 90;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return preferred rotation of main texture region to be drawn */
+&nbsp;    public float drawrot(){
+<b class="nc">&nbsp;        return block.rotate &amp;&amp; block.rotateDraw ? rotation * 90 : 0f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Floor floor(){
+<b class="nc">&nbsp;        return tile.floor();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean interactable(Team team){
+<b class="nc">&nbsp;        return state.teams.canInteract(team, team());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float timeScale(){
+<b class="nc">&nbsp;        return timeScale;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * @return the building&#39;s &#39;warmup&#39;, a smooth value from 0 to 1.
+&nbsp;     * usually used for crafters and things that need to spin up before reaching full efficiency.
+&nbsp;     * many blocks will just return 0.
+&nbsp;     * */
+&nbsp;    public float warmup(){
+<b class="nc">&nbsp;        return 0f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return total time this block has been producing something; non-crafter blocks usually return Time.time. */
+&nbsp;    public float totalProgress(){
+<b class="nc">&nbsp;        return Time.time;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float progress(){
+<b class="nc">&nbsp;        return 0f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this block is allowed to update based on team/environment */
+&nbsp;    public boolean allowUpdate(){
+<b class="nc">&nbsp;        return team != Team.derelict &amp;&amp; block.supportsEnv(state.rules.env) &amp;&amp;</b>
+&nbsp;            //check if outside map limit
+<b class="nc">&nbsp;            (!state.rules.limitMapArea || !state.rules.disableOutsideArea || Rect.contains(state.rules.limitX, state.rules.limitY, state.rules.limitWidth, state.rules.limitHeight, tile.x, tile.y));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public BlockStatus status(){
+<b class="nc">&nbsp;        if(!enabled){</b>
+<b class="nc">&nbsp;            return BlockStatus.logicDisable;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!shouldConsume()){</b>
+<b class="nc">&nbsp;            return BlockStatus.noOutput;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(efficiency &lt;= 0 || !productionValid()){</b>
+<b class="nc">&nbsp;            return BlockStatus.noInput;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return ((state.tick / 30f) % 1f) &lt; efficiency ? BlockStatus.active : BlockStatus.noInput;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Call when nothing is happening to the entity. This increments the internal sleep timer. */
+&nbsp;    public void sleep(){
+<b class="nc">&nbsp;        sleepTime += Time.delta;</b>
+<b class="nc">&nbsp;        if(!sleeping &amp;&amp; sleepTime &gt;= timeToSleep){</b>
+<b class="nc">&nbsp;            remove();</b>
+<b class="nc">&nbsp;            sleeping = true;</b>
+<b class="nc">&nbsp;            sleepingEntities++;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Call when this entity is updating. This wakes it up. */
+&nbsp;    public void noSleep(){
+<b class="nc">&nbsp;        sleepTime = 0f;</b>
+<b class="nc">&nbsp;        if(sleeping){</b>
+<b class="nc">&nbsp;            add();</b>
+<b class="nc">&nbsp;            sleeping = false;</b>
+<b class="nc">&nbsp;            sleepingEntities--;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the version of this Building IO code.*/
+&nbsp;    public byte version(){
+<b class="nc">&nbsp;        return 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;    //region handler methods
+&nbsp;
+&nbsp;    /** @return whether the player can select (but not actually control) this building. */
+&nbsp;    public boolean canControlSelect(Unit player){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when a player control-selects this building - not called for ControlBlock subclasses. */
+&nbsp;    public void onControlSelect(Unit player){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called when this building receives a position command. Requires a commandable block. */
+&nbsp;    public void onCommand(Vec2 target){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** @return the position that this block points to for commands, or null. */
+&nbsp;    public @Nullable Vec2 getCommandPosition(){
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handleUnitPayload(Unit unit, Cons&lt;Payload&gt; grabber){
+<b class="nc">&nbsp;        Fx.spawn.at(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(unit.isPlayer()){</b>
+<b class="nc">&nbsp;            unit.getPlayer().clearUnit();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        unit.remove();</b>
+&nbsp;
+&nbsp;        //needs new ID as it is now a payload
+<b class="nc">&nbsp;        if(net.client()){</b>
+<b class="nc">&nbsp;            unit.id = EntityGroup.nextId();</b>
+&nbsp;        }else{
+&nbsp;            //server-side, this needs to be delayed until next frame because otherwise the packets sent out right after this event would have the wrong unit ID, leading to ghosts
+<b class="nc">&nbsp;            Core.app.post(() -&gt; unit.id = EntityGroup.nextId());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        grabber.get(new UnitPayload(unit));</b>
+<b class="nc">&nbsp;        Fx.unitDrop.at(unit);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canWithdraw(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canUnload(){
+<b class="nc">&nbsp;        return block.unloadable;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canResupply(){
+<b class="nc">&nbsp;        return block.allowResupply;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean payloadCheck(int conveyorRotation){
+<b class="nc">&nbsp;        return block.rotate &amp;&amp; (rotation + 2) % 4 == conveyorRotation;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when an unloader takes an item. */
+&nbsp;    public void itemTaken(Item item){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called when this block is dropped as a payload. */
+&nbsp;    public void dropped(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** This is for logic blocks. */
+&nbsp;    public void handleString(Object value){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void created(){}</b>
+&nbsp;
+&nbsp;    /** @return whether this block is currently &quot;active&quot; and should be consuming requirements. */
+&nbsp;    public boolean shouldConsume(){
+<b class="nc">&nbsp;        return enabled;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean productionValid(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this building is currently &quot;burning&quot; a trigger consumer (an item) - if true, valid() on those will return true. */
+&nbsp;    public boolean consumeTriggerValid(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getPowerProduction(){
+<b class="nc">&nbsp;        return 0f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns the amount of items this block can accept. */
+&nbsp;    public int acceptStack(Item item, int amount, Teamc source){
+<b class="nc">&nbsp;        if(acceptItem(self(), item) &amp;&amp; block.hasItems &amp;&amp; (source == null || source.team() == team)){</b>
+<b class="nc">&nbsp;            return Math.min(getMaximumAccepted(item) - items.get(item), amount);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return 0;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getMaximumAccepted(Item item){
+<b class="nc">&nbsp;        return block.itemCapacity;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Remove a stack from this inventory, and return the amount removed. */
+&nbsp;    public int removeStack(Item item, int amount){
+<b class="nc">&nbsp;        if(items == null) return 0;</b>
+<b class="nc">&nbsp;        amount = Math.min(amount, items.get(item));</b>
+<b class="nc">&nbsp;        noSleep();</b>
+<b class="nc">&nbsp;        items.remove(item, amount);</b>
+<b class="nc">&nbsp;        return amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Handle a stack input. */
+&nbsp;    public void handleStack(Item item, int amount, @Nullable Teamc source){
+<b class="nc">&nbsp;        noSleep();</b>
+<b class="nc">&nbsp;        items.add(item, amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns offset for stack placement. */
+&nbsp;    public void getStackOffset(Item item, Vec2 trns){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean acceptPayload(Building source, Payload payload){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handlePayload(Building source, Payload payload){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Tries moving a payload forwards.
+&nbsp;     * @param todump payload to dump.
+&nbsp;     * @return whether the payload was moved successfully
+&nbsp;     */
+&nbsp;    public boolean movePayload(Payload todump){
+<b class="nc">&nbsp;        int trns = block.size/2 + 1;</b>
+<b class="nc">&nbsp;        Tile next = tile.nearby(Geometry.d4(rotation).x * trns, Geometry.d4(rotation).y * trns);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(next != null &amp;&amp; next.build != null &amp;&amp; next.build.team == team &amp;&amp; next.build.acceptPayload(self(), todump)){</b>
+<b class="nc">&nbsp;            next.build.handlePayload(self(), todump);</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Tries dumping a payload to any adjacent block.
+&nbsp;     * @param todump payload to dump.
+&nbsp;     * @return whether the payload was moved successfully
+&nbsp;     */
+&nbsp;    public boolean dumpPayload(Payload todump){
+<b class="nc">&nbsp;        if(proximity.size == 0) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        int dump = this.cdump;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; proximity.size; i++){</b>
+<b class="nc">&nbsp;            Building other = proximity.get((i + dump) % proximity.size);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(other.acceptPayload(self(), todump)){</b>
+<b class="nc">&nbsp;                other.handlePayload(self(), todump);</b>
+<b class="nc">&nbsp;                incrementDump(proximity.size);</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            incrementDump(proximity.size);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handleItem(Building source, Item item){
+<b class="nc">&nbsp;        items.add(item, 1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;        return block.consumesItem(item) &amp;&amp; items.get(item) &lt; getMaximumAccepted(item);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean acceptLiquid(Building source, Liquid liquid){
+<b class="nc">&nbsp;        return block.hasLiquids &amp;&amp; block.consumesLiquid(liquid);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handleLiquid(Building source, Liquid liquid, float amount){
+<b class="nc">&nbsp;        liquids.add(liquid, amount);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO entire liquid system is awful
+&nbsp;    public void dumpLiquid(Liquid liquid){
+<b class="nc">&nbsp;        dumpLiquid(liquid, 2f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void dumpLiquid(Liquid liquid, float scaling){
+<b class="nc">&nbsp;        dumpLiquid(liquid, scaling, -1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @param outputDir output liquid direction relative to rotation, or -1 to use any direction. */
+&nbsp;    public void dumpLiquid(Liquid liquid, float scaling, int outputDir){
+<b class="nc">&nbsp;        int dump = this.cdump;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(liquids.get(liquid) &lt;= 0.0001f) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!net.client() &amp;&amp; state.isCampaign() &amp;&amp; team == state.rules.defaultTeam) liquid.unlock();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; proximity.size; i++){</b>
+<b class="nc">&nbsp;            incrementDump(proximity.size);</b>
+&nbsp;
+<b class="nc">&nbsp;            Building other = proximity.get((i + dump) % proximity.size);</b>
+<b class="nc">&nbsp;            if(outputDir != -1 &amp;&amp; (outputDir + rotation) % 4 != relativeTo(other)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            other = other.getLiquidDestination(self(), liquid);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(other != null &amp;&amp; other.block.hasLiquids &amp;&amp; canDumpLiquid(other, liquid) &amp;&amp; other.liquids != null){</b>
+<b class="nc">&nbsp;                float ofract = other.liquids.get(liquid) / other.block.liquidCapacity;</b>
+<b class="nc">&nbsp;                float fract = liquids.get(liquid) / block.liquidCapacity;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(ofract &lt; fract) transferLiquid(other, (fract - ofract) * block.liquidCapacity / scaling, liquid);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canDumpLiquid(Building to, Liquid liquid){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void transferLiquid(Building next, float amount, Liquid liquid){
+<b class="nc">&nbsp;        float flow = Math.min(next.block.liquidCapacity - next.liquids.get(liquid), amount);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(next.acceptLiquid(self(), liquid)){</b>
+<b class="nc">&nbsp;            next.handleLiquid(self(), liquid, flow);</b>
+<b class="nc">&nbsp;            liquids.remove(liquid, flow);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public float moveLiquidForward(boolean leaks, Liquid liquid){
+<b class="nc">&nbsp;        Tile next = tile.nearby(rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(next == null) return 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(next.build != null){</b>
+<b class="nc">&nbsp;            return moveLiquid(next.build, liquid);</b>
+<b class="nc">&nbsp;        }else if(leaks &amp;&amp; !next.block().solid &amp;&amp; !next.block().hasLiquids){</b>
+<b class="nc">&nbsp;            float leakAmount = liquids.get(liquid) / 1.5f;</b>
+<b class="nc">&nbsp;            Puddles.deposit(next, tile, liquid, leakAmount, true, true);</b>
+<b class="nc">&nbsp;            liquids.remove(liquid, leakAmount);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float moveLiquid(Building next, Liquid liquid){
+<b class="nc">&nbsp;        if(next == null) return 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        next = next.getLiquidDestination(self(), liquid);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(next.team == team &amp;&amp; next.block.hasLiquids &amp;&amp; liquids.get(liquid) &gt; 0f){</b>
+<b class="nc">&nbsp;            float ofract = next.liquids.get(liquid) / next.block.liquidCapacity;</b>
+<b class="nc">&nbsp;            float fract = liquids.get(liquid) / block.liquidCapacity * block.liquidPressure;</b>
+<b class="nc">&nbsp;            float flow = Math.min(Mathf.clamp((fract - ofract)) * (block.liquidCapacity), liquids.get(liquid));</b>
+<b class="nc">&nbsp;            flow = Math.min(flow, next.block.liquidCapacity - next.liquids.get(liquid));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(flow &gt; 0f &amp;&amp; ofract &lt;= fract &amp;&amp; next.acceptLiquid(self(), liquid)){</b>
+<b class="nc">&nbsp;                next.handleLiquid(self(), liquid, flow);</b>
+<b class="nc">&nbsp;                liquids.remove(liquid, flow);</b>
+<b class="nc">&nbsp;                return flow;</b>
+&nbsp;                //handle reactions between different liquid types ?
+<b class="nc">&nbsp;            }else if(!next.block.consumesLiquid(liquid) &amp;&amp; next.liquids.currentAmount() / next.block.liquidCapacity &gt; 0.1f &amp;&amp; fract &gt; 0.1f){</b>
+&nbsp;                //TODO !IMPORTANT! uses current(), which is 1) wrong for multi-liquid blocks and 2) causes unwanted reactions, e.g. hydrogen + slag in pump
+&nbsp;                //TODO these are incorrect effect positions
+<b class="nc">&nbsp;                float fx = (x + next.x) / 2f, fy = (y + next.y) / 2f;</b>
+&nbsp;
+<b class="nc">&nbsp;                Liquid other = next.liquids.current();</b>
+<b class="nc">&nbsp;                if(other.blockReactive &amp;&amp; liquid.blockReactive){</b>
+&nbsp;                    //TODO liquid reaction handler for extensibility
+<b class="nc">&nbsp;                    if((other.flammability &gt; 0.3f &amp;&amp; liquid.temperature &gt; 0.7f) || (liquid.flammability &gt; 0.3f &amp;&amp; other.temperature &gt; 0.7f)){</b>
+<b class="nc">&nbsp;                        damageContinuous(1);</b>
+<b class="nc">&nbsp;                        next.damageContinuous(1);</b>
+<b class="nc">&nbsp;                        if(Mathf.chanceDelta(0.1)){</b>
+<b class="nc">&nbsp;                            Fx.fire.at(fx, fy);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }else if((liquid.temperature &gt; 0.7f &amp;&amp; other.temperature &lt; 0.55f) || (other.temperature &gt; 0.7f &amp;&amp; liquid.temperature &lt; 0.55f)){</b>
+<b class="nc">&nbsp;                        liquids.remove(liquid, Math.min(liquids.get(liquid), 0.7f * Time.delta));</b>
+<b class="nc">&nbsp;                        if(Mathf.chanceDelta(0.2f)){</b>
+<b class="nc">&nbsp;                            Fx.steam.at(fx, fy);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Building getLiquidDestination(Building from, Liquid liquid){
+<b class="nc">&nbsp;        return self();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Payload getPayload(){
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Tries to take the payload. Returns null if no payload is present. */
+&nbsp;    public @Nullable Payload takePayload(){
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable PayloadSeq getPayloads(){
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Tries to put this item into a nearby container, if there are no available
+&nbsp;     * containers, it gets added to the block&#39;s inventory.
+&nbsp;     */
+&nbsp;    public void offload(Item item){
+<b class="nc">&nbsp;        produced(item, 1);</b>
+<b class="nc">&nbsp;        int dump = this.cdump;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; proximity.size; i++){</b>
+<b class="nc">&nbsp;            incrementDump(proximity.size);</b>
+<b class="nc">&nbsp;            Building other = proximity.get((i + dump) % proximity.size);</b>
+<b class="nc">&nbsp;            if(other.acceptItem(self(), item) &amp;&amp; canDump(other, item)){</b>
+<b class="nc">&nbsp;                other.handleItem(self(), item);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        handleItem(self(), item);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Tries to put this item into a nearby container. Returns success. Unlike #offload(), this method does not change the block inventory.
+&nbsp;     */
+&nbsp;    public boolean put(Item item){
+<b class="nc">&nbsp;        int dump = this.cdump;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; proximity.size; i++){</b>
+<b class="nc">&nbsp;            incrementDump(proximity.size);</b>
+<b class="nc">&nbsp;            Building other = proximity.get((i + dump) % proximity.size);</b>
+<b class="nc">&nbsp;            if(other.acceptItem(self(), item) &amp;&amp; canDump(other, item)){</b>
+<b class="nc">&nbsp;                other.handleItem(self(), item);</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void produced(Item item){
+<b class="nc">&nbsp;        produced(item, 1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void produced(Item item, int amount){
+<b class="nc">&nbsp;        if(Vars.state.rules.sector != null &amp;&amp; team == state.rules.defaultTeam){</b>
+<b class="nc">&nbsp;            Vars.state.rules.sector.info.handleProduction(item, amount);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!net.client()) item.unlock();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Dumps any item with an accumulator. May dump multiple times per frame. Use with care. */
+&nbsp;    public boolean dumpAccumulate(){
+<b class="nc">&nbsp;        return dumpAccumulate(null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Dumps any item with an accumulator. May dump multiple times per frame. Use with care. */
+&nbsp;    public boolean dumpAccumulate(Item item){
+<b class="nc">&nbsp;        boolean res = false;</b>
+<b class="nc">&nbsp;        dumpAccum += delta();</b>
+<b class="nc">&nbsp;        while(dumpAccum &gt;= 1f){</b>
+<b class="nc">&nbsp;            res |= dump(item);</b>
+<b class="nc">&nbsp;            dumpAccum -=1f;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return res;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Try dumping any item near the building. */
+&nbsp;    public boolean dump(){
+<b class="nc">&nbsp;        return dump(null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Try dumping a specific item near the building.
+&nbsp;     * @param todump Item to dump. Can be null to dump anything.
+&nbsp;     */
+&nbsp;    public boolean dump(Item todump){
+<b class="nc">&nbsp;        if(!block.hasItems || items.total() == 0 || proximity.size == 0 || (todump != null &amp;&amp; !items.has(todump))) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        int dump = this.cdump;</b>
+<b class="nc">&nbsp;        var allItems = content.items();</b>
+<b class="nc">&nbsp;        int itemSize = allItems.size;</b>
+<b class="nc">&nbsp;        Object[] itemArray = allItems.items;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; proximity.size; i++){</b>
+<b class="nc">&nbsp;            Building other = proximity.get((i + dump) % proximity.size);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(todump == null){</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int ii = 0; ii &lt; itemSize; ii++){</b>
+<b class="nc">&nbsp;                    if(!items.has(ii)) continue;</b>
+<b class="nc">&nbsp;                    Item item = (Item)itemArray[ii];</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(other.acceptItem(self(), item) &amp;&amp; canDump(other, item)){</b>
+<b class="nc">&nbsp;                        other.handleItem(self(), item);</b>
+<b class="nc">&nbsp;                        items.remove(item, 1);</b>
+<b class="nc">&nbsp;                        incrementDump(proximity.size);</b>
+<b class="nc">&nbsp;                        return true;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }else{
+<b class="nc">&nbsp;                if(other.acceptItem(self(), todump) &amp;&amp; canDump(other, todump)){</b>
+<b class="nc">&nbsp;                    other.handleItem(self(), todump);</b>
+<b class="nc">&nbsp;                    items.remove(todump, 1);</b>
+<b class="nc">&nbsp;                    incrementDump(proximity.size);</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            incrementDump(proximity.size);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void incrementDump(int prox){
+<b class="nc">&nbsp;        cdump = ((cdump + 1) % prox);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Used for dumping items. */
+&nbsp;    public boolean canDump(Building to, Item item){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Try offloading an item to a nearby container in its facing direction. Returns true if success. */
+&nbsp;    public boolean moveForward(Item item){
+<b class="nc">&nbsp;        Building other = front();</b>
+<b class="nc">&nbsp;        if(other != null &amp;&amp; other.team == team &amp;&amp; other.acceptItem(self(), item)){</b>
+<b class="nc">&nbsp;            other.handleItem(self(), item);</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called shortly before this building is removed. */
+&nbsp;    public void onProximityRemoved(){
+<b class="nc">&nbsp;        if(power != null){</b>
+<b class="nc">&nbsp;            powerGraphRemoved();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called after this building is created in the world. May be called multiple times, or when adjacent buildings change. */
+&nbsp;    public void onProximityAdded(){
+<b class="nc">&nbsp;        if(power != null){</b>
+<b class="nc">&nbsp;            updatePowerGraph();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when anything adjacent to this building is placed/removed, including itself. */
+&nbsp;    public void onProximityUpdate(){
+<b class="nc">&nbsp;        noSleep();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updatePowerGraph(){
+<b class="nc">&nbsp;        for(Building other : getPowerConnections(tempBuilds)){</b>
+<b class="nc">&nbsp;            if(other.power != null){</b>
+<b class="nc">&nbsp;                other.power.graph.addGraph(power.graph);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void powerGraphRemoved(){
+<b class="nc">&nbsp;        if(power == null) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        power.graph.remove(self());</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; power.links.size; i++){</b>
+<b class="nc">&nbsp;            Tile other = world.tile(power.links.get(i));</b>
+<b class="nc">&nbsp;            if(other != null &amp;&amp; other.build != null &amp;&amp; other.build.power != null){</b>
+<b class="nc">&nbsp;                other.build.power.links.removeValue(pos());</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        power.links.clear();</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    public boolean conductsTo(Building other){
+<b class="nc">&nbsp;        return !block.insulated;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Building&gt; getPowerConnections(Seq&lt;Building&gt; out){
+<b class="nc">&nbsp;        out.clear();</b>
+<b class="nc">&nbsp;        if(power == null) return out;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Building other : proximity){</b>
+<b class="nc">&nbsp;            if(other != null &amp;&amp; other.power != null</b>
+&nbsp;            &amp;&amp; other.team == team
+&nbsp;            &amp;&amp; !(block.consumesPower &amp;&amp; other.block.consumesPower &amp;&amp; !block.outputsPower &amp;&amp; !other.block.outputsPower &amp;&amp; !block.conductivePower &amp;&amp; !other.block.conductivePower)
+<b class="nc">&nbsp;            &amp;&amp; conductsTo(other) &amp;&amp; other.conductsTo(self()) &amp;&amp; !power.links.contains(other.pos())){</b>
+<b class="nc">&nbsp;                out.add(other);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; power.links.size; i++){</b>
+<b class="nc">&nbsp;            Tile link = world.tile(power.links.get(i));</b>
+<b class="nc">&nbsp;            if(link != null &amp;&amp; link.build != null &amp;&amp; link.build.power != null &amp;&amp; link.build.team == team) out.add(link.build);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getProgressIncrease(float baseTime){
+<b class="nc">&nbsp;        return 1f / baseTime * edelta();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getDisplayEfficiency(){
+<b class="nc">&nbsp;        return getProgressIncrease(1f) / edelta();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this block should play its active sound.*/
+&nbsp;    public boolean shouldActiveSound(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return volume cale of active sound. */
+&nbsp;    public float activeSoundVolume(){
+<b class="nc">&nbsp;        return 1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this block should play its idle sound.*/
+&nbsp;    public boolean shouldAmbientSound(){
+<b class="nc">&nbsp;        return shouldConsume();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawStatus(){
+<b class="nc">&nbsp;        if(block.enableDrawStatus &amp;&amp; block.consumers.length &gt; 0){</b>
+<b class="nc">&nbsp;            float multiplier = block.size &gt; 1 ? 1 : 0.64f;</b>
+<b class="nc">&nbsp;            float brcx = x + (block.size * tilesize / 2f) - (tilesize * multiplier / 2f);</b>
+<b class="nc">&nbsp;            float brcy = y - (block.size * tilesize / 2f) + (tilesize * multiplier / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.power + 1);</b>
+<b class="nc">&nbsp;            Draw.color(Pal.gray);</b>
+<b class="nc">&nbsp;            Fill.square(brcx, brcy, 2.5f * multiplier, 45);</b>
+<b class="nc">&nbsp;            Draw.color(status().color);</b>
+<b class="nc">&nbsp;            Fill.square(brcx, brcy, 1.5f * multiplier, 45);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawCracks(){
+<b class="nc">&nbsp;        if(!block.drawCracks || !damaged() || block.size &gt; BlockRenderer.maxCrackSize) return;</b>
+<b class="nc">&nbsp;        int id = pos();</b>
+<b class="nc">&nbsp;        TextureRegion region = renderer.blocks.cracks[block.size - 1][Mathf.clamp((int)((1f - healthf()) * BlockRenderer.crackRegions), 0, BlockRenderer.crackRegions-1)];</b>
+<b class="nc">&nbsp;        Draw.colorl(0.2f, 0.1f + (1f - healthf())* 0.6f);</b>
+&nbsp;        //TODO could be random, flipped, pseudorandom, etc
+<b class="nc">&nbsp;        Draw.rect(region, x, y, (id%4)*90);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Draw the block overlay that is shown when a cursor is over the block. */
+&nbsp;    public void drawSelect(){
+<b class="nc">&nbsp;        block.drawOverlay(x, y, rotation);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawDisabled(){
+<b class="nc">&nbsp;        Draw.color(Color.scarlet);</b>
+<b class="nc">&nbsp;        Draw.alpha(0.8f);</b>
+&nbsp;
+<b class="nc">&nbsp;        float size = 6f;</b>
+<b class="nc">&nbsp;        Draw.rect(Icon.cancel.getRegion(), x, y, size, size);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(){
+<b class="nc">&nbsp;        if(block.variants == 0 || block.variantRegions == null){</b>
+<b class="nc">&nbsp;            Draw.rect(block.region, x, y, drawrot());</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Draw.rect(block.variantRegions[Mathf.randomSeed(tile.pos(), 0, Math.max(0, block.variantRegions.length - 1))], x, y, drawrot());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        drawTeamTop();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void payloadDraw(){
+<b class="nc">&nbsp;        draw();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawTeamTop(){
+<b class="nc">&nbsp;        if(block.teamRegion.found()){</b>
+<b class="nc">&nbsp;            if(block.teamRegions[team.id] == block.teamRegion) Draw.color(team.color);</b>
+<b class="nc">&nbsp;            Draw.rect(block.teamRegions[team.id], x, y);</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawLight(){
+<b class="nc">&nbsp;        Liquid liq = block.hasLiquids &amp;&amp; block.lightLiquid == null ? liquids.current() : block.lightLiquid;</b>
+<b class="nc">&nbsp;        if(block.hasLiquids &amp;&amp; block.drawLiquidLight &amp;&amp; liq.lightColor.a &gt; 0.001f){</b>
+&nbsp;            //yes, I am updating in draw()... but this is purely visual anyway, better have it here than in update() where it wastes time
+<b class="nc">&nbsp;            visualLiquid = Mathf.lerpDelta(visualLiquid, liquids.get(liq)&gt;= 0.01f ? 1f : 0f, 0.06f);</b>
+<b class="nc">&nbsp;            drawLiquidLight(liq, visualLiquid);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawLiquidLight(Liquid liquid, float amount){
+<b class="nc">&nbsp;        if(amount &gt; 0.01f){</b>
+<b class="nc">&nbsp;            Color color = liquid.lightColor;</b>
+<b class="nc">&nbsp;            float fract = 1f;</b>
+<b class="nc">&nbsp;            float opacity = color.a * fract;</b>
+<b class="nc">&nbsp;            if(opacity &gt; 0.001f){</b>
+<b class="nc">&nbsp;                Drawf.light(x, y, block.size * 30f * fract, color, opacity * amount);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawTeam(){
+<b class="nc">&nbsp;        Draw.color(team.color);</b>
+<b class="nc">&nbsp;        Draw.rect(&quot;block-border&quot;, x - block.size * tilesize / 2f + 4, y - block.size * tilesize / 2f + 4);</b>
+<b class="nc">&nbsp;        Draw.color();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether a building has regen/healing suppressed; if so, spawns particles on it. */
+&nbsp;    public boolean checkSuppression(){
+<b class="nc">&nbsp;        if(isHealSuppressed()){</b>
+<b class="nc">&nbsp;            if(Mathf.chanceDelta(0.03)){</b>
+<b class="nc">&nbsp;                Fx.regenSuppressParticle.at(x + Mathf.range(block.size * tilesize/2f - 1f), y + Mathf.range(block.size * tilesize/2f - 1f), suppressColor);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called after the block is placed by this client. */
+&nbsp;    @CallSuper
+&nbsp;    public void playerPlaced(Object config){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called after the block is placed by anyone. */
+&nbsp;    @CallSuper
+&nbsp;    public void placed(){
+<b class="nc">&nbsp;        if(net.client()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if((block.consumesPower || block.outputsPower) &amp;&amp; block.hasPower &amp;&amp; block.connectedPower){</b>
+<b class="nc">&nbsp;            PowerNode.getNodeLinks(tile, block, team, other -&gt; {</b>
+<b class="nc">&nbsp;                if(!other.power.links.contains(pos())){</b>
+<b class="nc">&nbsp;                    other.configureAny(pos());</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this building is in a payload */
+&nbsp;    public boolean isPayload(){
+<b class="nc">&nbsp;        return tile == emptyTile;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Called when a block is placed over some other blocks. This seq will always have at least one item.
+&nbsp;     * Should load some previous state, if necessary. */
+&nbsp;    public void overwrote(Seq&lt;Building&gt; previous){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void onRemoved(){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called every frame a unit is on this  */
+&nbsp;    public void unitOn(Unit unit){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called when a unit that spawned at this tile is removed. */
+&nbsp;    public void unitRemoved(Unit unit){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called when arbitrary configuration is applied to a tile. */
+&nbsp;    public void configured(@Nullable Unit builder, @Nullable Object value){
+&nbsp;        //null is of type void.class; anonymous classes use their superclass.
+<b class="nc">&nbsp;        Class&lt;?&gt; type = value == null ? void.class : value.getClass().isAnonymousClass() ? value.getClass().getSuperclass() : value.getClass();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(value instanceof Item) type = Item.class;</b>
+<b class="nc">&nbsp;        if(value instanceof Block) type = Block.class;</b>
+<b class="nc">&nbsp;        if(value instanceof Liquid) type = Liquid.class;</b>
+<b class="nc">&nbsp;        if(value instanceof UnitType) type = UnitType.class;</b>
+&nbsp;        
+<b class="nc">&nbsp;        if(builder != null &amp;&amp; builder.isPlayer()){</b>
+<b class="nc">&nbsp;            updateLastAccess(builder.getPlayer());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(block.configurations.containsKey(type)){</b>
+<b class="nc">&nbsp;            block.configurations.get(type).get(this, value);</b>
+<b class="nc">&nbsp;        }else if(value instanceof Building build){</b>
+&nbsp;            //copy config of another building
+<b class="nc">&nbsp;            var conf = build.config();</b>
+<b class="nc">&nbsp;            if(conf != null &amp;&amp; !(conf instanceof Building)){</b>
+<b class="nc">&nbsp;                configured(builder, conf);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateLastAccess(Player player){
+<b class="nc">&nbsp;        lastAccessed = player.coloredName();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when the block is tapped by the local player. */
+&nbsp;    public void tapped(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called *after* the tile has been removed. */
+&nbsp;    public void afterDestroyed(){
+<b class="nc">&nbsp;        if(block.destroyBullet != null){</b>
+&nbsp;            //I really do not like that the bullet will not destroy derelict
+&nbsp;            //but I can&#39;t do anything about it without using a random team
+&nbsp;            //which may or may not cause issues with servers and js
+<b class="nc">&nbsp;            block.destroyBullet.create(this, block.destroyBulletSameTeam ? team : Team.derelict, x, y, Mathf.randomSeed(id(), 360f));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the cap for item amount calculations, used when this block explodes. */
+&nbsp;    public int explosionItemCap(){
+<b class="nc">&nbsp;        return block.itemCapacity;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when a block begins (not finishes!) deconstruction. The building is still present at this point. */
+&nbsp;    public void onDeconstructed(@Nullable Unit builder){
+&nbsp;        //deposit non-incinerable liquid on ground
+<b class="nc">&nbsp;        if(liquids != null &amp;&amp; liquids.currentAmount() &gt; 0 &amp;&amp; (!liquids.current().incinerable || block.deconstructDropAllLiquid)){</b>
+<b class="nc">&nbsp;            float perCell = liquids.currentAmount() / (block.size * block.size) * 2f;</b>
+<b class="nc">&nbsp;            tile.getLinkedTiles(other -&gt; Puddles.deposit(other, liquids.current(), perCell));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when the block is destroyed. The tile is still intact at this stage. */
+&nbsp;    public void onDestroyed(){
+<b class="nc">&nbsp;        if(sound != null){</b>
+<b class="nc">&nbsp;            sound.stop();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float explosiveness = block.baseExplosiveness;</b>
+<b class="nc">&nbsp;        float flammability = 0f;</b>
+<b class="nc">&nbsp;        float power = 0f;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(block.hasItems){</b>
+<b class="nc">&nbsp;            for(Item item : content.items()){</b>
+<b class="nc">&nbsp;                int amount = Math.min(items.get(item), explosionItemCap());</b>
+<b class="nc">&nbsp;                explosiveness += item.explosiveness * amount;</b>
+<b class="nc">&nbsp;                flammability += item.flammability * amount;</b>
+<b class="nc">&nbsp;                power += item.charge * Mathf.pow(amount, 1.1f) * 150f;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(block.hasLiquids){</b>
+<b class="nc">&nbsp;            flammability += liquids.sum((liquid, amount) -&gt; liquid.flammability * amount / 2f);</b>
+<b class="nc">&nbsp;            explosiveness += liquids.sum((liquid, amount) -&gt; liquid.explosiveness * amount / 2f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(block.consPower != null &amp;&amp; block.consPower.buffered){</b>
+<b class="nc">&nbsp;            power += this.power.status * block.consPower.capacity;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(block.hasLiquids &amp;&amp; state.rules.damageExplosions){</b>
+&nbsp;
+<b class="nc">&nbsp;            liquids.each((liquid, amount) -&gt; {</b>
+<b class="nc">&nbsp;                float splash = Mathf.clamp(amount / 4f, 0f, 10f);</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; Mathf.clamp(amount / 5, 0, 30); i++){</b>
+<b class="nc">&nbsp;                    Time.run(i / 2f, () -&gt; {</b>
+<b class="nc">&nbsp;                        Tile other = world.tileWorld(x + Mathf.range(block.size * tilesize / 2), y + Mathf.range(block.size * tilesize / 2));</b>
+<b class="nc">&nbsp;                        if(other != null){</b>
+<b class="nc">&nbsp;                            Puddles.deposit(other, liquid, splash);</b>
+&nbsp;                        }
+&nbsp;                    });
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+&nbsp;        //cap explosiveness so fluid tanks/vaults don&#39;t instakill units
+<b class="nc">&nbsp;        Damage.dynamicExplosion(x, y, flammability, explosiveness * 3.5f, power, tilesize * block.size / 2f, state.rules.damageExplosions, block.destroyEffect);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(block.createRubble &amp;&amp; !floor().solid &amp;&amp; !floor().isLiquid){</b>
+<b class="nc">&nbsp;            Effect.rubble(x, y, block.size);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getDisplayName(){
+&nbsp;        //derelict team icon currently doesn&#39;t display
+<b class="nc">&nbsp;        return team == Team.derelict ?</b>
+<b class="nc">&nbsp;            block.localizedName + &quot;\n&quot; + Core.bundle.get(&quot;block.derelict&quot;) :</b>
+<b class="nc">&nbsp;            block.localizedName + (team == player.team() || team.emoji.isEmpty() ? &quot;&quot; : &quot; &quot; + team.emoji);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TextureRegion getDisplayIcon(){
+<b class="nc">&nbsp;        return block.uiIcon;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the item module to use for flow rate calculations */
+&nbsp;    public ItemModule flowItems(){
+<b class="nc">&nbsp;        return items;</b>
+&nbsp;    }
+&nbsp;    @Override
+&nbsp;    public void display(Table table){
+&nbsp;        //display the block stuff
+&nbsp;        //TODO duplicated code?
+<b class="nc">&nbsp;        table.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.left();</b>
+<b class="nc">&nbsp;            t.add(new Image(block.getDisplayIcon(tile))).size(8 * 4);</b>
+<b class="nc">&nbsp;            t.labelWrap(block.getDisplayName(tile)).left().width(190f).padLeft(5);</b>
+<b class="nc">&nbsp;        }).growX().left();</b>
+&nbsp;
+<b class="nc">&nbsp;        table.row();</b>
+&nbsp;
+&nbsp;        //only display everything else if the team is the same
+<b class="nc">&nbsp;        if(team == player.team()){</b>
+<b class="nc">&nbsp;            table.table(bars -&gt; {</b>
+<b class="nc">&nbsp;                bars.defaults().growX().height(18f).pad(4);</b>
+&nbsp;
+<b class="nc">&nbsp;                displayBars(bars);</b>
+<b class="nc">&nbsp;            }).growX();</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.table(this::displayConsumption).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;            boolean displayFlow = (block.category == Category.distribution || block.category == Category.liquid) &amp;&amp; block.displayFlow;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(displayFlow){</b>
+<b class="nc">&nbsp;                String ps = &quot; &quot; + StatUnit.perSecond.localized();</b>
+&nbsp;
+<b class="nc">&nbsp;                var flowItems = flowItems();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(flowItems != null){</b>
+<b class="nc">&nbsp;                    table.row();</b>
+<b class="nc">&nbsp;                    table.left();</b>
+<b class="nc">&nbsp;                    table.table(l -&gt; {</b>
+<b class="nc">&nbsp;                        Bits current = new Bits();</b>
+&nbsp;
+<b class="nc">&nbsp;                        Runnable rebuild = () -&gt; {</b>
+<b class="nc">&nbsp;                            l.clearChildren();</b>
+<b class="nc">&nbsp;                            l.left();</b>
+<b class="nc">&nbsp;                            for(Item item : content.items()){</b>
+<b class="nc">&nbsp;                                if(flowItems.hasFlowItem(item)){</b>
+<b class="nc">&nbsp;                                    l.image(item.uiIcon).scaling(Scaling.fit).padRight(3f);</b>
+<b class="nc">&nbsp;                                    l.label(() -&gt; flowItems.getFlowRate(item) &lt; 0 ? &quot;...&quot; : Strings.fixed(flowItems.getFlowRate(item), 1) + ps).color(Color.lightGray);</b>
+<b class="nc">&nbsp;                                    l.row();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        };
+&nbsp;
+<b class="nc">&nbsp;                        rebuild.run();</b>
+<b class="nc">&nbsp;                        l.update(() -&gt; {</b>
+<b class="nc">&nbsp;                            for(Item item : content.items()){</b>
+<b class="nc">&nbsp;                                if(flowItems.hasFlowItem(item) &amp;&amp; !current.get(item.id)){</b>
+<b class="nc">&nbsp;                                    current.set(item.id);</b>
+<b class="nc">&nbsp;                                    rebuild.run();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                    }).left();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(liquids != null){</b>
+<b class="nc">&nbsp;                    table.row();</b>
+<b class="nc">&nbsp;                    table.left();</b>
+<b class="nc">&nbsp;                    table.table(l -&gt; {</b>
+<b class="nc">&nbsp;                        Bits current = new Bits();</b>
+&nbsp;
+<b class="nc">&nbsp;                        Runnable rebuild = () -&gt; {</b>
+<b class="nc">&nbsp;                            l.clearChildren();</b>
+<b class="nc">&nbsp;                            l.left();</b>
+<b class="nc">&nbsp;                            for(var liquid : content.liquids()){</b>
+<b class="nc">&nbsp;                                if(liquids.hasFlowLiquid(liquid)){</b>
+<b class="nc">&nbsp;                                    l.image(liquid.uiIcon).scaling(Scaling.fit).size(32f).padRight(3f);</b>
+<b class="nc">&nbsp;                                    l.label(() -&gt; liquids.getFlowRate(liquid) &lt; 0 ? &quot;...&quot; : Strings.fixed(liquids.getFlowRate(liquid), 1) + ps).color(Color.lightGray);</b>
+<b class="nc">&nbsp;                                    l.row();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        };
+&nbsp;
+<b class="nc">&nbsp;                        rebuild.run();</b>
+<b class="nc">&nbsp;                        l.update(() -&gt; {</b>
+<b class="nc">&nbsp;                            for(var liquid : content.liquids()){</b>
+<b class="nc">&nbsp;                                if(liquids.hasFlowLiquid(liquid) &amp;&amp; !current.get(liquid.id)){</b>
+<b class="nc">&nbsp;                                    current.set(liquid.id);</b>
+<b class="nc">&nbsp;                                    rebuild.run();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        });
+<b class="nc">&nbsp;                    }).left();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(net.active() &amp;&amp; lastAccessed != null){</b>
+<b class="nc">&nbsp;                table.row();</b>
+<b class="nc">&nbsp;                table.add(Core.bundle.format(&quot;lastaccessed&quot;, lastAccessed)).growX().wrap().left();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            table.marginBottom(-5);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void displayConsumption(Table table){
+<b class="nc">&nbsp;        table.left();</b>
+<b class="nc">&nbsp;        for(Consume cons : block.consumers){</b>
+<b class="nc">&nbsp;            if(cons.optional &amp;&amp; cons.booster) continue;</b>
+<b class="nc">&nbsp;            cons.build(self(), table);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void displayBars(Table table){
+<b class="nc">&nbsp;        for(Func&lt;Building, Bar&gt; bar : block.listBars()){</b>
+<b class="nc">&nbsp;            var result = bar.get(self());</b>
+<b class="nc">&nbsp;            if(result == null) continue;</b>
+<b class="nc">&nbsp;            table.add(result).growX();</b>
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;     /** Called when this block is tapped to build a UI on the table.
+&nbsp;      * configurable must be true for this to be called.*/
+&nbsp;    public void buildConfiguration(Table table){
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Update table alignment after configuring.*/
+&nbsp;    public void updateTableAlign(Table table){
+<b class="nc">&nbsp;        Vec2 pos = Core.input.mouseScreen(x, y - block.size * tilesize / 2f - 1);</b>
+<b class="nc">&nbsp;        table.setPosition(pos.x, pos.y, Align.top);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Returns whether a hand cursor should be shown over this block. */
+&nbsp;    public Cursor getCursor(){
+<b class="nc">&nbsp;        return block.configurable &amp;&amp; interactable(player.team()) ? SystemCursor.hand : SystemCursor.arrow;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Called when another tile is tapped while this building is selected.
+&nbsp;     * @return whether this block should be deselected.
+&nbsp;     */
+&nbsp;    public boolean onConfigureBuildTapped(Building other){
+<b class="nc">&nbsp;        if(block.clearOnDoubleTap){</b>
+<b class="nc">&nbsp;            if(self() == other){</b>
+<b class="nc">&nbsp;                deselect();</b>
+<b class="nc">&nbsp;                configure(null);</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return self() != other;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Called when a position is tapped while this building is selected.
+&nbsp;     *
+&nbsp;     * @return whether the tap event is consumed - if true, the player will not start shooting or interact with things under the cursor.
+&nbsp;     * */
+&nbsp;    public boolean onConfigureTapped(float x, float y){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Called when this block&#39;s config menu is closed.
+&nbsp;     */
+<b class="nc">&nbsp;    public void onConfigureClosed(){}</b>
+&nbsp;
+&nbsp;    /** Returns whether this config menu should show when the specified player taps it. */
+&nbsp;    public boolean shouldShowConfigure(Player player){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Whether this configuration should be hidden now. Called every frame the config is open. */
+&nbsp;    public boolean shouldHideConfigure(Player player){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawConfigure(){
+<b class="nc">&nbsp;        Draw.color(Pal.accent);</b>
+<b class="nc">&nbsp;        Lines.stroke(1f);</b>
+<b class="nc">&nbsp;        Lines.square(x, y, block.size * tilesize / 2f + 1f);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean checkSolid(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float handleDamage(float amount){
+<b class="nc">&nbsp;        return amount;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean absorbLasers(){
+<b class="nc">&nbsp;        return block.absorbLasers;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isInsulated(){
+<b class="nc">&nbsp;        return block.insulated;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean collide(Bullet other){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Handle a bullet collision.
+&nbsp;     * @return whether the bullet should be removed. */
+&nbsp;    public boolean collision(Bullet other){
+<b class="nc">&nbsp;        boolean wasDead = health &lt;= 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        float damage = other.damage() * other.type().buildingDamageMultiplier;</b>
+<b class="nc">&nbsp;        if(!other.type.pierceArmor){</b>
+<b class="nc">&nbsp;            damage = Damage.applyArmor(damage, block.armor);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        damage(other.team, damage);</b>
+<b class="nc">&nbsp;        Events.fire(bulletDamageEvent.set(self(), other));</b>
+&nbsp;
+<b class="nc">&nbsp;        if(health &lt;= 0 &amp;&amp; !wasDead){</b>
+<b class="nc">&nbsp;            Events.fire(new BuildingBulletDestroyEvent(self(), other));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Used to handle damage from splash damage for certain types of blocks. */
+&nbsp;    public void damage(@Nullable Team source, float damage){
+<b class="nc">&nbsp;        damage(damage);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Handles splash damage with a bullet source. */
+&nbsp;    public void damage(Bullet bullet, Team source, float damage){
+<b class="nc">&nbsp;        damage(source, damage);</b>
+<b class="nc">&nbsp;        Events.fire(bulletDamageEvent.set(self(), bullet));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Changes this building&#39;s team in a safe manner. */
+&nbsp;    public void changeTeam(Team next){
+<b class="nc">&nbsp;        if(this.team == next) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Team last = this.team;</b>
+<b class="nc">&nbsp;        boolean was = isValid();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(was) indexer.removeIndex(tile);</b>
+&nbsp;
+<b class="nc">&nbsp;        this.team = next;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(was){</b>
+<b class="nc">&nbsp;            indexer.addIndex(tile);</b>
+<b class="nc">&nbsp;            Events.fire(teamChangeEvent.set(last, self()));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canPickup(){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called right before this building is picked up. */
+&nbsp;    public void pickedUp(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** Called right after this building is picked up. */
+&nbsp;    public void afterPickedUp(){
+<b class="nc">&nbsp;        if(power != null){</b>
+&nbsp;            //TODO can lead to ghost graphs?
+<b class="nc">&nbsp;            power.graph = new PowerGraph();</b>
+<b class="nc">&nbsp;            power.links.clear();</b>
+<b class="nc">&nbsp;            if(block.consPower != null &amp;&amp; !block.consPower.buffered){</b>
+<b class="nc">&nbsp;                power.status = 0f;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeFromProximity(){
+<b class="nc">&nbsp;        onProximityRemoved();</b>
+<b class="nc">&nbsp;        tmpTiles.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        Point2[] nearby = Edges.getEdges(block.size);</b>
+<b class="nc">&nbsp;        for(Point2 point : nearby){</b>
+<b class="nc">&nbsp;            Building other = world.build(tile.x + point.x, tile.y + point.y);</b>
+&nbsp;            //remove this tile from all nearby tile&#39;s proximities
+<b class="nc">&nbsp;            if(other != null){</b>
+<b class="nc">&nbsp;                tmpTiles.add(other);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(Building other : tmpTiles){</b>
+<b class="nc">&nbsp;            other.proximity.remove(self(), true);</b>
+<b class="nc">&nbsp;            other.onProximityUpdate();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        proximity.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateProximity(){
+<b class="nc">&nbsp;        tmpTiles.clear();</b>
+<b class="nc">&nbsp;        proximity.clear();</b>
+&nbsp;        
+<b class="nc">&nbsp;        Point2[] nearby = Edges.getEdges(block.size);</b>
+<b class="nc">&nbsp;        for(Point2 point : nearby){</b>
+<b class="nc">&nbsp;            Building other = world.build(tile.x + point.x, tile.y + point.y);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(other == null || other.team != team) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            other.proximity.addUnique(self());</b>
+&nbsp;
+<b class="nc">&nbsp;            tmpTiles.add(other);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //using a set to prevent duplicates
+<b class="nc">&nbsp;        for(Building tile : tmpTiles){</b>
+<b class="nc">&nbsp;            proximity.add(tile);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        onProximityAdded();</b>
+<b class="nc">&nbsp;        onProximityUpdate();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Building other : tmpTiles){</b>
+<b class="nc">&nbsp;            other.onProximityUpdate();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void consume(){
+<b class="nc">&nbsp;        for(Consume cons : block.consumers){</b>
+<b class="nc">&nbsp;            cons.trigger(self());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canConsume(){
+<b class="nc">&nbsp;        return potentialEfficiency &gt; 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Scaled delta. */
+&nbsp;    public float delta(){
+<b class="nc">&nbsp;        return Time.delta * timeScale;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Efficiency * delta. */
+&nbsp;    public float edelta(){
+<b class="nc">&nbsp;        return efficiency * delta();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called after efficiency is updated but before consumers are updated. Use to apply your own multiplier. */
+&nbsp;    public void updateEfficiencyMultiplier(){
+<b class="nc">&nbsp;        float scale = efficiencyScale();</b>
+<b class="nc">&nbsp;        efficiency *= scale;</b>
+<b class="nc">&nbsp;        optionalEfficiency *= scale;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Calculate your own efficiency multiplier. By default, this is applied in updateEfficiencyMultiplier. */
+&nbsp;    public float efficiencyScale(){
+<b class="nc">&nbsp;        return 1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateConsumption(){
+&nbsp;        //everything is valid when cheating
+<b class="nc">&nbsp;        if(!block.hasConsumers || cheating()){</b>
+<b class="nc">&nbsp;            potentialEfficiency = enabled &amp;&amp; productionValid() ? 1f : 0f;</b>
+<b class="nc">&nbsp;            efficiency = optionalEfficiency = shouldConsume() ? potentialEfficiency : 0f;</b>
+<b class="nc">&nbsp;            shouldConsumePower = true;</b>
+<b class="nc">&nbsp;            updateEfficiencyMultiplier();</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;        //disabled -&gt; nothing works
+<b class="nc">&nbsp;        if(!enabled){</b>
+<b class="nc">&nbsp;            potentialEfficiency = efficiency = optionalEfficiency = 0f;</b>
+<b class="nc">&nbsp;            shouldConsumePower = false;</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean update = shouldConsume() &amp;&amp; productionValid();</b>
+&nbsp;
+<b class="nc">&nbsp;        float minEfficiency = 1f;</b>
+&nbsp;
+&nbsp;        //assume efficiency is 1 for the calculations below
+<b class="nc">&nbsp;        efficiency = optionalEfficiency = 1f;</b>
+<b class="nc">&nbsp;        shouldConsumePower = true;</b>
+&nbsp;
+&nbsp;        //first pass: get the minimum efficiency of any consumer
+<b class="nc">&nbsp;        for(var cons : block.nonOptionalConsumers){</b>
+<b class="nc">&nbsp;            float result = cons.efficiency(self());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(cons != block.consPower &amp;&amp; result &lt;= 0.0000001f){</b>
+<b class="nc">&nbsp;                shouldConsumePower = false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            minEfficiency = Math.min(minEfficiency, result);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //same for optionals
+<b class="nc">&nbsp;        for(var cons : block.optionalConsumers){</b>
+<b class="nc">&nbsp;            optionalEfficiency = Math.min(optionalEfficiency, cons.efficiency(self()));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //efficiency is now this minimum value
+<b class="nc">&nbsp;        efficiency = minEfficiency;</b>
+<b class="nc">&nbsp;        optionalEfficiency = Math.min(optionalEfficiency, minEfficiency);</b>
+&nbsp;
+&nbsp;        //assign &quot;potential&quot;
+<b class="nc">&nbsp;        potentialEfficiency = efficiency;</b>
+&nbsp;
+&nbsp;        //no updating means zero efficiency
+<b class="nc">&nbsp;        if(!update){</b>
+<b class="nc">&nbsp;            efficiency = optionalEfficiency = 0f;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        updateEfficiencyMultiplier();</b>
+&nbsp;
+&nbsp;        //second pass: update every consumer based on efficiency
+<b class="nc">&nbsp;        if(update &amp;&amp; efficiency &gt; 0){</b>
+<b class="nc">&nbsp;            for(var cons : block.updateConsumers){</b>
+<b class="nc">&nbsp;                cons.update(self());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updatePayload(@Nullable Unit unitHolder, @Nullable Building buildingHolder){
+<b class="nc">&nbsp;        update();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateTile(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** @return ambient sound volume scale. */
+&nbsp;    public float ambientVolume(){
+<b class="nc">&nbsp;        return efficiency;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;    //region overrides
+&nbsp;
+&nbsp;    /** Tile configuration. Defaults to null. Used for block rebuilding. */
+&nbsp;    @Nullable
+&nbsp;    public Object config(){
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public boolean isValid(){
+<b class="nc">&nbsp;        return tile.build == self() &amp;&amp; !dead();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @MethodPriority(100)
+&nbsp;    @Override
+&nbsp;    public void heal(){
+<b class="nc">&nbsp;        healthChanged();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @MethodPriority(100)
+&nbsp;    @Override
+&nbsp;    public void heal(float amount){
+<b class="nc">&nbsp;        healthChanged();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float hitSize(){
+<b class="nc">&nbsp;        return tile.block().size * tilesize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public void kill(){
+<b class="nc">&nbsp;        Call.buildDestroyed(self());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public void damage(float damage){
+<b class="nc">&nbsp;        if(dead()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        float dm = state.rules.blockHealth(team);</b>
+<b class="nc">&nbsp;        lastDamageTime = Time.time;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Mathf.zero(dm)){</b>
+<b class="nc">&nbsp;            damage = health + 1;</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            damage /= dm;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //TODO handle this better on the client.
+<b class="nc">&nbsp;        if(!net.client()){</b>
+<b class="nc">&nbsp;            health -= handleDamage(damage);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        healthChanged();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(health &lt;= 0){</b>
+<b class="nc">&nbsp;            Call.buildDestroyed(self());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void healthChanged(){
+&nbsp;        //server-side, health updates are batched.
+<b class="nc">&nbsp;        if(net.server()){</b>
+<b class="nc">&nbsp;            netServer.buildHealthUpdate(self());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        indexer.notifyHealthChanged(self());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public double sense(LAccess sensor){
+<b class="nc">&nbsp;        return switch(sensor){</b>
+<b class="nc">&nbsp;            case x -&gt; World.conv(x);</b>
+<b class="nc">&nbsp;            case y -&gt; World.conv(y);</b>
+<b class="nc">&nbsp;            case color -&gt; Color.toDoubleBits(team.color.r, team.color.g, team.color.b, 1f);</b>
+<b class="nc">&nbsp;            case dead -&gt; !isValid() ? 1 : 0;</b>
+<b class="nc">&nbsp;            case solid -&gt; block.solid || checkSolid() ? 1 : 0;</b>
+<b class="nc">&nbsp;            case team -&gt; team.id;</b>
+<b class="nc">&nbsp;            case health -&gt; health;</b>
+<b class="nc">&nbsp;            case maxHealth -&gt; maxHealth;</b>
+<b class="nc">&nbsp;            case efficiency -&gt; efficiency;</b>
+<b class="nc">&nbsp;            case timescale -&gt; timeScale;</b>
+<b class="nc">&nbsp;            case range -&gt; this instanceof Ranged r ? r.range() / tilesize : 0;</b>
+<b class="nc">&nbsp;            case rotation -&gt; rotation;</b>
+<b class="nc">&nbsp;            case totalItems -&gt; items == null ? 0 : items.total();</b>
+&nbsp;            //totalLiquids is inherently bad design, but unfortunately it is useful for conduits/tanks
+<b class="nc">&nbsp;            case totalLiquids -&gt; liquids == null ? 0 : liquids.currentAmount();</b>
+<b class="nc">&nbsp;            case totalPower -&gt; power == null || block.consPower == null ? 0 : power.status * (block.consPower.buffered ? block.consPower.capacity : 1f);</b>
+<b class="nc">&nbsp;            case itemCapacity -&gt; block.hasItems ? block.itemCapacity : 0;</b>
+<b class="nc">&nbsp;            case liquidCapacity -&gt; block.hasLiquids ? block.liquidCapacity : 0;</b>
+<b class="nc">&nbsp;            case powerCapacity -&gt; block.consPower != null ? block.consPower.capacity : 0f;</b>
+<b class="nc">&nbsp;            case powerNetIn -&gt; power == null ? 0 : power.graph.getLastScaledPowerIn() * 60;</b>
+<b class="nc">&nbsp;            case powerNetOut -&gt; power == null ? 0 : power.graph.getLastScaledPowerOut() * 60;</b>
+<b class="nc">&nbsp;            case powerNetStored -&gt; power == null ? 0 : power.graph.getLastPowerStored();</b>
+<b class="nc">&nbsp;            case powerNetCapacity -&gt; power == null ? 0 : power.graph.getLastCapacity();</b>
+<b class="nc">&nbsp;            case enabled -&gt; enabled ? 1 : 0;</b>
+<b class="nc">&nbsp;            case controlled -&gt; this instanceof ControlBlock c &amp;&amp; c.isControlled() ? GlobalVars.ctrlPlayer : 0;</b>
+<b class="nc">&nbsp;            case payloadCount -&gt; getPayload() != null ? 1 : 0;</b>
+<b class="nc">&nbsp;            case size -&gt; block.size;</b>
+<b class="nc">&nbsp;            case cameraX, cameraY, cameraWidth, cameraHeight -&gt; this instanceof ControlBlock c ? c.unit().sense(sensor) : 0;</b>
+<b class="nc">&nbsp;            default -&gt; Float.NaN; //gets converted to null in logic</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Object senseObject(LAccess sensor){
+<b class="nc">&nbsp;        return switch(sensor){</b>
+<b class="nc">&nbsp;            case type -&gt; block;</b>
+<b class="nc">&nbsp;            case firstItem -&gt; items == null ? null : items.first();</b>
+<b class="nc">&nbsp;            case config -&gt; block.configSenseable() ? config() : null;</b>
+<b class="nc">&nbsp;            case payloadType -&gt; getPayload() instanceof UnitPayload p1 ? p1.unit.type : getPayload() instanceof BuildPayload p2 ? p2.block() : null;</b>
+<b class="nc">&nbsp;            default -&gt; noSensed;</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public double sense(Content content){
+<b class="nc">&nbsp;        if(content instanceof Item i &amp;&amp; items != null) return items.get(i);</b>
+<b class="nc">&nbsp;        if(content instanceof Liquid l &amp;&amp; liquids != null) return liquids.get(l);</b>
+<b class="nc">&nbsp;        return Float.NaN; //invalid sense</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void control(LAccess type, double p1, double p2, double p3, double p4){
+<b class="nc">&nbsp;        if(type == LAccess.enabled){</b>
+<b class="nc">&nbsp;            enabled = !Mathf.zero((float)p1);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void control(LAccess type, Object p1, double p2, double p3, double p4){
+&nbsp;        //don&#39;t execute configure instructions that copy logic building configures; this can cause extreme lag
+<b class="nc">&nbsp;        if(type == LAccess.config &amp;&amp; block.logicConfigurable &amp;&amp; !(p1 instanceof LogicBuild)){</b>
+&nbsp;            //change config only if it&#39;s new
+<b class="nc">&nbsp;            configured(null, p1);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setProp(LAccess prop, double value){
+<b class="nc">&nbsp;        switch(prop){</b>
+&nbsp;            case health -&gt; {
+<b class="nc">&nbsp;                health = (float)Mathf.clamp(value, 0, maxHealth);</b>
+<b class="nc">&nbsp;                if(health &lt;= 0f &amp;&amp; !dead()){</b>
+<b class="nc">&nbsp;                    Call.buildDestroyed(self());</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    healthChanged();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;            case team -&gt; {
+<b class="nc">&nbsp;                Team team = Team.get((int)value);</b>
+<b class="nc">&nbsp;                if(this.team != team){</b>
+<b class="nc">&nbsp;                    changeTeam(team);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;            case totalPower -&gt; {
+<b class="nc">&nbsp;                if(power != null &amp;&amp; block.consPower != null &amp;&amp; block.consPower.buffered){</b>
+<b class="nc">&nbsp;                    power.status = Mathf.clamp((float)(value / block.consPower.capacity));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setProp(LAccess prop, Object value){
+<b class="nc">&nbsp;        switch(prop){</b>
+&nbsp;            case team -&gt; {
+<b class="nc">&nbsp;                if(value instanceof Team team &amp;&amp; this.team != team){</b>
+<b class="nc">&nbsp;                    changeTeam(team);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setProp(UnlockableContent content, double value){
+<b class="nc">&nbsp;        if(content instanceof Item item &amp;&amp; items != null){</b>
+<b class="nc">&nbsp;            int amount = (int)value;</b>
+<b class="nc">&nbsp;            if(items.get(item) != amount){</b>
+<b class="nc">&nbsp;                if(items.get(item) &lt; amount){</b>
+<b class="nc">&nbsp;                    handleStack(item, acceptStack(item, amount - items.get(item), null), null);</b>
+<b class="nc">&nbsp;                }else if(amount &gt;= 0){</b>
+<b class="nc">&nbsp;                    removeStack(item, items.get(item) - amount);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(content instanceof Liquid liquid &amp;&amp; liquids != null){</b>
+<b class="nc">&nbsp;            float amount = Mathf.clamp((float)value, 0f, block.liquidCapacity);</b>
+&nbsp;            //decreasing amount is always allowed
+<b class="nc">&nbsp;            if(amount &lt; liquids.get(liquid) || (acceptLiquid(self(), liquid) &amp;&amp; (liquids.current() == liquid || liquids.currentAmount() &lt;= 0.1f || block.consumesLiquid(liquid)))){</b>
+<b class="nc">&nbsp;                liquids.set(liquid, amount);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public boolean inFogTo(Team viewer){
+<b class="nc">&nbsp;        if(team == viewer || !state.rules.fog) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        int size = block.size, of = block.sizeOffset, tx = tile.x, ty = tile.y;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!isDiscovered(viewer)) return true;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = 0; x &lt; size; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; size; y++){</b>
+<b class="nc">&nbsp;                if(fogControl.isVisibleTile(viewer, tx + x + of, ty + y + of)){</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void remove(){
+<b class="nc">&nbsp;        if(sound != null){</b>
+<b class="nc">&nbsp;            sound.stop();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void killed(){
+<b class="nc">&nbsp;        dead = true;</b>
+<b class="nc">&nbsp;        Events.fire(new BlockDestroyEvent(tile));</b>
+<b class="nc">&nbsp;        block.destroySound.at(tile);</b>
+<b class="nc">&nbsp;        onDestroyed();</b>
+<b class="nc">&nbsp;        if(tile != emptyTile){</b>
+<b class="nc">&nbsp;            tile.remove();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        remove();</b>
+<b class="nc">&nbsp;        afterDestroyed();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Final
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public void update(){
+&nbsp;        //TODO should just avoid updating buildings instead
+<b class="nc">&nbsp;        if(state.isEditor()) return;</b>
+&nbsp;
+&nbsp;        //TODO refactor to timestamp-based system?
+<b class="nc">&nbsp;        if((timeScaleDuration -= Time.delta) &lt;= 0f || !block.canOverdrive){</b>
+<b class="nc">&nbsp;            timeScale = 1f;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!allowUpdate()){</b>
+<b class="nc">&nbsp;            enabled = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!headless &amp;&amp; !wasVisible &amp;&amp; state.rules.fog &amp;&amp; !inFogTo(player.team())){</b>
+<b class="nc">&nbsp;            visibleFlags |= (1L &lt;&lt; player.team().id);</b>
+<b class="nc">&nbsp;            wasVisible = true;</b>
+<b class="nc">&nbsp;            renderer.blocks.updateShadow(self());</b>
+<b class="nc">&nbsp;            renderer.minimap.update(tile);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //TODO separate system for sound? AudioSource, etc
+<b class="nc">&nbsp;        if(!headless){</b>
+<b class="nc">&nbsp;            if(sound != null){</b>
+<b class="nc">&nbsp;                sound.update(x, y, shouldActiveSound(), activeSoundVolume());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(block.ambientSound != Sounds.none &amp;&amp; shouldAmbientSound()){</b>
+<b class="nc">&nbsp;                control.sound.loop(block.ambientSound, self(), block.ambientSoundVolume * ambientVolume());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        updateConsumption();</b>
+&nbsp;
+&nbsp;        //TODO just handle per-block instead
+<b class="nc">&nbsp;        if(enabled || !block.noUpdateDisabled){</b>
+<b class="nc">&nbsp;            updateTile();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void hitbox(Rect out){
+<b class="nc">&nbsp;        out.setCentered(x, y, block.size * tilesize, block.size * tilesize);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return &quot;Building#&quot; + id() + &quot;[&quot; + tileX() + &quot;,&quot; + tileY() + &quot;]:&quot; + block;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //endregion
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

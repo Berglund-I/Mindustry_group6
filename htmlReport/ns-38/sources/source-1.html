@@ -1,0 +1,164 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ArmoredConveyor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.distribution</a>
+</div>
+
+<h1>Coverage Summary for Class: ArmoredConveyor (mindustry.world.blocks.distribution)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ArmoredConveyor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/8)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ArmoredConveyor$ArmoredConveyorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90%
+  </span>
+  <span class="absValue">
+    (9/10)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.distribution;
+&nbsp;
+&nbsp;import arc.math.geom.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;public class ArmoredConveyor extends Conveyor{
+&nbsp;
+&nbsp;    public ArmoredConveyor(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        noSideBlend = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean blends(Tile tile, int rotation, int otherx, int othery, int otherrot, Block otherblock){
+<b class="fc">&nbsp;        return (otherblock.outputsItems() &amp;&amp; blendsArmored(tile, rotation, otherx, othery, otherrot, otherblock)) ||</b>
+<b class="fc">&nbsp;            (lookingAt(tile, rotation, otherx, othery, otherblock) &amp;&amp; otherblock.hasItems);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean blendsArmored(Tile tile, int rotation, int otherx, int othery, int otherrot, Block otherblock){
+<b class="fc">&nbsp;        return Point2.equals(tile.x + Geometry.d4(rotation).x, tile.y + Geometry.d4(rotation).y, otherx, othery)</b>
+<b class="fc">&nbsp;            || ((!otherblock.rotatedOutput(otherx, othery) &amp;&amp; Edges.getFacingEdge(otherblock, otherx, othery, tile) != null &amp;&amp;</b>
+<b class="fc">&nbsp;            Edges.getFacingEdge(otherblock, otherx, othery, tile).relativeTo(tile) == rotation) ||</b>
+<b class="fc">&nbsp;            (otherblock instanceof Conveyor &amp;&amp; otherblock.rotatedOutput(otherx, othery) &amp;&amp; Point2.equals(otherx + Geometry.d4(otherrot).x, othery + Geometry.d4(otherrot).y, tile.x, tile.y)));</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ArmoredConveyorBuild extends ConveyorBuild{</b>
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            return super.acceptItem(source, item) &amp;&amp; (source.block instanceof Conveyor || Edges.getFacingEdge(source.tile(), tile).relativeTo(tile) == rotation);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

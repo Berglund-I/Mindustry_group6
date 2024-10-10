@@ -1,0 +1,210 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PowerDiode</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.power</a>
+</div>
+
+<h1>Coverage Summary for Class: PowerDiode (mindustry.world.blocks.power)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PowerDiode</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (12/15)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PowerDiode$PowerDiodeBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (3/15)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (15/30)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.power;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class PowerDiode extends Block{
+&nbsp;    public @Load(&quot;@-arrow&quot;) TextureRegion arrow;
+&nbsp;
+&nbsp;    public PowerDiode(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        insulated = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.power;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+<b class="fc">&nbsp;        schematicPriority = 10;</b>
+<b class="fc">&nbsp;        envEnabled |= Env.space;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;back&quot;, entity -&gt; new Bar(&quot;bar.input&quot;, Pal.powerBar, () -&gt; bar(entity.back())));</b>
+<b class="fc">&nbsp;        addBar(&quot;front&quot;, entity -&gt; new Bar(&quot;bar.output&quot;, Pal.powerBar, () -&gt; bar(entity.front())));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        Draw.rect(fullIcon, plan.drawx(), plan.drawy());</b>
+<b class="nc">&nbsp;        Draw.rect(arrow, plan.drawx(), plan.drawy(), !rotate ? 0 : plan.rotation * 90);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // battery % of the graph on either side, defaults to zero
+&nbsp;    public float bar(Building tile){
+<b class="nc">&nbsp;        return (tile != null &amp;&amp; tile.block.hasPower) ? tile.power.graph.getLastPowerStored() / tile.power.graph.getTotalBatteryCapacity() : 0f;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class PowerDiodeBuild extends Building{</b>
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y, 0);</b>
+<b class="nc">&nbsp;            Draw.rect(arrow, x, y, rotate ? rotdeg() : 0);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            super.updateTile();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(tile == null || front() == null || back() == null || !back().block.hasPower || !front().block.hasPower || back().team != team || front().team != team) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            PowerGraph backGraph = back().power.graph;</b>
+<b class="nc">&nbsp;            PowerGraph frontGraph = front().power.graph;</b>
+<b class="nc">&nbsp;            if(backGraph == frontGraph) return;</b>
+&nbsp;
+&nbsp;            // 0f - 1f of battery capacity in use
+<b class="nc">&nbsp;            float backStored = backGraph.getBatteryStored() / backGraph.getTotalBatteryCapacity();</b>
+<b class="nc">&nbsp;            float frontStored = frontGraph.getBatteryStored() / frontGraph.getTotalBatteryCapacity();</b>
+&nbsp;
+&nbsp;            // try to send if the back side has more % capacity stored than the front side
+<b class="nc">&nbsp;            if(backStored &gt; frontStored){</b>
+&nbsp;                // send half of the difference
+<b class="nc">&nbsp;                float amount = backGraph.getBatteryStored() * (backStored - frontStored) / 2;</b>
+&nbsp;                // prevent sending more than the front can handle
+<b class="nc">&nbsp;                amount = Mathf.clamp(amount, 0, frontGraph.getTotalBatteryCapacity() * (1 - frontStored));</b>
+&nbsp;
+<b class="nc">&nbsp;                backGraph.transferPower(-amount);</b>
+<b class="nc">&nbsp;                frontGraph.transferPower(amount);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

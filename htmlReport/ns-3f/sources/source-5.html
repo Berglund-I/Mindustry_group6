@@ -1,0 +1,255 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ImpactReactor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.power</a>
+</div>
+
+<h1>Coverage Summary for Class: ImpactReactor (mindustry.world.blocks.power)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ImpactReactor</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75.9%
+  </span>
+  <span class="absValue">
+    (22/29)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ImpactReactor$ImpactReactorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    39.1%
+  </span>
+  <span class="absValue">
+    (9/23)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (6/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    59.6%
+  </span>
+  <span class="absValue">
+    (31/52)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.power;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.draw.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class ImpactReactor extends PowerGenerator{
+<b class="fc">&nbsp;    public final int timerUse = timers++;</b>
+<b class="fc">&nbsp;    public float warmupSpeed = 0.001f;</b>
+<b class="fc">&nbsp;    public float itemDuration = 60f;</b>
+&nbsp;
+&nbsp;    public ImpactReactor(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        hasPower = true;</b>
+<b class="fc">&nbsp;        hasLiquids = true;</b>
+<b class="fc">&nbsp;        liquidCapacity = 30f;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        outputsPower = consumesPower = true;</b>
+<b class="fc">&nbsp;        flags = EnumSet.of(BlockFlag.reactor, BlockFlag.generator);</b>
+<b class="fc">&nbsp;        lightRadius = 115f;</b>
+<b class="fc">&nbsp;        emitLight = true;</b>
+<b class="fc">&nbsp;        envEnabled = Env.any;</b>
+&nbsp;
+<b class="fc">&nbsp;        drawer = new DrawMulti(new DrawRegion(&quot;-bottom&quot;), new DrawPlasma(), new DrawDefault());</b>
+&nbsp;
+<b class="fc">&nbsp;        explosionShake = 6f;</b>
+<b class="fc">&nbsp;        explosionShakeDuration = 16f;</b>
+<b class="fc">&nbsp;        explosionDamage = 1900 * 4;</b>
+<b class="fc">&nbsp;        explosionMinWarmup = 0.3f;</b>
+<b class="fc">&nbsp;        explodeEffect = Fx.impactReactorExplosion;</b>
+<b class="fc">&nbsp;        explodeSound = Sounds.explosionbig;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;power&quot;, (GeneratorBuild entity) -&gt; new Bar(() -&gt;</b>
+<b class="nc">&nbsp;        Core.bundle.format(&quot;bar.poweroutput&quot;,</b>
+<b class="nc">&nbsp;        Strings.fixed(Math.max(entity.getPowerProduction() - consPower.usage, 0) * 60 * entity.timeScale(), 1)),</b>
+<b class="nc">&nbsp;        () -&gt; Pal.powerBar,</b>
+<b class="nc">&nbsp;        () -&gt; entity.productionEfficiency));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(hasItems){</b>
+<b class="nc">&nbsp;            stats.add(Stat.productionTime, itemDuration / 60f, StatUnit.seconds);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class ImpactReactorBuild extends GeneratorBuild{</b>
+&nbsp;        public float warmup, totalProgress;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(efficiency &gt;= 0.9999f &amp;&amp; power.status &gt;= 0.99f){</b>
+<b class="nc">&nbsp;                boolean prevOut = getPowerProduction() &lt;= consPower.requestedPower(this);</b>
+&nbsp;
+<b class="nc">&nbsp;                warmup = Mathf.lerpDelta(warmup, 1f, warmupSpeed * timeScale);</b>
+<b class="nc">&nbsp;                if(Mathf.equal(warmup, 1f, 0.001f)){</b>
+<b class="nc">&nbsp;                    warmup = 1f;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(!prevOut &amp;&amp; (getPowerProduction() &gt; consPower.requestedPower(this))){</b>
+<b class="nc">&nbsp;                    Events.fire(Trigger.impactPower);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(timer(timerUse, itemDuration / timeScale)){</b>
+<b class="nc">&nbsp;                    consume();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else{</b>
+<b class="fc">&nbsp;                warmup = Mathf.lerpDelta(warmup, 0f, 0.01f);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            totalProgress += warmup * Time.delta;</b>
+&nbsp;
+<b class="fc">&nbsp;            productionEfficiency = Mathf.pow(warmup, 5f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float warmup(){
+<b class="nc">&nbsp;            return warmup;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float totalProgress(){
+<b class="nc">&nbsp;            return totalProgress;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float ambientVolume(){
+<b class="nc">&nbsp;            return warmup;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public double sense(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.heat) return warmup;</b>
+<b class="nc">&nbsp;            return super.sense(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.f(warmup);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            warmup = read.f();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,433 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > FileChooser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: FileChooser (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FileChooser</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/146)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">FileChooser$FileHistory</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/163)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;public class FileChooser extends BaseDialog{
+<b class="nc">&nbsp;    private static final Fi homeDirectory = Core.files.absolute(Core.files.getExternalStoragePath());</b>
+<b class="nc">&nbsp;    static Fi lastDirectory = Core.files.absolute(Core.settings.getString(&quot;lastDirectory&quot;, homeDirectory.absolutePath()));</b>
+&nbsp;
+&nbsp;    Fi directory;
+&nbsp;    private Table files;
+&nbsp;    private ScrollPane pane;
+&nbsp;    private TextField navigation, filefield;
+&nbsp;    private TextButton ok;
+<b class="nc">&nbsp;    private FileHistory stack = new FileHistory();</b>
+&nbsp;    private Boolf&lt;Fi&gt; filter;
+&nbsp;    private Cons&lt;Fi&gt; selectListener;
+&nbsp;    private boolean open;
+&nbsp;
+&nbsp;    public FileChooser(String title, Boolf&lt;Fi&gt; filter, boolean open, Cons&lt;Fi&gt; result){
+<b class="nc">&nbsp;        super(title);</b>
+<b class="nc">&nbsp;        setFillParent(true);</b>
+<b class="nc">&nbsp;        this.open = open;</b>
+<b class="nc">&nbsp;        this.filter = filter;</b>
+<b class="nc">&nbsp;        this.selectListener = result;</b>
+&nbsp;
+<b class="nc">&nbsp;        directory = getLastDirectory();</b>
+&nbsp;
+<b class="nc">&nbsp;        onResize(() -&gt; {</b>
+<b class="nc">&nbsp;            cont.clear();</b>
+<b class="nc">&nbsp;            setupWidgets();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        shown(() -&gt; {</b>
+<b class="nc">&nbsp;            cont.clear();</b>
+<b class="nc">&nbsp;            setupWidgets();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        keyDown(KeyCode.enter, () -&gt; {</b>
+<b class="nc">&nbsp;            ok.fireClick();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        addCloseListener();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setupWidgets(){
+<b class="nc">&nbsp;        cont.margin(-10);</b>
+&nbsp;
+<b class="nc">&nbsp;        Table content = new Table();</b>
+&nbsp;
+<b class="nc">&nbsp;        filefield = new TextField();</b>
+<b class="nc">&nbsp;        filefield.setOnlyFontChars(false);</b>
+<b class="nc">&nbsp;        if(!open) filefield.addInputDialog();</b>
+<b class="nc">&nbsp;        filefield.setDisabled(open);</b>
+&nbsp;
+<b class="nc">&nbsp;        ok = new TextButton(open ? &quot;@load&quot; : &quot;@save&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        ok.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;            if(ok.isDisabled()) return;</b>
+<b class="nc">&nbsp;            if(selectListener != null)</b>
+<b class="nc">&nbsp;                selectListener.get(directory.child(filefield.getText()));</b>
+<b class="nc">&nbsp;            hide();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        filefield.changed(() -&gt; {</b>
+<b class="nc">&nbsp;            ok.setDisabled(filefield.getText().replace(&quot; &quot;, &quot;&quot;).isEmpty());</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        filefield.change();</b>
+&nbsp;
+<b class="nc">&nbsp;        TextButton cancel = new TextButton(&quot;@cancel&quot;);</b>
+<b class="nc">&nbsp;        cancel.clicked(this::hide);</b>
+&nbsp;
+<b class="nc">&nbsp;        navigation = new TextField(&quot;&quot;);</b>
+<b class="nc">&nbsp;        navigation.touchable = Touchable.disabled;</b>
+&nbsp;
+<b class="nc">&nbsp;        files = new Table();</b>
+<b class="nc">&nbsp;        files.marginRight(10);</b>
+<b class="nc">&nbsp;        files.marginLeft(3);</b>
+&nbsp;
+<b class="nc">&nbsp;        pane = new ScrollPane(files);</b>
+<b class="nc">&nbsp;        pane.setOverscroll(false, false);</b>
+<b class="nc">&nbsp;        pane.setFadeScrollBars(false);</b>
+&nbsp;
+<b class="nc">&nbsp;        updateFiles(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        Table icontable = new Table();</b>
+&nbsp;
+<b class="nc">&nbsp;        ImageButton up = new ImageButton(Icon.upOpen);</b>
+<b class="nc">&nbsp;        up.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;            directory = directory.parent();</b>
+<b class="nc">&nbsp;            updateFiles(true);</b>
+&nbsp;        });
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        ImageButton back = new ImageButton(Icon.left);</b>
+<b class="nc">&nbsp;        ImageButton forward = new ImageButton(Icon.right);</b>
+&nbsp;
+<b class="nc">&nbsp;        forward.clicked(() -&gt; stack.forward());</b>
+<b class="nc">&nbsp;        back.clicked(() -&gt; stack.back());</b>
+<b class="nc">&nbsp;        forward.setDisabled(() -&gt; !stack.canForward());</b>
+<b class="nc">&nbsp;        back.setDisabled(() -&gt; !stack.canBack());</b>
+&nbsp;
+<b class="nc">&nbsp;        ImageButton home = new ImageButton(Icon.home);</b>
+<b class="nc">&nbsp;        home.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;            directory = homeDirectory;</b>
+<b class="nc">&nbsp;            setLastDirectory(directory);</b>
+<b class="nc">&nbsp;            updateFiles(true);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        icontable.defaults().height(60).growX().padTop(5).uniform();</b>
+<b class="nc">&nbsp;        icontable.add(home);</b>
+<b class="nc">&nbsp;        icontable.add(back);</b>
+<b class="nc">&nbsp;        icontable.add(forward);</b>
+<b class="nc">&nbsp;        icontable.add(up);</b>
+&nbsp;
+<b class="nc">&nbsp;        Table fieldcontent = new Table();</b>
+<b class="nc">&nbsp;        fieldcontent.bottom().left().add(new Label(&quot;@filename&quot;));</b>
+<b class="nc">&nbsp;        fieldcontent.add(filefield).height(40f).fillX().expandX().padLeft(10f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Table buttons = new Table();</b>
+<b class="nc">&nbsp;        buttons.defaults().growX().height(60);</b>
+<b class="nc">&nbsp;        buttons.add(cancel);</b>
+<b class="nc">&nbsp;        buttons.add(ok);</b>
+&nbsp;
+<b class="nc">&nbsp;        content.top().left();</b>
+<b class="nc">&nbsp;        content.add(icontable).expandX().fillX();</b>
+<b class="nc">&nbsp;        content.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        content.center().add(pane).colspan(3).grow();</b>
+<b class="nc">&nbsp;        content.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!open){</b>
+<b class="nc">&nbsp;            content.bottom().left().add(fieldcontent).colspan(3).grow().padTop(-2).padBottom(2);</b>
+<b class="nc">&nbsp;            content.row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        content.add(buttons).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.add(content).grow();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateFileFieldStatus(){
+<b class="nc">&nbsp;        if(!open){</b>
+<b class="nc">&nbsp;            ok.setDisabled(filefield.getText().replace(&quot; &quot;, &quot;&quot;).isEmpty());</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            ok.setDisabled(!directory.child(filefield.getText()).exists() || directory.child(filefield.getText()).isDirectory());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Fi[] getFileNames(){
+<b class="nc">&nbsp;        Fi[] handles = directory.list(file -&gt; !file.getName().startsWith(&quot;.&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;        Arrays.sort(handles, (a, b) -&gt; {</b>
+<b class="nc">&nbsp;            if(a.isDirectory() &amp;&amp; !b.isDirectory()) return -1;</b>
+<b class="nc">&nbsp;            if(!a.isDirectory() &amp;&amp; b.isDirectory()) return 1;</b>
+<b class="nc">&nbsp;            return String.CASE_INSENSITIVE_ORDER.compare(a.name(), b.name());</b>
+&nbsp;        });
+<b class="nc">&nbsp;        return handles;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void updateFiles(boolean push){
+<b class="nc">&nbsp;        if(push) stack.push(directory);</b>
+<b class="nc">&nbsp;        navigation.setText(directory.toString());</b>
+&nbsp;
+<b class="nc">&nbsp;        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);</b>
+&nbsp;
+<b class="nc">&nbsp;        layout.setText(Fonts.def, navigation.getText());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(layout.width &lt; navigation.getWidth()){</b>
+<b class="nc">&nbsp;            navigation.setCursorPosition(0);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            navigation.setCursorPosition(navigation.getText().length());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Pools.free(layout);</b>
+&nbsp;
+<b class="nc">&nbsp;        files.clearChildren();</b>
+<b class="nc">&nbsp;        files.top().left();</b>
+<b class="nc">&nbsp;        Fi[] names = getFileNames();</b>
+&nbsp;
+<b class="nc">&nbsp;        Image upimage = new Image(Icon.upOpen);</b>
+<b class="nc">&nbsp;        TextButton upbutton = new TextButton(&quot;..&quot; + directory.toString(), Styles.flatTogglet);</b>
+<b class="nc">&nbsp;        upbutton.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;            directory = directory.parent();</b>
+<b class="nc">&nbsp;            setLastDirectory(directory);</b>
+<b class="nc">&nbsp;            updateFiles(true);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        upbutton.left().add(upimage).padRight(4f).padLeft(4);</b>
+<b class="nc">&nbsp;        upbutton.getLabel().setAlignment(Align.left);</b>
+<b class="nc">&nbsp;        upbutton.getCells().reverse();</b>
+&nbsp;
+<b class="nc">&nbsp;        files.add(upbutton).align(Align.topLeft).fillX().expandX().height(50).pad(2).colspan(2);</b>
+<b class="nc">&nbsp;        files.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        ButtonGroup&lt;TextButton&gt; group = new ButtonGroup&lt;&gt;();</b>
+<b class="nc">&nbsp;        group.setMinCheckCount(0);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Fi file : names){</b>
+<b class="nc">&nbsp;            if(!file.isDirectory() &amp;&amp; !filter.get(file)) continue; //skip non-filtered files</b>
+&nbsp;
+<b class="nc">&nbsp;            String filename = file.name();</b>
+&nbsp;
+<b class="nc">&nbsp;            TextButton button = new TextButton(filename.replace(&quot;[&quot;, &quot;[[&quot;), Styles.flatTogglet);</b>
+<b class="nc">&nbsp;            button.getLabel().setWrap(false);</b>
+<b class="nc">&nbsp;            button.getLabel().setEllipsis(true);</b>
+<b class="nc">&nbsp;            group.add(button);</b>
+&nbsp;
+<b class="nc">&nbsp;            button.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;                if(!file.isDirectory()){</b>
+<b class="nc">&nbsp;                    filefield.setText(filename);</b>
+<b class="nc">&nbsp;                    updateFileFieldStatus();</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    directory = directory.child(filename);</b>
+<b class="nc">&nbsp;                    setLastDirectory(directory);</b>
+<b class="nc">&nbsp;                    updateFiles(true);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            filefield.changed(() -&gt; {</b>
+<b class="nc">&nbsp;                button.setChecked(filename.equals(filefield.getText()));</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            Image image = new Image(file.isDirectory() ? Icon.folder : Icon.fileText);</b>
+&nbsp;
+<b class="nc">&nbsp;            button.add(image).padRight(4f).padLeft(4);</b>
+<b class="nc">&nbsp;            button.getCells().reverse();</b>
+<b class="nc">&nbsp;            files.top().left().add(button).align(Align.topLeft).fillX().expandX()</b>
+<b class="nc">&nbsp;            .height(50).pad(2).padTop(0).padBottom(0).colspan(2);</b>
+<b class="nc">&nbsp;            button.getLabel().setAlignment(Align.left);</b>
+<b class="nc">&nbsp;            files.row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        pane.setScrollY(0f);</b>
+<b class="nc">&nbsp;        updateFileFieldStatus();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(open) filefield.clearText();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static synchronized void setLastDirectory(Fi directory){
+<b class="nc">&nbsp;        lastDirectory = directory;</b>
+<b class="nc">&nbsp;        Core.settings.put(&quot;lastDirectory&quot;, directory.absolutePath());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static synchronized Fi getLastDirectory(){
+<b class="nc">&nbsp;        if(!lastDirectory.exists()){</b>
+<b class="nc">&nbsp;            lastDirectory = homeDirectory;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return lastDirectory;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public class FileHistory{
+<b class="nc">&nbsp;        private Seq&lt;Fi&gt; history = new Seq&lt;&gt;();</b>
+&nbsp;        private int index;
+&nbsp;
+<b class="nc">&nbsp;        public FileHistory(){</b>
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void push(Fi file){
+<b class="nc">&nbsp;            if(index != history.size) history.truncate(index);</b>
+<b class="nc">&nbsp;            history.add(file);</b>
+<b class="nc">&nbsp;            index++;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void back(){
+<b class="nc">&nbsp;            if(!canBack()) return;</b>
+<b class="nc">&nbsp;            index--;</b>
+<b class="nc">&nbsp;            directory = history.get(index - 1);</b>
+<b class="nc">&nbsp;            setLastDirectory(directory);</b>
+<b class="nc">&nbsp;            updateFiles(false);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void forward(){
+<b class="nc">&nbsp;            if(!canForward()) return;</b>
+<b class="nc">&nbsp;            directory = history.get(index);</b>
+<b class="nc">&nbsp;            setLastDirectory(directory);</b>
+<b class="nc">&nbsp;            index++;</b>
+<b class="nc">&nbsp;            updateFiles(false);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean canForward(){
+<b class="nc">&nbsp;            return !(index &gt;= history.size);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean canBack(){
+<b class="nc">&nbsp;            return !(index == 1) &amp;&amp; index &gt; 0;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

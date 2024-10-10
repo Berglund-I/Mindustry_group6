@@ -1,0 +1,134 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Weaponsc</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: Weaponsc (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Weaponsc</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.math.geom.Position;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.entities.units.WeaponMount;
+&nbsp;import mindustry.type.UnitType;
+&nbsp;
+&nbsp;/**
+&nbsp; * Interface for {@link mindustry.entities.comp.WeaponsComp}
+&nbsp; */
+&nbsp;@Annotations.EntityInterface
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+&nbsp;public interface Weaponsc extends Entityc, Flyingc, Healthc, Hitboxc, Posc, Rotc, Statusc, Teamc, Velc {
+&nbsp;  /**
+&nbsp;   * Aim at something. This will make all mounts point at it. 
+&nbsp;   */
+&nbsp;  void aim(float x, float y);
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Update shooting and rotation for this unit. 
+&nbsp;   */
+&nbsp;  void update();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * weapon mount array, never null 
+&nbsp;   */
+&nbsp;  WeaponMount[] mounts();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * weapon mount array, never null 
+&nbsp;   */
+&nbsp;  void mounts(WeaponMount[] mounts);
+&nbsp;
+&nbsp;  boolean canShoot();
+&nbsp;
+&nbsp;  boolean isRotate();
+&nbsp;
+&nbsp;  boolean isShooting();
+&nbsp;
+&nbsp;  float aimX();
+&nbsp;
+&nbsp;  float aimY();
+&nbsp;
+&nbsp;  float ammo();
+&nbsp;
+&nbsp;  float ammof();
+&nbsp;
+&nbsp;  void aim(Position pos);
+&nbsp;
+&nbsp;  void aimX(float aimX);
+&nbsp;
+&nbsp;  void aimY(float aimY);
+&nbsp;
+&nbsp;  void ammo(float ammo);
+&nbsp;
+&nbsp;  void controlWeapons(boolean rotate, boolean shoot);
+&nbsp;
+&nbsp;  void controlWeapons(boolean rotateShoot);
+&nbsp;
+&nbsp;  void isShooting(boolean isShooting);
+&nbsp;
+&nbsp;  void remove();
+&nbsp;
+&nbsp;  void setWeaponRotation(float rotation);
+&nbsp;
+&nbsp;  void setupWeapons(UnitType def);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

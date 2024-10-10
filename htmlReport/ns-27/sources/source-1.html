@@ -1,0 +1,924 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Administration</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.net</a>
+</div>
+
+<h1>Coverage Summary for Class: Administration (mindustry.net)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Administration</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.2%
+  </span>
+  <span class="absValue">
+    (4/49)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.7%
+  </span>
+  <span class="absValue">
+    (20/206)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Administration$ActionFilter</td>
+  </tr>
+  <tr>
+    <td class="name">Administration$ActionType</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Administration$ChatFilter</td>
+  </tr>
+  <tr>
+    <td class="name">Administration$Config</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/53)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Administration$PlayerAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Administration$PlayerInfo</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Administration$TraceInfo</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    5.1%
+  </span>
+  <span class="absValue">
+    (4/78)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.7%
+  </span>
+  <span class="absValue">
+    (20/297)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.net;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.Log.*;
+&nbsp;import arc.util.pooling.Pool.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.game.EventType.*;
+&nbsp;
+&nbsp;public class Administration{
+<b class="fc">&nbsp;    public Seq&lt;String&gt; bannedIPs = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    public Seq&lt;String&gt; whitelist = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    public Seq&lt;ChatFilter&gt; chatFilters = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    public Seq&lt;ActionFilter&gt; actionFilters = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    public Seq&lt;String&gt; subnetBans = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    public ObjectSet&lt;String&gt; dosBlacklist = new ObjectSet&lt;&gt;();</b>
+<b class="fc">&nbsp;    public ObjectMap&lt;String, Long&gt; kickedIPs = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;
+&nbsp;    private boolean modified, loaded;
+&nbsp;    /** All player info. Maps UUIDs to info. This persists throughout restarts. Do not modify directly. */
+<b class="fc">&nbsp;    public ObjectMap&lt;String, PlayerInfo&gt; playerInfo = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    public Administration(){</b>
+<b class="fc">&nbsp;        load();</b>
+&nbsp;
+&nbsp;        //anti-spam
+<b class="fc">&nbsp;        addChatFilter((player, message) -&gt; {</b>
+<b class="nc">&nbsp;            long resetTime = Config.messageRateLimit.num() * 1000L;</b>
+<b class="nc">&nbsp;            if(Config.antiSpam.bool() &amp;&amp; !player.isLocal() &amp;&amp; !player.admin){</b>
+&nbsp;                //prevent people from spamming messages quickly
+<b class="nc">&nbsp;                if(resetTime &gt; 0 &amp;&amp; Time.timeSinceMillis(player.getInfo().lastMessageTime) &lt; resetTime){</b>
+&nbsp;                    //supress message
+<b class="nc">&nbsp;                    player.sendMessage(&quot;[scarlet]You may only send messages every &quot; + Config.messageRateLimit.num() + &quot; seconds.&quot;);</b>
+<b class="nc">&nbsp;                    player.getInfo().messageInfractions ++;</b>
+&nbsp;                    //kick player for spamming and prevent connection if they&#39;ve done this several times
+<b class="nc">&nbsp;                    if(player.getInfo().messageInfractions &gt;= Config.messageSpamKick.num() &amp;&amp; Config.messageSpamKick.num() != 0){</b>
+<b class="nc">&nbsp;                        player.con.kick(&quot;You have been kicked for spamming.&quot;, 1000 * 60 * 2);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    return null;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    player.getInfo().messageInfractions = 0;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //prevent players from sending the same message twice in the span of 10 seconds
+<b class="nc">&nbsp;                if(message.equals(player.getInfo().lastSentMessage) &amp;&amp; Time.timeSinceMillis(player.getInfo().lastMessageTime) &lt; 1000 * 10){</b>
+<b class="nc">&nbsp;                    player.sendMessage(&quot;[scarlet]You may not send the same message twice.&quot;);</b>
+<b class="nc">&nbsp;                    return null;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                player.getInfo().lastSentMessage = message;</b>
+<b class="nc">&nbsp;                player.getInfo().lastMessageTime = Time.millis();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return message;</b>
+&nbsp;        });
+&nbsp;
+&nbsp;        //block interaction rate limit
+<b class="fc">&nbsp;        addActionFilter(action -&gt; {</b>
+<b class="nc">&nbsp;            if(action.type != ActionType.breakBlock &amp;&amp;</b>
+&nbsp;                action.type != ActionType.placeBlock &amp;&amp;
+&nbsp;                action.type != ActionType.commandUnits &amp;&amp;
+<b class="nc">&nbsp;                Config.antiSpam.bool() &amp;&amp; !action.player.isLocal()){</b>
+&nbsp;
+<b class="nc">&nbsp;                Ratekeeper rate = action.player.getInfo().rate;</b>
+<b class="nc">&nbsp;                if(rate.allow(Config.interactRateWindow.num() * 1000L, Config.interactRateLimit.num())){</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    if(rate.occurences &gt; Config.interactRateKick.num()){</b>
+<b class="nc">&nbsp;                        action.player.kick(&quot;You are interacting with too many blocks.&quot;, 1000 * 30);</b>
+<b class="nc">&nbsp;                    }else if(action.player.getInfo().messageTimer.get(60f * 2f)){</b>
+<b class="nc">&nbsp;                        action.player.sendMessage(&quot;[scarlet]You are interacting with blocks too quickly.&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized void blacklistDos(String address){
+<b class="nc">&nbsp;        dosBlacklist.add(address);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized boolean isDosBlacklisted(String address){
+<b class="nc">&nbsp;        return dosBlacklist.contains(address);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return time at which a player would be pardoned for a kick (0 means they were never kicked) */
+&nbsp;    public long getKickTime(String uuid, String ip){
+<b class="nc">&nbsp;        return Math.max(getInfo(uuid).lastKicked, kickedIPs.get(ip, 0L));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Sets up kick duration for a player. */
+&nbsp;    public void handleKicked(String uuid, String ip, long duration){
+<b class="nc">&nbsp;        kickedIPs.put(ip, Math.max(kickedIPs.get(ip, 0L), Time.millis() + duration));</b>
+&nbsp;
+<b class="nc">&nbsp;        PlayerInfo info = getInfo(uuid);</b>
+<b class="nc">&nbsp;        info.timesKicked++;</b>
+<b class="nc">&nbsp;        info.lastKicked = Math.max(Time.millis() + duration, info.lastKicked);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;String&gt; getSubnetBans(){
+<b class="nc">&nbsp;        return subnetBans;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeSubnetBan(String ip){
+<b class="nc">&nbsp;        subnetBans.remove(ip);</b>
+<b class="nc">&nbsp;        save();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addSubnetBan(String ip){
+<b class="nc">&nbsp;        subnetBans.add(ip);</b>
+<b class="nc">&nbsp;        save();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isSubnetBanned(String ip){
+<b class="nc">&nbsp;        return subnetBans.contains(ip::startsWith);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a chat filter. This will transform the chat messages of every player.
+&nbsp;     * This functionality can be used to implement things like swear filters and special commands.
+&nbsp;     * Note that commands (starting with /) are not filtered.*/
+&nbsp;    public void addChatFilter(ChatFilter filter){
+<b class="fc">&nbsp;        chatFilters.add(filter);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Filters out a chat message. */
+&nbsp;    public @Nullable String filterMessage(Player player, String message){
+<b class="nc">&nbsp;        String current = message;</b>
+<b class="nc">&nbsp;        for(ChatFilter f : chatFilters){</b>
+<b class="nc">&nbsp;            current = f.filter(player, current);</b>
+<b class="nc">&nbsp;            if(current == null) return null;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return current;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Add a filter to actions, preventing things such as breaking or configuring blocks. */
+&nbsp;    public void addActionFilter(ActionFilter filter){
+<b class="fc">&nbsp;        actionFilters.add(filter);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this action is allowed by the action filters. */
+&nbsp;    public boolean allowAction(Player player, ActionType type, Tile tile, Cons&lt;PlayerAction&gt; setter){
+<b class="nc">&nbsp;        return allowAction(player, type, action -&gt; setter.get(action.set(player, type, tile)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this action is allowed by the action filters. */
+&nbsp;    public boolean allowAction(Player player, ActionType type, Cons&lt;PlayerAction&gt; setter){
+&nbsp;        //some actions are done by the server (null player) and thus are always allowed
+<b class="nc">&nbsp;        if(player == null) return true;</b>
+&nbsp;
+<b class="nc">&nbsp;        PlayerAction act = Pools.obtain(PlayerAction.class, PlayerAction::new);</b>
+<b class="nc">&nbsp;        act.player = player;</b>
+<b class="nc">&nbsp;        act.type = type;</b>
+<b class="nc">&nbsp;        setter.get(act);</b>
+<b class="nc">&nbsp;        for(ActionFilter filter : actionFilters){</b>
+<b class="nc">&nbsp;            if(!filter.allow(act)){</b>
+<b class="nc">&nbsp;                Pools.free(act);</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        Pools.free(act);</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getPlayerLimit(){
+<b class="nc">&nbsp;        return Core.settings.getInt(&quot;playerlimit&quot;, headless ? 30 : 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPlayerLimit(int limit){
+<b class="nc">&nbsp;        Core.settings.put(&quot;playerlimit&quot;, limit);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isStrict(){
+<b class="nc">&nbsp;        return Config.strict.bool();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean allowsCustomClients(){
+<b class="nc">&nbsp;        return Config.allowCustomClients.bool();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Call when a player joins to update their information here. */
+&nbsp;    public void updatePlayerJoined(String id, String ip, String name){
+<b class="nc">&nbsp;        PlayerInfo info = getCreateInfo(id);</b>
+<b class="nc">&nbsp;        info.lastName = name;</b>
+<b class="nc">&nbsp;        info.lastIP = ip;</b>
+<b class="nc">&nbsp;        info.timesJoined++;</b>
+<b class="nc">&nbsp;        if(!info.names.contains(name, false)) info.names.add(name);</b>
+<b class="nc">&nbsp;        if(!info.ips.contains(ip, false)) info.ips.add(ip);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean banPlayer(String uuid){
+<b class="nc">&nbsp;        return banPlayerID(uuid) || banPlayerIP(getInfo(uuid).lastIP);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Bans a player by IP; returns whether this player was already banned.
+&nbsp;     * If there are players who at any point had this IP, they will be UUID banned as well.
+&nbsp;     */
+&nbsp;    public boolean banPlayerIP(String ip){
+<b class="nc">&nbsp;        if(bannedIPs.contains(ip, false))</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(PlayerInfo info : playerInfo.values()){</b>
+<b class="nc">&nbsp;            if(info.ips.contains(ip, false)){</b>
+<b class="nc">&nbsp;                info.banned = true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        bannedIPs.add(ip);</b>
+<b class="nc">&nbsp;        save();</b>
+<b class="nc">&nbsp;        Events.fire(new PlayerIpBanEvent(ip));</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Bans a player by UUID; returns whether this player was already banned. */
+&nbsp;    public boolean banPlayerID(String id){
+<b class="nc">&nbsp;        if(playerInfo.containsKey(id) &amp;&amp; playerInfo.get(id).banned)</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        getCreateInfo(id).banned = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        save();</b>
+<b class="nc">&nbsp;        Events.fire(new PlayerBanEvent(Groups.player.find(p -&gt; id.equals(p.uuid())), id));</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Unbans a player by IP; returns whether this player was banned in the first place.
+&nbsp;     * This method also unbans any player that was banned and had this IP.
+&nbsp;     */
+&nbsp;    public boolean unbanPlayerIP(String ip){
+<b class="nc">&nbsp;        boolean found = bannedIPs.contains(ip, false);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(PlayerInfo info : playerInfo.values()){</b>
+<b class="nc">&nbsp;            if(info.ips.contains(ip, false)){</b>
+<b class="nc">&nbsp;                info.banned = false;</b>
+<b class="nc">&nbsp;                found = true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        bannedIPs.remove(ip, false);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(found){</b>
+<b class="nc">&nbsp;            save();</b>
+<b class="nc">&nbsp;            Events.fire(new PlayerIpUnbanEvent(ip));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return found;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Unbans a player by ID; returns whether this player was banned in the first place.
+&nbsp;     * This also unbans all IPs the player used.
+&nbsp;     */
+&nbsp;    public boolean unbanPlayerID(String id){
+<b class="nc">&nbsp;        PlayerInfo info = getCreateInfo(id);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!info.banned) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        info.banned = false;</b>
+<b class="nc">&nbsp;        bannedIPs.removeAll(info.ips, false);</b>
+<b class="nc">&nbsp;        save();</b>
+<b class="nc">&nbsp;        Events.fire(new PlayerUnbanEvent(Groups.player.find(p -&gt; id.equals(p.uuid())), id));</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Returns list of all players with admin status
+&nbsp;     */
+&nbsp;    public Seq&lt;PlayerInfo&gt; getAdmins(){
+<b class="nc">&nbsp;        Seq&lt;PlayerInfo&gt; result = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        for(PlayerInfo info : playerInfo.values()){</b>
+<b class="nc">&nbsp;            if(info.admin){</b>
+<b class="nc">&nbsp;                result.add(info);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Returns list of all players which are banned
+&nbsp;     */
+&nbsp;    public Seq&lt;PlayerInfo&gt; getBanned(){
+<b class="nc">&nbsp;        Seq&lt;PlayerInfo&gt; result = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        for(PlayerInfo info : playerInfo.values()){</b>
+<b class="nc">&nbsp;            if(info.banned){</b>
+<b class="nc">&nbsp;                result.add(info);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Returns all banned IPs. This does not include the IPs of ID-banned players.
+&nbsp;     */
+&nbsp;    public Seq&lt;String&gt; getBannedIPs(){
+<b class="nc">&nbsp;        return bannedIPs;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Makes a player an admin.
+&nbsp;     * @return whether this player was already an admin.
+&nbsp;     */
+&nbsp;    public boolean adminPlayer(String id, String usid){
+<b class="nc">&nbsp;        PlayerInfo info = getCreateInfo(id);</b>
+&nbsp;
+<b class="nc">&nbsp;        var wasAdmin = info.admin;</b>
+&nbsp;
+<b class="nc">&nbsp;        info.adminUsid = usid;</b>
+<b class="nc">&nbsp;        info.admin = true;</b>
+<b class="nc">&nbsp;        save();</b>
+&nbsp;
+<b class="nc">&nbsp;        return wasAdmin;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Makes a player no longer an admin.
+&nbsp;     * @return whether this player was an admin in the first place.
+&nbsp;     */
+&nbsp;    public boolean unAdminPlayer(String id){
+<b class="nc">&nbsp;        PlayerInfo info = getCreateInfo(id);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!info.admin) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        info.admin = false;</b>
+<b class="nc">&nbsp;        save();</b>
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isWhitelistEnabled(){
+<b class="nc">&nbsp;        return Config.whitelist.bool();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isWhitelisted(String id, String usid){
+<b class="nc">&nbsp;        return !isWhitelistEnabled() || whitelist.contains(usid + id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean whitelist(String id){
+<b class="nc">&nbsp;        PlayerInfo info = getCreateInfo(id);</b>
+<b class="nc">&nbsp;        if(whitelist.contains(info.adminUsid + id)) return false;</b>
+<b class="nc">&nbsp;        whitelist.add(info.adminUsid + id);</b>
+<b class="nc">&nbsp;        save();</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean unwhitelist(String id){
+<b class="nc">&nbsp;        PlayerInfo info = getCreateInfo(id);</b>
+<b class="nc">&nbsp;        if(whitelist.contains(info.adminUsid + id)){</b>
+<b class="nc">&nbsp;            whitelist.remove(info.adminUsid + id);</b>
+<b class="nc">&nbsp;            save();</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isIPBanned(String ip){
+<b class="nc">&nbsp;        return bannedIPs.contains(ip, false) || (findByIP(ip) != null &amp;&amp; findByIP(ip).banned);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isIDBanned(String uuid){
+<b class="nc">&nbsp;        return getCreateInfo(uuid).banned;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAdmin(String id, String usid){
+<b class="nc">&nbsp;        PlayerInfo info = getCreateInfo(id);</b>
+<b class="nc">&nbsp;        return info.admin &amp;&amp; usid.equals(info.adminUsid);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Finds player info by IP, UUID and name. */
+&nbsp;    public ObjectSet&lt;PlayerInfo&gt; findByName(String name){
+<b class="nc">&nbsp;        ObjectSet&lt;PlayerInfo&gt; result = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(PlayerInfo info : playerInfo.values()){</b>
+<b class="nc">&nbsp;            if(info.lastName.equalsIgnoreCase(name) || info.names.contains(name, false)</b>
+<b class="nc">&nbsp;            || Strings.stripColors(Strings.stripColors(info.lastName)).equals(name)</b>
+<b class="nc">&nbsp;            || info.ips.contains(name, false) || info.id.equals(name)){</b>
+<b class="nc">&nbsp;                result.add(info);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Finds by name, using contains(). */
+&nbsp;    public ObjectSet&lt;PlayerInfo&gt; searchNames(String name){
+<b class="nc">&nbsp;        ObjectSet&lt;PlayerInfo&gt; result = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(PlayerInfo info : playerInfo.values()){</b>
+<b class="nc">&nbsp;            if(info.names.contains(n -&gt; n.toLowerCase().contains(name.toLowerCase()) || Strings.stripColors(n).trim().toLowerCase().contains(name))){</b>
+<b class="nc">&nbsp;                result.add(info);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;PlayerInfo&gt; findByIPs(String ip){
+<b class="nc">&nbsp;        Seq&lt;PlayerInfo&gt; result = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(PlayerInfo info : playerInfo.values()){</b>
+<b class="nc">&nbsp;            if(info.ips.contains(ip, false)){</b>
+<b class="nc">&nbsp;                result.add(info);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public PlayerInfo getInfo(String id){
+<b class="nc">&nbsp;        return getCreateInfo(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public PlayerInfo getInfoOptional(String id){
+<b class="nc">&nbsp;        return playerInfo.get(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public PlayerInfo findByIP(String ip){
+<b class="nc">&nbsp;        for(PlayerInfo info : playerInfo.values()){</b>
+<b class="nc">&nbsp;            if(info.ips.contains(ip, false)){</b>
+<b class="nc">&nbsp;                return info;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;PlayerInfo&gt; getWhitelisted(){
+<b class="nc">&nbsp;        return playerInfo.values().toSeq().select(p -&gt; isWhitelisted(p.id, p.adminUsid));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private PlayerInfo getCreateInfo(String id){
+<b class="nc">&nbsp;        if(playerInfo.containsKey(id)){</b>
+<b class="nc">&nbsp;            return playerInfo.get(id);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            PlayerInfo info = new PlayerInfo(id);</b>
+<b class="nc">&nbsp;            playerInfo.put(id, info);</b>
+<b class="nc">&nbsp;            save();</b>
+<b class="nc">&nbsp;            return info;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void save(){
+<b class="nc">&nbsp;        modified = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void forceSave(){
+<b class="nc">&nbsp;        if(modified &amp;&amp; loaded){</b>
+<b class="nc">&nbsp;            Core.settings.putJson(&quot;player-data&quot;, playerInfo);</b>
+<b class="nc">&nbsp;            Core.settings.putJson(&quot;ip-kicks&quot;, kickedIPs);</b>
+<b class="nc">&nbsp;            Core.settings.putJson(&quot;ip-bans&quot;, String.class, bannedIPs);</b>
+<b class="nc">&nbsp;            Core.settings.putJson(&quot;whitelist-ids&quot;, String.class, whitelist);</b>
+<b class="nc">&nbsp;            Core.settings.putJson(&quot;banned-subnets&quot;, String.class, subnetBans);</b>
+<b class="nc">&nbsp;            modified = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;    private void load(){
+<b class="fc">&nbsp;        loaded = true;</b>
+&nbsp;        //load default data
+<b class="fc">&nbsp;        playerInfo = Core.settings.getJson(&quot;player-data&quot;, ObjectMap.class, ObjectMap::new);</b>
+<b class="fc">&nbsp;        kickedIPs = Core.settings.getJson(&quot;ip-kicks&quot;, ObjectMap.class, ObjectMap::new);</b>
+<b class="fc">&nbsp;        bannedIPs = Core.settings.getJson(&quot;ip-bans&quot;, Seq.class, Seq::new);</b>
+<b class="fc">&nbsp;        whitelist = Core.settings.getJson(&quot;whitelist-ids&quot;, Seq.class, Seq::new);</b>
+<b class="fc">&nbsp;        subnetBans = Core.settings.getJson(&quot;banned-subnets&quot;, Seq.class, Seq::new);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Server configuration definition. Each config value can be a string, boolean or number.
+&nbsp;     * Creating a new Config instance implicitly adds it to the list of server configs. This can be used for custom plugin configuration.
+&nbsp;     * */
+&nbsp;    public static class Config{
+<b class="nc">&nbsp;        public static final Seq&lt;Config&gt; all = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;        public static final Config
+&nbsp;
+<b class="nc">&nbsp;        serverName = new Config(&quot;name&quot;, &quot;The server name as displayed on clients.&quot;, &quot;Server&quot;, &quot;servername&quot;),</b>
+<b class="nc">&nbsp;        desc = new Config(&quot;desc&quot;, &quot;The server description, displayed under the name. Max 100 characters.&quot;, &quot;off&quot;),</b>
+<b class="nc">&nbsp;        port = new Config(&quot;port&quot;, &quot;The port to host on.&quot;, Vars.port),</b>
+<b class="nc">&nbsp;        autoUpdate = new Config(&quot;autoUpdate&quot;, &quot;Whether to auto-update and exit when a new bleeding-edge update arrives.&quot;, false),</b>
+<b class="nc">&nbsp;        showConnectMessages = new Config(&quot;showConnectMessages&quot;, &quot;Whether to display connect/disconnect messages.&quot;, true),</b>
+<b class="nc">&nbsp;        enableVotekick = new Config(&quot;enableVotekick&quot;, &quot;Whether votekick is enabled.&quot;, true),</b>
+<b class="nc">&nbsp;        startCommands = new Config(&quot;startCommands&quot;, &quot;Commands run at startup. This should be a comma-separated list.&quot;, &quot;&quot;),</b>
+<b class="nc">&nbsp;        logging = new Config(&quot;logging&quot;, &quot;Whether to log everything to files.&quot;, true),</b>
+<b class="nc">&nbsp;        strict = new Config(&quot;strict&quot;, &quot;Whether strict mode is on - corrects positions and prevents duplicate UUIDs.&quot;, true),</b>
+<b class="nc">&nbsp;        antiSpam = new Config(&quot;antiSpam&quot;, &quot;Whether spammers are automatically kicked and rate-limited.&quot;, headless),</b>
+<b class="nc">&nbsp;        interactRateWindow = new Config(&quot;interactRateWindow&quot;, &quot;Block interaction rate limit window, in seconds.&quot;, 6),</b>
+<b class="nc">&nbsp;        interactRateLimit = new Config(&quot;interactRateLimit&quot;, &quot;Block interaction rate limit.&quot;, 25),</b>
+<b class="nc">&nbsp;        interactRateKick = new Config(&quot;interactRateKick&quot;, &quot;How many times a player must interact inside the window to get kicked.&quot;, 60),</b>
+<b class="nc">&nbsp;        messageRateLimit = new Config(&quot;messageRateLimit&quot;, &quot;Message rate limit in seconds. 0 to disable.&quot;, 0),</b>
+<b class="nc">&nbsp;        messageSpamKick = new Config(&quot;messageSpamKick&quot;, &quot;How many times a player must send a message before the cooldown to get kicked. 0 to disable.&quot;, 3),</b>
+<b class="nc">&nbsp;        packetSpamLimit = new Config(&quot;packetSpamLimit&quot;, &quot;Limit for packet count sent within 3sec that will lead to a blacklist + kick.&quot;, 300),</b>
+<b class="nc">&nbsp;        chatSpamLimit = new Config(&quot;chatSpamLimit&quot;, &quot;Limit for chat packet count sent within 2sec that will lead to a blacklist + kick. Not the same as a rate limit.&quot;, 20),</b>
+<b class="nc">&nbsp;        socketInput = new Config(&quot;socketInput&quot;, &quot;Allows a local application to control this server through a local TCP socket.&quot;, false, &quot;socket&quot;, () -&gt; Events.fire(Trigger.socketConfigChanged)),</b>
+<b class="nc">&nbsp;        socketInputPort = new Config(&quot;socketInputPort&quot;, &quot;The port for socket input.&quot;, 6859, () -&gt; Events.fire(Trigger.socketConfigChanged)),</b>
+<b class="nc">&nbsp;        socketInputAddress = new Config(&quot;socketInputAddress&quot;, &quot;The bind address for socket input.&quot;, &quot;localhost&quot;, () -&gt; Events.fire(Trigger.socketConfigChanged)),</b>
+<b class="nc">&nbsp;        allowCustomClients = new Config(&quot;allowCustomClients&quot;, &quot;Whether custom clients are allowed to connect.&quot;, !headless, &quot;allow-custom&quot;),</b>
+<b class="nc">&nbsp;        whitelist = new Config(&quot;whitelist&quot;, &quot;Whether the whitelist is used.&quot;, false),</b>
+<b class="nc">&nbsp;        motd = new Config(&quot;motd&quot;, &quot;The message displayed to people on connection.&quot;, &quot;off&quot;),</b>
+<b class="nc">&nbsp;        autosave = new Config(&quot;autosave&quot;, &quot;Whether the periodically save the map when playing.&quot;, false),</b>
+<b class="nc">&nbsp;        autosaveAmount = new Config(&quot;autosaveAmount&quot;, &quot;The maximum amount of autosaves. Older ones get replaced.&quot;, 10),</b>
+<b class="nc">&nbsp;        autosaveSpacing = new Config(&quot;autosaveSpacing&quot;, &quot;Spacing between autosaves in seconds.&quot;, 60 * 5),</b>
+<b class="nc">&nbsp;        debug = new Config(&quot;debug&quot;, &quot;Enable debug logging.&quot;, false, () -&gt; Log.level = debug() ? LogLevel.debug : LogLevel.info),</b>
+<b class="nc">&nbsp;        snapshotInterval = new Config(&quot;snapshotInterval&quot;, &quot;Client entity snapshot interval in ms.&quot;, 200),</b>
+<b class="nc">&nbsp;        autoPause = new Config(&quot;autoPause&quot;, &quot;Whether the game should pause when nobody is online.&quot;, false),</b>
+<b class="nc">&nbsp;        roundExtraTime = new Config(&quot;roundExtraTime&quot;, &quot;Time before loading a new map after the gameover, in seconds.&quot;, 12),</b>
+<b class="nc">&nbsp;        maxLogLength = new Config(&quot;maxLogLength&quot;, &quot;The Maximum log file size, in bytes.&quot;, 1024 * 1024 * 5);</b>
+&nbsp;
+&nbsp;        public final Object defaultValue;
+&nbsp;        public final String name, key, description;
+&nbsp;
+&nbsp;        final Runnable changed;
+&nbsp;
+&nbsp;        public Config(String name, String description, Object def){
+<b class="nc">&nbsp;            this(name, description, def, null, null);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Config(String name, String description, Object def, String key){
+<b class="nc">&nbsp;            this(name, description, def, key, null);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Config(String name, String description, Object def, Runnable changed){
+<b class="nc">&nbsp;            this(name, description, def, null, changed);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public Config(String name, String description, Object def, String key, Runnable changed){</b>
+<b class="nc">&nbsp;            this.name = name;</b>
+<b class="nc">&nbsp;            this.description = description;</b>
+<b class="nc">&nbsp;            this.key = key == null ? name : key;</b>
+<b class="nc">&nbsp;            this.defaultValue = def;</b>
+<b class="nc">&nbsp;            this.changed = changed == null ? () -&gt; {} : changed;</b>
+&nbsp;
+<b class="nc">&nbsp;            all.add(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isNum(){
+<b class="nc">&nbsp;            return defaultValue instanceof Integer;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isBool(){
+<b class="nc">&nbsp;            return defaultValue instanceof Boolean;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isString(){
+<b class="nc">&nbsp;            return defaultValue instanceof String;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Object get(){
+<b class="nc">&nbsp;            return Core.settings.get(key, defaultValue);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean bool(){
+<b class="nc">&nbsp;            return Core.settings.getBool(key, (Boolean)defaultValue);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public int num(){
+<b class="nc">&nbsp;            return Core.settings.getInt(key, (Integer)defaultValue);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public String string(){
+<b class="nc">&nbsp;            return Core.settings.getString(key, (String)defaultValue);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void set(Object value){
+<b class="nc">&nbsp;            Core.settings.put(key, value);</b>
+<b class="nc">&nbsp;            changed.run();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isDefault(){
+<b class="nc">&nbsp;            return Structs.eq(get(), defaultValue);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private static boolean debug(){
+<b class="nc">&nbsp;            return Config.debug.bool();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class PlayerInfo{
+&nbsp;        public String id;
+<b class="nc">&nbsp;        public String lastName = &quot;&lt;unknown&gt;&quot;, lastIP = &quot;&lt;unknown&gt;&quot;;</b>
+<b class="nc">&nbsp;        public Seq&lt;String&gt; ips = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        public Seq&lt;String&gt; names = new Seq&lt;&gt;();</b>
+&nbsp;        public String adminUsid;
+&nbsp;        public int timesKicked;
+&nbsp;        public int timesJoined;
+&nbsp;        public boolean banned, admin;
+&nbsp;        public long lastKicked; //last kicked time to expiration
+&nbsp;
+&nbsp;        public transient long lastMessageTime, lastSyncTime;
+&nbsp;        public transient String lastSentMessage;
+&nbsp;        public transient int messageInfractions;
+<b class="nc">&nbsp;        public transient Ratekeeper rate = new Ratekeeper();</b>
+<b class="nc">&nbsp;        public transient Interval messageTimer = new Interval();</b>
+&nbsp;
+<b class="nc">&nbsp;        PlayerInfo(String id){</b>
+<b class="nc">&nbsp;            this.id = id;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public PlayerInfo(){</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public String plainLastName(){
+<b class="nc">&nbsp;            return Strings.stripColors(lastName);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Handles chat messages from players and changes their contents. */
+&nbsp;    public interface ChatFilter{
+&nbsp;        /** @return the filtered message; a null string signals that the message should not be sent. */
+&nbsp;        @Nullable String filter(Player player, String message);
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Allows or disallows player actions. */
+&nbsp;    public interface ActionFilter{
+&nbsp;        /** @return whether this action should be permitted. if applicable, make sure to send this player a message specify why the action was prohibited. */
+&nbsp;        boolean allow(PlayerAction action);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class TraceInfo{
+&nbsp;        public String ip, uuid;
+&nbsp;        public boolean modded, mobile;
+&nbsp;        public int timesJoined, timesKicked;
+&nbsp;        public String[] ips, names;
+&nbsp;
+<b class="nc">&nbsp;        public TraceInfo(String ip, String uuid, boolean modded, boolean mobile, int timesJoined, int timesKicked, String[] ips, String[] names){</b>
+<b class="nc">&nbsp;            this.ip = ip;</b>
+<b class="nc">&nbsp;            this.uuid = uuid;</b>
+<b class="nc">&nbsp;            this.modded = modded;</b>
+<b class="nc">&nbsp;            this.mobile = mobile;</b>
+<b class="nc">&nbsp;            this.timesJoined = timesJoined;</b>
+<b class="nc">&nbsp;            this.timesKicked = timesKicked;</b>
+<b class="nc">&nbsp;            this.names = names;</b>
+<b class="nc">&nbsp;            this.ips = ips;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Defines a (potentially dangerous) action that a player has done in the world.
+&nbsp;     * These objects are pooled; do not cache them! */
+<b class="nc">&nbsp;    public static class PlayerAction implements Poolable{</b>
+&nbsp;        public Player player;
+&nbsp;        public ActionType type;
+&nbsp;        public @Nullable Tile tile;
+&nbsp;
+&nbsp;        /** valid for block placement events only */
+&nbsp;        public @Nullable Block block;
+&nbsp;        public int rotation;
+&nbsp;
+&nbsp;        /** valid for configure and rotation-type events only. */
+&nbsp;        public Object config;
+&nbsp;
+&nbsp;        /** valid for item-type events only. */
+&nbsp;        public @Nullable Item item;
+&nbsp;        public int itemAmount;
+&nbsp;
+&nbsp;        /** valid for unit-type events only, and even in that case may be null. */
+&nbsp;        public @Nullable Unit unit;
+&nbsp;
+&nbsp;        /** valid only for payload events */
+&nbsp;        public @Nullable Payload payload;
+&nbsp;
+&nbsp;        /** valid only for removePlanned events only; contains packed positions. */
+&nbsp;        public @Nullable int[] plans;
+&nbsp;
+&nbsp;        /** valid only for command unit events */
+&nbsp;        public @Nullable int[] unitIDs;
+&nbsp;
+&nbsp;        /** valid only for command building events */
+&nbsp;        public @Nullable int[] buildingPositions;
+&nbsp;
+&nbsp;        public PlayerAction set(Player player, ActionType type, Tile tile){
+<b class="nc">&nbsp;            this.player = player;</b>
+<b class="nc">&nbsp;            this.type = type;</b>
+<b class="nc">&nbsp;            this.tile = tile;</b>
+<b class="nc">&nbsp;            return this;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public PlayerAction set(Player player, ActionType type, Unit unit){
+<b class="nc">&nbsp;            this.player = player;</b>
+<b class="nc">&nbsp;            this.type = type;</b>
+<b class="nc">&nbsp;            this.unit = unit;</b>
+<b class="nc">&nbsp;            return this;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void reset(){
+<b class="nc">&nbsp;            item = null;</b>
+<b class="nc">&nbsp;            itemAmount = 0;</b>
+<b class="nc">&nbsp;            config = null;</b>
+<b class="nc">&nbsp;            player = null;</b>
+<b class="nc">&nbsp;            type = null;</b>
+<b class="nc">&nbsp;            tile = null;</b>
+<b class="nc">&nbsp;            block = null;</b>
+<b class="nc">&nbsp;            unit = null;</b>
+<b class="nc">&nbsp;            plans = null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public enum ActionType{</b>
+<b class="nc">&nbsp;        breakBlock, placeBlock, rotate, configure, withdrawItem, depositItem, control, buildSelect, command, removePlanned, commandUnits, commandBuilding, respawn, pickupBlock, dropPayload</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

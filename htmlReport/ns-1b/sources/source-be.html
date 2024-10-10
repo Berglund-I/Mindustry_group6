@@ -1,0 +1,119 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Payloadc</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: Payloadc (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Payloadc</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.scene.ui.layout.Table;
+&nbsp;import arc.struct.Seq;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.world.blocks.payloads.BuildPayload;
+&nbsp;import mindustry.world.blocks.payloads.Payload;
+&nbsp;import mindustry.world.blocks.payloads.UnitPayload;
+&nbsp;
+&nbsp;/**
+&nbsp; * Interface for {@link mindustry.entities.comp.PayloadComp}
+&nbsp; */
+&nbsp;@Annotations.EntityInterface
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+&nbsp;public interface Payloadc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
+&nbsp;  /**
+&nbsp;   * @return whether the tile has been successfully placed. 
+&nbsp;   */
+&nbsp;  boolean dropBlock(BuildPayload payload);
+&nbsp;
+&nbsp;  Seq&lt;Payload&gt; payloads();
+&nbsp;
+&nbsp;  boolean canPickup(Building build);
+&nbsp;
+&nbsp;  boolean canPickup(Unit unit);
+&nbsp;
+&nbsp;  boolean canPickupPayload(Payload pay);
+&nbsp;
+&nbsp;  boolean dropLastPayload();
+&nbsp;
+&nbsp;  boolean dropUnit(UnitPayload payload);
+&nbsp;
+&nbsp;  boolean hasPayload();
+&nbsp;
+&nbsp;  boolean tryDropPayload(Payload payload);
+&nbsp;
+&nbsp;  float payloadUsed();
+&nbsp;
+&nbsp;  void addPayload(Payload load);
+&nbsp;
+&nbsp;  void contentInfo(Table table, float itemSize, float width);
+&nbsp;
+&nbsp;  void destroy();
+&nbsp;
+&nbsp;  void payloads(Seq&lt;Payload&gt; payloads);
+&nbsp;
+&nbsp;  void pickup(Building tile);
+&nbsp;
+&nbsp;  void pickup(Unit unit);
+&nbsp;
+&nbsp;  void update();
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

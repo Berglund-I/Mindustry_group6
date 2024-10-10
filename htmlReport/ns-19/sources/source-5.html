@@ -1,0 +1,161 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > WeaponMount</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.units</a>
+</div>
+
+<h1>Coverage Summary for Class: WeaponMount (mindustry.entities.units)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WeaponMount</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.units;
+&nbsp;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;public class WeaponMount{
+&nbsp;    /** weapon associated with this mount */
+&nbsp;    public final Weapon weapon;
+&nbsp;    /** reload in frames; 0 means ready to fire */
+&nbsp;    public float reload;
+&nbsp;    /** rotation relative to the unit this mount is on */
+&nbsp;    public float rotation;
+&nbsp;    /** weapon recoil */
+&nbsp;    public float recoil;
+&nbsp;    /** weapon barrel recoil */
+&nbsp;    public @Nullable float[] recoils;
+&nbsp;    /** destination rotation; do not modify! */
+&nbsp;    public float targetRotation;
+&nbsp;    /** current heat, 0 to 1*/
+&nbsp;    public float heat;
+&nbsp;    /** lerps to 1 when shooting, 0 when not */
+&nbsp;    public float warmup;
+&nbsp;    /** is the weapon actively charging */
+&nbsp;    public boolean charging;
+&nbsp;    /** counts up to 1 when charging, 0 when not */
+&nbsp;    public float charge;
+&nbsp;    /** lerps to reload time */
+&nbsp;    public float smoothReload;
+&nbsp;    /** aiming position in world coordinates */
+&nbsp;    public float aimX, aimY;
+&nbsp;    /** whether to shoot right now */
+<b class="fc">&nbsp;    public boolean shoot = false;</b>
+&nbsp;    /** whether to rotate to face the target right now */
+<b class="fc">&nbsp;    public boolean rotate = false;</b>
+&nbsp;    /** extra state for alternating weapons */
+&nbsp;    public boolean side;
+&nbsp;    /** total bullets fired from this mount */
+&nbsp;    public int totalShots;
+&nbsp;    /** counter for which barrel bullets have been fired from; used for alternating patterns */
+&nbsp;    public int barrelCounter;
+&nbsp;    /** Last aim length of weapon. Only used for point lasers. */
+&nbsp;    public float lastLength;
+&nbsp;    /** current bullet for continuous weapons */
+&nbsp;    public @Nullable Bullet bullet;
+&nbsp;    /** sound loop for continuous weapons */
+&nbsp;    public @Nullable SoundLoop sound;
+&nbsp;    /** current target; used for autonomous weapons and AI */
+&nbsp;    public @Nullable Teamc target;
+&nbsp;    /** retarget counter */
+<b class="fc">&nbsp;    public float retarget = 0f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public WeaponMount(Weapon weapon){</b>
+<b class="fc">&nbsp;        this.weapon = weapon;</b>
+<b class="fc">&nbsp;        this.rotation = weapon.baseRotation;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

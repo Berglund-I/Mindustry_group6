@@ -1,0 +1,2586 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnitEntity</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: UnitEntity (mindustry.gen)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnitEntity</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.9%
+  </span>
+  <span class="absValue">
+    (57/204)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25.5%
+  </span>
+  <span class="absValue">
+    (301/1179)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">UnitEntity$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    27.8%
+  </span>
+  <span class="absValue">
+    (57/205)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25.5%
+  </span>
+  <span class="absValue">
+    (301/1180)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import java.nio.*;
+&nbsp;import java.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.async.PhysicsProcess.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.heat.*;
+&nbsp;import mindustry.world.blocks.heat.HeatConductor.*;
+&nbsp;import mindustry.world.blocks.logic.LogicBlock.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.entities.Puddles.*;
+&nbsp;import static mindustry.logic.GlobalVars.*;
+&nbsp;
+&nbsp;import arc.func.Cons;
+&nbsp;import arc.graphics.Color;
+&nbsp;import arc.graphics.g2d.TextureRegion;
+&nbsp;import arc.math.Mathf;
+&nbsp;import arc.math.geom.Position;
+&nbsp;import arc.math.geom.QuadTree;
+&nbsp;import arc.math.geom.Rect;
+&nbsp;import arc.math.geom.Vec2;
+&nbsp;import arc.scene.ui.layout.Table;
+&nbsp;import arc.struct.Bits;
+&nbsp;import arc.struct.Seq;
+&nbsp;import arc.util.Time;
+&nbsp;import arc.util.io.Reads;
+&nbsp;import arc.util.io.Writes;
+&nbsp;import java.nio.FloatBuffer;
+&nbsp;import mindustry.ai.types.CommandAI;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.ctype.Content;
+&nbsp;import mindustry.ctype.UnlockableContent;
+&nbsp;import mindustry.entities.EntityCollisions;
+&nbsp;import mindustry.entities.units.BuildPlan;
+&nbsp;import mindustry.entities.units.StatusEntry;
+&nbsp;import mindustry.entities.units.UnitController;
+&nbsp;import mindustry.game.Team;
+&nbsp;import mindustry.logic.LAccess;
+&nbsp;import mindustry.type.Item;
+&nbsp;import mindustry.type.StatusEffect;
+&nbsp;import mindustry.type.UnitType;
+&nbsp;import mindustry.world.Block;
+&nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.world.blocks.environment.Floor;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+&nbsp;public class UnitEntity extends Unit implements Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
+&nbsp;  public static final float hitDuration = 9.0F;
+&nbsp;
+<b class="fc">&nbsp;  protected static final Vec2 tmp1 = new Vec2();</b>
+&nbsp;
+<b class="fc">&nbsp;  protected static final Vec2 tmp2 = new Vec2();</b>
+&nbsp;
+&nbsp;  public static final float warpDst = 30.0F;
+&nbsp;
+&nbsp;  protected transient boolean added;
+&nbsp;
+<b class="fc">&nbsp;  protected transient Bits applied = new Bits(content.getBy(ContentType.status).size);</b>
+&nbsp;
+&nbsp;  protected transient float buildCounter;
+&nbsp;
+&nbsp;  protected UnitController controller;
+&nbsp;
+&nbsp;  @Annotations.ReadOnly
+&nbsp;  protected transient boolean isRotate;
+&nbsp;
+&nbsp;  protected transient BuildPlan lastActive;
+&nbsp;
+&nbsp;  protected transient int lastSize;
+&nbsp;
+<b class="fc">&nbsp;  protected transient float resupplyTime = Mathf.random(10.0F);</b>
+&nbsp;
+&nbsp;  private transient float rotation_LAST_;
+&nbsp;
+&nbsp;  private transient float rotation_TARGET_;
+&nbsp;
+<b class="fc">&nbsp;  protected Seq&lt;StatusEntry&gt; statuses = new Seq&lt;&gt;(4);</b>
+&nbsp;
+&nbsp;  protected transient boolean wasFlying;
+&nbsp;
+&nbsp;  protected transient boolean wasHealed;
+&nbsp;
+&nbsp;  protected transient boolean wasPlayer;
+&nbsp;
+&nbsp;  private transient float x_LAST_;
+&nbsp;
+&nbsp;  private transient float x_TARGET_;
+&nbsp;
+&nbsp;  private transient float y_LAST_;
+&nbsp;
+&nbsp;  private transient float y_TARGET_;
+&nbsp;
+<b class="fc">&nbsp;  protected UnitEntity() {</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean isRotate() {
+<b class="nc">&nbsp;    return isRotate;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int classId() {
+<b class="nc">&nbsp;    return 3;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Annotations.CallSuper
+&nbsp;  public void read(Reads read) {
+<b class="fc">&nbsp;    short REV = read.s();</b>
+<b class="fc">&nbsp;    if(REV == 0) {</b>
+<b class="nc">&nbsp;      this.ammo = read.f();</b>
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;      read.bool();</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+<b class="nc">&nbsp;      this.health = read.f();</b>
+<b class="nc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="nc">&nbsp;      this.rotation = read.f();</b>
+<b class="nc">&nbsp;      this.shield = read.f();</b>
+<b class="nc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;      this.statuses.clear();</b>
+<b class="nc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else if(REV == 1) {</b>
+<b class="nc">&nbsp;      this.ammo = read.f();</b>
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+<b class="nc">&nbsp;      this.health = read.f();</b>
+<b class="nc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="nc">&nbsp;      this.rotation = read.f();</b>
+<b class="nc">&nbsp;      this.shield = read.f();</b>
+<b class="nc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;      this.statuses.clear();</b>
+<b class="nc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else if(REV == 2) {</b>
+<b class="fc">&nbsp;      this.ammo = read.f();</b>
+<b class="fc">&nbsp;      read.f();</b>
+<b class="fc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="fc">&nbsp;      this.elevation = read.f();</b>
+<b class="fc">&nbsp;      this.flag = read.d();</b>
+<b class="fc">&nbsp;      this.health = read.f();</b>
+<b class="fc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="fc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="fc">&nbsp;      this.rotation = read.f();</b>
+<b class="fc">&nbsp;      this.shield = read.f();</b>
+<b class="fc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="fc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="fc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="fc">&nbsp;      this.statuses.clear();</b>
+<b class="fc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="fc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="fc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="fc">&nbsp;      this.x = read.f();</b>
+<b class="fc">&nbsp;      this.y = read.f();</b>
+<b class="fc">&nbsp;    } else if(REV == 3) {</b>
+<b class="fc">&nbsp;      this.ammo = read.f();</b>
+<b class="fc">&nbsp;      read.f();</b>
+<b class="fc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="fc">&nbsp;      this.elevation = read.f();</b>
+<b class="fc">&nbsp;      this.flag = read.d();</b>
+<b class="fc">&nbsp;      this.health = read.f();</b>
+<b class="fc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="fc">&nbsp;      this.mineTile = mindustry.io.TypeIO.readTile(read);</b>
+<b class="fc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="fc">&nbsp;      this.rotation = read.f();</b>
+<b class="fc">&nbsp;      this.shield = read.f();</b>
+<b class="fc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="fc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="fc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="fc">&nbsp;      this.statuses.clear();</b>
+<b class="fc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="fc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="fc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="fc">&nbsp;      this.x = read.f();</b>
+<b class="fc">&nbsp;      this.y = read.f();</b>
+<b class="fc">&nbsp;    } else if(REV == 4) {</b>
+<b class="nc">&nbsp;      this.ammo = read.f();</b>
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+<b class="nc">&nbsp;      this.flag = read.d();</b>
+<b class="nc">&nbsp;      this.health = read.f();</b>
+<b class="nc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;      this.mineTile = mindustry.io.TypeIO.readTile(read);</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="nc">&nbsp;      this.plans = mindustry.io.TypeIO.readPlansQueue(read);</b>
+<b class="nc">&nbsp;      this.rotation = read.f();</b>
+<b class="nc">&nbsp;      this.shield = read.f();</b>
+<b class="nc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;      this.statuses.clear();</b>
+<b class="nc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else if(REV == 5) {</b>
+<b class="nc">&nbsp;      this.ammo = read.f();</b>
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+<b class="nc">&nbsp;      this.flag = read.d();</b>
+<b class="nc">&nbsp;      this.health = read.f();</b>
+<b class="nc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;      this.mineTile = mindustry.io.TypeIO.readTile(read);</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="nc">&nbsp;      this.plans = mindustry.io.TypeIO.readPlansQueue(read);</b>
+<b class="nc">&nbsp;      this.rotation = read.f();</b>
+<b class="nc">&nbsp;      this.shield = read.f();</b>
+<b class="nc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;      this.statuses.clear();</b>
+<b class="nc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;      this.updateBuilding = read.bool();</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else if(REV == 6) {</b>
+<b class="nc">&nbsp;      this.ammo = read.f();</b>
+<b class="nc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+<b class="nc">&nbsp;      this.flag = read.d();</b>
+<b class="nc">&nbsp;      this.health = read.f();</b>
+<b class="nc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;      this.mineTile = mindustry.io.TypeIO.readTile(read);</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="nc">&nbsp;      this.plans = mindustry.io.TypeIO.readPlansQueue(read);</b>
+<b class="nc">&nbsp;      this.rotation = read.f();</b>
+<b class="nc">&nbsp;      this.shield = read.f();</b>
+<b class="nc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;      this.statuses.clear();</b>
+<b class="nc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;      this.updateBuilding = read.bool();</b>
+<b class="nc">&nbsp;      this.vel = mindustry.io.TypeIO.readVec2(read, this.vel);</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else if(REV == 7) {</b>
+<b class="nc">&nbsp;      this.abilities = mindustry.io.TypeIO.readAbilities(read, this.abilities);</b>
+<b class="nc">&nbsp;      this.ammo = read.f();</b>
+<b class="nc">&nbsp;      this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+<b class="nc">&nbsp;      this.flag = read.d();</b>
+<b class="nc">&nbsp;      this.health = read.f();</b>
+<b class="nc">&nbsp;      this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;      this.mineTile = mindustry.io.TypeIO.readTile(read);</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+<b class="nc">&nbsp;      this.plans = mindustry.io.TypeIO.readPlansQueue(read);</b>
+<b class="nc">&nbsp;      this.rotation = read.f();</b>
+<b class="nc">&nbsp;      this.shield = read.f();</b>
+<b class="nc">&nbsp;      this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;      this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;      int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;      this.statuses.clear();</b>
+<b class="nc">&nbsp;      for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;        mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;        if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;      }
+<b class="nc">&nbsp;      this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;      this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;      this.updateBuilding = read.bool();</b>
+<b class="nc">&nbsp;      this.vel = mindustry.io.TypeIO.readVec2(read, this.vel);</b>
+<b class="nc">&nbsp;      this.x = read.f();</b>
+<b class="nc">&nbsp;      this.y = read.f();</b>
+<b class="nc">&nbsp;    } else {</b>
+<b class="nc">&nbsp;      throw new IllegalArgumentException(&quot;Unknown revision &#39;&quot; + REV + &quot;&#39; for entity type &#39;flare&#39;&quot;);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;        afterRead();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Annotations.CallSuper
+&nbsp;  public void write(Writes write) {
+<b class="nc">&nbsp;    write.s(7);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeAbilities(write, this.abilities);</b>
+<b class="nc">&nbsp;    write.f(this.ammo);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeController(write, this.controller);</b>
+<b class="nc">&nbsp;    write.f(this.elevation);</b>
+<b class="nc">&nbsp;    write.d(this.flag);</b>
+<b class="nc">&nbsp;    write.f(this.health);</b>
+<b class="nc">&nbsp;    write.bool(this.isShooting);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeTile(write, this.mineTile);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeMounts(write, this.mounts);</b>
+<b class="nc">&nbsp;    write.i(this.plans.size);</b>
+<b class="nc">&nbsp;    for(int INDEX = 0; INDEX &lt; this.plans.size; INDEX ++) {</b>
+<b class="nc">&nbsp;      mindustry.io.TypeIO.writePlan(write, this.plans.get(INDEX));</b>
+&nbsp;    }
+<b class="nc">&nbsp;    write.f(this.rotation);</b>
+<b class="nc">&nbsp;    write.f(this.shield);</b>
+<b class="nc">&nbsp;    write.bool(this.spawnedByCore);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeItems(write, this.stack);</b>
+<b class="nc">&nbsp;    write.i(this.statuses.size);</b>
+<b class="nc">&nbsp;    for(int INDEX = 0; INDEX &lt; this.statuses.size; INDEX ++) {</b>
+<b class="nc">&nbsp;      mindustry.io.TypeIO.writeStatus(write, this.statuses.get(INDEX));</b>
+&nbsp;    }
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeTeam(write, this.team);</b>
+<b class="nc">&nbsp;    write.s(this.type.id);</b>
+<b class="nc">&nbsp;    write.bool(this.updateBuilding);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeVec2(write, this.vel);</b>
+<b class="nc">&nbsp;    write.f(this.x);</b>
+<b class="nc">&nbsp;    write.f(this.y);</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public &lt;T extends Entityc&gt; T self() {
+&nbsp;
+<b class="nc">&nbsp;        return (T)this;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public &lt;T&gt; T as() {
+&nbsp;
+<b class="nc">&nbsp;        return (T)this;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Building buildOn() {
+&nbsp;
+<b class="nc">&nbsp;        return world.buildWorld(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Player getPlayer() {
+&nbsp;
+<b class="nc">&nbsp;        return isPlayer() ? (Player)controller : null;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Color statusColor() {
+&nbsp;
+<b class="nc">&nbsp;        if (statuses.size == 0) {</b>
+<b class="nc">&nbsp;            return Tmp.c1.set(Color.white);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        float r = 1.0F;</b>
+<b class="nc">&nbsp;        float g = 1.0F;</b>
+<b class="nc">&nbsp;        float b = 1.0F;</b>
+<b class="nc">&nbsp;        float total = 0.0F;</b>
+<b class="nc">&nbsp;        for (StatusEntry entry : statuses) {</b>
+<b class="nc">&nbsp;            float intensity = entry.time &lt; 10.0F ? entry.time / 10.0F : 1.0F;</b>
+<b class="nc">&nbsp;            r += entry.effect.color.r * intensity;</b>
+<b class="nc">&nbsp;            g += entry.effect.color.g * intensity;</b>
+<b class="nc">&nbsp;            b += entry.effect.color.b * intensity;</b>
+<b class="nc">&nbsp;            total += intensity;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        float count = statuses.size + total;</b>
+<b class="nc">&nbsp;        return Tmp.c1.set(r / count, g / count, b / count, 1.0F);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public TextureRegion icon() {
+&nbsp;
+<b class="nc">&nbsp;        return type.uiIcon;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Bits statusBits() {
+&nbsp;
+<b class="nc">&nbsp;        return applied;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean acceptsItem(Item item) {
+&nbsp;
+<b class="nc">&nbsp;        return !hasItem() || item == stack.item &amp;&amp; stack.amount + 1 &lt;= itemCapacity();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean activelyBuilding() {
+&nbsp;
+<b class="fc">&nbsp;        if (isBuilding()) {</b>
+<b class="fc">&nbsp;            var plan = buildPlan();</b>
+<b class="fc">&nbsp;            if (!state.isEditor() &amp;&amp; plan != null &amp;&amp; !within(plan, state.rules.infiniteResources ? Float.MAX_VALUE : type.buildRange)) {</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return isBuilding() &amp;&amp; updateBuilding;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canBuild() {
+&nbsp;
+<b class="fc">&nbsp;        return type.buildSpeed &gt; 0 &amp;&amp; buildSpeedMultiplier &gt; 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canDrown() {
+&nbsp;
+<b class="fc">&nbsp;        return isGrounded() &amp;&amp; !hovering &amp;&amp; type.canDrown;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canLand() {
+&nbsp;
+<b class="nc">&nbsp;        return !onSolid() &amp;&amp; Units.count(x, y, physicSize(), (f)-&gt;f != this &amp;&amp; f.isGrounded()) == 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canMine() {
+&nbsp;
+<b class="nc">&nbsp;        return type.mineSpeed &gt; 0 &amp;&amp; type.mineTier &gt;= 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canMine(Item item) {
+&nbsp;
+<b class="nc">&nbsp;        if (item == null) return false;</b>
+<b class="nc">&nbsp;        return type.mineTier &gt;= item.hardness;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canPass(int tileX, int tileY) {
+&nbsp;
+<b class="fc">&nbsp;        SolidPred s = solidity();</b>
+<b class="fc">&nbsp;        return s == null || !s.solid(tileX, tileY);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canPassOn() {
+&nbsp;
+<b class="fc">&nbsp;        return canPass(tileX(), tileY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canShoot() {
+&nbsp;
+<b class="fc">&nbsp;        return !disarmed &amp;&amp; !(type.canBoost &amp;&amp; isFlying());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean canTarget(Unit other) {
+&nbsp;
+<b class="nc">&nbsp;        return other != null &amp;&amp; other.checkTarget(type.targetAir, type.targetGround);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean cheating() {
+&nbsp;
+<b class="nc">&nbsp;        return team.rules().cheat;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean checkTarget(boolean targetAir, boolean targetGround) {
+&nbsp;
+<b class="nc">&nbsp;        return (isGrounded() &amp;&amp; targetGround) || (isFlying() &amp;&amp; targetAir);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean collides(Hitboxc other) {
+&nbsp;
+<b class="nc">&nbsp;        return hittable();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean damaged() {
+&nbsp;
+<b class="nc">&nbsp;        return health &lt; maxHealth - 0.001F;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean displayable() {
+&nbsp;
+<b class="nc">&nbsp;        return type.hoverable;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean emitWalkSound() {
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean hasEffect(StatusEffect effect) {
+&nbsp;
+<b class="nc">&nbsp;        return applied.get(effect.id);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean hasItem() {
+&nbsp;
+<b class="fc">&nbsp;        return stack.amount &gt; 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean hasWeapons() {
+&nbsp;
+<b class="fc">&nbsp;        return type.hasWeapons();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean hittable() {
+&nbsp;
+<b class="fc">&nbsp;        return type.hittable(this);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean inFogTo(Team viewer) {
+&nbsp;
+<b class="nc">&nbsp;        if (this.team == viewer || !state.rules.fog) return false;</b>
+<b class="nc">&nbsp;        if (hitSize &lt;= 16.0F) {</b>
+<b class="nc">&nbsp;            return !fogControl.isVisible(viewer, x, y);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            float trns = hitSize / 2.0F;</b>
+<b class="nc">&nbsp;            for (var p : Geometry.d8) {</b>
+<b class="nc">&nbsp;                if (fogControl.isVisible(viewer, x + p.x * trns, y + p.y * trns)) {</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean inRange(Position other) {
+&nbsp;
+<b class="nc">&nbsp;        return within(other, type.range);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isAI() {
+&nbsp;
+<b class="nc">&nbsp;        return controller instanceof AIController;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isAdded() {
+&nbsp;
+<b class="nc">&nbsp;        return added;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isBoss() {
+&nbsp;
+<b class="nc">&nbsp;        return hasEffect(StatusEffects.boss);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isBuilding() {
+&nbsp;
+<b class="fc">&nbsp;        return plans.size != 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isCommandable() {
+&nbsp;
+<b class="nc">&nbsp;        return controller instanceof CommandAI;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isEnemy() {
+&nbsp;
+<b class="nc">&nbsp;        return type.isEnemy;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isFlying() {
+&nbsp;
+<b class="fc">&nbsp;        return elevation &gt;= 0.09F;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isGrounded() {
+&nbsp;
+<b class="fc">&nbsp;        return elevation &lt; 0.001F;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isImmune(StatusEffect effect) {
+&nbsp;
+<b class="nc">&nbsp;        return type.immunities.contains(effect);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isLocal() {
+&nbsp;
+<b class="nc">&nbsp;        return ((Object)this) == player || ((Object)this) instanceof Unitc u &amp;&amp; u.controller() == player;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isPathImpassable(int tileX, int tileY) {
+&nbsp;
+<b class="nc">&nbsp;        return !type.flying &amp;&amp; world.tiles.in(tileX, tileY) &amp;&amp; type.pathCost.getCost(team.id, pathfinder.get(tileX, tileY)) == -1;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isPlayer() {
+&nbsp;
+<b class="fc">&nbsp;        return controller instanceof Player;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isRemote() {
+&nbsp;
+<b class="fc">&nbsp;        return ((Object)this) instanceof Unitc u &amp;&amp; u.isPlayer() &amp;&amp; !isLocal();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isSyncHidden(Player player) {
+&nbsp;
+<b class="nc">&nbsp;        return !isShooting() &amp;&amp; inFogTo(player.team());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean isValid() {
+&nbsp;
+<b class="nc">&nbsp;        return !dead &amp;&amp; isAdded();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean mining() {
+&nbsp;
+<b class="nc">&nbsp;        return mineTile != null &amp;&amp; !this.activelyBuilding();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean moving() {
+&nbsp;
+<b class="fc">&nbsp;        return !vel.isZero(0.01F);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean offloadImmediately() {
+&nbsp;
+<b class="nc">&nbsp;        return this.isPlayer();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean onSolid() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null || tile.solid();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean serialize() {
+<b class="nc">&nbsp;    return true;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean shouldSkip(BuildPlan plan, Building core) {
+&nbsp;
+<b class="nc">&nbsp;        if (state.rules.infiniteResources || team.rules().infiniteResources || plan.breaking || core == null || plan.isRotation(team) || (isBuilding() &amp;&amp; !within(plans.last(), type.buildRange))) return false;</b>
+<b class="nc">&nbsp;        return (plan.stuck &amp;&amp; !core.items.has(plan.block.requirements)) || (Structs.contains(plan.block.requirements, (i)-&gt;!core.items.has(i.item, Math.min(i.amount, 15)) &amp;&amp; Mathf.round(i.amount * state.rules.buildCostMultiplier) &gt; 0) &amp;&amp; !plan.initialized);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean targetable(Team targeter) {
+&nbsp;
+<b class="nc">&nbsp;        return type.targetable(this, targeter);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean validMine(Tile tile) {
+&nbsp;
+<b class="nc">&nbsp;        return validMine(tile, true);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public boolean validMine(Tile tile, boolean checkDst) {
+&nbsp;
+<b class="nc">&nbsp;        if (tile == null) return false;</b>
+<b class="nc">&nbsp;        if (checkDst &amp;&amp; !within(tile.worldx(), tile.worldy(), type.mineRange)) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return getMineResult(tile) != null;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public double sense(Content content) {
+&nbsp;
+<b class="nc">&nbsp;        if (content == stack().item) return stack().amount;</b>
+<b class="nc">&nbsp;        return Float.NaN;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public double sense(LAccess sensor) {
+&nbsp;
+<b class="nc">&nbsp;        return switch (sensor) {</b>
+<b class="nc">&nbsp;        case totalItems -&gt;stack().amount;</b>
+<b class="nc">&nbsp;        case itemCapacity -&gt;type.itemCapacity;</b>
+<b class="nc">&nbsp;        case rotation -&gt;rotation;</b>
+<b class="nc">&nbsp;        case health -&gt;health;</b>
+<b class="nc">&nbsp;        case shield -&gt;shield;</b>
+<b class="nc">&nbsp;        case maxHealth -&gt;maxHealth;</b>
+<b class="nc">&nbsp;        case ammo -&gt;!state.rules.unitAmmo ? type.ammoCapacity : ammo;</b>
+<b class="nc">&nbsp;        case ammoCapacity -&gt;type.ammoCapacity;</b>
+<b class="nc">&nbsp;        case x -&gt;World.conv(x);</b>
+<b class="nc">&nbsp;        case y -&gt;World.conv(y);</b>
+<b class="nc">&nbsp;        case velocityX -&gt;vel.x * 60.0F / tilesize;</b>
+<b class="nc">&nbsp;        case velocityY -&gt;vel.y * 60.0F / tilesize;</b>
+<b class="nc">&nbsp;        case dead -&gt;dead || !isAdded() ? 1 : 0;</b>
+<b class="nc">&nbsp;        case team -&gt;team.id;</b>
+<b class="nc">&nbsp;        case shooting -&gt;isShooting() ? 1 : 0;</b>
+<b class="nc">&nbsp;        case boosting -&gt;type.canBoost &amp;&amp; isFlying() ? 1 : 0;</b>
+<b class="nc">&nbsp;        case range -&gt;range() / tilesize;</b>
+<b class="nc">&nbsp;        case shootX -&gt;World.conv(aimX());</b>
+<b class="nc">&nbsp;        case shootY -&gt;World.conv(aimY());</b>
+<b class="nc">&nbsp;        case cameraX -&gt;controller instanceof Player player ? World.conv(player.con == null ? Core.camera.position.x : player.con.viewX) : 0;</b>
+<b class="nc">&nbsp;        case cameraY -&gt;controller instanceof Player player ? World.conv(player.con == null ? Core.camera.position.y : player.con.viewY) : 0;</b>
+<b class="nc">&nbsp;        case cameraWidth -&gt;controller instanceof Player player ? World.conv(player.con == null ? Core.camera.width : player.con.viewWidth) : 0;</b>
+<b class="nc">&nbsp;        case cameraHeight -&gt;controller instanceof Player player ? World.conv(player.con == null ? Core.camera.height : player.con.viewHeight) : 0;</b>
+<b class="nc">&nbsp;        case mining -&gt;mining() ? 1 : 0;</b>
+<b class="nc">&nbsp;        case mineX -&gt;mining() ? mineTile.x : -1;</b>
+<b class="nc">&nbsp;        case mineY -&gt;mining() ? mineTile.y : -1;</b>
+<b class="nc">&nbsp;        case armor -&gt;armorOverride &gt;= 0.0F ? armorOverride : armor;</b>
+<b class="nc">&nbsp;        case flag -&gt;flag;</b>
+<b class="nc">&nbsp;        case speed -&gt;type.speed * 60.0F / tilesize * speedMultiplier;</b>
+<b class="nc">&nbsp;        case controlled -&gt;!isValid() ? 0 : controller instanceof LogicAI ? ctrlProcessor : controller instanceof Player ? ctrlPlayer : controller instanceof CommandAI command &amp;&amp; command.hasCommand() ? ctrlCommand : 0;</b>
+<b class="nc">&nbsp;        case payloadCount -&gt;((Object)this) instanceof Payloadc pay ? pay.payloads().size : 0;</b>
+<b class="nc">&nbsp;        case size -&gt;hitSize / tilesize;</b>
+<b class="nc">&nbsp;        case color -&gt;Color.toDoubleBits(team.color.r, team.color.g, team.color.b, 1.0F);</b>
+<b class="nc">&nbsp;        default -&gt;Float.NaN;</b>
+&nbsp;        };
+&nbsp;  }
+&nbsp;
+&nbsp;  public float ammof() {
+&nbsp;
+<b class="nc">&nbsp;        return ammo / type.ammoCapacity;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float bounds() {
+&nbsp;
+<b class="nc">&nbsp;        return hitSize * 2.0F;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float clipSize() {
+&nbsp;
+<b class="nc">&nbsp;        if (isBuilding()) {</b>
+<b class="nc">&nbsp;            return state.rules.infiniteResources ? Float.MAX_VALUE : Math.max(type.clipSize, type.region.width) + type.buildRange + tilesize * 4.0F;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (mining()) {</b>
+<b class="nc">&nbsp;            return type.clipSize + type.mineRange;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return type.clipSize;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float deltaAngle() {
+&nbsp;
+<b class="nc">&nbsp;        return Mathf.angle(deltaX, deltaY);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float deltaLen() {
+&nbsp;
+<b class="nc">&nbsp;        return Mathf.len(deltaX, deltaY);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float floorSpeedMultiplier() {
+&nbsp;
+<b class="nc">&nbsp;        Floor on = isFlying() || hovering ? Blocks.air.asFloor() : floorOn();</b>
+<b class="nc">&nbsp;        return on.speedMultiplier * speedMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getDuration(StatusEffect effect) {
+&nbsp;
+<b class="nc">&nbsp;        var entry = statuses.find((e)-&gt;e.effect == effect);</b>
+<b class="nc">&nbsp;        return entry == null ? 0 : entry.time;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getX() {
+&nbsp;
+<b class="fc">&nbsp;        return x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float getY() {
+&nbsp;
+<b class="fc">&nbsp;        return y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float healthf() {
+&nbsp;
+<b class="nc">&nbsp;        return health / maxHealth;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float hitSize() {
+&nbsp;
+<b class="nc">&nbsp;        return hitSize;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float mass() {
+&nbsp;
+<b class="nc">&nbsp;        return hitSize * hitSize * Mathf.pi;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float physicSize() {
+&nbsp;
+<b class="nc">&nbsp;        return hitSize * 0.7F;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float prefRotation() {
+&nbsp;
+<b class="fc">&nbsp;        if (activelyBuilding() &amp;&amp; type.rotateToBuilding) {</b>
+<b class="fc">&nbsp;            return angleTo(buildPlan());</b>
+<b class="fc">&nbsp;        } else if (mineTile != null) {</b>
+<b class="nc">&nbsp;            return angleTo(mineTile);</b>
+<b class="fc">&nbsp;        } else if (moving() &amp;&amp; type.omniMovement) {</b>
+<b class="nc">&nbsp;            return vel().angle();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return rotation;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float range() {
+&nbsp;
+<b class="fc">&nbsp;        return type.maxRange;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public float speed() {
+&nbsp;
+<b class="nc">&nbsp;        float strafePenalty = isGrounded() || !isPlayer() ? 1.0F : Mathf.lerp(1.0F, type.strafePenalty, Angles.angleDist(vel().angle(), rotation) / 180.0F);</b>
+<b class="nc">&nbsp;        float boost = Mathf.lerp(1.0F, type.canBoost ? type.boostMultiplier : 1.0F, elevation);</b>
+<b class="nc">&nbsp;        return type.speed * strafePenalty * boost * floorSpeedMultiplier();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int cap() {
+&nbsp;
+<b class="fc">&nbsp;        return Units.getCap(team);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int collisionLayer() {
+&nbsp;
+<b class="nc">&nbsp;        return type.allowLegStep &amp;&amp; type.legPhysicsLayer ? PhysicsProcess.layerLegs : isGrounded() ? PhysicsProcess.layerGround : PhysicsProcess.layerFlying;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int count() {
+&nbsp;
+<b class="fc">&nbsp;        return team.data().countType(type);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int itemCapacity() {
+&nbsp;
+<b class="fc">&nbsp;        return type.itemCapacity;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int maxAccepted(Item item) {
+&nbsp;
+<b class="nc">&nbsp;        return stack.item != item &amp;&amp; stack.amount &gt; 0 ? 0 : itemCapacity() - stack.amount;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int pathType() {
+&nbsp;
+<b class="nc">&nbsp;        return Pathfinder.costGround;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int tileX() {
+&nbsp;
+<b class="fc">&nbsp;        return World.toTile(x);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public int tileY() {
+&nbsp;
+<b class="fc">&nbsp;        return World.toTile(y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Object senseObject(LAccess sensor) {
+&nbsp;
+<b class="nc">&nbsp;        return switch (sensor) {</b>
+<b class="nc">&nbsp;        case type -&gt;type;</b>
+<b class="nc">&nbsp;        case name -&gt;controller instanceof Player p ? p.name : null;</b>
+<b class="nc">&nbsp;        case firstItem -&gt;stack().amount == 0 ? null : item();</b>
+<b class="nc">&nbsp;        case controller -&gt;!isValid() ? null : controller instanceof LogicAI log ? log.controller : this;</b>
+<b class="nc">&nbsp;        case payloadType -&gt;((Object)this) instanceof Payloadc pay ? (pay.payloads().isEmpty() ? null : pay.payloads().peek() instanceof UnitPayload p1 ? p1.unit.type : pay.payloads().peek() instanceof BuildPayload p2 ? p2.block() : null) : null;</b>
+<b class="nc">&nbsp;        default -&gt;noSensed;</b>
+&nbsp;        };
+&nbsp;  }
+&nbsp;
+&nbsp;  public String getControllerName() {
+&nbsp;
+<b class="fc">&nbsp;        if (isPlayer()) return getPlayer().coloredName();</b>
+<b class="fc">&nbsp;        if (controller instanceof LogicAI ai &amp;&amp; ai.controller != null) return ai.controller.lastAccessed;</b>
+<b class="fc">&nbsp;        return null;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public String toString() {
+&nbsp;
+<b class="nc">&nbsp;        return &quot;Unit#&quot; + id() + &quot;:&quot; + type + &quot; (&quot; + x + &quot;, &quot; + y + &quot;)&quot;;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public CommandAI command() {
+&nbsp;
+<b class="nc">&nbsp;        if (controller instanceof CommandAI ai) {</b>
+<b class="nc">&nbsp;            return ai;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Unit cannot be commanded - check isCommandable() first.&quot;);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public EntityCollisions.SolidPred solidity() {
+&nbsp;
+<b class="fc">&nbsp;        return null;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public BuildPlan buildPlan() {
+&nbsp;
+<b class="fc">&nbsp;        return plans.size == 0 ? null : plans.first();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public StatusEntry applyDynamicStatus() {
+&nbsp;
+<b class="nc">&nbsp;        if (hasEffect(StatusEffects.dynamic)) {</b>
+<b class="nc">&nbsp;            StatusEntry entry = statuses.find((s)-&gt;s.effect.dynamic);</b>
+<b class="nc">&nbsp;            if (entry != null) return entry;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        StatusEntry entry = Pools.obtain(StatusEntry.class, StatusEntry::new);</b>
+<b class="nc">&nbsp;        entry.set(StatusEffects.dynamic, Float.POSITIVE_INFINITY);</b>
+<b class="nc">&nbsp;        statuses.add(entry);</b>
+<b class="nc">&nbsp;        entry.effect.applied(this, entry.time, false);</b>
+<b class="nc">&nbsp;        return entry;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public UnitController controller() {
+&nbsp;
+<b class="nc">&nbsp;        return controller;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Item getMineResult(Tile tile) {
+&nbsp;
+<b class="nc">&nbsp;        if (tile == null) return null;</b>
+&nbsp;        Item result;
+<b class="nc">&nbsp;        if (type.mineFloor &amp;&amp; tile.block() == Blocks.air) {</b>
+<b class="nc">&nbsp;            result = tile.drop();</b>
+<b class="nc">&nbsp;        } else if (type.mineWalls) {</b>
+<b class="nc">&nbsp;            result = tile.wallDrop();</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return canMine(result) ? result : null;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Item item() {
+&nbsp;
+<b class="nc">&nbsp;        return stack.item;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Block blockOn() {
+&nbsp;
+<b class="nc">&nbsp;        Tile tile = tileOn();</b>
+<b class="nc">&nbsp;        return tile == null ? Blocks.air : tile.block();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Tile tileOn() {
+&nbsp;
+<b class="fc">&nbsp;        return world.tileWorld(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Floor drownFloor() {
+&nbsp;
+<b class="fc">&nbsp;        return canDrown() ? floorOn() : null;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public Floor floorOn() {
+&nbsp;
+<b class="fc">&nbsp;        Tile tile = tileOn();</b>
+<b class="fc">&nbsp;        return tile == null || tile.block() != Blocks.air ? (Floor)Blocks.air : tile.floor();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public CoreBlock.CoreBuild closestCore() {
+&nbsp;
+<b class="nc">&nbsp;        return state.teams.closestCore(x, y, team);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public CoreBlock.CoreBuild closestEnemyCore() {
+&nbsp;
+<b class="nc">&nbsp;        return state.teams.closestEnemyCore(x, y, team);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public CoreBlock.CoreBuild core() {
+&nbsp;
+<b class="fc">&nbsp;        return team.core();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static UnitEntity create() {
+<b class="fc">&nbsp;    return new UnitEntity();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void add() {
+<b class="fc">&nbsp;    if(added == true) return;</b>
+<b class="fc">&nbsp;    index__all = Groups.all.addIndex(this);</b>
+<b class="fc">&nbsp;    index__unit = Groups.unit.addIndex(this);</b>
+<b class="fc">&nbsp;    index__sync = Groups.sync.addIndex(this);</b>
+<b class="fc">&nbsp;    index__draw = Groups.draw.addIndex(this);</b>
+&nbsp;    entity: {
+&nbsp;
+<b class="fc">&nbsp;        added = true;</b>
+&nbsp;    }
+&nbsp;    hitbox: {
+&nbsp;
+<b class="fc">&nbsp;        updateLastPosition();</b>
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="fc">&nbsp;        team.data().updateCount(type, 1);</b>
+<b class="fc">&nbsp;        if (type.useUnitCap &amp;&amp; count() &gt; cap() &amp;&amp; !spawnedByCore &amp;&amp; !dead &amp;&amp; !state.rules.editor) {</b>
+<b class="nc">&nbsp;            Call.unitCapDeath(this);</b>
+<b class="nc">&nbsp;            team.data().updateCount(type, -1);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void addBuild(BuildPlan place) {
+&nbsp;
+<b class="fc">&nbsp;        addBuild(place, true);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void addBuild(BuildPlan place, boolean tail) {
+&nbsp;
+<b class="fc">&nbsp;        if (!canBuild()) return;</b>
+<b class="fc">&nbsp;        BuildPlan replace = null;</b>
+<b class="fc">&nbsp;        for (BuildPlan plan : plans) {</b>
+<b class="nc">&nbsp;            if (plan.x == place.x &amp;&amp; plan.y == place.y) {</b>
+<b class="nc">&nbsp;                replace = plan;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="fc">&nbsp;        if (replace != null) {</b>
+<b class="nc">&nbsp;            plans.remove(replace);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        Tile tile = world.tile(place.x, place.y);</b>
+<b class="fc">&nbsp;        if (tile != null &amp;&amp; tile.build instanceof ConstructBuild cons) {</b>
+<b class="nc">&nbsp;            place.progress = cons.progress;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (tail) {</b>
+<b class="fc">&nbsp;            plans.addLast(place);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            plans.addFirst(place);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void addItem(Item item) {
+&nbsp;
+<b class="nc">&nbsp;        addItem(item, 1);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void addItem(Item item, int amount) {
+&nbsp;
+<b class="nc">&nbsp;        stack.amount = stack.item == item ? stack.amount + amount : amount;</b>
+<b class="nc">&nbsp;        stack.item = item;</b>
+<b class="nc">&nbsp;        stack.amount = Mathf.clamp(stack.amount, 0, itemCapacity());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void afterAllRead() {
+&nbsp;    entity: {
+&nbsp;
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="nc">&nbsp;        controller.afterRead(this);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void afterRead() {
+&nbsp;    builder: {
+&nbsp;
+<b class="fc">&nbsp;        if (plans == null) {</b>
+<b class="nc">&nbsp;            plans = new Queue&lt;&gt;(1);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    entity: {
+&nbsp;
+&nbsp;    }
+&nbsp;    hitbox: {
+&nbsp;
+<b class="fc">&nbsp;        updateLastPosition();</b>
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="fc">&nbsp;        afterSync();</b>
+<b class="fc">&nbsp;        if (!(controller instanceof AIController ai &amp;&amp; ai.keepState())) {</b>
+<b class="fc">&nbsp;            controller(type.createController(this));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void afterSync() {
+&nbsp;    sync: {
+&nbsp;
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="fc">&nbsp;        setType(this.type);</b>
+<b class="fc">&nbsp;        controller.unit(this);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void aim(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        aim(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void aim(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        Tmp.v1.set(x, y).sub(this.x, this.y);</b>
+<b class="nc">&nbsp;        if (Tmp.v1.len() &lt; type.aimDst) Tmp.v1.setLength(type.aimDst);</b>
+<b class="nc">&nbsp;        x = Tmp.v1.x + this.x;</b>
+<b class="nc">&nbsp;        y = Tmp.v1.y + this.y;</b>
+<b class="nc">&nbsp;        for (WeaponMount mount : mounts) {</b>
+<b class="nc">&nbsp;            if (mount.weapon.controllable) {</b>
+<b class="nc">&nbsp;                mount.aimX = x;</b>
+<b class="nc">&nbsp;                mount.aimY = y;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        aimX = x;</b>
+<b class="nc">&nbsp;        aimY = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void aimLook(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        aim(pos);</b>
+<b class="nc">&nbsp;        lookAt(pos);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void aimLook(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        aim(x, y);</b>
+<b class="nc">&nbsp;        lookAt(x, y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void apply(StatusEffect effect) {
+&nbsp;
+<b class="nc">&nbsp;        apply(effect, 1);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void apply(StatusEffect effect, float duration) {
+&nbsp;
+<b class="nc">&nbsp;        if (effect == StatusEffects.none || effect == null || isImmune(effect)) return;</b>
+<b class="nc">&nbsp;        if (state.isCampaign()) {</b>
+<b class="nc">&nbsp;            effect.unlock();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (statuses.size &gt; 0) {</b>
+<b class="nc">&nbsp;            for (int i = 0; i &lt; statuses.size; i++) {</b>
+<b class="nc">&nbsp;                StatusEntry entry = statuses.get(i);</b>
+<b class="nc">&nbsp;                if (entry.effect == effect) {</b>
+<b class="nc">&nbsp;                    entry.time = Math.max(entry.time, duration);</b>
+<b class="nc">&nbsp;                    effect.applied(this, entry.time, true);</b>
+&nbsp;                    return;
+<b class="nc">&nbsp;                } else if (entry.effect.applyTransition(this, effect, entry, duration)) {</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        if (!effect.reactive) {</b>
+<b class="nc">&nbsp;            StatusEntry entry = Pools.obtain(StatusEntry.class, StatusEntry::new);</b>
+<b class="nc">&nbsp;            entry.set(effect, duration);</b>
+<b class="nc">&nbsp;            statuses.add(entry);</b>
+<b class="nc">&nbsp;            effect.applied(this, duration, false);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void approach(Vec2 vector) {
+&nbsp;
+<b class="nc">&nbsp;        vel.approachDelta(vector, type.accel * speed());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void clampHealth() {
+&nbsp;
+<b class="nc">&nbsp;        health = Math.min(health, maxHealth);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void clearBuilding() {
+&nbsp;
+<b class="fc">&nbsp;        plans.clear();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void clearItem() {
+&nbsp;
+<b class="nc">&nbsp;        stack.amount = 0;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void clearStatuses() {
+&nbsp;
+<b class="nc">&nbsp;        statuses.each((e)-&gt;e.effect.onRemoved(this));</b>
+<b class="nc">&nbsp;        statuses.clear();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void collision(Hitboxc other, float x, float y) {
+&nbsp;    hitbox: {
+&nbsp;
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="nc">&nbsp;        if (other instanceof Bullet bullet) {</b>
+<b class="nc">&nbsp;            controller.hit(bullet);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void controlWeapons(boolean rotate, boolean shoot) {
+&nbsp;
+<b class="nc">&nbsp;        for (WeaponMount mount : mounts) {</b>
+<b class="nc">&nbsp;            if (mount.weapon.controllable) {</b>
+<b class="nc">&nbsp;                mount.rotate = rotate;</b>
+<b class="nc">&nbsp;                mount.shoot = shoot;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        isRotate = rotate;</b>
+<b class="nc">&nbsp;        isShooting = shoot;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void controlWeapons(boolean rotateShoot) {
+&nbsp;
+<b class="nc">&nbsp;        controlWeapons(rotateShoot, rotateShoot);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void controller(UnitController next) {
+&nbsp;
+<b class="fc">&nbsp;        this.controller = next;</b>
+<b class="fc">&nbsp;        if (controller.unit() != this) controller.unit(this);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void damage(float amount) {
+&nbsp;
+<b class="nc">&nbsp;        rawDamage(Damage.applyArmor(amount, armorOverride &gt;= 0.0F ? armorOverride : armor) / healthMultiplier / Vars.state.rules.unitHealth(team));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void damage(float amount, boolean withEffect) {
+&nbsp;
+<b class="nc">&nbsp;        float pre = hitTime;</b>
+<b class="nc">&nbsp;        damage(amount);</b>
+<b class="nc">&nbsp;        if (!withEffect) {</b>
+<b class="nc">&nbsp;            hitTime = pre;</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void damageContinuous(float amount) {
+&nbsp;
+<b class="nc">&nbsp;        damage(amount * Time.delta, hitTime &lt;= -10 + hitDuration);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void damageContinuousPierce(float amount) {
+&nbsp;
+<b class="nc">&nbsp;        damagePierce(amount * Time.delta, hitTime &lt;= -20 + hitDuration);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void damagePierce(float amount) {
+&nbsp;
+<b class="nc">&nbsp;        damagePierce(amount, true);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void damagePierce(float amount, boolean withEffect) {
+&nbsp;
+<b class="nc">&nbsp;        float pre = hitTime;</b>
+<b class="nc">&nbsp;        rawDamage(amount / healthMultiplier / Vars.state.rules.unitHealth(team));</b>
+<b class="nc">&nbsp;        if (!withEffect) {</b>
+<b class="nc">&nbsp;            hitTime = pre;</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void destroy() {
+&nbsp;
+<b class="nc">&nbsp;        if (!isAdded() || !type.killable) return;</b>
+<b class="nc">&nbsp;        float explosiveness = 2.0F + item().explosiveness * stack().amount * 1.53F;</b>
+<b class="nc">&nbsp;        float flammability = item().flammability * stack().amount / 1.9F;</b>
+<b class="nc">&nbsp;        float power = item().charge * Mathf.pow(stack().amount, 1.11F) * 160.0F;</b>
+<b class="nc">&nbsp;        if (!spawnedByCore) {</b>
+<b class="nc">&nbsp;            Damage.dynamicExplosion(x, y, flammability, explosiveness, power, (bounds() + type.legLength / 1.7F) / 2.0F, state.rules.damageExplosions &amp;&amp; state.rules.unitCrashDamage(team) &gt; 0, item().flammability &gt; 1, team, type.deathExplosionEffect);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            type.deathExplosionEffect.at(x, y, bounds() / 2.0F / 8.0F);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        float shake = hitSize / 3.0F;</b>
+<b class="nc">&nbsp;        if (type.createScorch) {</b>
+<b class="nc">&nbsp;            Effect.scorch(x, y, (int)(hitSize / 5));</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Effect.shake(shake, shake, this);</b>
+<b class="nc">&nbsp;        type.deathSound.at(this);</b>
+<b class="nc">&nbsp;        Events.fire(new UnitDestroyEvent(this));</b>
+<b class="nc">&nbsp;        if (explosiveness &gt; 7.0F &amp;&amp; (isLocal() || wasPlayer)) {</b>
+<b class="nc">&nbsp;            Events.fire(Trigger.suicideBomb);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        for (WeaponMount mount : mounts) {</b>
+<b class="nc">&nbsp;            if (mount.weapon.shootOnDeath &amp;&amp; !(mount.weapon.bullet.killShooter &amp;&amp; mount.totalShots &gt; 0)) {</b>
+<b class="nc">&nbsp;                mount.reload = 0.0F;</b>
+<b class="nc">&nbsp;                mount.shoot = true;</b>
+<b class="nc">&nbsp;                mount.weapon.update(this, mount);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        if (type.flying &amp;&amp; !spawnedByCore &amp;&amp; type.createWreck &amp;&amp; state.rules.unitCrashDamage(team) &gt; 0) {</b>
+<b class="nc">&nbsp;            var shields = indexer.getEnemy(team, BlockFlag.shield);</b>
+<b class="nc">&nbsp;            float crashDamage = Mathf.pow(hitSize, 0.75F) * type.crashDamageMultiplier * 5.0F * state.rules.unitCrashDamage(team);</b>
+<b class="nc">&nbsp;            if (shields.isEmpty() || !shields.contains((b)-&gt;b instanceof ExplosionShield s &amp;&amp; s.absorbExplosion(x, y, crashDamage))) {</b>
+<b class="nc">&nbsp;                Damage.damage(team, x, y, Mathf.pow(hitSize, 0.94F) * 1.25F, crashDamage, true, false, true);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        if (!headless &amp;&amp; type.createScorch) {</b>
+<b class="nc">&nbsp;            for (int i = 0; i &lt; type.wreckRegions.length; i++) {</b>
+<b class="nc">&nbsp;                if (type.wreckRegions[i].found()) {</b>
+<b class="nc">&nbsp;                    float range = type.hitSize / 4.0F;</b>
+<b class="nc">&nbsp;                    Tmp.v1.rnd(range);</b>
+<b class="nc">&nbsp;                    Effect.decal(type.wreckRegions[i], x + Tmp.v1.x, y + Tmp.v1.y, rotation - 90);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        for (Ability a : abilities) {</b>
+<b class="nc">&nbsp;            a.death(this);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        type.killed(this);</b>
+<b class="nc">&nbsp;        remove();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void display(Table table) {
+&nbsp;
+<b class="nc">&nbsp;        type.display(this, table);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void draw() {
+&nbsp;    draw: {
+&nbsp;
+&nbsp;    }
+&nbsp;    status: {
+&nbsp;
+<b class="nc">&nbsp;        for (StatusEntry e : statuses) {</b>
+<b class="nc">&nbsp;            e.effect.draw(this, e.time);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="nc">&nbsp;        type.draw(this);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void drawBuildPlans() {
+&nbsp;
+<b class="nc">&nbsp;        Boolf&lt;BuildPlan&gt; skip = (plan)-&gt;plan.progress &gt; 0.01F || (buildPlan() == plan &amp;&amp; plan.initialized &amp;&amp; (within(plan.x * tilesize, plan.y * tilesize, type.buildRange) || state.isEditor()));</b>
+<b class="nc">&nbsp;        for (int i = 0; i &lt; 2; i++) {</b>
+<b class="nc">&nbsp;            for (BuildPlan plan : plans) {</b>
+<b class="nc">&nbsp;                if (skip.get(plan)) continue;</b>
+<b class="nc">&nbsp;                if (i == 0) {</b>
+<b class="nc">&nbsp;                    drawPlan(plan, 1.0F);</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    drawPlanTop(plan, 1.0F);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void drawBuilding() {
+&nbsp;
+<b class="nc">&nbsp;        boolean active = activelyBuilding();</b>
+<b class="nc">&nbsp;        if (!active &amp;&amp; lastActive == null) return;</b>
+<b class="nc">&nbsp;        Draw.z(Layer.flyingUnit);</b>
+<b class="nc">&nbsp;        BuildPlan plan = active ? buildPlan() : lastActive;</b>
+<b class="nc">&nbsp;        Tile tile = plan.tile();</b>
+<b class="nc">&nbsp;        var core = team.core();</b>
+<b class="nc">&nbsp;        if (tile == null || !within(plan, state.rules.infiniteResources ? Float.MAX_VALUE : type.buildRange)) {</b>
+&nbsp;            return;
+&nbsp;        }
+<b class="nc">&nbsp;        if (core != null &amp;&amp; active &amp;&amp; !isLocal() &amp;&amp; !(tile.block() instanceof ConstructBlock)) {</b>
+<b class="nc">&nbsp;            Draw.z(Layer.plans - 1.0F);</b>
+<b class="nc">&nbsp;            drawPlan(plan, 0.5F);</b>
+<b class="nc">&nbsp;            drawPlanTop(plan, 0.5F);</b>
+<b class="nc">&nbsp;            Draw.z(Layer.flyingUnit);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (type.drawBuildBeam) {</b>
+<b class="nc">&nbsp;            float focusLen = type.buildBeamOffset + Mathf.absin(Time.time, 3.0F, 0.6F);</b>
+<b class="nc">&nbsp;            float px = x + Angles.trnsx(rotation, focusLen);</b>
+<b class="nc">&nbsp;            float py = y + Angles.trnsy(rotation, focusLen);</b>
+<b class="nc">&nbsp;            drawBuildingBeam(px, py);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void drawBuildingBeam(float px, float py) {
+&nbsp;
+<b class="nc">&nbsp;        boolean active = activelyBuilding();</b>
+<b class="nc">&nbsp;        if (!active &amp;&amp; lastActive == null) return;</b>
+<b class="nc">&nbsp;        Draw.z(Layer.flyingUnit);</b>
+<b class="nc">&nbsp;        BuildPlan plan = active ? buildPlan() : lastActive;</b>
+<b class="nc">&nbsp;        Tile tile = world.tile(plan.x, plan.y);</b>
+<b class="nc">&nbsp;        if (tile == null || !within(plan, state.rules.infiniteResources ? Float.MAX_VALUE : type.buildRange)) {</b>
+&nbsp;            return;
+&nbsp;        }
+<b class="nc">&nbsp;        int size = plan.breaking ? active ? tile.block().size : lastSize : plan.block.size;</b>
+<b class="nc">&nbsp;        float tx = plan.drawx();</b>
+<b class="nc">&nbsp;        float ty = plan.drawy();</b>
+<b class="nc">&nbsp;        Lines.stroke(1.0F, plan.breaking ? Pal.remove : Pal.accent);</b>
+<b class="nc">&nbsp;        Draw.z(Layer.buildBeam);</b>
+<b class="nc">&nbsp;        Draw.alpha(buildAlpha);</b>
+<b class="nc">&nbsp;        if (!active &amp;&amp; !(tile.build instanceof ConstructBuild)) {</b>
+<b class="nc">&nbsp;            Fill.square(plan.drawx(), plan.drawy(), size * tilesize / 2.0F);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Drawf.buildBeam(px, py, tx, ty, Vars.tilesize * size / 2.0F);</b>
+<b class="nc">&nbsp;        Fill.square(px, py, 1.8F + Mathf.absin(Time.time, 2.2F, 1.1F), rotation + 45);</b>
+<b class="nc">&nbsp;        Draw.reset();</b>
+<b class="nc">&nbsp;        Draw.z(Layer.flyingUnit);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void drawPlan(BuildPlan plan, float alpha) {
+&nbsp;
+<b class="nc">&nbsp;        plan.animScale = 1.0F;</b>
+<b class="nc">&nbsp;        if (plan.breaking) {</b>
+<b class="nc">&nbsp;            control.input.drawBreaking(plan);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            plan.block.drawPlan(plan, control.input.allPlans(), Build.validPlace(plan.block, team, plan.x, plan.y, plan.rotation) || control.input.planMatches(plan), alpha);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void drawPlanTop(BuildPlan plan, float alpha) {
+&nbsp;
+<b class="nc">&nbsp;        if (!plan.breaking) {</b>
+<b class="nc">&nbsp;            Draw.reset();</b>
+<b class="nc">&nbsp;            Draw.mixcol(Color.white, 0.24F + Mathf.absin(Time.globalTime, 6.0F, 0.28F));</b>
+<b class="nc">&nbsp;            Draw.alpha(alpha);</b>
+<b class="nc">&nbsp;            plan.block.drawPlanConfigTop(plan, plans);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void getCollisions(Cons&lt;QuadTree&gt; consumer) {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void handleSyncHidden() {
+&nbsp;    sync: {
+&nbsp;
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="nc">&nbsp;        remove();</b>
+<b class="nc">&nbsp;        netClient.clearRemovedEntity(id);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void heal() {
+&nbsp;
+<b class="fc">&nbsp;        dead = false;</b>
+<b class="fc">&nbsp;        health = maxHealth;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void heal(float amount) {
+&nbsp;    health: {
+&nbsp;
+<b class="nc">&nbsp;        health += amount;</b>
+<b class="nc">&nbsp;        clampHealth();</b>
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="nc">&nbsp;        if (health &lt; maxHealth &amp;&amp; amount &gt; 0) {</b>
+<b class="nc">&nbsp;            wasHealed = true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void healFract(float amount) {
+&nbsp;
+<b class="nc">&nbsp;        heal(amount * maxHealth);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void hitbox(Rect rect) {
+&nbsp;
+<b class="nc">&nbsp;        rect.setCentered(x, y, hitSize, hitSize);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void hitboxTile(Rect rect) {
+&nbsp;
+<b class="nc">&nbsp;        float size = Math.min(hitSize * 0.66F, 7.8F);</b>
+<b class="nc">&nbsp;        rect.setCentered(x, y, size, size);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void impulse(Vec2 v) {
+&nbsp;
+<b class="nc">&nbsp;        impulse(v.x, v.y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void impulse(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        float mass = mass();</b>
+<b class="nc">&nbsp;        vel.add(x / mass, y / mass);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void impulseNet(Vec2 v) {
+&nbsp;
+<b class="nc">&nbsp;        impulse(v.x, v.y);</b>
+<b class="nc">&nbsp;        if (isRemote()) {</b>
+<b class="nc">&nbsp;            float mass = mass();</b>
+<b class="nc">&nbsp;            move(v.x / mass, v.y / mass);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void interpolate() {
+<b class="nc">&nbsp;    if(lastUpdated != 0 &amp;&amp; updateSpacing != 0) {</b>
+<b class="nc">&nbsp;      float timeSinceUpdate = Time.timeSinceMillis(lastUpdated);</b>
+<b class="nc">&nbsp;      float alpha = Math.min(timeSinceUpdate / updateSpacing, 2f);</b>
+<b class="nc">&nbsp;      rotation = (Mathf.slerp(rotation_LAST_, rotation_TARGET_, alpha));</b>
+<b class="nc">&nbsp;      x = (Mathf.lerp(x_LAST_, x_TARGET_, alpha));</b>
+<b class="nc">&nbsp;      y = (Mathf.lerp(y_LAST_, y_TARGET_, alpha));</b>
+<b class="nc">&nbsp;    } else if(lastUpdated != 0) {</b>
+<b class="nc">&nbsp;      rotation = rotation_TARGET_;</b>
+<b class="nc">&nbsp;      x = x_TARGET_;</b>
+<b class="nc">&nbsp;      y = y_TARGET_;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void kill() {
+&nbsp;
+<b class="nc">&nbsp;        if (dead || net.client() || !type.killable) return;</b>
+<b class="nc">&nbsp;        Call.unitDeath(id);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void killed() {
+&nbsp;    health: {
+&nbsp;
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="nc">&nbsp;        wasPlayer = isLocal();</b>
+<b class="nc">&nbsp;        health = Math.min(health, 0);</b>
+<b class="nc">&nbsp;        dead = true;</b>
+<b class="nc">&nbsp;        if (!type.flying || !type.createWreck) {</b>
+<b class="nc">&nbsp;            destroy();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void landed() {
+&nbsp;    flying: {
+&nbsp;
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="nc">&nbsp;        if (type.mechLandShake &gt; 0.0F) {</b>
+<b class="nc">&nbsp;            Effect.shake(type.mechLandShake, type.mechLandShake, this);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        type.landed(this);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void lookAt(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        lookAt(angleTo(pos));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void lookAt(float angle) {
+&nbsp;
+<b class="fc">&nbsp;        rotation = Angles.moveToward(rotation, angle, type.rotateSpeed * Time.delta * speedMultiplier());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void lookAt(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        lookAt(angleTo(x, y));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void move(Vec2 v) {
+&nbsp;
+<b class="nc">&nbsp;        move(v.x, v.y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void move(float cx, float cy) {
+&nbsp;
+<b class="fc">&nbsp;        SolidPred check = solidity();</b>
+<b class="fc">&nbsp;        if (check != null) {</b>
+<b class="nc">&nbsp;            collisions.move(this, cx, cy, check);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            x += cx;</b>
+<b class="fc">&nbsp;            y += cy;</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void moveAt(Vec2 vector) {
+&nbsp;
+<b class="nc">&nbsp;        moveAt(vector, type.accel);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void moveAt(Vec2 vector, float acceleration) {
+&nbsp;
+<b class="nc">&nbsp;        Vec2 t = tmp1.set(vector);</b>
+<b class="nc">&nbsp;        tmp2.set(t).sub(vel).limit(acceleration * vector.len() * Time.delta);</b>
+<b class="nc">&nbsp;        vel.add(tmp2);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void movePref(Vec2 movement) {
+&nbsp;
+<b class="nc">&nbsp;        if (type.omniMovement) {</b>
+<b class="nc">&nbsp;            moveAt(movement);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            rotateMove(movement);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void rawDamage(float amount) {
+&nbsp;
+<b class="nc">&nbsp;        boolean hadShields = shield &gt; 1.0E-4F;</b>
+<b class="nc">&nbsp;        if (hadShields) {</b>
+<b class="nc">&nbsp;            shieldAlpha = 1.0F;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        float shieldDamage = Math.min(Math.max(shield, 0), amount);</b>
+<b class="nc">&nbsp;        shield -= shieldDamage;</b>
+<b class="nc">&nbsp;        hitTime = 1.0F;</b>
+<b class="nc">&nbsp;        amount -= shieldDamage;</b>
+<b class="nc">&nbsp;        if (amount &gt; 0 &amp;&amp; type.killable) {</b>
+<b class="nc">&nbsp;            health -= amount;</b>
+<b class="nc">&nbsp;            if (health &lt;= 0 &amp;&amp; !dead) {</b>
+<b class="nc">&nbsp;                kill();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if (hadShields &amp;&amp; shield &lt;= 1.0E-4F) {</b>
+<b class="nc">&nbsp;                Fx.unitShieldBreak.at(x, y, 0, type.shieldColor(this), this);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void readSync(Reads read) {
+<b class="nc">&nbsp;    if(lastUpdated != 0) updateSpacing = Time.timeSinceMillis(lastUpdated);</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    boolean islocal = isLocal();</b>
+<b class="nc">&nbsp;    this.abilities = mindustry.io.TypeIO.readAbilities(read, this.abilities);</b>
+<b class="nc">&nbsp;    this.ammo = read.f();</b>
+<b class="nc">&nbsp;    this.controller = mindustry.io.TypeIO.readController(read, this.controller);</b>
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.elevation = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.f();</b>
+&nbsp;    }
+<b class="nc">&nbsp;    this.flag = read.d();</b>
+<b class="nc">&nbsp;    this.health = read.f();</b>
+<b class="nc">&nbsp;    this.isShooting = read.bool();</b>
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.mineTile = mindustry.io.TypeIO.readTile(read);</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      mindustry.io.TypeIO.readTile(read);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.mounts = mindustry.io.TypeIO.readMounts(read, this.mounts);</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      mindustry.io.TypeIO.readMounts(read);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.plans = mindustry.io.TypeIO.readPlansQueue(read);</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      mindustry.io.TypeIO.readPlansQueue(read);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      rotation_LAST_ = this.rotation;</b>
+<b class="nc">&nbsp;      this.rotation_TARGET_ = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      rotation_LAST_ = this.rotation;</b>
+<b class="nc">&nbsp;      rotation_TARGET_ = this.rotation;</b>
+&nbsp;    }
+<b class="nc">&nbsp;    this.shield = read.f();</b>
+<b class="nc">&nbsp;    this.spawnedByCore = read.bool();</b>
+<b class="nc">&nbsp;    this.stack = mindustry.io.TypeIO.readItems(read, this.stack);</b>
+<b class="nc">&nbsp;    int statuses_LENGTH = read.i();</b>
+<b class="nc">&nbsp;    this.statuses.clear();</b>
+<b class="nc">&nbsp;    for(int INDEX = 0; INDEX &lt; statuses_LENGTH; INDEX ++) {</b>
+<b class="nc">&nbsp;      mindustry.entities.units.StatusEntry statuses_ITEM = mindustry.io.TypeIO.readStatus(read);</b>
+<b class="nc">&nbsp;      if(statuses_ITEM != null) this.statuses.add(statuses_ITEM);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    this.team = mindustry.io.TypeIO.readTeam(read);</b>
+<b class="nc">&nbsp;    this.type = mindustry.Vars.content.getByID(mindustry.ctype.ContentType.unit, read.s());</b>
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.updateBuilding = read.bool();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.bool();</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      this.vel = mindustry.io.TypeIO.readVec2(read, this.vel);</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      mindustry.io.TypeIO.readVec2(read);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      x_LAST_ = this.x;</b>
+<b class="nc">&nbsp;      this.x_TARGET_ = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      x_LAST_ = this.x;</b>
+<b class="nc">&nbsp;      x_TARGET_ = this.x;</b>
+&nbsp;    }
+<b class="nc">&nbsp;    if(!islocal) {</b>
+<b class="nc">&nbsp;      y_LAST_ = this.y;</b>
+<b class="nc">&nbsp;      this.y_TARGET_ = read.f();</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      read.f();</b>
+<b class="nc">&nbsp;      y_LAST_ = this.y;</b>
+<b class="nc">&nbsp;      y_TARGET_ = this.y;</b>
+&nbsp;    }
+<b class="nc">&nbsp;    afterSync();</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void readSyncManual(FloatBuffer buffer) {
+<b class="nc">&nbsp;    if(lastUpdated != 0) updateSpacing = Time.timeSinceMillis(lastUpdated);</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    this.rotation_LAST_ = this.rotation;</b>
+<b class="nc">&nbsp;    this.rotation_TARGET_ = buffer.get();</b>
+<b class="nc">&nbsp;    this.x_LAST_ = this.x;</b>
+<b class="nc">&nbsp;    this.x_TARGET_ = buffer.get();</b>
+<b class="nc">&nbsp;    this.y_LAST_ = this.y;</b>
+<b class="nc">&nbsp;    this.y_TARGET_ = buffer.get();</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void remove() {
+<b class="fc">&nbsp;    if(added == false) return;</b>
+<b class="fc">&nbsp;    Groups.all.removeIndex(this, index__all);;</b>
+<b class="fc">&nbsp;    index__all = -1;</b>
+<b class="fc">&nbsp;    Groups.unit.removeIndex(this, index__unit);;</b>
+<b class="fc">&nbsp;    index__unit = -1;</b>
+<b class="fc">&nbsp;    Groups.sync.removeIndex(this, index__sync);;</b>
+<b class="fc">&nbsp;    index__sync = -1;</b>
+<b class="fc">&nbsp;    Groups.draw.removeIndex(this, index__draw);;</b>
+<b class="fc">&nbsp;    index__draw = -1;</b>
+&nbsp;    entity: {
+&nbsp;
+<b class="fc">&nbsp;        added = false;</b>
+&nbsp;    }
+&nbsp;    sync: {
+&nbsp;
+<b class="fc">&nbsp;        if (Vars.net.client()) {</b>
+<b class="nc">&nbsp;            Vars.netClient.addRemovedEntity(id());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="fc">&nbsp;        team.data().updateCount(type, -1);</b>
+<b class="fc">&nbsp;        controller.removed(this);</b>
+<b class="fc">&nbsp;        if (trail != null &amp;&amp; trail.size() &gt; 0) {</b>
+<b class="nc">&nbsp;            Fx.trailFade.at(x, y, trail.width(), type.trailColor == null ? team.color : type.trailColor, trail.copy());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    weapons: {
+&nbsp;
+<b class="fc">&nbsp;        for (WeaponMount mount : mounts) {</b>
+<b class="fc">&nbsp;            if (mount.weapon.continuous &amp;&amp; mount.bullet != null &amp;&amp; mount.bullet.owner == this) {</b>
+<b class="nc">&nbsp;                mount.bullet.time = mount.bullet.lifetime - 10.0F;</b>
+<b class="nc">&nbsp;                mount.bullet = null;</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (mount.sound != null) {</b>
+<b class="nc">&nbsp;                mount.sound.stop();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void removeBuild(int x, int y, boolean breaking) {
+&nbsp;
+<b class="nc">&nbsp;        int idx = plans.indexOf((req)-&gt;req.breaking == breaking &amp;&amp; req.x == x &amp;&amp; req.y == y);</b>
+<b class="nc">&nbsp;        if (idx != -1) {</b>
+<b class="nc">&nbsp;            plans.removeIndex(idx);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void resetController() {
+&nbsp;
+<b class="nc">&nbsp;        controller(type.createController(this));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void rotateMove(Vec2 vec) {
+&nbsp;
+<b class="nc">&nbsp;        moveAt(Tmp.v2.trns(rotation, vec.len()));</b>
+<b class="nc">&nbsp;        if (!vec.isZero()) {</b>
+<b class="nc">&nbsp;            rotation = Angles.moveToward(rotation, vec.angle(), type.rotateSpeed * Time.delta * speedMultiplier);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        set(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(float x, float y) {
+&nbsp;
+<b class="fc">&nbsp;        this.x = x;</b>
+<b class="fc">&nbsp;        this.y = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void set(UnitType def, UnitController controller) {
+&nbsp;
+<b class="nc">&nbsp;        if (this.type != def) {</b>
+<b class="nc">&nbsp;            setType(def);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        controller(controller);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void setProp(UnlockableContent content, double value) {
+&nbsp;
+<b class="nc">&nbsp;        if (content instanceof Item item) {</b>
+<b class="nc">&nbsp;            stack.item = item;</b>
+<b class="nc">&nbsp;            stack.amount = Mathf.clamp((int)value, 0, type.itemCapacity);</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void setProp(LAccess prop, double value) {
+&nbsp;
+<b class="nc">&nbsp;        switch (prop) {</b>
+&nbsp;        case health -&gt; {
+<b class="nc">&nbsp;            health = (float)Mathf.clamp(value, 0, maxHealth);</b>
+<b class="nc">&nbsp;            if (health &lt;= 0.0F &amp;&amp; !dead) {</b>
+<b class="nc">&nbsp;                kill();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        case shield -&gt; shield = Math.max((float)value, 0.0F);</b>
+&nbsp;        case x -&gt; {
+<b class="nc">&nbsp;            x = World.unconv((float)value);</b>
+<b class="nc">&nbsp;            if (!isLocal()) snapInterpolation();</b>
+&nbsp;        }
+&nbsp;        case y -&gt; {
+<b class="nc">&nbsp;            y = World.unconv((float)value);</b>
+<b class="nc">&nbsp;            if (!isLocal()) snapInterpolation();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        case velocityX -&gt; vel.x = (float)(value * tilesize / 60.0);</b>
+<b class="nc">&nbsp;        case velocityY -&gt; vel.y = (float)(value * tilesize / 60.0);</b>
+<b class="nc">&nbsp;        case rotation -&gt; rotation = (float)value;</b>
+&nbsp;        case team -&gt; {
+<b class="nc">&nbsp;            if (!net.client()) {</b>
+<b class="nc">&nbsp;                Team team = Team.get((int)value);</b>
+<b class="nc">&nbsp;                if (controller instanceof Player p) {</b>
+<b class="nc">&nbsp;                    p.team(team);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                this.team = team;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;        case flag -&gt; flag = value;</b>
+<b class="nc">&nbsp;        case speed -&gt; statusSpeed(Math.max((float)value, 0.0F));</b>
+<b class="nc">&nbsp;        case armor -&gt; statusArmor(Math.max((float)value, 0.0F));</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void setProp(LAccess prop, Object value) {
+&nbsp;
+<b class="nc">&nbsp;        switch (prop) {</b>
+&nbsp;        case team -&gt; {
+<b class="nc">&nbsp;            if (value instanceof Team t &amp;&amp; !net.client()) {</b>
+<b class="nc">&nbsp;                if (controller instanceof Player p) p.team(t);</b>
+<b class="nc">&nbsp;                team = t;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;        case payloadType -&gt; {
+<b class="nc">&nbsp;            if (((Object)this) instanceof Payloadc pay &amp;&amp; !net.client()) {</b>
+<b class="nc">&nbsp;                if (value instanceof Block b) {</b>
+<b class="nc">&nbsp;                    if (b.synthetic()) {</b>
+<b class="nc">&nbsp;                        Building build = b.newBuilding().create(b, team());</b>
+<b class="nc">&nbsp;                        if (pay.canPickup(build)) pay.addPayload(new BuildPayload(build));</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else if (value instanceof UnitType ut) {</b>
+<b class="nc">&nbsp;                    Unit unit = ut.create(team());</b>
+<b class="nc">&nbsp;                    if (pay.canPickup(unit)) pay.addPayload(new UnitPayload(unit));</b>
+<b class="nc">&nbsp;                } else if (value == null &amp;&amp; pay.payloads().size &gt; 0) {</b>
+<b class="nc">&nbsp;                    pay.payloads().pop();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void setType(UnitType type) {
+&nbsp;
+<b class="fc">&nbsp;        this.type = type;</b>
+<b class="fc">&nbsp;        this.maxHealth = type.health;</b>
+<b class="fc">&nbsp;        this.drag = type.drag;</b>
+<b class="fc">&nbsp;        this.armor = type.armor;</b>
+<b class="fc">&nbsp;        this.hitSize = type.hitSize;</b>
+<b class="fc">&nbsp;        this.hovering = type.hovering;</b>
+<b class="fc">&nbsp;        if (controller == null) controller(type.createController(this));</b>
+<b class="fc">&nbsp;        if (mounts().length != type.weapons.size) setupWeapons(type);</b>
+<b class="fc">&nbsp;        if (abilities.length != type.abilities.size) {</b>
+<b class="fc">&nbsp;            abilities = new Ability[type.abilities.size];</b>
+<b class="fc">&nbsp;            for (int i = 0; i &lt; type.abilities.size; i++) {</b>
+<b class="fc">&nbsp;                abilities[i] = type.abilities.get(i).copy();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void setWeaponRotation(float rotation) {
+&nbsp;
+<b class="nc">&nbsp;        for (WeaponMount mount : mounts) {</b>
+<b class="nc">&nbsp;            mount.rotation = rotation;</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void setupWeapons(UnitType def) {
+&nbsp;
+<b class="fc">&nbsp;        mounts = new WeaponMount[def.weapons.size];</b>
+<b class="fc">&nbsp;        for (int i = 0; i &lt; mounts.length; i++) {</b>
+<b class="fc">&nbsp;            mounts[i] = def.weapons.get(i).mountType.get(def.weapons.get(i));</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void snapInterpolation() {
+<b class="nc">&nbsp;    updateSpacing = 16;</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    rotation_LAST_ = rotation;</b>
+<b class="nc">&nbsp;    rotation_TARGET_ = rotation;</b>
+<b class="nc">&nbsp;    x_LAST_ = x;</b>
+<b class="nc">&nbsp;    x_TARGET_ = x;</b>
+<b class="nc">&nbsp;    y_LAST_ = y;</b>
+<b class="nc">&nbsp;    y_TARGET_ = y;</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void snapSync() {
+<b class="nc">&nbsp;    updateSpacing = 16;</b>
+<b class="nc">&nbsp;    lastUpdated = Time.millis();</b>
+<b class="nc">&nbsp;    rotation_LAST_ = rotation_TARGET_;</b>
+<b class="nc">&nbsp;    rotation = rotation_TARGET_;</b>
+<b class="nc">&nbsp;    x_LAST_ = x_TARGET_;</b>
+<b class="nc">&nbsp;    x = x_TARGET_;</b>
+<b class="nc">&nbsp;    y_LAST_ = y_TARGET_;</b>
+<b class="nc">&nbsp;    y = y_TARGET_;</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void statusArmor(float armor) {
+&nbsp;
+<b class="nc">&nbsp;        applyDynamicStatus().armorOverride = armor;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void statusBuildSpeed(float buildSpeed) {
+&nbsp;
+<b class="nc">&nbsp;        applyDynamicStatus().buildSpeedMultiplier = buildSpeed / type.buildSpeed;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void statusDamageMultiplier(float damageMultiplier) {
+&nbsp;
+<b class="nc">&nbsp;        applyDynamicStatus().damageMultiplier = damageMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void statusDrag(float drag) {
+&nbsp;
+<b class="nc">&nbsp;        applyDynamicStatus().dragMultiplier = type.drag == 0.0F ? 0.0F : drag / type.drag;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void statusMaxHealth(float health) {
+&nbsp;
+<b class="nc">&nbsp;        applyDynamicStatus().healthMultiplier = health / maxHealth;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void statusReloadMultiplier(float reloadMultiplier) {
+&nbsp;
+<b class="nc">&nbsp;        applyDynamicStatus().reloadMultiplier = reloadMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void statusSpeed(float speed) {
+&nbsp;
+<b class="nc">&nbsp;        applyDynamicStatus().speedMultiplier = speed / (type.speed * 60.0F / tilesize);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void trns(Position pos) {
+&nbsp;
+<b class="nc">&nbsp;        trns(pos.getX(), pos.getY());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void trns(float x, float y) {
+&nbsp;
+<b class="nc">&nbsp;        set(this.x + x, this.y + y);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void unapply(StatusEffect effect) {
+&nbsp;
+<b class="nc">&nbsp;        statuses.remove((e)-&gt;{</b>
+<b class="nc">&nbsp;            if (e.effect == effect) {</b>
+<b class="nc">&nbsp;                e.effect.onRemoved(this);</b>
+<b class="nc">&nbsp;                Pools.free(e);</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        });
+&nbsp;  }
+&nbsp;
+&nbsp;  public void unloaded() {
+&nbsp;
+<b class="nc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void update() {
+&nbsp;    vel: {
+&nbsp;
+<b class="fc">&nbsp;        if (!net.client() || isLocal()) {</b>
+<b class="fc">&nbsp;            float px = x;</b>
+<b class="fc">&nbsp;            float py = y;</b>
+<b class="fc">&nbsp;            move(vel.x * Time.delta, vel.y * Time.delta);</b>
+<b class="fc">&nbsp;            if (Mathf.equal(px, x)) vel.x = 0;</b>
+<b class="fc">&nbsp;            if (Mathf.equal(py, y)) vel.y = 0;</b>
+<b class="fc">&nbsp;            vel.scl(Math.max(1.0F - drag * Time.delta, 0));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    bounded: {
+&nbsp;
+<b class="fc">&nbsp;        if (!type.bounded) break bounded;</b>
+<b class="fc">&nbsp;        float bot = 0.0F;</b>
+<b class="fc">&nbsp;        float left = 0.0F;</b>
+<b class="fc">&nbsp;        float top = world.unitHeight();</b>
+<b class="fc">&nbsp;        float right = world.unitWidth();</b>
+<b class="fc">&nbsp;        if (state.rules.limitMapArea &amp;&amp; !team.isAI()) {</b>
+<b class="nc">&nbsp;            bot = state.rules.limitY * tilesize;</b>
+<b class="nc">&nbsp;            left = state.rules.limitX * tilesize;</b>
+<b class="nc">&nbsp;            top = state.rules.limitHeight * tilesize + bot;</b>
+<b class="nc">&nbsp;            right = state.rules.limitWidth * tilesize + left;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (!net.client() || isLocal()) {</b>
+<b class="fc">&nbsp;            float dx = 0.0F;</b>
+<b class="fc">&nbsp;            float dy = 0.0F;</b>
+<b class="fc">&nbsp;            if (x &lt; left) dx += (-(x - left) / warpDst);</b>
+<b class="fc">&nbsp;            if (y &lt; bot) dy += (-(y - bot) / warpDst);</b>
+<b class="fc">&nbsp;            if (x &gt; right) dx -= (x - right) / warpDst;</b>
+<b class="fc">&nbsp;            if (y &gt; top) dy -= (y - top) / warpDst;</b>
+<b class="fc">&nbsp;            velAddNet(dx * Time.delta, dy * Time.delta);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (isGrounded()) {</b>
+<b class="nc">&nbsp;            x = Mathf.clamp(x, left, right - tilesize);</b>
+<b class="nc">&nbsp;            y = Mathf.clamp(y, bot, top - tilesize);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (x &lt; -finalWorldBounds + left || y &lt; -finalWorldBounds + bot || x &gt;= right + finalWorldBounds || y &gt;= top + finalWorldBounds) {</b>
+<b class="nc">&nbsp;            kill();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    builder: {
+&nbsp;
+<b class="fc">&nbsp;        updateBuildLogic();</b>
+&nbsp;    }
+&nbsp;    entity: {
+&nbsp;
+&nbsp;    }
+&nbsp;    flying: {
+&nbsp;
+<b class="fc">&nbsp;        Floor floor = floorOn();</b>
+<b class="fc">&nbsp;        if (isFlying() != wasFlying) {</b>
+<b class="fc">&nbsp;            if (wasFlying) {</b>
+<b class="nc">&nbsp;                if (tileOn() != null) {</b>
+<b class="nc">&nbsp;                    Fx.unitLand.at(x, y, floorOn().isLiquid ? 1.0F : 0.5F, tileOn().floor().mapColor);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;            wasFlying = isFlying();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (!hovering &amp;&amp; isGrounded()) {</b>
+<b class="nc">&nbsp;            if ((splashTimer += Mathf.dst(deltaX(), deltaY())) &gt;= (7.0F + hitSize() / 8.0F)) {</b>
+<b class="nc">&nbsp;                floor.walkEffect.at(x, y, hitSize() / 8.0F, floor.mapColor);</b>
+<b class="nc">&nbsp;                splashTimer = 0.0F;</b>
+<b class="nc">&nbsp;                if (emitWalkSound()) {</b>
+<b class="nc">&nbsp;                    floor.walkSound.at(x, y, Mathf.random(floor.walkSoundPitchMin, floor.walkSoundPitchMax), floor.walkSoundVolume);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        updateDrowning();</b>
+&nbsp;    }
+&nbsp;    health: {
+&nbsp;
+<b class="fc">&nbsp;        hitTime -= Time.delta / hitDuration;</b>
+&nbsp;    }
+&nbsp;    hitbox: {
+&nbsp;
+&nbsp;    }
+&nbsp;    items: {
+&nbsp;
+<b class="fc">&nbsp;        stack.amount = Mathf.clamp(stack.amount, 0, itemCapacity());</b>
+<b class="fc">&nbsp;        itemTime = Mathf.lerpDelta(itemTime, Mathf.num(hasItem()), 0.05F);</b>
+&nbsp;    }
+&nbsp;    miner: {
+&nbsp;
+<b class="fc">&nbsp;        if (mineTile == null) break miner;</b>
+<b class="nc">&nbsp;        Building core = closestCore();</b>
+<b class="nc">&nbsp;        Item item = getMineResult(mineTile);</b>
+<b class="nc">&nbsp;        if (core != null &amp;&amp; item != null &amp;&amp; !acceptsItem(item) &amp;&amp; within(core, mineTransferRange) &amp;&amp; !offloadImmediately()) {</b>
+<b class="nc">&nbsp;            int accepted = core.acceptStack(item(), stack().amount, this);</b>
+<b class="nc">&nbsp;            if (accepted &gt; 0) {</b>
+<b class="nc">&nbsp;                Call.transferItemTo(this, item(), accepted, mineTile.worldx() + Mathf.range(tilesize / 2.0F), mineTile.worldy() + Mathf.range(tilesize / 2.0F), core);</b>
+<b class="nc">&nbsp;                clearItem();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        if ((!net.client() || isLocal()) &amp;&amp; !validMine(mineTile)) {</b>
+<b class="nc">&nbsp;            mineTile = null;</b>
+<b class="nc">&nbsp;            mineTimer = 0.0F;</b>
+<b class="nc">&nbsp;        } else if (mining() &amp;&amp; item != null) {</b>
+<b class="nc">&nbsp;            mineTimer += Time.delta * type.mineSpeed;</b>
+<b class="nc">&nbsp;            if (Mathf.chance(0.06 * Time.delta)) {</b>
+<b class="nc">&nbsp;                Fx.pulverizeSmall.at(mineTile.worldx() + Mathf.range(tilesize / 2.0F), mineTile.worldy() + Mathf.range(tilesize / 2.0F), 0.0F, item.color);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if (mineTimer &gt;= 50.0F + (type.mineHardnessScaling ? item.hardness * 15.0F : 15.0F)) {</b>
+<b class="nc">&nbsp;                mineTimer = 0;</b>
+<b class="nc">&nbsp;                if (state.rules.sector != null &amp;&amp; team() == state.rules.defaultTeam) state.rules.sector.info.handleProduction(item, 1);</b>
+<b class="nc">&nbsp;                if (core != null &amp;&amp; within(core, mineTransferRange) &amp;&amp; core.acceptStack(item, 1, this) == 1 &amp;&amp; offloadImmediately()) {</b>
+<b class="nc">&nbsp;                    if (item() == item &amp;&amp; !net.client()) addItem(item);</b>
+<b class="nc">&nbsp;                    Call.transferItemTo(this, item, 1, mineTile.worldx() + Mathf.range(tilesize / 2.0F), mineTile.worldy() + Mathf.range(tilesize / 2.0F), core);</b>
+<b class="nc">&nbsp;                } else if (acceptsItem(item)) {</b>
+<b class="nc">&nbsp;                    InputHandler.transferItemToUnit(item, mineTile.worldx() + Mathf.range(tilesize / 2.0F), mineTile.worldy() + Mathf.range(tilesize / 2.0F), this);</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    mineTile = null;</b>
+<b class="nc">&nbsp;                    mineTimer = 0.0F;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            if (!headless) {</b>
+<b class="nc">&nbsp;                control.sound.loop(type.mineSound, this, type.mineSoundVolume);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;    shield: {
+&nbsp;
+<b class="fc">&nbsp;        shieldAlpha -= Time.delta / 15.0F;</b>
+<b class="fc">&nbsp;        if (shieldAlpha &lt; 0) shieldAlpha = 0.0F;</b>
+&nbsp;    }
+&nbsp;    status: {
+&nbsp;
+<b class="fc">&nbsp;        Floor floor = floorOn();</b>
+<b class="fc">&nbsp;        if (isGrounded() &amp;&amp; !type.hovering) {</b>
+<b class="nc">&nbsp;            apply(floor.status, floor.statusDuration);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        applied.clear();</b>
+<b class="fc">&nbsp;        armorOverride = -1.0F;</b>
+<b class="fc">&nbsp;        speedMultiplier = damageMultiplier = healthMultiplier = reloadMultiplier = buildSpeedMultiplier = dragMultiplier = 1.0F;</b>
+<b class="fc">&nbsp;        disarmed = false;</b>
+<b class="fc">&nbsp;        if (statuses.isEmpty()) break status;</b>
+<b class="nc">&nbsp;        int index = 0;</b>
+<b class="nc">&nbsp;        while (index &lt; statuses.size) {</b>
+<b class="nc">&nbsp;            StatusEntry entry = statuses.get(index++);</b>
+<b class="nc">&nbsp;            entry.time = Math.max(entry.time - Time.delta, 0);</b>
+<b class="nc">&nbsp;            if (entry.effect == null || (entry.time &lt;= 0 &amp;&amp; !entry.effect.permanent)) {</b>
+<b class="nc">&nbsp;                if (entry.effect != null) {</b>
+<b class="nc">&nbsp;                    entry.effect.onRemoved(this);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                Pools.free(entry);</b>
+<b class="nc">&nbsp;                index--;</b>
+<b class="nc">&nbsp;                statuses.remove(index);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                applied.set(entry.effect.id);</b>
+<b class="nc">&nbsp;                if (entry.effect.dynamic) {</b>
+<b class="nc">&nbsp;                    speedMultiplier *= entry.speedMultiplier;</b>
+<b class="nc">&nbsp;                    healthMultiplier *= entry.healthMultiplier;</b>
+<b class="nc">&nbsp;                    damageMultiplier *= entry.damageMultiplier;</b>
+<b class="nc">&nbsp;                    reloadMultiplier *= entry.reloadMultiplier;</b>
+<b class="nc">&nbsp;                    buildSpeedMultiplier *= entry.buildSpeedMultiplier;</b>
+<b class="nc">&nbsp;                    dragMultiplier *= entry.dragMultiplier;</b>
+<b class="nc">&nbsp;                    if (entry.armorOverride &gt;= 0.0F) armorOverride = entry.armorOverride;</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    speedMultiplier *= entry.effect.speedMultiplier;</b>
+<b class="nc">&nbsp;                    healthMultiplier *= entry.effect.healthMultiplier;</b>
+<b class="nc">&nbsp;                    damageMultiplier *= entry.effect.damageMultiplier;</b>
+<b class="nc">&nbsp;                    reloadMultiplier *= entry.effect.reloadMultiplier;</b>
+<b class="nc">&nbsp;                    buildSpeedMultiplier *= entry.effect.buildSpeedMultiplier;</b>
+<b class="nc">&nbsp;                    dragMultiplier *= entry.effect.dragMultiplier;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                disarmed |= entry.effect.disarm;</b>
+<b class="nc">&nbsp;                entry.effect.update(this, entry.time);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;    sync: {
+&nbsp;
+<b class="fc">&nbsp;        if ((Vars.net.client() &amp;&amp; !isLocal()) || isRemote()) {</b>
+<b class="nc">&nbsp;            interpolate();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    unit: {
+&nbsp;
+<b class="fc">&nbsp;        type.update(this);</b>
+<b class="fc">&nbsp;        if (wasHealed &amp;&amp; healTime &lt;= -1.0F) {</b>
+<b class="nc">&nbsp;            healTime = 1.0F;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        healTime -= Time.delta / 20.0F;</b>
+<b class="fc">&nbsp;        wasHealed = false;</b>
+<b class="fc">&nbsp;        if (team.isOnlyAI() &amp;&amp; state.isCampaign() &amp;&amp; state.getSector().isCaptured()) {</b>
+<b class="nc">&nbsp;            kill();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (!headless &amp;&amp; type.loopSound != Sounds.none) {</b>
+<b class="nc">&nbsp;            control.sound.loop(type.loopSound, this, type.loopSoundVolume);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (!type.supportsEnv(state.rules.env) &amp;&amp; !dead) {</b>
+<b class="nc">&nbsp;            Call.unitEnvDeath(this);</b>
+<b class="nc">&nbsp;            team.data().updateCount(type, -1);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (state.rules.unitAmmo &amp;&amp; ammo &lt; type.ammoCapacity - 1.0E-4F) {</b>
+<b class="nc">&nbsp;            resupplyTime += Time.delta;</b>
+<b class="nc">&nbsp;            if (resupplyTime &gt; 10.0F) {</b>
+<b class="nc">&nbsp;                type.ammoType.resupply(this);</b>
+<b class="nc">&nbsp;                resupplyTime = 0.0F;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        for (Ability a : abilities) {</b>
+<b class="fc">&nbsp;            a.update(this);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (trail != null) {</b>
+<b class="nc">&nbsp;            trail.length = type.trailLength;</b>
+<b class="nc">&nbsp;            float scale = type.useEngineElevation ? elevation : 1.0F;</b>
+<b class="nc">&nbsp;            float offset = type.engineOffset / 2.0F + type.engineOffset / 2.0F * scale;</b>
+<b class="nc">&nbsp;            float cx = x + Angles.trnsx(rotation + 180, offset);</b>
+<b class="nc">&nbsp;            float cy = y + Angles.trnsy(rotation + 180, offset);</b>
+<b class="nc">&nbsp;            trail.update(cx, cy);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        drag = type.drag * (isGrounded() ? (floorOn().dragMultiplier) : 1.0F) * dragMultiplier * state.rules.dragMultiplier;</b>
+<b class="fc">&nbsp;        if (team != state.rules.waveTeam &amp;&amp; state.hasSpawns() &amp;&amp; (!net.client() || isLocal()) &amp;&amp; hittable()) {</b>
+<b class="fc">&nbsp;            float relativeSize = state.rules.dropZoneRadius + hitSize / 2.0F + 1.0F;</b>
+<b class="fc">&nbsp;            for (Tile spawn : spawner.getSpawns()) {</b>
+<b class="fc">&nbsp;                if (within(spawn.worldx(), spawn.worldy(), relativeSize)) {</b>
+<b class="nc">&nbsp;                    velAddNet(Tmp.v1.set(this).sub(spawn.worldx(), spawn.worldy()).setLength(0.1F + 1.0F - dst(spawn) / relativeSize).scl(0.45F * Time.delta));</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (dead || health &lt;= 0) {</b>
+<b class="nc">&nbsp;            drag = 0.01F;</b>
+<b class="nc">&nbsp;            if (Mathf.chanceDelta(0.1)) {</b>
+<b class="nc">&nbsp;                Tmp.v1.rnd(Mathf.range(hitSize));</b>
+<b class="nc">&nbsp;                type.fallEffect.at(x + Tmp.v1.x, y + Tmp.v1.y);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if (Mathf.chanceDelta(0.2)) {</b>
+<b class="nc">&nbsp;                float offset = type.engineOffset / 2.0F + type.engineOffset / 2.0F * elevation;</b>
+<b class="nc">&nbsp;                float range = Mathf.range(type.engineSize);</b>
+<b class="nc">&nbsp;                type.fallEngineEffect.at(x + Angles.trnsx(rotation + 180, offset) + Mathf.range(range), y + Angles.trnsy(rotation + 180, offset) + Mathf.range(range), Mathf.random());</b>
+&nbsp;            }
+<b class="nc">&nbsp;            elevation -= type.fallSpeed * Time.delta;</b>
+<b class="nc">&nbsp;            if (isGrounded() || health &lt;= -maxHealth) {</b>
+<b class="nc">&nbsp;                Call.unitDestroy(id);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        Tile tile = tileOn();</b>
+<b class="fc">&nbsp;        Floor floor = floorOn();</b>
+<b class="fc">&nbsp;        if (tile != null &amp;&amp; isGrounded() &amp;&amp; !type.hovering) {</b>
+<b class="nc">&nbsp;            if (tile.build != null) {</b>
+<b class="nc">&nbsp;                tile.build.unitOn(this);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if (floor.damageTaken &gt; 0.0F) {</b>
+<b class="nc">&nbsp;                damageContinuous(floor.damageTaken);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        if (tile != null &amp;&amp; !canPassOn()) {</b>
+<b class="nc">&nbsp;            if (type.canBoost) {</b>
+<b class="nc">&nbsp;                elevation = 1.0F;</b>
+<b class="nc">&nbsp;            } else if (!net.client()) {</b>
+<b class="nc">&nbsp;                kill();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        if (!net.client() &amp;&amp; !dead) {</b>
+<b class="fc">&nbsp;            controller.updateUnit();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (!controller.isValidController()) {</b>
+<b class="nc">&nbsp;            resetController();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (spawnedByCore &amp;&amp; !isPlayer() &amp;&amp; !dead) {</b>
+<b class="nc">&nbsp;            Call.unitDespawn(this);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    weapons: {
+&nbsp;
+<b class="fc">&nbsp;        for (WeaponMount mount : mounts) {</b>
+<b class="fc">&nbsp;            mount.weapon.update(this, mount);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void updateBoosting(boolean boost) {
+&nbsp;
+<b class="fc">&nbsp;        if (!type.canBoost || dead) return;</b>
+<b class="nc">&nbsp;        elevation = Mathf.approachDelta(elevation, type.canBoost ? Mathf.num(boost || onSolid() || (isFlying() &amp;&amp; !canLand())) : 0.0F, type.riseSpeed);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void updateBuildLogic() {
+&nbsp;
+<b class="fc">&nbsp;        if (type.buildSpeed &lt;= 0.0F) return;</b>
+<b class="fc">&nbsp;        if (!headless) {</b>
+<b class="nc">&nbsp;            if (lastActive != null &amp;&amp; buildAlpha &lt;= 0.01F) {</b>
+<b class="nc">&nbsp;                lastActive = null;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            buildAlpha = Mathf.lerpDelta(buildAlpha, activelyBuilding() ? 1.0F : 0.0F, 0.15F);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        validatePlans();</b>
+<b class="fc">&nbsp;        if (!updateBuilding || !canBuild()) {</b>
+&nbsp;            return;
+&nbsp;        }
+<b class="fc">&nbsp;        float finalPlaceDst = state.rules.infiniteResources ? Float.MAX_VALUE : type.buildRange;</b>
+<b class="fc">&nbsp;        boolean infinite = state.rules.infiniteResources || team().rules().infiniteResources;</b>
+<b class="fc">&nbsp;        buildCounter += Time.delta;</b>
+<b class="fc">&nbsp;        if (Float.isNaN(buildCounter) || Float.isInfinite(buildCounter)) buildCounter = 0.0F;</b>
+<b class="fc">&nbsp;        buildCounter = Math.min(buildCounter, 10.0F);</b>
+<b class="fc">&nbsp;        boolean instant = state.rules.instantBuild &amp;&amp; state.rules.infiniteResources;</b>
+<b class="fc">&nbsp;        int maxPerFrame = instant ? plans.size : 10;</b>
+<b class="fc">&nbsp;        int count = 0;</b>
+<b class="fc">&nbsp;        var core = core();</b>
+<b class="fc">&nbsp;        if ((core == null &amp;&amp; !infinite)) return;</b>
+<b class="fc">&nbsp;        while ((buildCounter &gt;= 1 || instant) &amp;&amp; count++ &lt; maxPerFrame &amp;&amp; plans.size &gt; 0) {</b>
+<b class="fc">&nbsp;            buildCounter -= 1.0F;</b>
+<b class="fc">&nbsp;            if (plans.size &gt; 1) {</b>
+<b class="nc">&nbsp;                int total = 0;</b>
+<b class="nc">&nbsp;                int size = plans.size;</b>
+&nbsp;                BuildPlan plan;
+<b class="nc">&nbsp;                while ((!within((plan = buildPlan()).tile(), finalPlaceDst) || shouldSkip(plan, core)) &amp;&amp; total &lt; size) {</b>
+<b class="nc">&nbsp;                    plans.removeFirst();</b>
+<b class="nc">&nbsp;                    plans.addLast(plan);</b>
+<b class="nc">&nbsp;                    total++;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;            BuildPlan current = buildPlan();</b>
+<b class="fc">&nbsp;            Tile tile = current.tile();</b>
+<b class="fc">&nbsp;            lastActive = current;</b>
+<b class="fc">&nbsp;            buildAlpha = 1.0F;</b>
+<b class="fc">&nbsp;            if (current.breaking) lastSize = tile.block().size;</b>
+<b class="fc">&nbsp;            if (!within(tile, finalPlaceDst)) continue;</b>
+<b class="fc">&nbsp;            if (!headless) {</b>
+<b class="nc">&nbsp;                Vars.control.sound.loop(Sounds.build, tile, 0.15F);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (!(tile.build instanceof ConstructBuild cb)) {</b>
+<b class="fc">&nbsp;                if (!current.initialized &amp;&amp; !current.breaking &amp;&amp; Build.validPlace(current.block, team, current.x, current.y, current.rotation)) {</b>
+<b class="fc">&nbsp;                    boolean hasAll = infinite || current.isRotation(team) || (tile.team() == Team.derelict &amp;&amp; tile.block() == current.block &amp;&amp; tile.build != null &amp;&amp; tile.block().allowDerelictRepair &amp;&amp; state.rules.derelictRepair) || !Structs.contains(current.block.requirements, (i)-&gt;core != null &amp;&amp; !core.items.has(i.item, Math.min(Mathf.round(i.amount * state.rules.buildCostMultiplier), 1)));</b>
+<b class="fc">&nbsp;                    if (hasAll) {</b>
+<b class="fc">&nbsp;                        Call.beginPlace(this, current.block, team, current.x, current.y, current.rotation);</b>
+&nbsp;                    } else {
+<b class="nc">&nbsp;                        current.stuck = true;</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                } else if (!current.initialized &amp;&amp; current.breaking &amp;&amp; Build.validBreak(team, current.x, current.y)) {</b>
+<b class="fc">&nbsp;                    Call.beginBreak(this, team, current.x, current.y);</b>
+&nbsp;                } else {
+<b class="fc">&nbsp;                    plans.removeFirst();</b>
+<b class="fc">&nbsp;                    continue;</b>
+&nbsp;                }
+<b class="fc">&nbsp;            } else if ((tile.team() != team &amp;&amp; tile.team() != Team.derelict) || (!current.breaking &amp;&amp; (cb.current != current.block || cb.tile != current.tile()))) {</b>
+<b class="nc">&nbsp;                plans.removeFirst();</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (tile.build instanceof ConstructBuild &amp;&amp; !current.initialized) {</b>
+<b class="fc">&nbsp;                Events.fire(new BuildSelectEvent(tile, team, this, current.breaking));</b>
+<b class="fc">&nbsp;                current.initialized = true;</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (!(tile.build instanceof ConstructBuild entity)) {</b>
+&nbsp;                continue;
+&nbsp;            }
+<b class="fc">&nbsp;            float bs = 1.0F / entity.buildCost * type.buildSpeed * buildSpeedMultiplier * state.rules.buildSpeed(team);</b>
+<b class="fc">&nbsp;            if (current.breaking) {</b>
+<b class="fc">&nbsp;                entity.deconstruct(this, core, bs);</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                entity.construct(this, core, bs, current.config);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            current.stuck = Mathf.equal(current.progress, entity.progress);</b>
+<b class="fc">&nbsp;            current.progress = entity.progress;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void updateDrowning() {
+&nbsp;
+<b class="fc">&nbsp;        Floor floor = drownFloor();</b>
+<b class="fc">&nbsp;        if (floor != null &amp;&amp; floor.isLiquid &amp;&amp; floor.drownTime &gt; 0) {</b>
+<b class="nc">&nbsp;            lastDrownFloor = floor;</b>
+<b class="nc">&nbsp;            drownTime += Time.delta / floor.drownTime / type.drownTimeMultiplier;</b>
+<b class="nc">&nbsp;            if (Mathf.chanceDelta(0.05F)) {</b>
+<b class="nc">&nbsp;                floor.drownUpdateEffect.at(x, y, hitSize, floor.mapColor);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            if (drownTime &gt;= 0.999F &amp;&amp; !net.client()) {</b>
+<b class="nc">&nbsp;                kill();</b>
+<b class="nc">&nbsp;                Events.fire(new UnitDrownEvent(this));</b>
+&nbsp;            }
+&nbsp;        } else {
+<b class="fc">&nbsp;            drownTime -= Time.delta / 50.0F;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        drownTime = Mathf.clamp(drownTime);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void updateLastPosition() {
+&nbsp;
+<b class="fc">&nbsp;        deltaX = x - lastX;</b>
+<b class="fc">&nbsp;        deltaY = y - lastY;</b>
+<b class="fc">&nbsp;        lastX = x;</b>
+<b class="fc">&nbsp;        lastY = y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void validatePlans() {
+&nbsp;
+<b class="fc">&nbsp;        if (plans.size &gt; 0) {</b>
+<b class="fc">&nbsp;            Iterator&lt;BuildPlan&gt; it = plans.iterator();</b>
+<b class="fc">&nbsp;            while (it.hasNext()) {</b>
+<b class="fc">&nbsp;                BuildPlan plan = it.next();</b>
+<b class="fc">&nbsp;                Tile tile = world.tile(plan.x, plan.y);</b>
+<b class="fc">&nbsp;                boolean isSameDerelict = (tile != null &amp;&amp; tile.build != null &amp;&amp; tile.block() == plan.block &amp;&amp; tile.build.tileX() == plan.x &amp;&amp; tile.build.tileY() == plan.y &amp;&amp; tile.team() == Team.derelict);</b>
+<b class="fc">&nbsp;                if (tile == null || (plan.breaking &amp;&amp; tile.block() == Blocks.air) || (!plan.breaking &amp;&amp; ((tile.build != null &amp;&amp; tile.build.rotation == plan.rotation &amp;&amp; !isSameDerelict) || !plan.block.rotate) &amp;&amp; ((tile.block() == plan.block &amp;&amp; !isSameDerelict) || (plan.block != null &amp;&amp; (plan.block.isOverlay() &amp;&amp; plan.block == tile.overlay() || (plan.block.isFloor() &amp;&amp; plan.block == tile.floor())))))) {</b>
+<b class="fc">&nbsp;                    it.remove();</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void velAddNet(Vec2 v) {
+&nbsp;
+<b class="nc">&nbsp;        vel.add(v);</b>
+<b class="nc">&nbsp;        if (isRemote()) {</b>
+<b class="nc">&nbsp;            x += v.x;</b>
+<b class="nc">&nbsp;            y += v.y;</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void velAddNet(float vx, float vy) {
+&nbsp;
+<b class="fc">&nbsp;        vel.add(vx, vy);</b>
+<b class="fc">&nbsp;        if (isRemote()) {</b>
+<b class="nc">&nbsp;            x += vx;</b>
+<b class="nc">&nbsp;            y += vy;</b>
+&nbsp;        }
+&nbsp;  }
+&nbsp;
+&nbsp;  public void wobble() {
+&nbsp;
+<b class="fc">&nbsp;        x += Mathf.sin(Time.time + (id() % 10) * 12, 25.0F, 0.05F) * Time.delta * elevation;</b>
+<b class="fc">&nbsp;        y += Mathf.cos(Time.time + (id() % 10) * 12, 25.0F, 0.05F) * Time.delta * elevation;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public void writeSync(Writes write) {
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeAbilities(write, this.abilities);</b>
+<b class="nc">&nbsp;    write.f(this.ammo);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeController(write, this.controller);</b>
+<b class="nc">&nbsp;    write.f(this.elevation);</b>
+<b class="nc">&nbsp;    write.d(this.flag);</b>
+<b class="nc">&nbsp;    write.f(this.health);</b>
+<b class="nc">&nbsp;    write.bool(this.isShooting);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeTile(write, this.mineTile);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeMounts(write, this.mounts);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writePlansQueueNet(write, this.plans);</b>
+<b class="nc">&nbsp;    write.f(this.rotation);</b>
+<b class="nc">&nbsp;    write.f(this.shield);</b>
+<b class="nc">&nbsp;    write.bool(this.spawnedByCore);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeItems(write, this.stack);</b>
+<b class="nc">&nbsp;    write.i(this.statuses.size);</b>
+<b class="nc">&nbsp;    for(int INDEX = 0; INDEX &lt; this.statuses.size; INDEX ++) {</b>
+<b class="nc">&nbsp;      mindustry.io.TypeIO.writeStatus(write, this.statuses.get(INDEX));</b>
+&nbsp;    }
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeTeam(write, this.team);</b>
+<b class="nc">&nbsp;    write.s(this.type.id);</b>
+<b class="nc">&nbsp;    write.bool(this.updateBuilding);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeVec2(write, this.vel);</b>
+<b class="nc">&nbsp;    write.f(this.x);</b>
+<b class="nc">&nbsp;    write.f(this.y);</b>
+&nbsp;
+&nbsp;  }
+&nbsp;
+&nbsp;  public void writeSyncManual(FloatBuffer buffer) {
+<b class="nc">&nbsp;    buffer.put(this.rotation);</b>
+<b class="nc">&nbsp;    buffer.put(this.x);</b>
+<b class="nc">&nbsp;    buffer.put(this.y);</b>
+&nbsp;
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

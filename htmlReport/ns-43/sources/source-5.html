@@ -1,0 +1,817 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnitAssembler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.units</a>
+</div>
+
+<h1>Coverage Summary for Class: UnitAssembler (mindustry.world.blocks.units)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnitAssembler</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.8%
+  </span>
+  <span class="absValue">
+    (3/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.4%
+  </span>
+  <span class="absValue">
+    (23/87)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">UnitAssembler$AssemblerUnitPlan</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UnitAssembler$UnitAssemblerBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (12/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.6%
+  </span>
+  <span class="absValue">
+    (72/214)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UnitAssembler$YeetData</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    31.5%
+  </span>
+  <span class="absValue">
+    (17/54)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    32.4%
+  </span>
+  <span class="absValue">
+    (100/309)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.units;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.units.UnitAssemblerModule.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class UnitAssembler extends PayloadBlock{
+&nbsp;    public @Load(&quot;@-side1&quot;) TextureRegion sideRegion1;
+&nbsp;    public @Load(&quot;@-side2&quot;) TextureRegion sideRegion2;
+&nbsp;
+<b class="fc">&nbsp;    public int areaSize = 11;</b>
+<b class="fc">&nbsp;    public UnitType droneType = UnitTypes.assemblyDrone;</b>
+<b class="fc">&nbsp;    public int dronesCreated = 4;</b>
+<b class="fc">&nbsp;    public float droneConstructTime = 60f * 4f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public Seq&lt;AssemblerUnitPlan&gt; plans = new Seq&lt;&gt;(4);</b>
+&nbsp;
+&nbsp;    protected @Nullable ConsumePayloadDynamic consPayload;
+&nbsp;
+&nbsp;    public UnitAssembler(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = solid = true;</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        rotateDraw = false;</b>
+<b class="fc">&nbsp;        acceptsPayload = true;</b>
+<b class="fc">&nbsp;        flags = EnumSet.of(BlockFlag.unitAssembler);</b>
+<b class="fc">&nbsp;        regionRotated1 = 1;</b>
+<b class="fc">&nbsp;        sync = true;</b>
+<b class="fc">&nbsp;        group = BlockGroup.units;</b>
+<b class="fc">&nbsp;        commandable = true;</b>
+<b class="fc">&nbsp;        quickRotate = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Rect getRect(Rect rect, float x, float y, int rotation){
+<b class="nc">&nbsp;        rect.setCentered(x, y, areaSize * tilesize);</b>
+<b class="nc">&nbsp;        float len = tilesize * (areaSize + size)/2f;</b>
+&nbsp;
+<b class="nc">&nbsp;        rect.x += Geometry.d4x(rotation) * len;</b>
+<b class="nc">&nbsp;        rect.y += Geometry.d4y(rotation) * len;</b>
+&nbsp;
+<b class="nc">&nbsp;        return rect;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        super.drawPlace(x, y, rotation, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        x *= tilesize;</b>
+<b class="nc">&nbsp;        y *= tilesize;</b>
+<b class="nc">&nbsp;        x += offset;</b>
+<b class="nc">&nbsp;        y += offset;</b>
+&nbsp;
+<b class="nc">&nbsp;        Rect rect = getRect(Tmp.r1, x, y, rotation);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.dashRect(valid ? Pal.accent : Pal.remove, rect);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean canPlaceOn(Tile tile, Team team, int rotation){
+&nbsp;        //overlapping construction areas not allowed; grow by a tiny amount so edges can&#39;t overlap either.
+<b class="nc">&nbsp;        Rect rect = getRect(Tmp.r1, tile.worldx() + offset, tile.worldy() + offset, rotation).grow(0.1f);</b>
+<b class="nc">&nbsp;        return</b>
+<b class="nc">&nbsp;            !indexer.getFlagged(team, BlockFlag.unitAssembler).contains(b -&gt; getRect(Tmp.r2, b.x, b.y, b.rotation).overlaps(rect)) &amp;&amp;</b>
+<b class="nc">&nbsp;            !team.data().getBuildings(ConstructBlock.get(size)).contains(b -&gt; ((ConstructBuild)b).current instanceof UnitAssembler &amp;&amp; getRect(Tmp.r2, b.x, b.y, b.rotation).overlaps(rect));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;progress&quot;, (UnitAssemblerBuild e) -&gt; new Bar(&quot;bar.progress&quot;, Pal.ammo, () -&gt; e.progress));</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;units&quot;, (UnitAssemblerBuild e) -&gt;</b>
+<b class="nc">&nbsp;            new Bar(() -&gt;</b>
+<b class="nc">&nbsp;            Core.bundle.format(&quot;bar.unitcap&quot;,</b>
+<b class="nc">&nbsp;                Fonts.getUnicodeStr(e.unit().name),</b>
+<b class="nc">&nbsp;                e.team.data().countType(e.unit()),</b>
+<b class="nc">&nbsp;                e.unit().useUnitCap ? Units.getStringCap(e.team) : &quot;?&quot;</b>
+&nbsp;            ),
+<b class="nc">&nbsp;            () -&gt; Pal.power,</b>
+<b class="nc">&nbsp;            () -&gt; e.unit().useUnitCap ? ((float)e.team.data().countType(e.unit()) / Units.getCap(e.team)) : 1f</b>
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy());</b>
+<b class="nc">&nbsp;        Draw.rect(plan.rotation &gt;= 2 ? sideRegion2 : sideRegion1, plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+<b class="nc">&nbsp;        Draw.rect(topRegion, plan.drawx(), plan.drawy());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{region, sideRegion1, topRegion};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        updateClipRadius(areaSize * tilesize);</b>
+<b class="fc">&nbsp;        consume(consPayload = new ConsumePayloadDynamic((UnitAssemblerBuild build) -&gt; build.plan().requirements));</b>
+&nbsp;
+<b class="fc">&nbsp;        consumeBuilder.each(c -&gt; c.multiplier = b -&gt; state.rules.unitCost(b.team));</b>
+&nbsp;
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.output, table -&gt; {</b>
+<b class="nc">&nbsp;            table.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            int tier = 0;</b>
+<b class="nc">&nbsp;            for(var plan : plans){</b>
+<b class="nc">&nbsp;                int ttier = tier;</b>
+<b class="nc">&nbsp;                table.table(Styles.grayPanel, t -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(plan.unit.isBanned()){</b>
+<b class="nc">&nbsp;                        t.image(Icon.cancel).color(Pal.remove).size(40).pad(10);</b>
+&nbsp;                        return;
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(plan.unit.unlockedNow()){</b>
+<b class="nc">&nbsp;                        t.image(plan.unit.uiIcon).scaling(Scaling.fit).size(40).pad(10f).left().with(i -&gt; StatValues.withTooltip(i, plan.unit));</b>
+<b class="nc">&nbsp;                        t.table(info -&gt; {</b>
+<b class="nc">&nbsp;                            info.defaults().left();</b>
+<b class="nc">&nbsp;                            info.add(plan.unit.localizedName);</b>
+<b class="nc">&nbsp;                            info.row();</b>
+<b class="nc">&nbsp;                            info.add(Strings.autoFixed(plan.time / 60f, 1) + &quot; &quot; + Core.bundle.get(&quot;unit.seconds&quot;)).color(Color.lightGray);</b>
+<b class="nc">&nbsp;                            if(ttier &gt; 0){</b>
+<b class="nc">&nbsp;                                info.row();</b>
+<b class="nc">&nbsp;                                info.add(Stat.moduleTier.localized() + &quot;: &quot; + ttier).color(Color.lightGray);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }).left();</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.table(req -&gt; {</b>
+<b class="nc">&nbsp;                            req.right();</b>
+<b class="nc">&nbsp;                            for(int i = 0; i &lt; plan.requirements.size; i++){</b>
+<b class="nc">&nbsp;                                if(i % 6 == 0){</b>
+<b class="nc">&nbsp;                                    req.row();</b>
+&nbsp;                                }
+&nbsp;
+<b class="nc">&nbsp;                                PayloadStack stack = plan.requirements.get(i);</b>
+<b class="nc">&nbsp;                                req.add(StatValues.stack(stack)).pad(5);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }).right().grow().pad(10f);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        t.image(Icon.lock).color(Pal.darkerGray).size(40).pad(10);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }).growX().pad(5);</b>
+<b class="nc">&nbsp;                table.row();</b>
+<b class="nc">&nbsp;                tier++;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class AssemblerUnitPlan{
+&nbsp;        public UnitType unit;
+&nbsp;        public Seq&lt;PayloadStack&gt; requirements;
+&nbsp;        public float time;
+&nbsp;
+<b class="fc">&nbsp;        public AssemblerUnitPlan(UnitType unit, float time, Seq&lt;PayloadStack&gt; requirements){</b>
+<b class="fc">&nbsp;            this.unit = unit;</b>
+<b class="fc">&nbsp;            this.time = time;</b>
+<b class="fc">&nbsp;            this.requirements = requirements;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        AssemblerUnitPlan(){}</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** hbgwerjhbagjegwg */
+&nbsp;    public static class YeetData{
+&nbsp;        public Vec2 target;
+&nbsp;        public UnlockableContent item;
+&nbsp;
+<b class="nc">&nbsp;        public YeetData(Vec2 target, UnlockableContent item){</b>
+<b class="nc">&nbsp;            this.target = target;</b>
+<b class="nc">&nbsp;            this.item = item;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void assemblerUnitSpawned(Tile tile){
+<b class="nc">&nbsp;        if(tile == null || !(tile.build instanceof UnitAssemblerBuild build)) return;</b>
+<b class="nc">&nbsp;        build.spawned();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void assemblerDroneSpawned(Tile tile, int id){
+<b class="nc">&nbsp;        if(tile == null || !(tile.build instanceof UnitAssemblerBuild build)) return;</b>
+<b class="nc">&nbsp;        build.droneSpawned(id);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class UnitAssemblerBuild extends PayloadBlockBuild&lt;Payload&gt;{</b>
+<b class="fc">&nbsp;        protected IntSeq readUnits = new IntSeq();</b>
+&nbsp;        //holds drone IDs that have been sent, but not synced yet - add to list as soon as possible
+<b class="fc">&nbsp;        protected IntSeq whenSyncedUnits = new IntSeq();</b>
+&nbsp;
+&nbsp;        public @Nullable Vec2 commandPos;
+<b class="fc">&nbsp;        public Seq&lt;Unit&gt; units = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;        public Seq&lt;UnitAssemblerModuleBuild&gt; modules = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;        public PayloadSeq blocks = new PayloadSeq();</b>
+&nbsp;        public float progress, warmup, droneWarmup, powerWarmup, sameTypeWarmup;
+<b class="fc">&nbsp;        public float invalidWarmup = 0f;</b>
+<b class="fc">&nbsp;        public int currentTier = 0;</b>
+<b class="fc">&nbsp;        public int lastTier = -2;</b>
+<b class="fc">&nbsp;        public boolean wasOccupied = false;</b>
+&nbsp;
+&nbsp;        public float droneProgress, totalDroneProgress;
+&nbsp;
+&nbsp;        public Vec2 getUnitSpawn(){
+<b class="fc">&nbsp;            float len = tilesize * (areaSize + size)/2f;</b>
+<b class="fc">&nbsp;            float unitX = x + Geometry.d4x(rotation) * len, unitY = y + Geometry.d4y(rotation) * len;</b>
+<b class="fc">&nbsp;            return Tmp.v4.set(unitX, unitY);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean moduleFits(Block other, float ox, float oy, int rotation){
+&nbsp;            float
+<b class="fc">&nbsp;            dx = ox + Geometry.d4x(rotation) * (other.size/2f + 0.5f) * tilesize,</b>
+<b class="fc">&nbsp;            dy = oy + Geometry.d4y(rotation) * (other.size/2f + 0.5f) * tilesize;</b>
+&nbsp;
+<b class="fc">&nbsp;            Vec2 spawn = getUnitSpawn();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(Tile.relativeTo(ox, oy, spawn.x, spawn.y) != rotation){</b>
+<b class="fc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            float dst = Math.max(Math.abs(dx - spawn.x), Math.abs(dy - spawn.y));</b>
+<b class="fc">&nbsp;            return Mathf.equal(dst, tilesize * areaSize / 2f - tilesize/2f);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void updateModules(UnitAssemblerModuleBuild build){
+<b class="nc">&nbsp;            modules.addUnique(build);</b>
+<b class="nc">&nbsp;            checkTier();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void removeModule(UnitAssemblerModuleBuild build){
+<b class="nc">&nbsp;            modules.remove(build);</b>
+<b class="nc">&nbsp;            checkTier();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void checkTier(){
+<b class="nc">&nbsp;            modules.sort(b -&gt; b.tier());</b>
+<b class="nc">&nbsp;            int max = 0;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; modules.size; i++){</b>
+<b class="nc">&nbsp;                var mod = modules.get(i);</b>
+<b class="nc">&nbsp;                if(mod.tier() == max || mod.tier() == max + 1){</b>
+<b class="nc">&nbsp;                    max = mod.tier();</b>
+&nbsp;                }else{
+&nbsp;                    //tier gap, TODO warning?
+&nbsp;                    break;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            currentTier = max;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public UnitType unit(){
+<b class="fc">&nbsp;            return plan().unit;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public AssemblerUnitPlan plan(){
+&nbsp;            //clamp plan pos
+<b class="fc">&nbsp;            return plans.get(Math.min(currentTier, plans.size - 1));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+&nbsp;            //liquid is only consumed when building is being done
+<b class="fc">&nbsp;            return enabled &amp;&amp; !wasOccupied &amp;&amp; Units.canCreate(team, plan().unit) &amp;&amp; consPayload.efficiency(this) &gt; 0;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawSelect(){
+<b class="nc">&nbsp;            for(var module : modules){</b>
+<b class="nc">&nbsp;                Drawf.selected(module, Pal.accent);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            Drawf.dashRect(Tmp.c1.set(Pal.accent).lerp(Pal.remove, invalidWarmup), getRect(Tmp.r1, x, y, rotation));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void display(Table table){
+<b class="nc">&nbsp;            super.display(table);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(team != player.team()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.table(t -&gt; {</b>
+<b class="nc">&nbsp;                t.left().defaults().left();</b>
+&nbsp;
+<b class="nc">&nbsp;                Block prev = null;</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; modules.size; i++){</b>
+<b class="nc">&nbsp;                    var mod = modules.get(i);</b>
+<b class="nc">&nbsp;                    if(prev == mod.block) continue;</b>
+&nbsp;                    //TODO crosses for missing reqs?
+<b class="nc">&nbsp;                    t.image(mod.block.uiIcon).size(iconMed).padRight(4);</b>
+&nbsp;
+<b class="nc">&nbsp;                    prev = mod.block;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                t.label(() -&gt; &quot;[accent] -&gt; []&quot; + unit().emoji() + &quot; &quot; + unit().localizedName);</b>
+<b class="nc">&nbsp;            }).pad(4).padLeft(0f).fillX().left();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(!readUnits.isEmpty()){</b>
+<b class="nc">&nbsp;                units.clear();</b>
+<b class="nc">&nbsp;                readUnits.each(i -&gt; {</b>
+<b class="nc">&nbsp;                    var unit = Groups.unit.getByID(i);</b>
+<b class="nc">&nbsp;                    if(unit != null){</b>
+<b class="nc">&nbsp;                        units.add(unit);</b>
+&nbsp;                    }
+&nbsp;                });
+<b class="nc">&nbsp;                readUnits.clear();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(lastTier != currentTier){</b>
+<b class="fc">&nbsp;                if(lastTier &gt;= 0f){</b>
+<b class="nc">&nbsp;                    progress = 0f;</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                lastTier =</b>
+<b class="fc">&nbsp;                    lastTier == -2 ? -1 : currentTier;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //read newly synced drones on client end
+<b class="fc">&nbsp;            if(units.size &lt; dronesCreated &amp;&amp; whenSyncedUnits.size &gt; 0){</b>
+<b class="nc">&nbsp;                whenSyncedUnits.each(id -&gt; {</b>
+<b class="nc">&nbsp;                    var unit = Groups.unit.getByID(id);</b>
+<b class="nc">&nbsp;                    if(unit != null){</b>
+<b class="nc">&nbsp;                        units.addUnique(unit);</b>
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            units.removeAll(u -&gt; !u.isAdded() || u.dead || !(u.controller() instanceof AssemblerAI));</b>
+&nbsp;
+&nbsp;            //unsupported
+<b class="fc">&nbsp;            if(!allowUpdate()){</b>
+<b class="fc">&nbsp;                progress = 0f;</b>
+<b class="fc">&nbsp;                units.each(Unit::kill);</b>
+<b class="fc">&nbsp;                units.clear();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            float powerStatus = !enabled ? 0f : power == null ? 1f : power.status;</b>
+<b class="fc">&nbsp;            powerWarmup = Mathf.lerpDelta(powerStatus, powerStatus &gt; 0.0001f ? 1f : 0f, 0.1f);</b>
+<b class="fc">&nbsp;            droneWarmup = Mathf.lerpDelta(droneWarmup, units.size &lt; dronesCreated ? powerStatus : 0f, 0.1f);</b>
+<b class="fc">&nbsp;            totalDroneProgress += droneWarmup * delta();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(units.size &lt; dronesCreated &amp;&amp; enabled &amp;&amp; (droneProgress += delta() * state.rules.unitBuildSpeed(team) * powerStatus / droneConstructTime) &gt;= 1f){</b>
+<b class="nc">&nbsp;                if(!net.client()){</b>
+<b class="nc">&nbsp;                    var unit = droneType.create(team);</b>
+<b class="nc">&nbsp;                    if(unit instanceof BuildingTetherc bt){</b>
+<b class="nc">&nbsp;                        bt.building(this);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    unit.set(x, y);</b>
+<b class="nc">&nbsp;                    unit.rotation = 90f;</b>
+<b class="nc">&nbsp;                    unit.add();</b>
+<b class="nc">&nbsp;                    units.add(unit);</b>
+<b class="nc">&nbsp;                    Call.assemblerDroneSpawned(tile, unit.id);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(units.size &gt;= dronesCreated){</b>
+<b class="nc">&nbsp;                droneProgress = 0f;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            Vec2 spawn = getUnitSpawn();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(moveInPayload() &amp;&amp; !wasOccupied){</b>
+<b class="nc">&nbsp;                yeetPayload(payload);</b>
+<b class="nc">&nbsp;                payload = null;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //arrange units around perimeter
+<b class="fc">&nbsp;            for(int i = 0; i &lt; units.size; i++){</b>
+<b class="nc">&nbsp;                var unit = units.get(i);</b>
+<b class="nc">&nbsp;                var ai = (AssemblerAI)unit.controller();</b>
+&nbsp;
+<b class="nc">&nbsp;                ai.targetPos.trns(i * 90f + 45f, areaSize / 2f * Mathf.sqrt2 * tilesize).add(spawn);</b>
+<b class="nc">&nbsp;                ai.targetAngle = i * 90f + 45f + 180f;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            wasOccupied = checkSolid(spawn, false);</b>
+<b class="fc">&nbsp;            boolean visualOccupied = checkSolid(spawn, true);</b>
+<b class="fc">&nbsp;            float eff = (units.count(u -&gt; ((AssemblerAI)u.controller()).inPosition()) / (float)dronesCreated);</b>
+&nbsp;
+<b class="fc">&nbsp;            sameTypeWarmup = Mathf.lerpDelta(sameTypeWarmup, wasOccupied &amp;&amp; !visualOccupied ? 0f : 1f, 0.1f);</b>
+<b class="fc">&nbsp;            invalidWarmup = Mathf.lerpDelta(invalidWarmup, visualOccupied ? 1f : 0f, 0.1f);</b>
+&nbsp;
+<b class="fc">&nbsp;            var plan = plan();</b>
+&nbsp;
+&nbsp;            //check if all requirements are met
+<b class="fc">&nbsp;            if(!wasOccupied &amp;&amp; efficiency &gt; 0 &amp;&amp; Units.canCreate(team, plan.unit)){</b>
+<b class="nc">&nbsp;                warmup = Mathf.lerpDelta(warmup, efficiency, 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                if((progress += edelta() * state.rules.unitBuildSpeed(team) * eff / plan.time) &gt;= 1f){</b>
+<b class="nc">&nbsp;                    Call.assemblerUnitSpawned(tile);</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="fc">&nbsp;                warmup = Mathf.lerpDelta(warmup, 0f, 0.1f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void droneSpawned(int id){
+<b class="nc">&nbsp;            Fx.spawn.at(x, y);</b>
+<b class="nc">&nbsp;            droneProgress = 0f;</b>
+<b class="nc">&nbsp;            if(net.client()){</b>
+<b class="nc">&nbsp;                whenSyncedUnits.add(id);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void spawned(){
+<b class="nc">&nbsp;            var plan = plan();</b>
+<b class="nc">&nbsp;            Vec2 spawn = getUnitSpawn();</b>
+<b class="nc">&nbsp;            consume();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!net.client()){</b>
+<b class="nc">&nbsp;                var unit = plan.unit.create(team);</b>
+<b class="nc">&nbsp;                if(unit != null &amp;&amp; unit.isCommandable() &amp;&amp; commandPos != null){</b>
+<b class="nc">&nbsp;                    unit.command().commandPosition(commandPos);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                unit.set(spawn.x + Mathf.range(0.001f), spawn.y + Mathf.range(0.001f));</b>
+<b class="nc">&nbsp;                unit.rotation = 90f;</b>
+<b class="nc">&nbsp;                unit.add();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            progress = 0f;</b>
+<b class="nc">&nbsp;            Fx.unitAssemble.at(spawn.x, spawn.y, 0f, plan.unit);</b>
+<b class="nc">&nbsp;            blocks.clear();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y);</b>
+&nbsp;
+&nbsp;            //draw input conveyors
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                if(blends(i) &amp;&amp; i != rotation){</b>
+<b class="nc">&nbsp;                    Draw.rect(inRegion, x, y, (i * 90) - 180);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(rotation &gt;= 2 ? sideRegion2 : sideRegion1, x, y, rotdeg());</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.blockOver);</b>
+&nbsp;
+<b class="nc">&nbsp;            payRotation = rotdeg();</b>
+<b class="nc">&nbsp;            drawPayload();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.blockOver + 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(isPayload()) return;</b>
+&nbsp;
+&nbsp;            //draw drone construction
+<b class="nc">&nbsp;            if(droneWarmup &gt; 0.001f){</b>
+<b class="nc">&nbsp;                Draw.draw(Layer.blockOver + 0.2f, () -&gt; {</b>
+<b class="nc">&nbsp;                    Drawf.construct(this, droneType.fullIcon, Pal.accent, 0f, droneProgress, droneWarmup, totalDroneProgress, 14f);</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Vec2 spawn = getUnitSpawn();</b>
+<b class="nc">&nbsp;            float sx = spawn.x, sy = spawn.y;</b>
+&nbsp;
+<b class="nc">&nbsp;            var plan = plan();</b>
+&nbsp;
+&nbsp;            //draw the unit construction as outline
+&nbsp;            //TODO flashes when no gallium
+<b class="nc">&nbsp;            Draw.draw(Layer.blockBuilding, () -&gt; {</b>
+<b class="nc">&nbsp;                Draw.color(Pal.accent, warmup);</b>
+&nbsp;
+<b class="nc">&nbsp;                Shaders.blockbuild.region = plan.unit.fullIcon;</b>
+<b class="nc">&nbsp;                Shaders.blockbuild.time = Time.time;</b>
+&nbsp;                //margin due to units not taking up whole region
+<b class="nc">&nbsp;                Shaders.blockbuild.progress = Mathf.clamp(progress + 0.05f);</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.rect(plan.unit.fullIcon, sx, sy);</b>
+<b class="nc">&nbsp;                Draw.flush();</b>
+<b class="nc">&nbsp;                Draw.color();</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.buildBeam);</b>
+&nbsp;
+&nbsp;            //draw unit silhouette
+<b class="nc">&nbsp;            Draw.mixcol(Tmp.c1.set(Pal.accent).lerp(Pal.remove, invalidWarmup), 1f);</b>
+<b class="nc">&nbsp;            Draw.alpha(Math.min(powerWarmup, sameTypeWarmup));</b>
+<b class="nc">&nbsp;            Draw.rect(plan.unit.fullIcon, spawn.x, spawn.y);</b>
+&nbsp;
+&nbsp;            //build beams do not draw when invalid
+<b class="nc">&nbsp;            Draw.alpha(Math.min(1f - invalidWarmup, warmup));</b>
+&nbsp;
+&nbsp;            //draw build beams
+<b class="nc">&nbsp;            for(var unit : units){</b>
+<b class="nc">&nbsp;                if(!((AssemblerAI)unit.controller()).inPosition()) continue;</b>
+&nbsp;
+&nbsp;                float
+<b class="nc">&nbsp;                    px = unit.x + Angles.trnsx(unit.rotation, unit.type.buildBeamOffset),</b>
+<b class="nc">&nbsp;                    py = unit.y + Angles.trnsy(unit.rotation, unit.type.buildBeamOffset);</b>
+&nbsp;
+<b class="nc">&nbsp;                Drawf.buildBeam(px, py, spawn.x, spawn.y, plan.unit.hitSize/2f);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            //fill square in middle
+<b class="nc">&nbsp;            Fill.square(spawn.x, spawn.y, plan.unit.hitSize/2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.buildBeam);</b>
+&nbsp;
+<b class="nc">&nbsp;            float fulls = areaSize * tilesize/2f;</b>
+&nbsp;
+&nbsp;            //draw full area
+<b class="nc">&nbsp;            Lines.stroke(2f, Pal.accent);</b>
+<b class="nc">&nbsp;            Draw.alpha(powerWarmup);</b>
+<b class="nc">&nbsp;            Drawf.dashRectBasic(spawn.x - fulls, spawn.y - fulls, fulls*2f, fulls*2f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;            float outSize = plan.unit.hitSize + 9f;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(invalidWarmup &gt; 0){</b>
+&nbsp;                //draw small square for area
+<b class="nc">&nbsp;                Lines.stroke(2f, Tmp.c3.set(Pal.accent).lerp(Pal.remove, invalidWarmup).a(invalidWarmup));</b>
+<b class="nc">&nbsp;                Drawf.dashSquareBasic(spawn.x, spawn.y, outSize);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean checkSolid(Vec2 v, boolean same){
+<b class="fc">&nbsp;            var output = unit();</b>
+<b class="fc">&nbsp;            float hsize = output.hitSize * 1.4f;</b>
+<b class="fc">&nbsp;            return ((!output.flying &amp;&amp; collisions.overlapsTile(Tmp.r1.setCentered(v.x, v.y, output.hitSize), EntityCollisions::solid)) ||</b>
+<b class="fc">&nbsp;                Units.anyEntities(v.x - hsize/2f, v.y - hsize/2f, hsize, hsize, u -&gt; (!same || u.type != output) &amp;&amp; !u.spawnedByCore &amp;&amp;</b>
+<b class="nc">&nbsp;                    ((u.type.allowLegStep &amp;&amp; output.allowLegStep) || (output.flying &amp;&amp; u.isFlying()) || (!output.flying &amp;&amp; u.isGrounded()))));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** @return true if this block is ready to produce units, e.g. requirements met */
+&nbsp;        public boolean ready(){
+<b class="nc">&nbsp;            return efficiency &gt; 0 &amp;&amp; !wasOccupied;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void yeetPayload(Payload payload){
+<b class="nc">&nbsp;            var spawn = getUnitSpawn();</b>
+<b class="nc">&nbsp;            blocks.add(payload.content(), 1);</b>
+<b class="nc">&nbsp;            float rot = payload.angleTo(spawn);</b>
+<b class="nc">&nbsp;            Fx.shootPayloadDriver.at(payload.x(), payload.y(), rot);</b>
+<b class="nc">&nbsp;            Fx.payloadDeposit.at(payload.x(), payload.y(), rot, new YeetData(spawn.cpy(), payload.content()));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public double sense(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.progress) return progress;</b>
+<b class="nc">&nbsp;            return super.sense(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public PayloadSeq getPayloads(){
+<b class="fc">&nbsp;            return blocks;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptPayload(Building source, Payload payload){
+<b class="nc">&nbsp;            var plan = plan();</b>
+<b class="nc">&nbsp;            return (this.payload == null || source instanceof UnitAssemblerModuleBuild) &amp;&amp;</b>
+<b class="nc">&nbsp;                    plan.requirements.contains(b -&gt; b.item == payload.content() &amp;&amp; blocks.get(payload.content()) &lt; Mathf.round(b.amount * state.rules.unitCost(team)));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Vec2 getCommandPosition(){
+<b class="nc">&nbsp;            return commandPos;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onCommand(Vec2 target){
+<b class="nc">&nbsp;            commandPos = target;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            write.f(progress);</b>
+<b class="fc">&nbsp;            write.b(units.size);</b>
+<b class="fc">&nbsp;            for(var unit : units){</b>
+<b class="nc">&nbsp;                write.i(unit.id);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            blocks.write(write);</b>
+<b class="fc">&nbsp;            TypeIO.writeVecNullable(write, commandPos);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            progress = read.f();</b>
+<b class="fc">&nbsp;            int count = read.b();</b>
+<b class="fc">&nbsp;            readUnits.clear();</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; count; i++){</b>
+<b class="nc">&nbsp;                readUnits.add(read.i());</b>
+&nbsp;            }
+<b class="fc">&nbsp;            whenSyncedUnits.clear();</b>
+&nbsp;
+<b class="fc">&nbsp;            blocks.read(read);</b>
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                commandPos = TypeIO.readVecNullable(read);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

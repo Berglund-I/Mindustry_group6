@@ -1,0 +1,226 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TankComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: TankComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TankComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class TankComp implements Posc, Flyingc, Hitboxc, Unitc, ElevationMovec{</b>
+&nbsp;    @Import float x, y, hitSize, rotation, speedMultiplier;
+&nbsp;    @Import boolean hovering, disarmed;
+&nbsp;    @Import UnitType type;
+&nbsp;    @Import Team team;
+&nbsp;
+<b class="nc">&nbsp;    transient private float treadEffectTime, lastSlowdown = 1f;</b>
+&nbsp;
+&nbsp;    transient float treadTime;
+&nbsp;    transient boolean walked;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+&nbsp;        //dust
+<b class="nc">&nbsp;        if((walked || (net.client() &amp;&amp; deltaLen() &gt;= 0.01f)) &amp;&amp; !headless &amp;&amp; !inFogTo(player.team())){</b>
+<b class="nc">&nbsp;            treadEffectTime += Time.delta;</b>
+<b class="nc">&nbsp;            if(treadEffectTime &gt;= 6f &amp;&amp; type.treadRects.length &gt; 0){</b>
+&nbsp;                //first rect should always be at the back
+<b class="nc">&nbsp;                var treadRect = type.treadRects[0];</b>
+&nbsp;
+<b class="nc">&nbsp;                float xOffset = (-(treadRect.x + treadRect.width/2f)) / 4f;</b>
+<b class="nc">&nbsp;                float yOffset = (-(treadRect.y + treadRect.height/2f)) / 4f;</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;                    Tmp.v1.set(xOffset * i, yOffset - treadRect.height / 2f / 4f).rotate(rotation - 90);</b>
+&nbsp;
+&nbsp;                    //TODO could fin for a while
+<b class="nc">&nbsp;                    Effect.floorDustAngle(type.treadEffect, Tmp.v1.x + x, Tmp.v1.y + y, rotation + 180f);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                treadEffectTime = 0f;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //calculate overlapping tiles so it slows down when going &quot;over&quot; walls
+<b class="nc">&nbsp;        int r = Math.max((int)(hitSize * 0.6f / tilesize), 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        int solids = 0, total = (r*2+1)*(r*2+1);</b>
+<b class="nc">&nbsp;        for(int dx = -r; dx &lt;= r; dx++){</b>
+<b class="nc">&nbsp;            for(int dy = -r; dy &lt;= r; dy++){</b>
+<b class="nc">&nbsp;                Tile t = Vars.world.tileWorld(x + dx*tilesize, y + dy*tilesize);</b>
+<b class="nc">&nbsp;                if(t == null ||  t.solid()){</b>
+<b class="nc">&nbsp;                    solids ++;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //TODO should this apply to the player team(s)? currently PvE due to balancing
+<b class="nc">&nbsp;                if(type.crushDamage &gt; 0 &amp;&amp; !disarmed &amp;&amp; (walked || deltaLen() &gt;= 0.01f) &amp;&amp; t != null &amp;&amp; t.build != null &amp;&amp; t.build.team != team</b>
+&nbsp;                    //damage radius is 1 tile smaller to prevent it from just touching walls as it passes
+<b class="nc">&nbsp;                    &amp;&amp; Math.max(Math.abs(dx), Math.abs(dy)) &lt;= r - 1){</b>
+&nbsp;
+<b class="nc">&nbsp;                    t.build.damage(team, type.crushDamage * Time.delta * t.block().crushDamageMultiplier * state.rules.unitDamage(team));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        lastSlowdown = Mathf.lerp(1f, type.crawlSlowdown, Mathf.clamp((float)solids / total / type.crawlSlowdownFrac));</b>
+&nbsp;
+&nbsp;        //trigger animation only when walking manually
+<b class="nc">&nbsp;        if(walked || net.client()){</b>
+<b class="nc">&nbsp;            float len = deltaLen();</b>
+<b class="nc">&nbsp;            treadTime += len;</b>
+<b class="nc">&nbsp;            walked = false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Replace
+&nbsp;    public float floorSpeedMultiplier(){
+<b class="nc">&nbsp;        Floor on = isFlying() || hovering ? Blocks.air.asFloor() : floorOn();</b>
+&nbsp;        //TODO take into account extra blocks
+<b class="nc">&nbsp;        return on.speedMultiplier * speedMultiplier * lastSlowdown;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Replace
+&nbsp;    @Override
+&nbsp;    public @Nullable Floor drownFloor(){
+&nbsp;        //tanks can only drown when all the nearby floors are deep
+&nbsp;        //TODO implement properly
+<b class="nc">&nbsp;        if(hitSize &gt;= 12 &amp;&amp; canDrown()){</b>
+<b class="nc">&nbsp;            for(Point2 p : Geometry.d8){</b>
+<b class="nc">&nbsp;                Floor f = world.floorWorld(x + p.x * tilesize, y + p.y * tilesize);</b>
+<b class="nc">&nbsp;                if(!f.isDeep()){</b>
+<b class="nc">&nbsp;                    return null;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return canDrown() ? floorOn() : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void moveAt(Vec2 vector, float acceleration){
+&nbsp;        //mark walking state when moving in a controlled manner
+<b class="nc">&nbsp;        if(!vector.isZero(0.001f)){</b>
+<b class="nc">&nbsp;            walked = true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void approach(Vec2 vector){
+&nbsp;        //mark walking state when moving in a controlled manner
+<b class="nc">&nbsp;        if(!vector.isZero(0.001f)){</b>
+<b class="nc">&nbsp;            walked = true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

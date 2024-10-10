@@ -1,0 +1,224 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ClientSnapshotCallPacket</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: ClientSnapshotCallPacket (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClientSnapshotCallPacket</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.1%
+  </span>
+  <span class="absValue">
+    (2/49)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.util.io.Reads;
+&nbsp;import arc.util.io.Writes;
+&nbsp;import java.lang.Override;
+&nbsp;import mindustry.entities.units.BuildPlan;
+&nbsp;import mindustry.net.NetConnection;
+&nbsp;import mindustry.net.Packet;
+&nbsp;import mindustry.world.Tile;
+&nbsp;
+<b class="fc">&nbsp;public class ClientSnapshotCallPacket extends Packet {</b>
+<b class="fc">&nbsp;  private byte[] DATA = NODATA;</b>
+&nbsp;
+&nbsp;  public int snapshotID;
+&nbsp;
+&nbsp;  public int unitID;
+&nbsp;
+&nbsp;  public boolean dead;
+&nbsp;
+&nbsp;  public float x;
+&nbsp;
+&nbsp;  public float y;
+&nbsp;
+&nbsp;  public float pointerX;
+&nbsp;
+&nbsp;  public float pointerY;
+&nbsp;
+&nbsp;  public float rotation;
+&nbsp;
+&nbsp;  public float baseRotation;
+&nbsp;
+&nbsp;  public float xVelocity;
+&nbsp;
+&nbsp;  public float yVelocity;
+&nbsp;
+&nbsp;  public Tile mining;
+&nbsp;
+&nbsp;  public boolean boosting;
+&nbsp;
+&nbsp;  public boolean shooting;
+&nbsp;
+&nbsp;  public boolean chatting;
+&nbsp;
+&nbsp;  public boolean building;
+&nbsp;
+&nbsp;  public Queue&lt;BuildPlan&gt; plans;
+&nbsp;
+&nbsp;  public float viewX;
+&nbsp;
+&nbsp;  public float viewY;
+&nbsp;
+&nbsp;  public float viewWidth;
+&nbsp;
+&nbsp;  public float viewHeight;
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void write(Writes WRITE) {
+<b class="nc">&nbsp;    WRITE.i(snapshotID);</b>
+<b class="nc">&nbsp;    WRITE.i(unitID);</b>
+<b class="nc">&nbsp;    WRITE.bool(dead);</b>
+<b class="nc">&nbsp;    WRITE.f(x);</b>
+<b class="nc">&nbsp;    WRITE.f(y);</b>
+<b class="nc">&nbsp;    WRITE.f(pointerX);</b>
+<b class="nc">&nbsp;    WRITE.f(pointerY);</b>
+<b class="nc">&nbsp;    WRITE.f(rotation);</b>
+<b class="nc">&nbsp;    WRITE.f(baseRotation);</b>
+<b class="nc">&nbsp;    WRITE.f(xVelocity);</b>
+<b class="nc">&nbsp;    WRITE.f(yVelocity);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writeTile(WRITE, mining);</b>
+<b class="nc">&nbsp;    WRITE.bool(boosting);</b>
+<b class="nc">&nbsp;    WRITE.bool(shooting);</b>
+<b class="nc">&nbsp;    WRITE.bool(chatting);</b>
+<b class="nc">&nbsp;    WRITE.bool(building);</b>
+<b class="nc">&nbsp;    mindustry.io.TypeIO.writePlansQueueNet(WRITE, plans);</b>
+<b class="nc">&nbsp;    WRITE.f(viewX);</b>
+<b class="nc">&nbsp;    WRITE.f(viewY);</b>
+<b class="nc">&nbsp;    WRITE.f(viewWidth);</b>
+<b class="nc">&nbsp;    WRITE.f(viewHeight);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void read(Reads READ, int LENGTH) {
+<b class="nc">&nbsp;    DATA = READ.b(LENGTH);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void handled() {
+<b class="nc">&nbsp;    BAIS.setBytes(DATA);</b>
+<b class="nc">&nbsp;    snapshotID = READ.i();</b>
+<b class="nc">&nbsp;    unitID = READ.i();</b>
+<b class="nc">&nbsp;    dead = READ.bool();</b>
+<b class="nc">&nbsp;    x = READ.f();</b>
+<b class="nc">&nbsp;    y = READ.f();</b>
+<b class="nc">&nbsp;    pointerX = READ.f();</b>
+<b class="nc">&nbsp;    pointerY = READ.f();</b>
+<b class="nc">&nbsp;    rotation = READ.f();</b>
+<b class="nc">&nbsp;    baseRotation = READ.f();</b>
+<b class="nc">&nbsp;    xVelocity = READ.f();</b>
+<b class="nc">&nbsp;    yVelocity = READ.f();</b>
+<b class="nc">&nbsp;    mining = mindustry.io.TypeIO.readTile(READ);</b>
+<b class="nc">&nbsp;    boosting = READ.bool();</b>
+<b class="nc">&nbsp;    shooting = READ.bool();</b>
+<b class="nc">&nbsp;    chatting = READ.bool();</b>
+<b class="nc">&nbsp;    building = READ.bool();</b>
+<b class="nc">&nbsp;    plans = mindustry.io.TypeIO.readPlansQueue(READ);</b>
+<b class="nc">&nbsp;    viewX = READ.f();</b>
+<b class="nc">&nbsp;    viewY = READ.f();</b>
+<b class="nc">&nbsp;    viewWidth = READ.f();</b>
+<b class="nc">&nbsp;    viewHeight = READ.f();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void handleServer(NetConnection con) {
+<b class="nc">&nbsp;    if(con.player == null || con.kicked) {</b>
+&nbsp;      return;
+&nbsp;    }
+<b class="nc">&nbsp;    mindustry.gen.Player player = con.player;</b>
+<b class="nc">&nbsp;    mindustry.core.NetServer.clientSnapshot(player, snapshotID, unitID, dead, x, y, pointerX, pointerY, rotation, baseRotation, xVelocity, yVelocity, mining, boosting, shooting, chatting, building, plans, viewX, viewY, viewWidth, viewHeight);</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

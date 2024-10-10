@@ -1,0 +1,219 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Stats</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.meta</a>
+</div>
+
+<h1>Coverage Summary for Class: Stats (mindustry.world.meta)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Stats</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.8%
+  </span>
+  <span class="absValue">
+    (3/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.3%
+  </span>
+  <span class="absValue">
+    (10/33)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.meta;
+&nbsp;
+&nbsp;import arc.struct.ObjectMap.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;/** Hold and organizes a list of block stats. */
+<b class="fc">&nbsp;public class Stats{</b>
+&nbsp;    /** Whether to display stats with categories. If false, categories are completely ignored during display. */
+<b class="fc">&nbsp;    public boolean useCategories = false;</b>
+&nbsp;    /** Whether these stats are initialized yet. */
+<b class="fc">&nbsp;    public boolean intialized = false;</b>
+&nbsp;    /** Production time period in ticks. Used for crafters. **/
+<b class="fc">&nbsp;    public float timePeriod = -1;</b>
+&nbsp;
+&nbsp;    private @Nullable OrderedMap&lt;StatCat, OrderedMap&lt;Stat, Seq&lt;StatValue&gt;&gt;&gt; map;
+&nbsp;    private boolean dirty;
+&nbsp;
+&nbsp;    /** Adds a single float value with this stat, formatted to 2 decimal places. */
+&nbsp;    public void add(Stat stat, float value, StatUnit unit){
+<b class="nc">&nbsp;        add(stat, StatValues.number(value, unit));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a single float value with this stat and no unit. */
+&nbsp;    public void add(Stat stat, float value){
+<b class="nc">&nbsp;        add(stat, value, StatUnit.none);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds an integer percent stat value. Value is assumed to be in the 0-1 range. */
+&nbsp;    public void addPercent(Stat stat, float value){
+<b class="nc">&nbsp;        add(stat, StatValues.number((int)(value * 100), StatUnit.percent));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a single y/n boolean value. */
+&nbsp;    public void add(Stat stat, boolean value){
+<b class="nc">&nbsp;        add(stat, StatValues.bool(value));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds an item value. */
+&nbsp;    public void add(Stat stat, Item item){
+<b class="nc">&nbsp;        add(stat, StatValues.items(new ItemStack(item, 1)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds an item value. */
+&nbsp;    public void add(Stat stat, ItemStack item){
+<b class="nc">&nbsp;        add(stat, StatValues.items(item));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds an item value. */
+&nbsp;    public void add(Stat stat, Liquid liquid, float amount, boolean perSecond){
+<b class="nc">&nbsp;        add(stat, StatValues.liquid(liquid, amount, perSecond));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(Stat stat, Attribute attr){
+<b class="nc">&nbsp;        add(stat, attr, false, 1f, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(Stat stat, Attribute attr, float scale){
+<b class="nc">&nbsp;        add(stat, attr, false, scale, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(Stat stat, Attribute attr, boolean floating){
+<b class="nc">&nbsp;        add(stat, attr, floating, 1f, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(Stat stat, Attribute attr, boolean floating, float scale, boolean startZero){
+<b class="nc">&nbsp;        add(stat, StatValues.blocks(attr, floating, scale, startZero));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a single string value with this stat. */
+&nbsp;    public void add(Stat stat, String format, Object... args){
+<b class="fc">&nbsp;        add(stat, StatValues.string(format, args));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds a stat value. */
+&nbsp;    public void add(Stat stat, StatValue value){
+<b class="fc">&nbsp;        if(map == null) map = new OrderedMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(!map.containsKey(stat.category)){</b>
+<b class="fc">&nbsp;            map.put(stat.category, new OrderedMap&lt;&gt;());</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        map.get(stat.category).get(stat, Seq::new).add(value);</b>
+&nbsp;
+<b class="fc">&nbsp;        dirty = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Removes a stat, if it exists. */
+&nbsp;    public void remove(Stat stat){
+<b class="nc">&nbsp;        if(map == null) map = new OrderedMap&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!map.containsKey(stat.category)){</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        map.get(stat.category).remove(stat);</b>
+&nbsp;
+<b class="nc">&nbsp;        dirty = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public OrderedMap&lt;StatCat, OrderedMap&lt;Stat, Seq&lt;StatValue&gt;&gt;&gt; toMap(){
+<b class="nc">&nbsp;        if(map == null) map = new OrderedMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;        //sort stats by index if they&#39;ve been modified
+<b class="nc">&nbsp;        if(dirty){</b>
+<b class="nc">&nbsp;            map.orderedKeys().sort();</b>
+<b class="nc">&nbsp;            for(Entry&lt;StatCat, OrderedMap&lt;Stat, Seq&lt;StatValue&gt;&gt;&gt; entry : map.entries()){</b>
+<b class="nc">&nbsp;                entry.value.orderedKeys().sort();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            dirty = false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return map;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,217 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Layer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: Layer (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Layer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;/** Stores constants for sorting layers. Values should be stored in increments of 10. */
+<b class="nc">&nbsp;public class Layer{</b>
+&nbsp;
+&nbsp;    public static final float
+&nbsp;
+&nbsp;    //min layer
+&nbsp;    min = -11,
+&nbsp;
+&nbsp;    //background, which may be planets or an image or nothing at all
+&nbsp;    background = -10,
+&nbsp;
+&nbsp;    //floor tiles
+&nbsp;    floor = 0,
+&nbsp;
+&nbsp;    //scorch marks on the floor
+&nbsp;    scorch = 10,
+&nbsp;
+&nbsp;    //things such as spent casings or rubble
+&nbsp;    debris = 20,
+&nbsp;
+&nbsp;    //stuff under blocks, like connections of conveyors/conduits
+&nbsp;    blockUnder = 29.5f,
+&nbsp;
+&nbsp;    //base block layer - most blocks go here
+&nbsp;    block = 30,
+&nbsp;
+&nbsp;    //layer for cracks over blocks, batched to prevent excessive texture swaps
+&nbsp;    blockCracks = 30f + 0.1f,
+&nbsp;
+&nbsp;    //some blocks need to draw stuff after cracks
+&nbsp;    blockAfterCracks = 30f + 0.2f,
+&nbsp;
+&nbsp;    //informal layer used for additive blending overlay, grouped together to reduce draw calls
+&nbsp;    blockAdditive = 31,
+&nbsp;
+&nbsp;    //props such as boulders
+&nbsp;    blockProp = 32,
+&nbsp;
+&nbsp;    //things drawn over blocks (intermediate layer)
+&nbsp;    blockOver = 35,
+&nbsp;
+&nbsp;    //blocks currently in progress *shaders used*
+&nbsp;    blockBuilding = 40,
+&nbsp;
+&nbsp;    //turrets
+&nbsp;    turret = 50,
+&nbsp;
+&nbsp;    //special layer for turret additive blending heat stuff
+&nbsp;    turretHeat = 50.1f,
+&nbsp;
+&nbsp;    //ground units
+&nbsp;    groundUnit = 60,
+&nbsp;
+&nbsp;    //power lines
+&nbsp;    power = 70,
+&nbsp;
+&nbsp;    //certain multi-legged units
+&nbsp;    legUnit = 75f,
+&nbsp;
+&nbsp;    //darkness over block clusters
+&nbsp;    darkness = 80,
+&nbsp;
+&nbsp;    //building plans
+&nbsp;    plans = 85,
+&nbsp;
+&nbsp;    //flying units (low altitude)
+&nbsp;    flyingUnitLow = 90,
+&nbsp;
+&nbsp;    //bullets *bloom begin*
+&nbsp;    bullet = 100,
+&nbsp;
+&nbsp;    //effects *bloom end*
+&nbsp;    effect = 110,
+&nbsp;
+&nbsp;    //flying units
+&nbsp;    flyingUnit = 115,
+&nbsp;
+&nbsp;    //overlaid UI, like block config guides
+&nbsp;    overlayUI = 120,
+&nbsp;
+&nbsp;    //build beam effects
+&nbsp;    buildBeam = 122,
+&nbsp;
+&nbsp;    //shield effects
+&nbsp;    shields = 125,
+&nbsp;
+&nbsp;    //weather effects, e.g. rain and snow
+&nbsp;    weather = 130,
+&nbsp;
+&nbsp;    //light rendering *shaders used*
+&nbsp;    light = 140,
+&nbsp;
+&nbsp;    //names of players in the game
+&nbsp;    playerName = 150,
+&nbsp;
+&nbsp;    //fog of war effect, if applicable
+&nbsp;    fogOfWar = 155,
+&nbsp;
+&nbsp;    //space effects, currently only the land and launch effects
+&nbsp;    space = 160,
+&nbsp;
+&nbsp;    //the end of all layers
+&nbsp;    end = 200,
+&nbsp;
+&nbsp;    //things after pixelation - used for text
+&nbsp;    endPixeled = 210,
+&nbsp;
+&nbsp;    //max layer
+&nbsp;    max = 220
+&nbsp;
+&nbsp;    ;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

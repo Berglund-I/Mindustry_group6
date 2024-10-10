@@ -1,0 +1,146 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TimeItem</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: TimeItem (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TimeItem</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;/**
+&nbsp; * Bits used: 64 / 64
+&nbsp; * &lt;br&gt;  data [0..16]
+&nbsp; * &lt;br&gt;  item [16..32]
+&nbsp; * &lt;br&gt;  time [32..64]
+&nbsp; */
+<b class="nc">&nbsp;public final class TimeItem {</b>
+&nbsp;  public static final long bitMaskData = (long)(0b0000000000000000000000000000000000000000000000001111111111111111L);
+&nbsp;
+&nbsp;  public static final long bitMaskItem = (long)(0b0000000000000000000000000000000011111111111111110000000000000000L);
+&nbsp;
+&nbsp;  public static final long bitMaskTime = (long)(0b1111111111111111111111111111111100000000000000000000000000000000L);
+&nbsp;
+&nbsp;  public static short data(long timeitem) {
+<b class="nc">&nbsp;    return (short)((timeitem &gt;&gt;&gt; 0) &amp; 0b0000000000000000000000000000000000000000000000001111111111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long data(long timeitem, short value) {
+<b class="nc">&nbsp;    return (long)((timeitem &amp; (~0b0000000000000000000000000000000000000000000000001111111111111111L)) | ((long)value &lt;&lt; 0L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static short item(long timeitem) {
+<b class="nc">&nbsp;    return (short)((timeitem &gt;&gt;&gt; 16) &amp; 0b0000000000000000000000000000000000000000000000001111111111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long item(long timeitem, short value) {
+<b class="nc">&nbsp;    return (long)((timeitem &amp; (~0b0000000000000000000000000000000011111111111111110000000000000000L)) | ((long)value &lt;&lt; 16L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static float time(long timeitem) {
+<b class="nc">&nbsp;    return Float.intBitsToFloat((int)((timeitem &gt;&gt;&gt; 32) &amp; 0b0000000000000000000000000000000011111111111111111111111111111111L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long time(long timeitem, float value) {
+<b class="nc">&nbsp;    return (long)((timeitem &amp; (~0b1111111111111111111111111111111100000000000000000000000000000000L)) | ((long)Float.floatToIntBits(value) &lt;&lt; 32L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long get(short data, short item, float time) {
+<b class="nc">&nbsp;    return (long)((((long)data &lt;&lt; 0L) &amp; 0b0000000000000000000000000000000000000000000000001111111111111111L) | (((long)item &lt;&lt; 16L) &amp; 0b0000000000000000000000000000000011111111111111110000000000000000L) | ((long)Float.floatToIntBits(time) &lt;&lt; 32L));</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

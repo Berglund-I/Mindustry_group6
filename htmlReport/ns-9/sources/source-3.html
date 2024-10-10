@@ -1,0 +1,174 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Smethod</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.util</a>
+</div>
+
+<h1>Coverage Summary for Class: Smethod (mindustry.annotations.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Smethod</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.util;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import com.squareup.javapoet.*;
+&nbsp;import com.sun.source.tree.*;
+&nbsp;import mindustry.annotations.*;
+&nbsp;
+&nbsp;import javax.lang.model.element.*;
+&nbsp;import javax.lang.model.type.*;
+&nbsp;
+&nbsp;public class Smethod extends Selement&lt;ExecutableElement&gt;{
+&nbsp;
+&nbsp;    public Smethod(ExecutableElement executableElement){
+<b class="nc">&nbsp;        super(executableElement);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAny(Modifier... mod){
+<b class="nc">&nbsp;        for(Modifier m : mod){</b>
+<b class="nc">&nbsp;            if(is(m)) return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String descString(){
+<b class="nc">&nbsp;        return up().asType().toString() + &quot;#&quot; + super.toString().replace(&quot;mindustry.gen.&quot;, &quot;&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean is(Modifier mod){
+<b class="nc">&nbsp;        return e.getModifiers().contains(mod);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Stype type(){
+<b class="nc">&nbsp;        return new Stype((TypeElement)up());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;TypeMirror&gt; thrown(){
+<b class="nc">&nbsp;        return Seq.with(e.getThrownTypes()).as();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;TypeName&gt; thrownt(){
+<b class="nc">&nbsp;        return Seq.with(e.getThrownTypes()).map(TypeName::get);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;TypeParameterElement&gt; typeVariables(){
+<b class="nc">&nbsp;        return Seq.with(e.getTypeParameters()).as();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Svar&gt; params(){
+<b class="nc">&nbsp;        return Seq.with(e.getParameters()).map(Svar::new);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isVoid(){
+<b class="nc">&nbsp;        return ret().toString().equals(&quot;void&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypeMirror ret(){
+<b class="nc">&nbsp;        return e.getReturnType();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypeName retn(){
+<b class="nc">&nbsp;        return TypeName.get(ret());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public MethodTree tree(){
+<b class="nc">&nbsp;        return BaseProcessor.trees.getTree(e);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String simpleString(){
+<b class="nc">&nbsp;        return name() + &quot;(&quot; + params().toString(&quot;, &quot;, p -&gt; BaseProcessor.simpleName(p.mirror().toString())) + &quot;)&quot;;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

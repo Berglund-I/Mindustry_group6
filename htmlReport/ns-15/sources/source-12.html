@@ -1,0 +1,180 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > HitboxComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: HitboxComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HitboxComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class HitboxComp implements Posc, Sized, QuadTreeObject{</b>
+&nbsp;    @Import float x, y;
+&nbsp;
+&nbsp;    transient float lastX, lastY, deltaX, deltaY, hitSize;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void add(){
+<b class="nc">&nbsp;        updateLastPosition();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void afterRead(){
+<b class="nc">&nbsp;        updateLastPosition();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float hitSize(){
+<b class="nc">&nbsp;        return hitSize;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void getCollisions(Cons&lt;QuadTree&gt; consumer){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    void updateLastPosition(){
+<b class="nc">&nbsp;        deltaX = x - lastX;</b>
+<b class="nc">&nbsp;        deltaY = y - lastY;</b>
+<b class="nc">&nbsp;        lastX = x;</b>
+<b class="nc">&nbsp;        lastY = y;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void collision(Hitboxc other, float x, float y){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    float deltaLen(){
+<b class="nc">&nbsp;        return Mathf.len(deltaX, deltaY);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    float deltaAngle(){
+<b class="nc">&nbsp;        return Mathf.angle(deltaX, deltaY);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean collides(Hitboxc other){
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void hitbox(Rect rect){
+<b class="nc">&nbsp;        rect.setCentered(x, y, hitSize, hitSize);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void hitboxTile(Rect rect){
+&nbsp;        //tile hitboxes are never bigger than a tile, otherwise units get stuck
+<b class="nc">&nbsp;        float size = Math.min(hitSize * 0.66f, 7.8f);</b>
+&nbsp;        //TODO: better / more accurate version is
+&nbsp;        //float size = hitSize * 0.85f;
+&nbsp;        //- for tanks?
+<b class="nc">&nbsp;        rect.setCentered(x, y, size, size);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,503 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PayloadConveyor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.payloads</a>
+</div>
+
+<h1>Coverage Summary for Class: PayloadConveyor (mindustry.world.blocks.payloads)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PayloadConveyor</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    69.2%
+  </span>
+  <span class="absValue">
+    (18/26)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PayloadConveyor$PayloadConveyorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    44%
+  </span>
+  <span class="absValue">
+    (11/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.2%
+  </span>
+  <span class="absValue">
+    (57/135)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    43.3%
+  </span>
+  <span class="absValue">
+    (13/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46.6%
+  </span>
+  <span class="absValue">
+    (75/161)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.payloads;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class PayloadConveyor extends Block{
+<b class="fc">&nbsp;    public float moveTime = 45f, moveForce = 201f;</b>
+&nbsp;    public @Load(&quot;@-top&quot;) TextureRegion topRegion;
+&nbsp;    public @Load(&quot;@-edge&quot;) TextureRegion edgeRegion;
+<b class="fc">&nbsp;    public Interp interp = Interp.pow5;</b>
+<b class="fc">&nbsp;    public float payloadLimit = 3f;</b>
+<b class="fc">&nbsp;    public boolean pushUnits = true;</b>
+&nbsp;
+&nbsp;    public PayloadConveyor(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        group = BlockGroup.payloads;</b>
+<b class="fc">&nbsp;        size = 3;</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        outputsPayload = true;</b>
+<b class="fc">&nbsp;        noUpdateDisabled = true;</b>
+<b class="fc">&nbsp;        acceptsUnitPayloads = true;</b>
+<b class="fc">&nbsp;        priority = TargetPriority.transport;</b>
+<b class="fc">&nbsp;        envEnabled |= Env.space | Env.underwater;</b>
+<b class="fc">&nbsp;        sync = true;</b>
+<b class="fc">&nbsp;        underBullets = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{Core.atlas.find(name + &quot;-icon&quot;)};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        super.drawPlace(x, y, rotation, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;            Building other = world.build(x + Geometry.d4x[i] * size, y + Geometry.d4y[i] * size);</b>
+<b class="nc">&nbsp;            if(other != null &amp;&amp; other.block.outputsPayload &amp;&amp; other.block.size == size){</b>
+<b class="nc">&nbsp;                Drawf.selected(other.tileX(), other.tileY(), other.block, other.team.color);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.payloadCapacity, StatValues.squared(payloadLimit, StatUnit.blocksSquared));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+&nbsp;        //increase clip size for oversize loads
+<b class="fc">&nbsp;        clipSize = Math.max(clipSize, size * tilesize * 2.1f);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class PayloadConveyorBuild extends Building{</b>
+&nbsp;        public @Nullable Payload item;
+&nbsp;        public float progress, itemRotation, animation;
+&nbsp;        public float curInterp, lastInterp;
+&nbsp;        public @Nullable Building next;
+&nbsp;        public boolean blocked;
+<b class="fc">&nbsp;        public int step = -1, stepAccepted = -1;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean canControlSelect(Unit unit){
+<b class="nc">&nbsp;            return this.item == null &amp;&amp; unit.type.allowedInPayloads &amp;&amp; !unit.spawnedByCore &amp;&amp; unit.hitSize / tilesize &lt;= payloadLimit &amp;&amp; unit.tileOn() != null &amp;&amp; unit.tileOn().build == this;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onControlSelect(Unit player){
+<b class="nc">&nbsp;            handleUnitPayload(player, p -&gt; item = p);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Payload takePayload(){
+<b class="nc">&nbsp;            Payload t = item;</b>
+<b class="nc">&nbsp;            item = null;</b>
+<b class="nc">&nbsp;            return t;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onProximityUpdate(){
+<b class="fc">&nbsp;            super.onProximityUpdate();</b>
+&nbsp;
+<b class="fc">&nbsp;            Building accept = nearby(Geometry.d4(rotation).x * (size/2+1), Geometry.d4(rotation).y * (size/2+1));</b>
+&nbsp;            //next block must be aligned and of the same size
+<b class="fc">&nbsp;            if(accept != null &amp;&amp; (</b>
+&nbsp;                //same size
+<b class="fc">&nbsp;                (accept.block.size == size &amp;&amp; tileX() + Geometry.d4(rotation).x * size == accept.tileX() &amp;&amp; tileY() + Geometry.d4(rotation).y * size == accept.tileY()) ||</b>
+&nbsp;
+&nbsp;                //differing sizes
+&nbsp;                (accept.block.size &gt; size &amp;&amp;
+&nbsp;                    (rotation % 2 == 0 ? //check orientation
+<b class="fc">&nbsp;                    Math.abs(accept.y - y) &lt;= (accept.block.size * tilesize - size * tilesize)/2f : //check Y alignment</b>
+<b class="fc">&nbsp;                    Math.abs(accept.x - x) &lt;= (accept.block.size * tilesize - size * tilesize)/2f   //check X alignment</b>
+&nbsp;                )))){
+<b class="fc">&nbsp;                next = accept;</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                next = null;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            int ntrns = 1 + size/2;</b>
+<b class="fc">&nbsp;            Tile next = tile.nearby(Geometry.d4(rotation).x * ntrns, Geometry.d4(rotation).y * ntrns);</b>
+<b class="fc">&nbsp;            blocked = (next != null &amp;&amp; next.solid() &amp;&amp; !(next.block().outputsPayload || next.block().acceptsPayload)) || (this.next != null &amp;&amp; this.next.payloadCheck(rotation));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Payload getPayload(){
+<b class="nc">&nbsp;            return item;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(!enabled) return;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(item != null){</b>
+<b class="fc">&nbsp;                item.update(null, this);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            lastInterp = curInterp;</b>
+<b class="fc">&nbsp;            curInterp = fract();</b>
+&nbsp;            //rollover skip
+<b class="fc">&nbsp;            if(lastInterp &gt; curInterp) lastInterp = 0f;</b>
+<b class="fc">&nbsp;            progress = time() % moveTime;</b>
+&nbsp;
+<b class="fc">&nbsp;            updatePayload();</b>
+<b class="fc">&nbsp;            if(item != null &amp;&amp; next == null){</b>
+<b class="fc">&nbsp;                PayloadBlock.pushOutput(item, progress / moveTime);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //TODO nondeterministic input priority
+<b class="fc">&nbsp;            int curStep = curStep();</b>
+<b class="fc">&nbsp;            if(curStep &gt; step){</b>
+<b class="fc">&nbsp;                boolean valid = step != -1;</b>
+<b class="fc">&nbsp;                step = curStep;</b>
+<b class="fc">&nbsp;                boolean had = item != null;</b>
+&nbsp;
+<b class="fc">&nbsp;                if(valid &amp;&amp; stepAccepted != curStep &amp;&amp; item != null){</b>
+<b class="nc">&nbsp;                    if(next != null){</b>
+&nbsp;                        //trigger update forward
+<b class="nc">&nbsp;                        next.updateTile();</b>
+&nbsp;
+&nbsp;                        //TODO add self to queue of next conveyor, then check if this conveyor was selected next frame - selection happens deterministically
+<b class="nc">&nbsp;                        if(next != null &amp;&amp; next.acceptPayload(this, item)){</b>
+&nbsp;                            //move forward.
+<b class="nc">&nbsp;                            next.handlePayload(this, item);</b>
+<b class="nc">&nbsp;                            item = null;</b>
+<b class="nc">&nbsp;                            moved();</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }else if(!blocked){</b>
+&nbsp;                        //dump item forward
+<b class="nc">&nbsp;                        if(item.dump()){</b>
+<b class="nc">&nbsp;                            item = null;</b>
+<b class="nc">&nbsp;                            moved();</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(had &amp;&amp; item != null){</b>
+<b class="fc">&nbsp;                    moveFailed();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void moveFailed(){
+&nbsp;
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public void moved(){
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public void drawBottom(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onDestroyed(){
+<b class="nc">&nbsp;            if(item != null) item.destroyed();</b>
+<b class="nc">&nbsp;            super.onDestroyed();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+<b class="nc">&nbsp;            float dst = 0.8f;</b>
+&nbsp;
+<b class="nc">&nbsp;            float glow = Math.max((dst - (Math.abs(fract() - 0.5f) * 2)) / dst, 0);</b>
+<b class="nc">&nbsp;            Draw.mixcol(team.color, glow);</b>
+&nbsp;
+<b class="nc">&nbsp;            float s = tilesize * size;</b>
+<b class="nc">&nbsp;            float trnext = s * fract(), trprev = s * (fract() - 1), rot = rotdeg();</b>
+&nbsp;
+&nbsp;            //next
+<b class="nc">&nbsp;            TextureRegion clipped = clipRegion(tile.getHitbox(Tmp.r1), tile.getHitbox(Tmp.r2).move(trnext, 0), topRegion);</b>
+<b class="nc">&nbsp;            float widthNext = (s - clipped.width * clipped.scl()) * 0.5f;</b>
+<b class="nc">&nbsp;            float heightNext = (s - clipped.height * clipped.scl()) * 0.5f;</b>
+<b class="nc">&nbsp;            Tmp.v1.set(widthNext, heightNext).rotate(rot);</b>
+<b class="nc">&nbsp;            Draw.rect(clipped, x + Tmp.v1.x, y + Tmp.v1.y, rot);</b>
+&nbsp;
+&nbsp;            //prev
+<b class="nc">&nbsp;            clipped = clipRegion(tile.getHitbox(Tmp.r1), tile.getHitbox(Tmp.r2).move(trprev, 0), topRegion);</b>
+<b class="nc">&nbsp;            float widthPrev = (clipped.width * clipped.scl() - s) * 0.5f;</b>
+<b class="nc">&nbsp;            float heightPrev = (clipped.height * clipped.scl() - s) * 0.5f;</b>
+<b class="nc">&nbsp;            Tmp.v1.set(widthPrev, heightPrev).rotate(rot);</b>
+<b class="nc">&nbsp;            Draw.rect(clipped, x + Tmp.v1.x, y + Tmp.v1.y, rot);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                if(blends(i) &amp;&amp; i != rotation){</b>
+<b class="nc">&nbsp;                    Draw.alpha(1f - Interp.pow5In.apply(fract()));</b>
+&nbsp;                    //prev from back
+<b class="nc">&nbsp;                    Tmp.v1.set(widthPrev, heightPrev).rotate(i * 90 + 180);</b>
+<b class="nc">&nbsp;                    Draw.rect(clipped, x + Tmp.v1.x, y + Tmp.v1.y, i * 90 + 180);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.reset();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                if(!blends(i)){</b>
+<b class="nc">&nbsp;                    Draw.rect(edgeRegion, x, y, i * 90);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.blockOver);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(item != null){</b>
+<b class="nc">&nbsp;                item.draw();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void payloadDraw(){
+<b class="nc">&nbsp;            Draw.rect(block.fullIcon,x, y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public float time(){
+<b class="fc">&nbsp;            return Time.time;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void unitOn(Unit unit){
+<b class="nc">&nbsp;            if(!pushUnits || !enabled) return;</b>
+&nbsp;
+&nbsp;            //calculate derivative of units moved last frame
+<b class="nc">&nbsp;            float delta = (curInterp - lastInterp) * size * tilesize;</b>
+<b class="nc">&nbsp;            Tmp.v1.trns(rotdeg(), delta * moveForce).scl(1f / Math.max(unit.mass(), 201f));</b>
+<b class="nc">&nbsp;            unit.move(Tmp.v1.x, Tmp.v1.y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptPayload(Building source, Payload payload){
+<b class="nc">&nbsp;            return this.item == null</b>
+<b class="nc">&nbsp;                &amp;&amp; payload.fits(payloadLimit)</b>
+&nbsp;                &amp;&amp; (source == this || this.enabled &amp;&amp; progress &lt;= 5f);
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void handlePayload(Building source, Payload payload){
+<b class="fc">&nbsp;            this.item = payload;</b>
+<b class="fc">&nbsp;            this.stepAccepted = curStep();</b>
+<b class="fc">&nbsp;            this.itemRotation = source == this ? rotdeg() : source.angleTo(this);</b>
+<b class="fc">&nbsp;            this.animation = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;            updatePayload();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onRemoved(){
+<b class="nc">&nbsp;            super.onRemoved();</b>
+<b class="nc">&nbsp;            if(item != null) item.dump();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            write.f(progress);</b>
+<b class="fc">&nbsp;            write.f(itemRotation);</b>
+<b class="fc">&nbsp;            Payload.write(item, write);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            read.f(); //why is progress written?</b>
+<b class="fc">&nbsp;            itemRotation = read.f();</b>
+<b class="fc">&nbsp;            item = Payload.read(read);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void updatePayload(){
+<b class="fc">&nbsp;            if(item != null){</b>
+<b class="fc">&nbsp;                if(animation &gt; fract()){</b>
+<b class="nc">&nbsp;                    animation = Mathf.lerp(animation, 0.8f, 0.15f);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                animation = Math.max(animation, fract());</b>
+&nbsp;
+<b class="fc">&nbsp;                float fract = animation;</b>
+<b class="fc">&nbsp;                float rot = Mathf.slerp(itemRotation, rotdeg(), fract);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(fract &lt; 0.5f){</b>
+<b class="fc">&nbsp;                    Tmp.v1.trns(itemRotation + 180, (0.5f - fract) * tilesize * size);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Tmp.v1.trns(rotdeg(), (fract - 0.5f) * tilesize * size);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                float vx = Tmp.v1.x, vy = Tmp.v1.y;</b>
+&nbsp;
+<b class="fc">&nbsp;                item.set(x + vx, y + vy, rot);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        protected boolean blends(int direction){
+<b class="nc">&nbsp;            if(direction == rotation){</b>
+<b class="nc">&nbsp;                return !blocked || next != null;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return PayloadBlock.blends(this, direction);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected TextureRegion clipRegion(Rect bounds, Rect sprite, TextureRegion region){
+<b class="nc">&nbsp;            Rect over = Tmp.r3;</b>
+&nbsp;
+<b class="nc">&nbsp;            boolean overlaps = Intersector.intersectRectangles(bounds, sprite, over);</b>
+&nbsp;
+<b class="nc">&nbsp;            TextureRegion out = Tmp.tr1;</b>
+<b class="nc">&nbsp;            out.set(region.texture);</b>
+<b class="nc">&nbsp;            out.scale = region.scale;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(overlaps){</b>
+<b class="nc">&nbsp;                float w = region.u2 - region.u;</b>
+<b class="nc">&nbsp;                float h = region.v2 - region.v;</b>
+<b class="nc">&nbsp;                float x = region.u, y = region.v;</b>
+<b class="nc">&nbsp;                float newX = (over.x - sprite.x) / sprite.width * w + x;</b>
+<b class="nc">&nbsp;                float newY = (over.y - sprite.y) / sprite.height * h + y;</b>
+<b class="nc">&nbsp;                float newW = (over.width / sprite.width) * w, newH = (over.height / sprite.height) * h;</b>
+&nbsp;
+<b class="nc">&nbsp;                out.set(newX, newY, newX + newW, newY + newH);</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                out.set(0f, 0f, 0f, 0f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return out;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public int curStep(){
+<b class="fc">&nbsp;            return (int)((time()) / moveTime);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public float fract(){
+<b class="fc">&nbsp;            return interp.apply(progress / moveTime);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

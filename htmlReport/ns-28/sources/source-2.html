@@ -1,0 +1,667 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > GameService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.service</a>
+</div>
+
+<h1>Coverage Summary for Class: GameService (mindustry.service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GameService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.1%
+  </span>
+  <span class="absValue">
+    (1/48)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.9%
+  </span>
+  <span class="absValue">
+    (5/270)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.service;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.SectorInfo.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.defense.Wall.*;
+&nbsp;import mindustry.world.blocks.defense.turrets.Turret.*;
+&nbsp;import mindustry.world.blocks.distribution.*;
+&nbsp;import mindustry.world.blocks.production.AttributeCrafter.*;
+&nbsp;import mindustry.world.blocks.production.SolidPump.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.service.Achievement.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Interface for handling game service across multiple platforms.
+&nbsp; *
+&nbsp; * This includes:
+&nbsp; * - Desktop (Steam)
+&nbsp; *
+&nbsp; * The default implementation does nothing.
+&nbsp; * */
+<b class="fc">&nbsp;public class GameService{</b>
+<b class="fc">&nbsp;    private Seq&lt;Tile&gt; tmpTiles = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private ObjectSet&lt;String&gt; blocksBuilt = new ObjectSet&lt;&gt;(), unitsBuilt = new ObjectSet&lt;&gt;();</b>
+<b class="fc">&nbsp;    private ObjectSet&lt;UnitType&gt; t5s = new ObjectSet&lt;&gt;();</b>
+<b class="fc">&nbsp;    private IntSet checked = new IntSet();</b>
+&nbsp;
+&nbsp;    private Block[] allTransportSerpulo, allTransportErekir, allErekirBlocks, allSerpuloBlocks;
+&nbsp;
+&nbsp;    /** Begin listening for new achievement events, once the game service is activated. This can be called at any time, but only once. */
+&nbsp;    public void init(){
+<b class="nc">&nbsp;        if(clientLoaded){</b>
+<b class="nc">&nbsp;            registerEvents();</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            Events.on(ClientLoadEvent.class, e -&gt; registerEvents());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean enabled(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void completeAchievement(String name){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void clearAchievement(String name){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isAchieved(String name){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getStat(String name, int def){
+<b class="nc">&nbsp;        return def;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setStat(String name, int amount){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void storeStats(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void checkAllBlocks(Achievement ach, Block[] blocks){
+<b class="nc">&nbsp;        if(!Structs.contains(blocks, t -&gt; !blocksBuilt.contains(t.name))){</b>
+<b class="nc">&nbsp;            ach.complete();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void registerEvents(){
+<b class="nc">&nbsp;        allTransportSerpulo = content.blocks().select(b -&gt; b.category == Category.distribution &amp;&amp; b.isOnPlanet(Planets.serpulo) &amp;&amp; b.isVanilla() &amp;&amp; b.buildVisibility == BuildVisibility.shown).toArray(Block.class);</b>
+<b class="nc">&nbsp;        allTransportErekir = content.blocks().select(b -&gt; b.category == Category.distribution &amp;&amp; b.isOnPlanet(Planets.erekir) &amp;&amp; b.isVanilla() &amp;&amp; b.buildVisibility == BuildVisibility.shown).toArray(Block.class);</b>
+&nbsp;
+&nbsp;        //cores are ignored since they&#39;re upgrades and can be skipped
+<b class="nc">&nbsp;        allSerpuloBlocks = content.blocks().select(b -&gt; b.synthetic() &amp;&amp; b.isOnPlanet(Planets.serpulo) &amp;&amp; b.isVanilla() &amp;&amp; !(b instanceof CoreBlock) &amp;&amp; b.buildVisibility == BuildVisibility.shown).toArray(Block.class);</b>
+<b class="nc">&nbsp;        allErekirBlocks = content.blocks().select(b -&gt; b.synthetic() &amp;&amp; b.isOnPlanet(Planets.erekir) &amp;&amp; b.isVanilla() &amp;&amp; !(b instanceof CoreBlock) &amp;&amp; b.buildVisibility == BuildVisibility.shown).toArray(Block.class);</b>
+&nbsp;
+<b class="nc">&nbsp;        unitsBuilt = Core.settings.getJson(&quot;units-built&quot; , ObjectSet.class, String.class, ObjectSet::new);</b>
+<b class="nc">&nbsp;        blocksBuilt = Core.settings.getJson(&quot;blocks-built&quot; , ObjectSet.class, String.class, ObjectSet::new);</b>
+<b class="nc">&nbsp;        t5s = ObjectSet.with(UnitTypes.omura, UnitTypes.reign, UnitTypes.toxopid, UnitTypes.eclipse, UnitTypes.oct, UnitTypes.corvus);</b>
+&nbsp;
+<b class="nc">&nbsp;        checkAllBlocks(allBlocksErekir, allErekirBlocks);</b>
+<b class="nc">&nbsp;        checkAllBlocks(allBlocksSerpulo, allSerpuloBlocks);</b>
+&nbsp;
+&nbsp;        //periodically check for various conditions
+<b class="nc">&nbsp;        float updateInterval = 2f;</b>
+<b class="nc">&nbsp;        Timer.schedule(this::checkUpdate, updateInterval, updateInterval);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Items.thorium.unlocked()) obtainThorium.complete();</b>
+<b class="nc">&nbsp;        if(Items.titanium.unlocked()) obtainTitanium.complete();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(SectorPresets.origin.sector.isCaptured()){</b>
+<b class="nc">&nbsp;            completeErekir.complete();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(SectorPresets.planetaryTerminal.sector.isCaptured()){</b>
+<b class="nc">&nbsp;            completeSerpulo.complete();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(mods != null &amp;&amp; mods.list().size &gt; 0){</b>
+<b class="nc">&nbsp;            installMod.complete();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.bundle.get(&quot;yes&quot;).equals(&quot;router&quot;)){</b>
+<b class="nc">&nbsp;            routerLanguage.complete();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!Planets.serpulo.sectors.contains(s -&gt; !s.isCaptured())){</b>
+<b class="nc">&nbsp;            captureAllSectors.complete();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.openConsole, () -&gt; openConsole.complete());</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.unitCommandAttack, () -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign()){</b>
+<b class="nc">&nbsp;                issueAttackCommand.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(UnitDestroyEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign()){</b>
+<b class="nc">&nbsp;                if(e.unit.team != Vars.player.team()){</b>
+<b class="nc">&nbsp;                    SStat.unitsDestroyed.add();</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(e.unit.isBoss()){</b>
+<b class="nc">&nbsp;                        SStat.bossesDefeated.add();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(TurnEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            float total = 0;</b>
+<b class="nc">&nbsp;            for(Planet planet : content.planets()){</b>
+<b class="nc">&nbsp;                for(Sector sec : planet.sectors){</b>
+<b class="nc">&nbsp;                    if(sec.hasBase()){</b>
+<b class="nc">&nbsp;                        for(ExportStat v : sec.info.production.values()){</b>
+<b class="nc">&nbsp;                            if(v.mean &gt; 0) total += v.mean * 60;</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            SStat.maxProduction.max(Math.round(total));</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.update, () -&gt; {</b>
+&nbsp;            //extremely lazy timer, I just don&#39;t care
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; !hoverUnitLiquid.isAchieved() &amp;&amp; Core.graphics.getFrameId() % 20 == 0){</b>
+<b class="nc">&nbsp;                var units = state.rules.defaultTeam.data().getUnits(UnitTypes.elude);</b>
+<b class="nc">&nbsp;                if(units != null){</b>
+<b class="nc">&nbsp;                    for(var unit : units){</b>
+<b class="nc">&nbsp;                        if(unit.floorOn().isLiquid){</b>
+<b class="nc">&nbsp;                            hoverUnitLiquid.complete();</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; !player.dead() &amp;&amp; player.unit().type.canBoost &amp;&amp; player.unit().elevation &gt;= 0.25f){</b>
+<b class="nc">&nbsp;                boostUnit.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.newGame, () -&gt; Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; player.core() != null &amp;&amp; player.core().items.total() &gt;= 10 * 1000){</b>
+<b class="nc">&nbsp;                drop10kitems.complete();</b>
+&nbsp;            }
+&nbsp;        }));
+&nbsp;
+<b class="nc">&nbsp;        Events.on(BuildingBulletDestroyEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; e.build.block == Blocks.scatter &amp;&amp; e.build.team == state.rules.waveTeam &amp;&amp; e.bullet.owner instanceof Unit u &amp;&amp; u.type == UnitTypes.flare &amp;&amp; u.team == player.team()){</b>
+<b class="nc">&nbsp;                destroyScatterFlare.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(BlockBuildEndEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; state.rules.sector == SectorPresets.groundZero.sector &amp;&amp; e.tile.block() == Blocks.coreNucleus){</b>
+<b class="nc">&nbsp;                nucleusGroundZero.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(BlockBuildEndEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; e.unit != null &amp;&amp; e.unit.isLocal() &amp;&amp; !e.breaking){</b>
+<b class="nc">&nbsp;                SStat.blocksBuilt.add();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(e.tile.block() == Blocks.router &amp;&amp; e.tile.build.proximity().contains(t -&gt; t.block == Blocks.router)){</b>
+<b class="nc">&nbsp;                    chainRouters.complete();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(e.tile.block() == Blocks.groundFactory){</b>
+<b class="nc">&nbsp;                    buildGroundFactory.complete();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if((e.tile.build instanceof AttributeCrafterBuild a &amp;&amp; a.attrsum &gt; 0) || (e.tile.build instanceof SolidPumpBuild sp &amp;&amp; sp.boost &gt; 0)){</b>
+<b class="nc">&nbsp;                    boostBuildingFloor.complete();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(!allTransportOneMap.isAchieved()){</b>
+<b class="nc">&nbsp;                    Block[] allTransports = state.rules.sector.planet == Planets.erekir ? allTransportErekir : allTransportSerpulo;</b>
+<b class="nc">&nbsp;                    boolean all = true;</b>
+<b class="nc">&nbsp;                    for(var block : allTransports){</b>
+<b class="nc">&nbsp;                        if(state.rules.defaultTeam.data().getCount(block) == 0){</b>
+<b class="nc">&nbsp;                            all = false;</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    if(all){</b>
+<b class="nc">&nbsp;                        allTransportOneMap.complete();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(e.tile.block() == Blocks.mendProjector) buildMendProjector.complete();</b>
+<b class="nc">&nbsp;                if(e.tile.block() == Blocks.overdriveProjector) buildOverdriveProjector.complete();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(e.tile.block() == Blocks.waterExtractor){</b>
+<b class="nc">&nbsp;                    if(e.tile.getLinkedTiles(tmpTiles).contains(t -&gt; t.floor().liquidDrop == Liquids.water)){</b>
+<b class="nc">&nbsp;                        buildWexWater.complete();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(blocksBuilt.add(e.tile.block().name)){</b>
+<b class="nc">&nbsp;                    if(state.rules.sector.planet == Planets.erekir){</b>
+<b class="nc">&nbsp;                        checkAllBlocks(allBlocksErekir, allErekirBlocks);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        checkAllBlocks(allBlocksSerpulo, allSerpuloBlocks);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(blocksBuilt.contains(&quot;meltdown&quot;) &amp;&amp; blocksBuilt.contains(&quot;spectre&quot;) &amp;&amp; blocksBuilt.contains(&quot;foreshadow&quot;)){</b>
+<b class="nc">&nbsp;                        buildMeltdownSpectre.complete();</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    save();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(!circleConveyor.isAchieved() &amp;&amp; e.tile.block() instanceof Conveyor){</b>
+<b class="nc">&nbsp;                    checked.clear();</b>
+&nbsp;                    check: {
+<b class="nc">&nbsp;                        Tile current = e.tile;</b>
+<b class="nc">&nbsp;                        for(int i = 0; i &lt; 4; i++){</b>
+<b class="nc">&nbsp;                            checked.add(current.pos());</b>
+<b class="nc">&nbsp;                            if(current.build == null) break check;</b>
+<b class="nc">&nbsp;                            Tile next = current.nearby(current.build.rotation);</b>
+<b class="nc">&nbsp;                            if(next != null &amp;&amp; next.block() instanceof Conveyor){</b>
+<b class="nc">&nbsp;                                current = next;</b>
+&nbsp;                            }else{
+&nbsp;                                break check;
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        if(current == e.tile &amp;&amp; checked.size == 4){</b>
+<b class="nc">&nbsp;                            circleConveyor.complete();</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; e.unit != null &amp;&amp; e.unit.isLocal() &amp;&amp; e.breaking){</b>
+&nbsp;                //hacky way of testing for boulders without string contains/endsWith
+<b class="nc">&nbsp;                if(e.tile.block().breakSound == Sounds.rockBreak){</b>
+<b class="nc">&nbsp;                    SStat.bouldersDeconstructed.add();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(TurnEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            int total = 0;</b>
+<b class="nc">&nbsp;            for(var planet : content.planets()){</b>
+<b class="nc">&nbsp;                for(var sector : planet.sectors){</b>
+<b class="nc">&nbsp;                    if(sector.hasBase()){</b>
+<b class="nc">&nbsp;                        total += sector.items().total;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            SStat.totalCampaignItems.max(total);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(SectorLaunchLoadoutEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.sector.planet == Planets.serpulo &amp;&amp; !schematics.isDefaultLoadout(e.loadout)){</b>
+<b class="nc">&nbsp;                launchCoreSchematic.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(UnitCreateEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign()){</b>
+<b class="nc">&nbsp;                if(unitsBuilt.add(e.unit.type.name)){</b>
+<b class="nc">&nbsp;                    SStat.unitTypesBuilt.max(content.units().count(u -&gt; unitsBuilt.contains(u.name) &amp;&amp; !u.isHidden()));</b>
+<b class="nc">&nbsp;                    save();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(t5s.contains(e.unit.type)){</b>
+<b class="nc">&nbsp;                    buildT5.complete();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(UnitControlEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.unit instanceof BlockUnitc unit &amp;&amp; unit.tile().block == Blocks.router){</b>
+<b class="nc">&nbsp;                becomeRouter.complete();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(e.unit instanceof BlockUnitc unit &amp;&amp; unit.tile() instanceof TurretBuild){</b>
+<b class="nc">&nbsp;                controlTurret.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(SchematicCreateEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            SStat.schematicsCreated.add();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(BlockDestroyEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; e.tile.team() != player.team()){</b>
+<b class="nc">&nbsp;                SStat.blocksDestroyed.add();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(MapMakeEvent.class, e -&gt; SStat.mapsMade.add());</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(MapPublishEvent.class, e -&gt; SStat.mapsPublished.add());</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(UnlockEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.content == Items.thorium) obtainThorium.complete();</b>
+<b class="nc">&nbsp;            if(e.content == Items.titanium) obtainTitanium.complete();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.openWiki, openWiki::complete);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.importMod, installMod::complete);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.exclusionDeath, dieExclusion::complete);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(UnitDrownEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; e.unit.isPlayer()){</b>
+<b class="nc">&nbsp;                drown.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        trigger(Trigger.impactPower, powerupImpactReactor);</b>
+&nbsp;
+<b class="nc">&nbsp;        trigger(Trigger.flameAmmo, useFlameAmmo);</b>
+&nbsp;
+<b class="nc">&nbsp;        trigger(Trigger.turretCool, coolTurret);</b>
+&nbsp;
+<b class="nc">&nbsp;        trigger(Trigger.suicideBomb, suicideBomb);</b>
+&nbsp;
+<b class="nc">&nbsp;        trigger(Trigger.blastGenerator, blastGenerator);</b>
+&nbsp;
+<b class="nc">&nbsp;        trigger(Trigger.forceProjectorBreak, breakForceProjector);</b>
+&nbsp;
+<b class="nc">&nbsp;        trigger(Trigger.neoplasmReact, neoplasmWater);</b>
+&nbsp;
+<b class="nc">&nbsp;        trigger(Trigger.shockwaveTowerUse, shockwaveTowerUse);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.enablePixelation, enablePixelation::complete);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.run(Trigger.thoriumReactorOverheat, () -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign()){</b>
+<b class="nc">&nbsp;                SStat.reactorsOverheated.add();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(GeneratorPressureExplodeEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; e.build.block == Blocks.neoplasiaReactor){</b>
+<b class="nc">&nbsp;                neoplasiaExplosion.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        trigger(Trigger.shock, shockWetEnemy);</b>
+&nbsp;
+<b class="nc">&nbsp;        trigger(Trigger.blastFreeze, blastFrozenUnit);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(UnitBulletDestroyEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(state.isCampaign() &amp;&amp; player != null &amp;&amp; player.team() == e.bullet.team){</b>
+&nbsp;
+<b class="nc">&nbsp;                if(e.bullet.owner instanceof WallBuild){</b>
+<b class="nc">&nbsp;                    killEnemyPhaseWall.complete();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(e.unit.type == UnitTypes.eclipse &amp;&amp; e.bullet.owner instanceof TurretBuild turret &amp;&amp; turret.block == Blocks.duo){</b>
+<b class="nc">&nbsp;                    killEclipseDuo.complete();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(LaunchItemEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign()){</b>
+<b class="nc">&nbsp;                launchItemPad.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(PickupEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.carrier.isPlayer() &amp;&amp; campaign() &amp;&amp; e.unit != null &amp;&amp; t5s.contains(e.unit.type)){</b>
+<b class="nc">&nbsp;                pickupT5.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(UnitCreateEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; e.unit.team() == player.team()){</b>
+<b class="nc">&nbsp;                SStat.unitsBuilt.add();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(SectorLaunchEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            SStat.timesLaunched.add();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(LaunchItemEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            SStat.itemsLaunched.add(e.stack.amount);</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(WaveEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign()){</b>
+<b class="nc">&nbsp;                SStat.maxWavesSurvived.max(Vars.state.wave);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(state.stats.buildingsBuilt == 0 &amp;&amp; state.wave &gt;= 10){</b>
+<b class="nc">&nbsp;                    survive10WavesNoBlocks.complete();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(PlayerJoin.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(Vars.net.server()){</b>
+<b class="nc">&nbsp;                SStat.maxPlayersServer.max(Groups.player.size());</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Runnable checkUnlocks = () -&gt; {</b>
+<b class="nc">&nbsp;            if(Blocks.router.unlocked()) researchRouter.complete();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!TechTree.all.contains(t -&gt; t.content.locked())){</b>
+<b class="nc">&nbsp;                researchAll.complete();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Blocks.microProcessor.unlocked()) researchLogic.complete();</b>
+&nbsp;        };
+&nbsp;
+&nbsp;        //check unlocked stuff on load as well
+<b class="nc">&nbsp;        Events.on(ResearchEvent.class, e -&gt; checkUnlocks.run());</b>
+<b class="nc">&nbsp;        Events.on(UnlockEvent.class, e -&gt; checkUnlocks.run());</b>
+&nbsp;
+<b class="nc">&nbsp;        checkUnlocks.run();</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(WinEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(state.rules.pvp){</b>
+<b class="nc">&nbsp;                SStat.pvpsWon.add();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ClientPreConnectEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.host != null &amp;&amp; !e.host.address.startsWith(&quot;steam:&quot;) &amp;&amp; !e.host.address.startsWith(&quot;192.&quot;)){</b>
+<b class="nc">&nbsp;                joinCommunityServer.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(SectorCaptureEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.sector.isBeingPlayed() || net.client()){</b>
+<b class="nc">&nbsp;                if(Vars.state.wave &lt;= 5 &amp;&amp; state.rules.attackMode){</b>
+<b class="nc">&nbsp;                    defeatAttack5Waves.complete();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(state.stats.buildingsDestroyed == 0){</b>
+<b class="nc">&nbsp;                    captureNoBlocksBroken.complete();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Vars.state.rules.attackMode){</b>
+<b class="nc">&nbsp;                SStat.attacksWon.add();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!e.sector.isBeingPlayed() &amp;&amp; !net.client()){</b>
+<b class="nc">&nbsp;                captureBackground.complete();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(e.sector.planet == Planets.serpulo &amp;&amp; !e.sector.planet.sectors.contains(s -&gt; !s.hasBase())){</b>
+<b class="nc">&nbsp;                captureAllSectors.complete();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(e.sector.planet == Planets.erekir &amp;&amp; e.sector.preset != null &amp;&amp; e.sector.preset.isLastSector){</b>
+<b class="nc">&nbsp;                completeErekir.complete();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(e.sector.planet == Planets.serpulo &amp;&amp; e.sector.preset != null &amp;&amp; e.sector.preset.isLastSector){</b>
+<b class="nc">&nbsp;                completeSerpulo.complete();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //TODO wrong
+<b class="nc">&nbsp;            if(e.sector.planet == Planets.serpulo){</b>
+<b class="nc">&nbsp;                SStat.sectorsControlled.set(e.sector.planet.sectors.count(Sector::hasBase));</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(PayloadDropEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign() &amp;&amp; e.unit != null &amp;&amp; e.carrier.team == state.rules.defaultTeam &amp;&amp; state.rules.waveTeam.cores().contains(c -&gt; c.within(e.unit, state.rules.enemyCoreBuildRadius))){</b>
+<b class="nc">&nbsp;                dropUnitsCoreZone.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ClientChatEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.message.contains(Iconc.alphaaaa + &quot;&quot;)){</b>
+<b class="nc">&nbsp;                useAnimdustryEmoji.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkUpdate(){
+<b class="nc">&nbsp;        if(campaign()){</b>
+<b class="nc">&nbsp;            SStat.maxUnitActive.max(Groups.unit.count(t -&gt; t.team == player.team()));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Groups.unit.count(u -&gt; u.type == UnitTypes.poly &amp;&amp; u.team == player.team()) &gt;= 10){</b>
+<b class="nc">&nbsp;                active10Polys.complete();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(Building entity : player.team().cores()){</b>
+<b class="nc">&nbsp;                if(!content.items().contains(i -&gt; i.isOnPlanet(state.getPlanet()) &amp;&amp; entity.items.get(i) &lt; entity.block.itemCapacity)){</b>
+<b class="nc">&nbsp;                    fillCoreAllCampaign.complete();</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            for(var up : Groups.powerGraph){</b>
+<b class="nc">&nbsp;                var graph = up.graph();</b>
+<b class="nc">&nbsp;                if(graph.all.size &gt; 1 &amp;&amp; graph.all.first().team == player.team() &amp;&amp; graph.hasPowerBalanceSamples()){</b>
+<b class="nc">&nbsp;                    float balance = graph.getPowerBalance() * 60f;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(balance &lt; -10_000) negative10kPower.complete();</b>
+<b class="nc">&nbsp;                    if(balance &gt; 100_000) positive100kPower.complete();</b>
+<b class="nc">&nbsp;                    if(graph.getBatteryStored() &gt; 1_000_000) store1milPower.complete();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void save(){
+<b class="nc">&nbsp;        Core.settings.putJson(&quot;units-built&quot; , String.class, unitsBuilt);</b>
+<b class="nc">&nbsp;        Core.settings.putJson(&quot;blocks-built&quot; , String.class, blocksBuilt);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void trigger(Trigger trigger, Achievement ach){
+<b class="nc">&nbsp;        Events.run(trigger, () -&gt; {</b>
+<b class="nc">&nbsp;            if(campaign()){</b>
+<b class="nc">&nbsp;                ach.complete();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean campaign(){
+<b class="nc">&nbsp;        return Vars.state.isCampaign();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

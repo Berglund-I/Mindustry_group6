@@ -1,0 +1,410 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LogicDisplay</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: LogicDisplay (mindustry.world.blocks.logic)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LogicDisplay</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.9%
+  </span>
+  <span class="absValue">
+    (10/13)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LogicDisplay$DisplayCmdStruct</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">LogicDisplay$GraphicsType</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">LogicDisplay$LogicDisplayBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    55.6%
+  </span>
+  <span class="absValue">
+    (5/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.5%
+  </span>
+  <span class="absValue">
+    (14/80)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (6/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21.4%
+  </span>
+  <span class="absValue">
+    (24/112)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.logic;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.gl.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class LogicDisplay extends Block{
+&nbsp;    public static final byte
+&nbsp;        commandClear = 0,
+&nbsp;        commandColor = 1,
+&nbsp;        //virtual command, unpacked in instruction
+&nbsp;        commandColorPack = 2,
+&nbsp;        commandStroke = 3,
+&nbsp;        commandLine = 4,
+&nbsp;        commandRect = 5,
+&nbsp;        commandLineRect = 6,
+&nbsp;        commandPoly = 7,
+&nbsp;        commandLinePoly = 8,
+&nbsp;        commandTriangle = 9,
+&nbsp;        commandImage = 10,
+&nbsp;        //note that this command actually only draws 1 character, unpacked in instruction
+&nbsp;        commandPrint = 11,
+&nbsp;
+&nbsp;        commandTranslate = 12,
+&nbsp;        commandScale = 13,
+&nbsp;        commandRotate = 14,
+&nbsp;        commandResetTransform = 15
+&nbsp;    ;
+&nbsp;
+&nbsp;    public static final float scaleStep = 0.05f;
+&nbsp;
+<b class="fc">&nbsp;    public int maxSides = 25;</b>
+&nbsp;
+<b class="fc">&nbsp;    public int displaySize = 64;</b>
+<b class="fc">&nbsp;    public float scaleFactor = 1f;</b>
+&nbsp;
+&nbsp;    public LogicDisplay(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        canOverdrive = false;</b>
+<b class="fc">&nbsp;        group = BlockGroup.logic;</b>
+<b class="fc">&nbsp;        drawDisabled = false;</b>
+<b class="fc">&nbsp;        envEnabled = Env.any;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.displaySize, &quot;@x@&quot;, displaySize, displaySize);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class LogicDisplayBuild extends Building{</b>
+&nbsp;        public FrameBuffer buffer;
+<b class="fc">&nbsp;        public float color = Color.whiteFloatBits;</b>
+<b class="fc">&nbsp;        public float stroke = 1f;</b>
+<b class="fc">&nbsp;        public LongQueue commands = new LongQueue(256);</b>
+&nbsp;        public @Nullable Mat transform;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+&nbsp;            //don&#39;t even bother processing anything when displays are off.
+<b class="nc">&nbsp;            if(!Vars.renderer.drawDisplays) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.draw(Draw.z(), () -&gt; {</b>
+<b class="nc">&nbsp;                if(buffer == null){</b>
+<b class="nc">&nbsp;                    buffer = new FrameBuffer(displaySize, displaySize);</b>
+&nbsp;                    //clear the buffer - some OSs leave garbage in it
+<b class="nc">&nbsp;                    buffer.begin(Pal.darkerMetal);</b>
+<b class="nc">&nbsp;                    buffer.end();</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+&nbsp;            //don&#39;t bother processing commands if displays are off
+<b class="nc">&nbsp;            if(!commands.isEmpty()){</b>
+<b class="nc">&nbsp;                Draw.draw(Draw.z(), () -&gt; {</b>
+<b class="nc">&nbsp;                    Tmp.m1.set(Draw.proj());</b>
+<b class="nc">&nbsp;                    Tmp.m2.set(Draw.trans());</b>
+<b class="nc">&nbsp;                    Draw.proj(0, 0, displaySize, displaySize);</b>
+<b class="nc">&nbsp;                    if(transform != null){</b>
+<b class="nc">&nbsp;                        Draw.trans(transform);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    buffer.begin();</b>
+<b class="nc">&nbsp;                    Draw.color(color);</b>
+<b class="nc">&nbsp;                    Lines.stroke(stroke);</b>
+&nbsp;
+<b class="nc">&nbsp;                    while(!commands.isEmpty()){</b>
+<b class="nc">&nbsp;                        long c = commands.removeFirst();</b>
+<b class="nc">&nbsp;                        int type = DisplayCmd.type(c);</b>
+<b class="nc">&nbsp;                        int x = unpackSign(DisplayCmd.x(c)), y = unpackSign(DisplayCmd.y(c)),</b>
+<b class="nc">&nbsp;                        p1 = unpackSign(DisplayCmd.p1(c)), p2 = unpackSign(DisplayCmd.p2(c)), p3 = unpackSign(DisplayCmd.p3(c)), p4 = unpackSign(DisplayCmd.p4(c));</b>
+&nbsp;
+<b class="nc">&nbsp;                        switch(type){</b>
+&nbsp;                            case commandClear -&gt; {
+&nbsp;                                //discard any pending batched sprites, so they don&#39;t get drawn over the cleared screen later
+<b class="nc">&nbsp;                                Draw.discard();</b>
+<b class="nc">&nbsp;                                Core.graphics.clear(x / 255f, y / 255f, p1 / 255f, 1f);</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                            case commandLine -&gt; Lines.line(x, y, p1, p2);</b>
+<b class="nc">&nbsp;                            case commandRect -&gt; Fill.crect(x, y, p1, p2);</b>
+<b class="nc">&nbsp;                            case commandLineRect -&gt; Lines.rect(x, y, p1, p2);</b>
+<b class="nc">&nbsp;                            case commandPoly -&gt; Fill.poly(x, y, Math.min(p1, maxSides), p2, p3);</b>
+<b class="nc">&nbsp;                            case commandLinePoly -&gt; Lines.poly(x, y, Math.min(p1, maxSides), p2, p3);</b>
+<b class="nc">&nbsp;                            case commandTriangle -&gt; Fill.tri(x, y, p1, p2, p3, p4);</b>
+<b class="nc">&nbsp;                            case commandColor -&gt; Draw.color(this.color = Color.toFloatBits(x, y, p1, p2));</b>
+<b class="nc">&nbsp;                            case commandStroke -&gt; Lines.stroke(this.stroke = x);</b>
+&nbsp;                            case commandImage -&gt; {
+<b class="nc">&nbsp;                                if(p4 &gt;= 0 &amp;&amp; p4 &lt; ContentType.all.length &amp;&amp; Vars.content.getByID(ContentType.all[p4], p1) instanceof UnlockableContent u){</b>
+<b class="nc">&nbsp;                                    var icon = u.fullIcon;</b>
+<b class="nc">&nbsp;                                    Draw.rect(icon, x, y, p2, p2 / icon.ratio(), p3);</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                            case commandPrint -&gt; {
+<b class="nc">&nbsp;                                var glyph = Fonts.logic.getData().getGlyph((char)p1);</b>
+<b class="nc">&nbsp;                                if(glyph != null){</b>
+<b class="nc">&nbsp;                                    Tmp.tr1.set(Fonts.logic.getRegion().texture);</b>
+<b class="nc">&nbsp;                                    Tmp.tr1.set(glyph.u, glyph.v2, glyph.u2, glyph.v);</b>
+&nbsp;
+<b class="nc">&nbsp;                                    Draw.rect(Tmp.tr1, x + Tmp.tr1.width/2f + glyph.xoffset, y + Tmp.tr1.height/2f + glyph.yoffset + Fonts.logic.getData().capHeight + Fonts.logic.getData().ascent, Tmp.tr1.width, Tmp.tr1.height);</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                            case commandTranslate -&gt; Draw.trans((transform == null ? (transform = new Mat()) : transform).translate(x, y));</b>
+<b class="nc">&nbsp;                            case commandScale -&gt; Draw.trans((transform == null ? (transform = new Mat()) : transform).scale(x * scaleStep, y * scaleStep));</b>
+<b class="nc">&nbsp;                            case commandRotate-&gt; Draw.trans((transform == null ? (transform = new Mat()) : transform).rotate(p1));</b>
+<b class="nc">&nbsp;                            case commandResetTransform -&gt; Draw.trans((transform == null ? (transform = new Mat()) : transform).idt());</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    buffer.end();</b>
+<b class="nc">&nbsp;                    Draw.proj(Tmp.m1);</b>
+<b class="nc">&nbsp;                    Draw.trans(Tmp.m2);</b>
+<b class="nc">&nbsp;                    Draw.reset();</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.blend(Blending.disabled);</b>
+<b class="nc">&nbsp;            Draw.draw(Draw.z(), () -&gt; {</b>
+<b class="nc">&nbsp;                if(buffer != null){</b>
+<b class="nc">&nbsp;                    Draw.rect(Draw.wrap(buffer.getTexture()), x, y, buffer.getWidth() * scaleFactor * Draw.scl, -buffer.getHeight() * scaleFactor * Draw.scl);</b>
+&nbsp;                }
+&nbsp;            });
+<b class="nc">&nbsp;            Draw.blend();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(transform != null){</b>
+<b class="nc">&nbsp;                write.bool(true);</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; transform.val.length; i++){</b>
+<b class="nc">&nbsp;                    write.f(transform.val[i]);</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="fc">&nbsp;                write.bool(false);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                boolean hasTransform = read.bool();</b>
+<b class="fc">&nbsp;                if(hasTransform){</b>
+<b class="nc">&nbsp;                    transform = new Mat();</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; transform.val.length; i++){</b>
+<b class="nc">&nbsp;                        transform.val[i] = read.f();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void remove(){
+<b class="fc">&nbsp;            super.remove();</b>
+<b class="fc">&nbsp;            if(buffer != null){</b>
+<b class="nc">&nbsp;                buffer.dispose();</b>
+<b class="nc">&nbsp;                buffer = null;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static int unpackSign(int value){
+<b class="nc">&nbsp;        return (value &amp; 0b0111111111) * ((value &amp; (0b1000000000)) != 0 ? -1 : 1);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public enum GraphicsType{</b>
+<b class="nc">&nbsp;        clear,</b>
+<b class="nc">&nbsp;        color,</b>
+&nbsp;        //virtual
+<b class="nc">&nbsp;        col,</b>
+<b class="nc">&nbsp;        stroke,</b>
+<b class="nc">&nbsp;        line,</b>
+<b class="nc">&nbsp;        rect,</b>
+<b class="nc">&nbsp;        lineRect,</b>
+<b class="nc">&nbsp;        poly,</b>
+<b class="nc">&nbsp;        linePoly,</b>
+<b class="nc">&nbsp;        triangle,</b>
+<b class="nc">&nbsp;        image,</b>
+&nbsp;        //note that this command actually only draws 1 character, unpacked in instruction
+<b class="nc">&nbsp;        print,</b>
+<b class="nc">&nbsp;        translate,</b>
+<b class="nc">&nbsp;        scale,</b>
+<b class="nc">&nbsp;        rotate,</b>
+<b class="nc">&nbsp;        reset</b>
+&nbsp;        ;
+&nbsp;
+<b class="nc">&nbsp;        public static final GraphicsType[] all = values();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Struct
+<b class="nc">&nbsp;    static class DisplayCmdStruct{</b>
+&nbsp;        @StructField(4)
+&nbsp;        public int type;
+&nbsp;
+&nbsp;        //at least 9 bits are required for full 360 degrees
+&nbsp;        @StructField(10)
+&nbsp;        public int x, y, p1, p2, p3, p4;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

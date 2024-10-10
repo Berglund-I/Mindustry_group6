@@ -1,0 +1,310 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > PowerGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.power</a>
+</div>
+
+<h1>Coverage Summary for Class: PowerGenerator (mindustry.world.blocks.power)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PowerGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (3/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63.3%
+  </span>
+  <span class="absValue">
+    (19/30)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PowerGenerator$GeneratorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.7%
+  </span>
+  <span class="absValue">
+    (5/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.4%
+  </span>
+  <span class="absValue">
+    (11/32)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    34.8%
+  </span>
+  <span class="absValue">
+    (8/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48.4%
+  </span>
+  <span class="absValue">
+    (30/62)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.power;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.draw.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class PowerGenerator extends PowerDistributor{
+&nbsp;    /** The amount of power produced per tick in case of an efficiency of 1.0, which represents 100%. */
+&nbsp;    public float powerProduction;
+<b class="fc">&nbsp;    public Stat generationType = Stat.basePowerGeneration;</b>
+<b class="fc">&nbsp;    public DrawBlock drawer = new DrawDefault();</b>
+&nbsp;
+<b class="fc">&nbsp;    public int explosionRadius = 12;</b>
+<b class="fc">&nbsp;    public int explosionDamage = 0;</b>
+<b class="fc">&nbsp;    public Effect explodeEffect = Fx.none;</b>
+<b class="fc">&nbsp;    public Sound explodeSound = Sounds.none;</b>
+&nbsp;
+<b class="fc">&nbsp;    public int explosionPuddles = 10;</b>
+<b class="fc">&nbsp;    public float explosionPuddleRange = tilesize * 2f;</b>
+<b class="fc">&nbsp;    public float explosionPuddleAmount = 100f;</b>
+&nbsp;    public @Nullable Liquid explosionPuddleLiquid;
+<b class="fc">&nbsp;    public float explosionMinWarmup = 0f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float explosionShake = 0f, explosionShakeDuration = 6f;</b>
+&nbsp;
+&nbsp;    public PowerGenerator(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        sync = true;</b>
+<b class="fc">&nbsp;        baseExplosiveness = 5f;</b>
+<b class="fc">&nbsp;        flags = EnumSet.of(BlockFlag.generator);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getDisplayedPowerProduction(){
+<b class="nc">&nbsp;        return powerProduction;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return drawer.finalIcons(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        super.load();</b>
+<b class="nc">&nbsp;        drawer.load(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+<b class="nc">&nbsp;        stats.add(generationType, powerProduction * 60.0f, StatUnit.powerSecond);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+&nbsp;
+<b class="fc">&nbsp;        if(hasPower &amp;&amp; outputsPower){</b>
+<b class="fc">&nbsp;            addBar(&quot;power&quot;, (GeneratorBuild entity) -&gt; new Bar(() -&gt;</b>
+<b class="nc">&nbsp;            Core.bundle.format(&quot;bar.poweroutput&quot;,</b>
+<b class="nc">&nbsp;            Strings.fixed(entity.getPowerProduction() * 60 * entity.timeScale(), 1)),</b>
+<b class="nc">&nbsp;            () -&gt; Pal.powerBar,</b>
+<b class="nc">&nbsp;            () -&gt; entity.productionEfficiency));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        drawer.drawPlan(this, plan, list);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class GeneratorBuild extends Building{</b>
+&nbsp;        public float generateTime;
+&nbsp;        /** The efficiency of the producer. An efficiency of 1.0 means 100% */
+<b class="fc">&nbsp;        public float productionEfficiency = 0.0f;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            drawer.draw(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float warmup(){
+<b class="nc">&nbsp;            return enabled ? productionEfficiency : 0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onDestroyed(){
+<b class="nc">&nbsp;            super.onDestroyed();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(state.rules.reactorExplosions){</b>
+<b class="nc">&nbsp;                createExplosion();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean shouldExplode(){
+<b class="nc">&nbsp;            return warmup() &gt;= explosionMinWarmup;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void createExplosion(){
+<b class="nc">&nbsp;            if(shouldExplode()){</b>
+<b class="nc">&nbsp;                if(explosionDamage &gt; 0){</b>
+<b class="nc">&nbsp;                    Damage.damage(x, y, explosionRadius * tilesize, explosionDamage);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                explodeEffect.at(this);</b>
+<b class="nc">&nbsp;                explodeSound.at(this);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(explosionPuddleLiquid != null){</b>
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; explosionPuddles; i++){</b>
+<b class="nc">&nbsp;                        Tmp.v1.trns(Mathf.random(360f), Mathf.random(explosionPuddleRange));</b>
+<b class="nc">&nbsp;                        Tile tile = world.tileWorld(x + Tmp.v1.x, y + Tmp.v1.y);</b>
+<b class="nc">&nbsp;                        Puddles.deposit(tile, explosionPuddleLiquid, explosionPuddleAmount);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(explosionShake &gt; 0){</b>
+<b class="nc">&nbsp;                    Effect.shake(explosionShake, explosionShakeDuration, this);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawLight(){
+<b class="nc">&nbsp;            super.drawLight();</b>
+<b class="nc">&nbsp;            drawer.drawLight(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float ambientVolume(){
+<b class="nc">&nbsp;            return Mathf.clamp(productionEfficiency);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float getPowerProduction(){
+<b class="fc">&nbsp;            return enabled ? powerProduction * productionEfficiency : 0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 1;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.f(productionEfficiency);</b>
+<b class="fc">&nbsp;            write.f(generateTime);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            productionEfficiency = read.f();</b>
+<b class="fc">&nbsp;            if(revision &gt;= 1){</b>
+<b class="fc">&nbsp;                generateTime = read.f();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

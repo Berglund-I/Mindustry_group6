@@ -1,0 +1,258 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > EditorMapsDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: EditorMapsDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EditorMapsDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/83)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class EditorMapsDialog extends MapListDialog{
+&nbsp;
+&nbsp;    public EditorMapsDialog(){
+<b class="nc">&nbsp;        super(&quot;@maps&quot;, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    void buildButtons(){
+<b class="nc">&nbsp;        buttons.button(&quot;@editor.newmap&quot;, Icon.add, () -&gt; {</b>
+<b class="nc">&nbsp;            ui.showTextInput(&quot;@editor.newmap&quot;, &quot;@editor.mapname&quot;, &quot;&quot;, text -&gt; {</b>
+<b class="nc">&nbsp;                Runnable show = () -&gt; ui.loadAnd(() -&gt; {</b>
+<b class="nc">&nbsp;                    hide();</b>
+<b class="nc">&nbsp;                    ui.editor.show();</b>
+<b class="nc">&nbsp;                    editor.tags.put(&quot;name&quot;, text);</b>
+<b class="nc">&nbsp;                    Events.fire(new MapMakeEvent());</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                if(maps.byName(text) != null){</b>
+<b class="nc">&nbsp;                    ui.showErrorMessage(&quot;@editor.exists&quot;);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    show.run();</b>
+&nbsp;                }
+&nbsp;            });
+<b class="nc">&nbsp;        }).size(210f, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@editor.importmap&quot;, Icon.upload, () -&gt; {</b>
+<b class="nc">&nbsp;            platform.showFileChooser(true, mapExtension, file -&gt; {</b>
+<b class="nc">&nbsp;                ui.loadAnd(() -&gt; {</b>
+<b class="nc">&nbsp;                    maps.tryCatchMapError(() -&gt; {</b>
+<b class="nc">&nbsp;                        if(MapIO.isImage(file)){</b>
+<b class="nc">&nbsp;                            ui.showErrorMessage(&quot;@editor.errorimage&quot;);</b>
+&nbsp;                            return;
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        Map map = MapIO.createMap(file, true);</b>
+&nbsp;
+&nbsp;                        //when you attempt to import a save, it will have no name, so generate one
+<b class="nc">&nbsp;                        String name = map.tags.get(&quot;name&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                            String result = &quot;unknown&quot;;</b>
+<b class="nc">&nbsp;                            int number = 0;</b>
+<b class="nc">&nbsp;                            while(maps.byName(result + number++) != null) ;</b>
+<b class="nc">&nbsp;                            return result + number;</b>
+&nbsp;                        });
+&nbsp;
+&nbsp;                        //this will never actually get called, but it remains just in case
+<b class="nc">&nbsp;                        if(name == null){</b>
+<b class="nc">&nbsp;                            ui.showErrorMessage(&quot;@editor.errorname&quot;);</b>
+&nbsp;                            return;
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        Map conflict = maps.all().find(m -&gt; m.name().equals(name));</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(conflict != null &amp;&amp; !conflict.custom){</b>
+<b class="nc">&nbsp;                            ui.showInfo(Core.bundle.format(&quot;editor.import.exists&quot;, name));</b>
+<b class="nc">&nbsp;                        }else if(conflict != null){</b>
+<b class="nc">&nbsp;                            ui.showConfirm(&quot;@confirm&quot;, Core.bundle.format(&quot;editor.overwrite.confirm&quot;, map.name()), () -&gt; {</b>
+<b class="nc">&nbsp;                                maps.tryCatchMapError(() -&gt; {</b>
+<b class="nc">&nbsp;                                    maps.removeMap(conflict);</b>
+<b class="nc">&nbsp;                                    maps.importMap(map.file);</b>
+<b class="nc">&nbsp;                                    setup();</b>
+&nbsp;                                });
+&nbsp;                            });
+&nbsp;                        }else{
+<b class="nc">&nbsp;                            maps.importMap(map.file);</b>
+<b class="nc">&nbsp;                            setup();</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                    });
+&nbsp;                });
+&nbsp;            });
+<b class="nc">&nbsp;        }).size(210f, 64f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    void showMap(Map map){
+<b class="nc">&nbsp;        BaseDialog dialog = activeDialog = new BaseDialog(&quot;@editor.mapinfo&quot;);</b>
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+&nbsp;
+<b class="nc">&nbsp;        float mapsize = Core.graphics.isPortrait() ? 160f : 300f;</b>
+<b class="nc">&nbsp;        Table table = dialog.cont;</b>
+&nbsp;
+<b class="nc">&nbsp;        table.stack(new Image(map.safeTexture()).setScaling(Scaling.fit), new BorderImage(map.safeTexture()).setScaling(Scaling.fit)).size(mapsize);</b>
+&nbsp;
+<b class="nc">&nbsp;        table.table(Styles.black, desc -&gt; {</b>
+<b class="nc">&nbsp;            desc.top();</b>
+<b class="nc">&nbsp;            Table t = new Table();</b>
+<b class="nc">&nbsp;            t.margin(6);</b>
+&nbsp;
+<b class="nc">&nbsp;            ScrollPane pane = new ScrollPane(t);</b>
+<b class="nc">&nbsp;            desc.add(pane).grow();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.top();</b>
+<b class="nc">&nbsp;            t.defaults().padTop(10).left();</b>
+&nbsp;
+<b class="nc">&nbsp;            t.add(&quot;@editor.mapname&quot;).padRight(10).color(Color.gray).padTop(0);</b>
+<b class="nc">&nbsp;            t.row();</b>
+<b class="nc">&nbsp;            t.add(map.name()).growX().wrap().padTop(2);</b>
+<b class="nc">&nbsp;            t.row();</b>
+<b class="nc">&nbsp;            t.add(&quot;@editor.author&quot;).padRight(10).color(Color.gray);</b>
+<b class="nc">&nbsp;            t.row();</b>
+<b class="nc">&nbsp;            t.add(!map.custom &amp;&amp; map.tags.get(&quot;author&quot;, &quot;&quot;).isEmpty() ? &quot;Anuke&quot; : map.author()).growX().wrap().padTop(2);</b>
+<b class="nc">&nbsp;            t.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!map.tags.get(&quot;description&quot;, &quot;&quot;).isEmpty()){</b>
+<b class="nc">&nbsp;                t.add(&quot;@editor.description&quot;).padRight(10).color(Color.gray).top();</b>
+<b class="nc">&nbsp;                t.row();</b>
+<b class="nc">&nbsp;                t.add(map.description()).growX().wrap().padTop(2);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }).height(mapsize).width(mapsize);</b>
+&nbsp;
+<b class="nc">&nbsp;        table.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        table.button(&quot;@editor.openin&quot;, Icon.export, () -&gt; {</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                Vars.ui.editor.beginEditMap(map.file);</b>
+<b class="nc">&nbsp;                dialog.hide();</b>
+<b class="nc">&nbsp;                hide();</b>
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                Log.err(e);</b>
+<b class="nc">&nbsp;                ui.showErrorMessage(&quot;@error.mapnotfound&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }).fillX().height(54f).marginLeft(10);</b>
+&nbsp;
+<b class="nc">&nbsp;        table.button(map.workshop &amp;&amp; steam ? &quot;@view.workshop&quot; : &quot;@delete&quot;, map.workshop &amp;&amp; steam ? Icon.link : Icon.trash, () -&gt; {</b>
+<b class="nc">&nbsp;            if(map.workshop &amp;&amp; steam){</b>
+<b class="nc">&nbsp;                platform.viewListing(map);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                ui.showConfirm(&quot;@confirm&quot;, Core.bundle.format(&quot;map.delete&quot;, map.name()), () -&gt; {</b>
+<b class="nc">&nbsp;                    maps.removeMap(map);</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                    setup();</b>
+&nbsp;                });
+&nbsp;            }
+<b class="nc">&nbsp;        }).fillX().height(54f).marginLeft(10).disabled(!map.workshop &amp;&amp; !map.custom);</b>
+&nbsp;
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

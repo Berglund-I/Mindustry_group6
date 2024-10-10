@@ -1,0 +1,1847 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ControlPathfinder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ai</a>
+</div>
+
+<h1>Coverage Summary for Class: ControlPathfinder (mindustry.ai)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ControlPathfinder</td>
+<td class="coverageStat">
+  <span class="percent">
+    21.9%
+  </span>
+  <span class="absValue">
+    (14/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.2%
+  </span>
+  <span class="absValue">
+    (82/732)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ControlPathfinder$Cluster</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ControlPathfinder$FieldCache</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ControlPathfinder$FieldIndexStruct</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ControlPathfinder$IntraEdgeStruct</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ControlPathfinder$NodeIndexStruct</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ControlPathfinder$PathRequest</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (14/70)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10.8%
+  </span>
+  <span class="absValue">
+    (82/760)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ai;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.ai.Pathfinder.*;
+&nbsp;
+&nbsp;//https://webdocs.cs.ualberta.ca/~mmueller/ps/hpastar.pdf
+&nbsp;//https://www.gameaipro.com/GameAIPro/GameAIPro_Chapter23_Crowd_Pathfinding_and_Steering_Using_Flow_Field_Tiles.pdf
+&nbsp;public class ControlPathfinder implements Runnable{
+&nbsp;    private static final int wallImpassableCap = 1_000_000;
+&nbsp;    private static final int solidCap = 7000;
+&nbsp;
+&nbsp;    public static boolean showDebug;
+&nbsp;
+&nbsp;    public static final PathCost
+&nbsp;
+<b class="fc">&nbsp;    costGround = (team, tile) -&gt;</b>
+&nbsp;    //deep is impassable
+<b class="nc">&nbsp;    PathTile.allDeep(tile) ? impassable :</b>
+&nbsp;    //impassable same-team or neutral block
+<b class="nc">&nbsp;    PathTile.solid(tile) &amp;&amp; ((PathTile.team(tile) == team &amp;&amp; !PathTile.teamPassable(tile)) || PathTile.team(tile) == 0) ? impassable :</b>
+&nbsp;    //impassable synthetic enemy block
+<b class="nc">&nbsp;    ((PathTile.team(tile) != team &amp;&amp; PathTile.team(tile) != 0) &amp;&amp; PathTile.solid(tile) ? wallImpassableCap : 0) +</b>
+&nbsp;    1 +
+<b class="nc">&nbsp;    (PathTile.nearSolid(tile) ? 6 : 0) +</b>
+<b class="nc">&nbsp;    (PathTile.nearLiquid(tile) ? 8 : 0) +</b>
+<b class="nc">&nbsp;    (PathTile.deep(tile) ? 6000 : 0) +</b>
+<b class="nc">&nbsp;    (PathTile.damages(tile) ? 50 : 0),</b>
+&nbsp;
+&nbsp;    //same as ground but ignores liquids/deep stuff
+<b class="fc">&nbsp;    costHover = (team, tile) -&gt;</b>
+&nbsp;    //impassable same-team or neutral block
+<b class="nc">&nbsp;    PathTile.solid(tile) &amp;&amp; ((PathTile.team(tile) == team &amp;&amp; !PathTile.teamPassable(tile)) || PathTile.team(tile) == 0) ? impassable :</b>
+&nbsp;    //impassable synthetic enemy block
+<b class="nc">&nbsp;    ((PathTile.team(tile) != team &amp;&amp; PathTile.team(tile) != 0) &amp;&amp; PathTile.solid(tile) ? wallImpassableCap : 0) +</b>
+&nbsp;    1 +
+<b class="nc">&nbsp;    (PathTile.nearSolid(tile) ? 6 : 0),</b>
+&nbsp;
+<b class="fc">&nbsp;    costLegs = (team, tile) -&gt;</b>
+<b class="nc">&nbsp;    PathTile.legSolid(tile) ? impassable : 1 +</b>
+<b class="nc">&nbsp;    (PathTile.deep(tile) ? 6000 : 0) +</b>
+<b class="nc">&nbsp;    (PathTile.nearLegSolid(tile) ? 3 : 0),</b>
+&nbsp;
+<b class="fc">&nbsp;    costNaval = (team, tile) -&gt;</b>
+&nbsp;    //impassable same-team neutral block, or non-liquid
+<b class="nc">&nbsp;    (PathTile.solid(tile) &amp;&amp; ((PathTile.team(tile) == team &amp;&amp; !PathTile.teamPassable(tile)) || PathTile.team(tile) == 0)) ? impassable :</b>
+<b class="nc">&nbsp;    (!PathTile.liquid(tile) ? 6000 : 1) +</b>
+&nbsp;    //impassable synthetic enemy block
+<b class="nc">&nbsp;    ((PathTile.team(tile) != team &amp;&amp; PathTile.team(tile) != 0) &amp;&amp; PathTile.solid(tile) ? wallImpassableCap : 0) +</b>
+<b class="nc">&nbsp;    (PathTile.nearGround(tile) || PathTile.nearSolid(tile) ? 6 : 0);</b>
+&nbsp;
+&nbsp;    public static final int
+&nbsp;    costIdGround = 0,
+&nbsp;    costIdHover = 1,
+&nbsp;    costIdLegs = 2,
+&nbsp;    costIdNaval = 3;
+&nbsp;
+<b class="fc">&nbsp;    public static final Seq&lt;PathCost&gt; costTypes = Seq.with(</b>
+&nbsp;    costGround,
+&nbsp;    costHover,
+&nbsp;    costLegs,
+&nbsp;    costNaval
+&nbsp;    );
+&nbsp;
+<b class="fc">&nbsp;    private static final long maxUpdate = Time.millisToNanos(12);</b>
+&nbsp;    private static final int updateStepInterval = 200;
+&nbsp;    private static final int updateFPS = 30;
+&nbsp;    private static final int updateInterval = 1000 / updateFPS, invalidateCheckInterval = 1000;
+&nbsp;
+&nbsp;    static final int clusterSize = 12;
+&nbsp;
+<b class="fc">&nbsp;    static final int[] offsets = {</b>
+&nbsp;    1, 0, //right: bottom to top
+&nbsp;    0, 1, //top: left to right
+&nbsp;    0, 0, //left: bottom to top
+&nbsp;    0, 0  //bottom: left to right
+&nbsp;    };
+&nbsp;
+<b class="fc">&nbsp;    static final int[] moveDirs = {</b>
+&nbsp;    0, 1,
+&nbsp;    1, 0,
+&nbsp;    0, 1,
+&nbsp;    1, 0
+&nbsp;    };
+&nbsp;
+<b class="fc">&nbsp;    static final int[] nextOffsets = {</b>
+&nbsp;    1, 0,
+&nbsp;    0, 1,
+&nbsp;    -1, 0,
+&nbsp;    0, -1
+&nbsp;    };
+&nbsp;
+&nbsp;    //maps team -&gt; pathCost -&gt; flattened array of clusters in 2D
+&nbsp;    //(what about teams? different path costs?)
+&nbsp;    Cluster[][][] clusters;
+&nbsp;
+&nbsp;    int cwidth, cheight;
+&nbsp;
+&nbsp;    //temporarily used for resolving connections for intra-edges
+<b class="fc">&nbsp;    IntSet usedEdges = new IntSet();</b>
+&nbsp;    //tasks to run on pathfinding thread
+<b class="fc">&nbsp;    TaskQueue queue = new TaskQueue();</b>
+&nbsp;
+&nbsp;    //individual requests based on unit - MAIN THREAD ONLY
+<b class="fc">&nbsp;    ObjectMap&lt;Unit, PathRequest&gt; unitRequests = new ObjectMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    Seq&lt;PathRequest&gt; threadPathRequests = new Seq&lt;&gt;(false);</b>
+&nbsp;
+&nbsp;    //TODO: very dangerous usage;
+&nbsp;    //TODO - it is accessed from the main thread
+&nbsp;    //TODO - it is written to on the pathfinding thread
+&nbsp;    //maps position in world in (x + y * width format) | path type | team (bitpacked to long with FieldIndex.get) to a cache of flow fields
+<b class="fc">&nbsp;    LongMap&lt;FieldCache&gt; fields = new LongMap&lt;&gt;();</b>
+&nbsp;    //MAIN THREAD ONLY
+<b class="fc">&nbsp;    Seq&lt;FieldCache&gt; fieldList = new Seq&lt;&gt;(false);</b>
+&nbsp;
+&nbsp;    //these are for inner edge A* (temporary!)
+<b class="fc">&nbsp;    IntFloatMap innerCosts = new IntFloatMap();</b>
+<b class="fc">&nbsp;    PathfindQueue innerFrontier = new PathfindQueue();</b>
+&nbsp;
+&nbsp;    //ONLY modify on pathfinding thread.
+<b class="fc">&nbsp;    IntSet clustersToUpdate = new IntSet();</b>
+<b class="fc">&nbsp;    IntSet clustersToInnerUpdate = new IntSet();</b>
+&nbsp;
+&nbsp;    //PATHFINDING THREAD - requests that should be recomputed
+<b class="fc">&nbsp;    ObjectSet&lt;PathRequest&gt; invalidRequests = new ObjectSet&lt;&gt;();</b>
+&nbsp;
+&nbsp;    /** Current pathfinding thread */
+&nbsp;    @Nullable Thread thread;
+&nbsp;
+&nbsp;    //path requests are per-unit
+&nbsp;    static class PathRequest{
+&nbsp;        final Unit unit;
+&nbsp;        final int destination, team, costId;
+&nbsp;        //resulting path of nodes
+<b class="nc">&nbsp;        final IntSeq resultPath = new IntSeq();</b>
+&nbsp;
+&nbsp;        //node index -&gt; total cost
+<b class="nc">&nbsp;        @Nullable IntFloatMap costs = new IntFloatMap();</b>
+&nbsp;        //node index (NodeIndex struct) -&gt; node it came from TODO merge them, make properties of FieldCache?
+<b class="nc">&nbsp;        @Nullable IntIntMap cameFrom = new IntIntMap();</b>
+&nbsp;        //frontier for A*
+<b class="nc">&nbsp;        @Nullable PathfindQueue frontier = new PathfindQueue();</b>
+&nbsp;
+&nbsp;        //main thread only!
+<b class="nc">&nbsp;        long lastUpdateId = state.updateId;</b>
+&nbsp;
+&nbsp;        //both threads
+<b class="nc">&nbsp;        volatile boolean notFound = false;</b>
+<b class="nc">&nbsp;        volatile boolean invalidated = false;</b>
+&nbsp;        //old field assigned before everything was recomputed
+&nbsp;        @Nullable volatile FieldCache oldCache;
+&nbsp;
+<b class="nc">&nbsp;        boolean lastRaycastResult = false;</b>
+&nbsp;        int lastRaycastTile, lastWorldUpdate;
+&nbsp;        int lastTile;
+&nbsp;        @Nullable Tile lastTargetTile;
+&nbsp;
+<b class="nc">&nbsp;        PathRequest(Unit unit, int team, int costId, int destination){</b>
+<b class="nc">&nbsp;            this.unit = unit;</b>
+<b class="nc">&nbsp;            this.costId = costId;</b>
+<b class="nc">&nbsp;            this.team = team;</b>
+<b class="nc">&nbsp;            this.destination = destination;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static class FieldCache{
+&nbsp;        final PathCost cost;
+&nbsp;        final int costId;
+&nbsp;        final int team;
+&nbsp;        final int goalPos;
+&nbsp;        //frontier for flow fields
+<b class="nc">&nbsp;        final IntQueue frontier = new IntQueue();</b>
+&nbsp;        //maps cluster index to field weights; 0 means uninitialized
+<b class="nc">&nbsp;        final IntMap&lt;int[]&gt; fields = new IntMap&lt;&gt;();</b>
+&nbsp;        //packed (goalPos | costId | team) long key to use in the global fields map
+&nbsp;        final long mapKey;
+&nbsp;
+&nbsp;        //main thread only!
+<b class="nc">&nbsp;        long lastUpdateId = state.updateId;</b>
+&nbsp;
+&nbsp;        //TODO: how are the nodes merged? CAN they be merged?
+&nbsp;
+<b class="nc">&nbsp;        FieldCache(PathCost cost, int costId, int team, int goalPos){</b>
+<b class="nc">&nbsp;            this.cost = cost;</b>
+<b class="nc">&nbsp;            this.team = team;</b>
+<b class="nc">&nbsp;            this.goalPos = goalPos;</b>
+<b class="nc">&nbsp;            this.costId = costId;</b>
+<b class="nc">&nbsp;            this.mapKey = FieldIndex.get(goalPos, costId, team);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static class Cluster{</b>
+<b class="nc">&nbsp;        IntSeq[] portals = new IntSeq[4];</b>
+&nbsp;        //maps rotation + index of portal to list of IntraEdge objects
+<b class="nc">&nbsp;        LongSeq[][] portalConnections = new LongSeq[4][];</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ControlPathfinder(){</b>
+&nbsp;
+<b class="fc">&nbsp;        Events.on(ResetEvent.class, event -&gt; stop());</b>
+&nbsp;
+<b class="fc">&nbsp;        Events.on(WorldLoadEvent.class, event -&gt; {</b>
+<b class="fc">&nbsp;            stop();</b>
+&nbsp;
+&nbsp;            //TODO: can the pathfinding thread even see these?
+<b class="fc">&nbsp;            unitRequests = new ObjectMap&lt;&gt;();</b>
+<b class="fc">&nbsp;            fields = new LongMap&lt;&gt;();</b>
+<b class="fc">&nbsp;            fieldList = new Seq&lt;&gt;(false);</b>
+&nbsp;
+<b class="fc">&nbsp;            clusters = new Cluster[256][][];</b>
+<b class="fc">&nbsp;            cwidth = Mathf.ceil((float)world.width() / clusterSize);</b>
+<b class="fc">&nbsp;            cheight = Mathf.ceil((float)world.height() / clusterSize);</b>
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;            start();</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(TileChangeEvent.class, e -&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;            updateTile(e.tile);</b>
+&nbsp;
+&nbsp;            //TODO: recalculate affected flow fields? or just all of them? how to reflow?
+&nbsp;        });
+&nbsp;
+&nbsp;        //invalidate paths
+<b class="fc">&nbsp;        Events.run(Trigger.update, () -&gt; {</b>
+<b class="nc">&nbsp;            for(var req : unitRequests.values()){</b>
+&nbsp;                //skipped N update -&gt; drop it
+<b class="nc">&nbsp;                if(req.lastUpdateId &lt;= state.updateId - 10 || !req.unit.isAdded()){</b>
+<b class="nc">&nbsp;                    req.invalidated = true;</b>
+&nbsp;                    //concurrent modification!
+<b class="nc">&nbsp;                    queue.post(() -&gt; threadPathRequests.remove(req));</b>
+<b class="nc">&nbsp;                    Core.app.post(() -&gt; unitRequests.remove(req.unit));</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            for(var field : fieldList){</b>
+&nbsp;                //skipped N update -&gt; drop it
+<b class="nc">&nbsp;                if(field.lastUpdateId &lt;= state.updateId - 30){</b>
+&nbsp;                    //make sure it&#39;s only modified on the main thread...? but what about calling get() on this thread??
+<b class="nc">&nbsp;                    queue.post(() -&gt; fields.remove(field.mapKey));</b>
+<b class="nc">&nbsp;                    Core.app.post(() -&gt; fieldList.remove(field));</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        if(showDebug){</b>
+<b class="nc">&nbsp;            Events.run(Trigger.draw, () -&gt; {</b>
+<b class="nc">&nbsp;                int team = player.team().id;</b>
+<b class="nc">&nbsp;                int cost = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.draw(Layer.overlayUI, () -&gt; {</b>
+<b class="nc">&nbsp;                    Lines.stroke(1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(clusters[team] != null &amp;&amp; clusters[team][cost] != null){</b>
+<b class="nc">&nbsp;                        for(int cx = 0; cx &lt; cwidth; cx++){</b>
+<b class="nc">&nbsp;                            for(int cy = 0; cy &lt; cheight; cy++){</b>
+&nbsp;
+<b class="nc">&nbsp;                                var cluster = clusters[team][cost][cy * cwidth + cx];</b>
+<b class="nc">&nbsp;                                if(cluster != null){</b>
+<b class="nc">&nbsp;                                    Lines.stroke(0.5f);</b>
+<b class="nc">&nbsp;                                    Draw.color(Color.gray);</b>
+<b class="nc">&nbsp;                                    Lines.stroke(1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                                    Lines.rect(cx * clusterSize * tilesize - tilesize/2f, cy * clusterSize * tilesize - tilesize/2f, clusterSize * tilesize, clusterSize * tilesize);</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;                                    for(int d = 0; d &lt; 4; d++){</b>
+<b class="nc">&nbsp;                                        IntSeq portals = cluster.portals[d];</b>
+<b class="nc">&nbsp;                                        if(portals != null){</b>
+&nbsp;
+<b class="nc">&nbsp;                                            for(int i = 0; i &lt; portals.size; i++){</b>
+<b class="nc">&nbsp;                                                int pos = portals.items[i];</b>
+<b class="nc">&nbsp;                                                int from = Point2.x(pos), to = Point2.y(pos);</b>
+<b class="nc">&nbsp;                                                float width = tilesize * (Math.abs(from - to) + 1), height = tilesize;</b>
+&nbsp;
+<b class="nc">&nbsp;                                                portalToVec(cluster, cx, cy, d, i, Tmp.v1);</b>
+&nbsp;
+<b class="nc">&nbsp;                                                Draw.color(Color.brown);</b>
+<b class="nc">&nbsp;                                                Lines.ellipse(30, Tmp.v1.x, Tmp.v1.y, width / 2f, height / 2f, d * 90f - 90f);</b>
+&nbsp;
+<b class="nc">&nbsp;                                                LongSeq connections = cluster.portalConnections[d] == null ? null : cluster.portalConnections[d][i];</b>
+&nbsp;
+<b class="nc">&nbsp;                                                if(connections != null){</b>
+<b class="nc">&nbsp;                                                    Draw.color(Color.forest);</b>
+<b class="nc">&nbsp;                                                    for(int coni = 0; coni &lt; connections.size; coni ++){</b>
+<b class="nc">&nbsp;                                                        long con = connections.items[coni];</b>
+&nbsp;
+<b class="nc">&nbsp;                                                        portalToVec(cluster, cx, cy, IntraEdge.dir(con), IntraEdge.portal(con), Tmp.v2);</b>
+&nbsp;
+&nbsp;                                                        float
+<b class="nc">&nbsp;                                                        x1 = Tmp.v1.x, y1 = Tmp.v1.y,</b>
+<b class="nc">&nbsp;                                                        x2 = Tmp.v2.x, y2 = Tmp.v2.y;</b>
+<b class="nc">&nbsp;                                                        Lines.line(x1, y1, x2, y2);</b>
+&nbsp;
+&nbsp;                                                    }
+&nbsp;                                                }
+&nbsp;                                            }
+&nbsp;                                        }
+&nbsp;                                    }
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    for(var fields : fieldList){</b>
+&nbsp;                        try{
+<b class="nc">&nbsp;                            for(var entry : fields.fields){</b>
+<b class="nc">&nbsp;                                int cx = entry.key % cwidth, cy = entry.key / cwidth;</b>
+<b class="nc">&nbsp;                                for(int y = 0; y &lt; clusterSize; y++){</b>
+<b class="nc">&nbsp;                                    for(int x = 0; x &lt; clusterSize; x++){</b>
+<b class="nc">&nbsp;                                        int value = entry.value[x + y * clusterSize];</b>
+<b class="nc">&nbsp;                                        Tmp.c1.a = 1f;</b>
+<b class="nc">&nbsp;                                        Lines.stroke(0.8f, Tmp.c1.fromHsv(value * 3f, 1f, 1f));</b>
+<b class="nc">&nbsp;                                        Draw.alpha(0.5f);</b>
+<b class="nc">&nbsp;                                        Fill.square((x + cx * clusterSize) * tilesize, (y + cy * clusterSize) * tilesize, tilesize / 2f);</b>
+&nbsp;                                    }
+&nbsp;                                }
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        }catch(Exception ignored){} //probably has some concurrency issues when iterating but I don&#39;t care, this is for debugging</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                });
+&nbsp;
+<b class="nc">&nbsp;                Draw.reset();</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateTile(Tile tile){
+<b class="fc">&nbsp;        tile.getLinkedTiles(t -&gt; {</b>
+<b class="fc">&nbsp;            int x = t.x, y = t.y, mx = x % clusterSize, my = y % clusterSize, cx = x / clusterSize, cy = y / clusterSize, cluster = cx + cy * cwidth;</b>
+&nbsp;
+&nbsp;            //is at the edge of a cluster; this means the portals may have changed.
+<b class="fc">&nbsp;            if(mx == 0 || my == 0 || mx == clusterSize - 1 || my == clusterSize - 1){</b>
+&nbsp;
+<b class="fc">&nbsp;                if(mx == 0) queueClusterUpdate(cx - 1, cy); //left</b>
+<b class="fc">&nbsp;                if(my == 0) queueClusterUpdate(cx, cy - 1); //bottom</b>
+<b class="fc">&nbsp;                if(mx == clusterSize - 1) queueClusterUpdate(cx + 1, cy); //right</b>
+<b class="fc">&nbsp;                if(my == clusterSize - 1) queueClusterUpdate(cx, cy + 1); //top</b>
+&nbsp;
+<b class="fc">&nbsp;                queueClusterUpdate(cx, cy);</b>
+&nbsp;                //TODO: recompute edge clusters too.
+&nbsp;            }else{
+&nbsp;                //there is no need to recompute portals for block updates that are not on the edge.
+<b class="fc">&nbsp;                queue.post(() -&gt; clustersToInnerUpdate.add(cluster));</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    void queueClusterUpdate(int cx, int cy){
+<b class="fc">&nbsp;        if(cx &gt;= 0 &amp;&amp; cy &gt;= 0 &amp;&amp; cx &lt; cwidth &amp;&amp; cy &lt; cheight){</b>
+<b class="fc">&nbsp;            queue.post(() -&gt; clustersToUpdate.add(cx + cy * cwidth));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //debugging only!
+&nbsp;    void portalToVec(Cluster cluster, int cx, int cy, int direction, int portalIndex, Vec2 out){
+<b class="nc">&nbsp;        int pos = cluster.portals[direction].items[portalIndex];</b>
+<b class="nc">&nbsp;        int from = Point2.x(pos), to = Point2.y(pos);</b>
+<b class="nc">&nbsp;        int addX = moveDirs[direction * 2], addY = moveDirs[direction * 2 + 1];</b>
+<b class="nc">&nbsp;        float average = (from + to) / 2f;</b>
+&nbsp;
+&nbsp;        float
+<b class="nc">&nbsp;        x = (addX * average + cx * clusterSize + offsets[direction * 2] * (clusterSize - 1) + nextOffsets[direction * 2] / 2f) * tilesize,</b>
+<b class="nc">&nbsp;        y = (addY * average + cy * clusterSize + offsets[direction * 2 + 1] * (clusterSize - 1) + nextOffsets[direction * 2 + 1] / 2f) * tilesize;</b>
+&nbsp;
+<b class="nc">&nbsp;        out.set(x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Starts or restarts the pathfinding thread. */
+&nbsp;    private void start(){
+<b class="fc">&nbsp;        stop();</b>
+<b class="fc">&nbsp;        if(net.client()) return;</b>
+&nbsp;
+<b class="fc">&nbsp;        thread = new Thread(this, &quot;Control Pathfinder&quot;);</b>
+<b class="fc">&nbsp;        thread.setPriority(Thread.MIN_PRIORITY);</b>
+<b class="fc">&nbsp;        thread.setDaemon(true);</b>
+<b class="fc">&nbsp;        thread.start();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Stops the pathfinding thread. */
+&nbsp;    private void stop(){
+<b class="fc">&nbsp;        if(thread != null){</b>
+<b class="fc">&nbsp;            thread.interrupt();</b>
+<b class="fc">&nbsp;            thread = null;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        queue.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return a cluster at coordinates; can be null if not cluster was created yet*/
+&nbsp;    @Nullable Cluster getCluster(int team, int pathCost, int cx, int cy){
+<b class="nc">&nbsp;        return getCluster(team, pathCost, cx + cy * cwidth);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return a cluster at coordinates; can be null if not cluster was created yet*/
+&nbsp;    @Nullable Cluster getCluster(int team, int pathCost, int clusterIndex){
+<b class="nc">&nbsp;        if(clusters == null) return null;</b>
+&nbsp;
+<b class="nc">&nbsp;        Cluster[][] dim1 = clusters[team];</b>
+&nbsp;
+<b class="nc">&nbsp;        if(dim1 == null) return null;</b>
+&nbsp;
+<b class="nc">&nbsp;        Cluster[] dim2 = dim1[pathCost];</b>
+&nbsp;
+&nbsp;        //TODO: how can index out of bounds happen? || clusterIndex &gt;= dim2.length
+<b class="nc">&nbsp;        if(dim2 == null) return null;</b>
+&nbsp;
+<b class="nc">&nbsp;        return dim2[clusterIndex];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the cluster at specified coordinates; never null. */
+&nbsp;    Cluster getCreateCluster(int team, int pathCost, int cx, int cy){
+<b class="nc">&nbsp;        return getCreateCluster(team, pathCost, cx + cy * cwidth);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the cluster at specified coordinates; never null. */
+&nbsp;    Cluster getCreateCluster(int team, int pathCost, int clusterIndex){
+<b class="nc">&nbsp;        Cluster result = getCluster(team, pathCost, clusterIndex);</b>
+<b class="nc">&nbsp;        if(result == null){</b>
+<b class="nc">&nbsp;            return updateCluster(team, pathCost, clusterIndex % cwidth, clusterIndex / cwidth);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    Cluster updateCluster(int team, int pathCost, int cx, int cy){
+&nbsp;        //TODO: what if clusters are null for thread visibility reasons?
+&nbsp;
+<b class="nc">&nbsp;        Cluster[][] dim1 = clusters[team];</b>
+&nbsp;
+<b class="nc">&nbsp;        if(dim1 == null){</b>
+<b class="nc">&nbsp;            dim1 = clusters[team] = new Cluster[Team.all.length][];</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Cluster[] dim2 = dim1[pathCost];</b>
+&nbsp;
+<b class="nc">&nbsp;        if(dim2 == null){</b>
+<b class="nc">&nbsp;            dim2 = dim1[pathCost] = new Cluster[cwidth * cheight];</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Cluster cluster = dim2[cy * cwidth + cx];</b>
+<b class="nc">&nbsp;        if(cluster == null){</b>
+<b class="nc">&nbsp;            cluster = dim2[cy * cwidth + cx] = new Cluster();</b>
+&nbsp;        }else{
+&nbsp;            //reset data
+<b class="nc">&nbsp;            for(var p : cluster.portals){</b>
+<b class="nc">&nbsp;                if(p != null){</b>
+<b class="nc">&nbsp;                    p.clear();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        PathCost cost = idToCost(pathCost);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int direction = 0; direction &lt; 4; direction++){</b>
+<b class="nc">&nbsp;            int otherX = cx + Geometry.d4x(direction), otherY = cy + Geometry.d4y(direction);</b>
+&nbsp;            //out of bounds, no portals in this direction
+<b class="nc">&nbsp;            if(otherX &lt; 0 || otherY &lt; 0 || otherX &gt;= cwidth || otherY &gt;= cheight){</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Cluster other = dim2[otherX + otherY * cwidth];</b>
+&nbsp;            IntSeq portals;
+&nbsp;
+<b class="nc">&nbsp;            if(other == null){</b>
+&nbsp;                //create new portals at direction
+<b class="nc">&nbsp;                portals = cluster.portals[direction] = new IntSeq(4);</b>
+&nbsp;            }else{
+&nbsp;                //share portals with the other cluster
+<b class="nc">&nbsp;                portals = cluster.portals[direction] = other.portals[(direction + 2) % 4];</b>
+&nbsp;
+&nbsp;                //clear the portals, they&#39;re being recalculated now
+<b class="nc">&nbsp;                portals.clear();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            int addX = moveDirs[direction * 2], addY = moveDirs[direction * 2 + 1];</b>
+&nbsp;            int
+<b class="nc">&nbsp;            baseX = cx * clusterSize + offsets[direction * 2] * (clusterSize - 1),</b>
+<b class="nc">&nbsp;            baseY = cy * clusterSize + offsets[direction * 2 + 1] * (clusterSize - 1),</b>
+<b class="nc">&nbsp;            nextBaseX = baseX + Geometry.d4[direction].x,</b>
+<b class="nc">&nbsp;            nextBaseY = baseY + Geometry.d4[direction].y;</b>
+&nbsp;
+<b class="nc">&nbsp;            int lastPortal = -1;</b>
+<b class="nc">&nbsp;            boolean prevSolid = true;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; clusterSize; i++){</b>
+<b class="nc">&nbsp;                int x = baseX + addX * i, y = baseY + addY * i;</b>
+&nbsp;
+&nbsp;                //scan for portals
+<b class="nc">&nbsp;                if(solid(team, cost, x, y) || solid(team, cost, nextBaseX + addX * i, nextBaseY + addY * i)){</b>
+<b class="nc">&nbsp;                    int previous = i - 1;</b>
+&nbsp;                    //hit a wall, create portals between the two points
+<b class="nc">&nbsp;                    if(!prevSolid &amp;&amp; previous &gt;= lastPortal){</b>
+&nbsp;                        //portals are an inclusive range
+<b class="nc">&nbsp;                        portals.add(Point2.pack(previous, lastPortal));</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    prevSolid = true;</b>
+<b class="nc">&nbsp;                }else{</b>
+&nbsp;                    //empty area encountered, mark the location of portal start
+<b class="nc">&nbsp;                    if(prevSolid){</b>
+<b class="nc">&nbsp;                        lastPortal = i;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    prevSolid = false;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //at the end of the loop, close any un-initialized portals; this is copy pasted code
+<b class="nc">&nbsp;            int previous = clusterSize - 1;</b>
+<b class="nc">&nbsp;            if(!prevSolid &amp;&amp; previous &gt;= lastPortal){</b>
+&nbsp;                //portals are an inclusive range
+<b class="nc">&nbsp;                portals.add(Point2.pack(previous, lastPortal));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        updateInnerEdges(team, cost, cx, cy, cluster);</b>
+&nbsp;
+<b class="nc">&nbsp;        return cluster;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void updateInnerEdges(int team, int cost, int cx, int cy, Cluster cluster){
+<b class="nc">&nbsp;        updateInnerEdges(team, idToCost(cost), cx, cy, cluster);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void updateInnerEdges(int team, PathCost cost, int cx, int cy, Cluster cluster){
+<b class="nc">&nbsp;        int minX = cx * clusterSize, minY = cy * clusterSize, maxX = Math.min(minX + clusterSize - 1, wwidth - 1), maxY = Math.min(minY + clusterSize - 1, wheight - 1);</b>
+&nbsp;
+<b class="nc">&nbsp;        usedEdges.clear();</b>
+&nbsp;
+&nbsp;        //clear all connections, since portals changed, they need to be recomputed.
+<b class="nc">&nbsp;        cluster.portalConnections = new LongSeq[4][];</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int direction = 0; direction &lt; 4; direction++){</b>
+<b class="nc">&nbsp;            var portals = cluster.portals[direction];</b>
+<b class="nc">&nbsp;            if(portals == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            int addX = moveDirs[direction * 2], addY = moveDirs[direction * 2 + 1];</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; portals.size; i++){</b>
+<b class="nc">&nbsp;                usedEdges.add(Point2.pack(direction, i));</b>
+&nbsp;
+&nbsp;                int
+<b class="nc">&nbsp;                portal = portals.items[i],</b>
+<b class="nc">&nbsp;                from = Point2.x(portal), to = Point2.y(portal),</b>
+<b class="nc">&nbsp;                average = (from + to) / 2,</b>
+<b class="nc">&nbsp;                x = (addX * average + cx * clusterSize + offsets[direction * 2] * (clusterSize - 1)),</b>
+<b class="nc">&nbsp;                y = (addY * average + cy * clusterSize + offsets[direction * 2 + 1] * (clusterSize - 1));</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int otherDir = 0; otherDir &lt; 4; otherDir++){</b>
+<b class="nc">&nbsp;                    var otherPortals = cluster.portals[otherDir];</b>
+<b class="nc">&nbsp;                    if(otherPortals == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int j = 0; j &lt; otherPortals.size; j++){</b>
+&nbsp;
+<b class="nc">&nbsp;                        if(!usedEdges.contains(Point2.pack(otherDir, j))){</b>
+&nbsp;
+&nbsp;                            int
+<b class="nc">&nbsp;                            other = otherPortals.items[j],</b>
+<b class="nc">&nbsp;                            otherFrom = Point2.x(other), otherTo = Point2.y(other),</b>
+<b class="nc">&nbsp;                            otherAverage = (otherFrom + otherTo) / 2,</b>
+<b class="nc">&nbsp;                            ox = cx * clusterSize + offsets[otherDir * 2] * (clusterSize - 1),</b>
+<b class="nc">&nbsp;                            oy = cy * clusterSize + offsets[otherDir * 2 + 1] * (clusterSize - 1),</b>
+<b class="nc">&nbsp;                            otherX = (moveDirs[otherDir * 2] * otherAverage + ox),</b>
+<b class="nc">&nbsp;                            otherY = (moveDirs[otherDir * 2 + 1] * otherAverage + oy);</b>
+&nbsp;
+&nbsp;                            //duplicate portal; should never happen.
+<b class="nc">&nbsp;                            if(Point2.pack(x, y) == Point2.pack(otherX, otherY)){</b>
+<b class="nc">&nbsp;                                continue;</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            float connectionCost = innerAstar(</b>
+&nbsp;                                team, cost,
+&nbsp;                                minX, minY, maxX, maxY,
+&nbsp;                                x + y * wwidth,
+&nbsp;                                otherX + otherY * wwidth,
+&nbsp;                                (moveDirs[otherDir * 2] * otherFrom + ox),
+&nbsp;                                (moveDirs[otherDir * 2 + 1] * otherFrom + oy),
+&nbsp;                                (moveDirs[otherDir * 2] * otherTo + ox),
+&nbsp;                                (moveDirs[otherDir * 2 + 1] * otherTo + oy)
+&nbsp;                            );
+&nbsp;
+<b class="nc">&nbsp;                            if(connectionCost != -1f){</b>
+<b class="nc">&nbsp;                                if(cluster.portalConnections[direction] == null) cluster.portalConnections[direction] = new LongSeq[cluster.portals[direction].size];</b>
+<b class="nc">&nbsp;                                if(cluster.portalConnections[otherDir] == null) cluster.portalConnections[otherDir] = new LongSeq[cluster.portals[otherDir].size];</b>
+<b class="nc">&nbsp;                                if(cluster.portalConnections[direction][i] == null) cluster.portalConnections[direction][i] = new LongSeq(8);</b>
+<b class="nc">&nbsp;                                if(cluster.portalConnections[otherDir][j] == null) cluster.portalConnections[otherDir][j] = new LongSeq(8);</b>
+&nbsp;
+&nbsp;                                //TODO: can there be duplicate edges??
+<b class="nc">&nbsp;                                cluster.portalConnections[direction][i].add(IntraEdge.get(otherDir, j, connectionCost));</b>
+<b class="nc">&nbsp;                                cluster.portalConnections[otherDir][j].add(IntraEdge.get(direction, i, connectionCost));</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    //distance heuristic: manhattan
+&nbsp;    private static float heuristic(int a, int b){
+<b class="nc">&nbsp;        int x = a % wwidth, x2 = b % wwidth, y = a / wwidth, y2 = b / wwidth;</b>
+<b class="nc">&nbsp;        return Math.abs(x - x2) + Math.abs(y - y2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static int tcost(int team, PathCost cost, int tilePos){
+<b class="nc">&nbsp;        return cost.getCost(team, pathfinder.tiles[tilePos]);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static float tileCost(int team, PathCost type, int a, int b){
+&nbsp;        //currently flat cost
+<b class="nc">&nbsp;        return cost(team, type, b);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return -1 if no path was found */
+&nbsp;    float innerAstar(int team, PathCost cost, int minX, int minY, int maxX, int maxY, int startPos, int goalPos, int goalX1, int goalY1, int goalX2, int goalY2){
+<b class="nc">&nbsp;        var frontier = innerFrontier;</b>
+<b class="nc">&nbsp;        var costs = innerCosts;</b>
+&nbsp;
+<b class="nc">&nbsp;        frontier.clear();</b>
+<b class="nc">&nbsp;        costs.clear();</b>
+&nbsp;
+&nbsp;        //TODO: this can be faster and more memory efficient by making costs a NxN array... probably?
+<b class="nc">&nbsp;        costs.put(startPos, 0);</b>
+<b class="nc">&nbsp;        frontier.add(startPos, 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(goalX2 &lt; goalX1){</b>
+<b class="nc">&nbsp;            int tmp = goalX1;</b>
+<b class="nc">&nbsp;            goalX1 = goalX2;</b>
+<b class="nc">&nbsp;            goalX2 = tmp;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(goalY2 &lt; goalY1){</b>
+<b class="nc">&nbsp;            int tmp = goalY1;</b>
+<b class="nc">&nbsp;            goalY1 = goalY2;</b>
+<b class="nc">&nbsp;            goalY2 = tmp;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        while(frontier.size &gt; 0){</b>
+<b class="nc">&nbsp;            int current = frontier.poll();</b>
+&nbsp;
+<b class="nc">&nbsp;            int cx = current % wwidth, cy = current / wwidth;</b>
+&nbsp;
+&nbsp;            //found the goal (it&#39;s in the portal rectangle)
+<b class="nc">&nbsp;            if((cx &gt;= goalX1 &amp;&amp; cy &gt;= goalY1 &amp;&amp; cx &lt;= goalX2 &amp;&amp; cy &lt;= goalY2) || current == goalPos){</b>
+<b class="nc">&nbsp;                return costs.get(current);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(Point2 point : Geometry.d4){</b>
+<b class="nc">&nbsp;                int newx = cx + point.x, newy = cy + point.y;</b>
+<b class="nc">&nbsp;                int next = newx + wwidth * newy;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(newx &gt; maxX || newy &gt; maxY || newx &lt; minX || newy &lt; minY || tcost(team, cost, next) == impassable) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                float add = tileCost(team, cost, current, next);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(add &lt; 0) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                float newCost = costs.get(current) + add;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(newCost &lt; costs.get(next, Float.POSITIVE_INFINITY)){</b>
+<b class="nc">&nbsp;                    costs.put(next, newCost);</b>
+<b class="nc">&nbsp;                    float priority = newCost + heuristic(next, goalPos);</b>
+<b class="nc">&nbsp;                    frontier.add(next, priority);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return -1f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int makeNodeIndex(int cx, int cy, int dir, int portal){
+&nbsp;        //to make sure there&#39;s only one way to refer to each node, the direction must be 0 or 1 (referring to portals on the top or right edge)
+&nbsp;
+&nbsp;        //direction can only be 2 if cluster X is 0 (left edge of map)
+<b class="nc">&nbsp;        if(dir == 2 &amp;&amp; cx != 0){</b>
+<b class="nc">&nbsp;            dir = 0;</b>
+<b class="nc">&nbsp;            cx --;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //direction can only be 3 if cluster Y is 0 (bottom edge of map)
+<b class="nc">&nbsp;        if(dir == 3 &amp;&amp; cy != 0){</b>
+<b class="nc">&nbsp;            dir = 1;</b>
+<b class="nc">&nbsp;            cy --;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return NodeIndex.get(cx + cy * cwidth, dir, portal);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //uses A* to find the closest node index to specified coordinates
+&nbsp;    //this node is used in cluster A*
+&nbsp;    /** @return MAX_VALUE if no node is found */
+&nbsp;    private int findClosestNode(int team, int pathCost, int tileX, int tileY){
+<b class="nc">&nbsp;        int cx = tileX / clusterSize, cy = tileY / clusterSize;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(cx &lt; 0 || cy &lt; 0 || cx &gt;= cwidth || cy &gt;= cheight){</b>
+<b class="nc">&nbsp;            return Integer.MAX_VALUE;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        PathCost cost = idToCost(pathCost);</b>
+<b class="nc">&nbsp;        Cluster cluster = getCreateCluster(team, pathCost, cx, cy);</b>
+<b class="nc">&nbsp;        int minX = cx * clusterSize, minY = cy * clusterSize, maxX = Math.min(minX + clusterSize - 1, wwidth - 1), maxY = Math.min(minY + clusterSize - 1, wheight - 1);</b>
+&nbsp;
+<b class="nc">&nbsp;        int bestPortalPair = Integer.MAX_VALUE;</b>
+<b class="nc">&nbsp;        float bestCost = Float.MAX_VALUE;</b>
+&nbsp;
+&nbsp;        //A* to every node, find the best one (I know there&#39;s a better algorithm for this, probably dijkstra)
+<b class="nc">&nbsp;        for(int dir = 0; dir &lt; 4; dir++){</b>
+<b class="nc">&nbsp;            var portals = cluster.portals[dir];</b>
+<b class="nc">&nbsp;            if(portals == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int j = 0; j &lt; portals.size; j++){</b>
+&nbsp;
+&nbsp;                int
+<b class="nc">&nbsp;                other = portals.items[j],</b>
+<b class="nc">&nbsp;                otherFrom = Point2.x(other), otherTo = Point2.y(other),</b>
+<b class="nc">&nbsp;                otherAverage = (otherFrom + otherTo) / 2,</b>
+<b class="nc">&nbsp;                ox = cx * clusterSize + offsets[dir * 2] * (clusterSize - 1),</b>
+<b class="nc">&nbsp;                oy = cy * clusterSize + offsets[dir * 2 + 1] * (clusterSize - 1),</b>
+<b class="nc">&nbsp;                otherX = (moveDirs[dir * 2] * otherAverage + ox),</b>
+<b class="nc">&nbsp;                otherY = (moveDirs[dir * 2 + 1] * otherAverage + oy);</b>
+&nbsp;
+<b class="nc">&nbsp;                float connectionCost = innerAstar(</b>
+&nbsp;                team, cost,
+&nbsp;                minX, minY, maxX, maxY,
+&nbsp;                tileX + tileY * wwidth,
+&nbsp;                otherX + otherY * wwidth,
+&nbsp;                (moveDirs[dir * 2] * otherFrom + ox),
+&nbsp;                (moveDirs[dir * 2 + 1] * otherFrom + oy),
+&nbsp;                (moveDirs[dir * 2] * otherTo + ox),
+&nbsp;                (moveDirs[dir * 2 + 1] * otherTo + oy)
+&nbsp;                );
+&nbsp;
+&nbsp;                //better cost found, update and return
+<b class="nc">&nbsp;                if(connectionCost != -1f &amp;&amp; connectionCost &lt; bestCost){</b>
+<b class="nc">&nbsp;                    bestPortalPair = Point2.pack(dir, j);</b>
+<b class="nc">&nbsp;                    bestCost = connectionCost;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(bestPortalPair != Integer.MAX_VALUE){</b>
+<b class="nc">&nbsp;            return makeNodeIndex(cx, cy, Point2.x(bestPortalPair), Point2.y(bestPortalPair));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        return Integer.MAX_VALUE;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //distance heuristic: manhattan
+&nbsp;    private float clusterNodeHeuristic(int team, int pathCost, int nodeA, int nodeB){
+&nbsp;        int
+<b class="nc">&nbsp;        clusterA = NodeIndex.cluster(nodeA),</b>
+<b class="nc">&nbsp;        dirA = NodeIndex.dir(nodeA),</b>
+<b class="nc">&nbsp;        portalA = NodeIndex.portal(nodeA),</b>
+<b class="nc">&nbsp;        clusterB = NodeIndex.cluster(nodeB),</b>
+<b class="nc">&nbsp;        dirB = NodeIndex.dir(nodeB),</b>
+<b class="nc">&nbsp;        portalB = NodeIndex.portal(nodeB),</b>
+<b class="nc">&nbsp;        rangeA = getCreateCluster(team, pathCost, clusterA).portals[dirA].items[portalA],</b>
+<b class="nc">&nbsp;        rangeB = getCreateCluster(team, pathCost, clusterB).portals[dirB].items[portalB];</b>
+&nbsp;
+&nbsp;        float
+<b class="nc">&nbsp;        averageA = (Point2.x(rangeA) + Point2.y(rangeA)) / 2f,</b>
+<b class="nc">&nbsp;        x1 = (moveDirs[dirA * 2] * averageA + (clusterA % cwidth) * clusterSize + offsets[dirA * 2] * (clusterSize - 1) + nextOffsets[dirA * 2] / 2f),</b>
+<b class="nc">&nbsp;        y1 = (moveDirs[dirA * 2 + 1] * averageA + (clusterA / cwidth) * clusterSize + offsets[dirA * 2 + 1] * (clusterSize - 1) + nextOffsets[dirA * 2 + 1] / 2f),</b>
+&nbsp;
+<b class="nc">&nbsp;        averageB = (Point2.x(rangeB) + Point2.y(rangeB)) / 2f,</b>
+<b class="nc">&nbsp;        x2 = (moveDirs[dirB * 2] * averageB + (clusterB % cwidth) * clusterSize + offsets[dirB * 2] * (clusterSize - 1) + nextOffsets[dirB * 2] / 2f),</b>
+<b class="nc">&nbsp;        y2 = (moveDirs[dirB * 2 + 1] * averageB + (clusterB / cwidth) * clusterSize + offsets[dirB * 2 + 1] * (clusterSize - 1) + nextOffsets[dirB * 2 + 1] / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        return Math.abs(x1 - x2) + Math.abs(y1 - y2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable IntSeq clusterAstar(PathRequest request, int pathCost, int startNodeIndex, int endNodeIndex){
+<b class="nc">&nbsp;        var result = request.resultPath;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(startNodeIndex == endNodeIndex){</b>
+<b class="nc">&nbsp;            result.clear();</b>
+<b class="nc">&nbsp;            result.add(startNodeIndex);</b>
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var team = request.team;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(request.costs == null) request.costs = new IntFloatMap();</b>
+<b class="nc">&nbsp;        if(request.cameFrom == null) request.cameFrom = new IntIntMap();</b>
+<b class="nc">&nbsp;        if(request.frontier == null) request.frontier = new PathfindQueue();</b>
+&nbsp;
+&nbsp;        //note: these are NOT cleared, it is assumed that this function cleans up after itself at the end
+&nbsp;        //is this a good idea? don&#39;t know, might hammer the GC with unnecessary objects too
+<b class="nc">&nbsp;        var costs = request.costs;</b>
+<b class="nc">&nbsp;        var cameFrom = request.cameFrom;</b>
+<b class="nc">&nbsp;        var frontier = request.frontier;</b>
+&nbsp;
+<b class="nc">&nbsp;        cameFrom.put(startNodeIndex, startNodeIndex);</b>
+<b class="nc">&nbsp;        costs.put(startNodeIndex, 0);</b>
+<b class="nc">&nbsp;        frontier.add(startNodeIndex, 0);</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean foundEnd = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        while(frontier.size &gt; 0){</b>
+<b class="nc">&nbsp;            int current = frontier.poll();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(current == endNodeIndex){</b>
+<b class="nc">&nbsp;                foundEnd = true;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            int cluster = NodeIndex.cluster(current), dir = NodeIndex.dir(current), portal = NodeIndex.portal(current);</b>
+<b class="nc">&nbsp;            int cx = cluster % cwidth, cy = cluster / cwidth;</b>
+&nbsp;
+&nbsp;            //invalid cluster index (TODO: how?)
+<b class="nc">&nbsp;            if(cx &gt;= cwidth || cy &gt;= cheight || cx &lt; 0 || cy &lt; 0) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            Cluster clust = getCreateCluster(team, pathCost, cluster);</b>
+<b class="nc">&nbsp;            LongSeq innerCons = clust.portalConnections[dir] == null || portal &gt;= clust.portalConnections[dir].length ? null : clust.portalConnections[dir][portal];</b>
+&nbsp;
+&nbsp;            //edges for the cluster the node is &#39;in&#39;
+<b class="nc">&nbsp;            if(innerCons != null){</b>
+<b class="nc">&nbsp;                checkEdges(request, team, pathCost, current, endNodeIndex, cx, cy, innerCons);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //edges that this node &#39;faces&#39; from the other side
+<b class="nc">&nbsp;            int nextCx = cx + Geometry.d4[dir].x, nextCy = cy + Geometry.d4[dir].y;</b>
+<b class="nc">&nbsp;            if(nextCx &gt;= 0 &amp;&amp; nextCy &gt;= 0 &amp;&amp; nextCx &lt; cwidth &amp;&amp; nextCy &lt; cheight){</b>
+<b class="nc">&nbsp;                Cluster nextCluster = getCreateCluster(team, pathCost, nextCx, nextCy);</b>
+<b class="nc">&nbsp;                int relativeDir = (dir + 2) % 4;</b>
+<b class="nc">&nbsp;                LongSeq outerCons = nextCluster.portalConnections[relativeDir] == null || nextCluster.portalConnections[relativeDir].length &lt;= portal ? null : nextCluster.portalConnections[relativeDir][portal];</b>
+<b class="nc">&nbsp;                if(outerCons != null){</b>
+<b class="nc">&nbsp;                    checkEdges(request, team, pathCost, current, endNodeIndex, nextCx, nextCy, outerCons);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //null them out, so they get GC&#39;ed later
+&nbsp;        //there&#39;s no reason to keep them around and waste memory, since this path may never be recalculated
+<b class="nc">&nbsp;        request.costs = null;</b>
+<b class="nc">&nbsp;        request.cameFrom = null;</b>
+<b class="nc">&nbsp;        request.frontier = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(foundEnd){</b>
+<b class="nc">&nbsp;            result.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;            int cur = endNodeIndex;</b>
+<b class="nc">&nbsp;            while(cur != startNodeIndex){</b>
+<b class="nc">&nbsp;                result.add(cur);</b>
+<b class="nc">&nbsp;                cur = cameFrom.get(cur);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            result.reverse();</b>
+&nbsp;
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkEdges(PathRequest request, int team, int pathCost, int current, int goal, int cx, int cy, LongSeq connections){
+<b class="nc">&nbsp;        for(int i = 0; i &lt; connections.size; i++){</b>
+<b class="nc">&nbsp;            long con = connections.items[i];</b>
+<b class="nc">&nbsp;            float cost = IntraEdge.cost(con);</b>
+<b class="nc">&nbsp;            int otherDir = IntraEdge.dir(con), otherPortal = IntraEdge.portal(con);</b>
+<b class="nc">&nbsp;            int next = makeNodeIndex(cx, cy, otherDir, otherPortal);</b>
+&nbsp;
+<b class="nc">&nbsp;            float newCost = request.costs.get(current) + cost;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(newCost &lt; request.costs.get(next, Float.POSITIVE_INFINITY)){</b>
+<b class="nc">&nbsp;                request.costs.put(next, newCost);</b>
+&nbsp;
+<b class="nc">&nbsp;                request.frontier.add(next, newCost + clusterNodeHeuristic(team, pathCost, next, goal));</b>
+<b class="nc">&nbsp;                request.cameFrom.put(next, current);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateFields(FieldCache cache, long nsToRun){
+<b class="nc">&nbsp;        var frontier = cache.frontier;</b>
+<b class="nc">&nbsp;        var fields = cache.fields;</b>
+<b class="nc">&nbsp;        var goalPos = cache.goalPos;</b>
+<b class="nc">&nbsp;        var pcost = cache.cost;</b>
+<b class="nc">&nbsp;        var team = cache.team;</b>
+&nbsp;
+<b class="nc">&nbsp;        long start = Time.nanos();</b>
+<b class="nc">&nbsp;        int counter = 0;</b>
+&nbsp;
+&nbsp;        //actually do the flow field part
+<b class="nc">&nbsp;        while(frontier.size &gt; 0){</b>
+<b class="nc">&nbsp;            int tile = frontier.removeLast();</b>
+<b class="nc">&nbsp;            int baseX = tile % wwidth, baseY = tile / wwidth;</b>
+<b class="nc">&nbsp;            int curWeightIndex = (baseX / clusterSize) + (baseY / clusterSize) * cwidth;</b>
+&nbsp;
+&nbsp;            //TODO: how can this be null??? serious problem!
+<b class="nc">&nbsp;            int[] curWeights = fields.get(curWeightIndex);</b>
+<b class="nc">&nbsp;            if(curWeights == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;            int cost = curWeights[baseX % clusterSize + ((baseY % clusterSize) * clusterSize)];</b>
+&nbsp;
+<b class="nc">&nbsp;            if(cost != impassable){</b>
+<b class="nc">&nbsp;                for(Point2 point : Geometry.d4){</b>
+&nbsp;
+&nbsp;                    int
+<b class="nc">&nbsp;                    dx = baseX + point.x, dy = baseY + point.y,</b>
+<b class="nc">&nbsp;                    clx = dx / clusterSize, cly = dy / clusterSize;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(clx &lt; 0 || cly &lt; 0 || dx &gt;= wwidth || dy &gt;= wheight) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    int nextWeightIndex = clx + cly * cwidth;</b>
+&nbsp;
+<b class="nc">&nbsp;                    int[] weights = nextWeightIndex == curWeightIndex ? curWeights : fields.get(nextWeightIndex);</b>
+&nbsp;
+&nbsp;                    //out of bounds; not allowed to move this way because no weights were registered here
+<b class="nc">&nbsp;                    if(weights == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    int newPos = tile + point.x + point.y * wwidth;</b>
+&nbsp;
+&nbsp;                    //can&#39;t move back to the goal
+<b class="nc">&nbsp;                    if(newPos == goalPos) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(dx - clx * clusterSize &lt; 0 || dy - cly * clusterSize &lt; 0) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    int newPosArray = (dx - clx * clusterSize) + (dy - cly * clusterSize) * clusterSize;</b>
+&nbsp;
+<b class="nc">&nbsp;                    int otherCost = pcost.getCost(team, pathfinder.tiles[newPos]);</b>
+<b class="nc">&nbsp;                    int oldCost = weights[newPosArray];</b>
+&nbsp;
+&nbsp;                    //a cost of 0 means uninitialized, OR it means we&#39;re at the goal position, but that&#39;s handled above
+<b class="nc">&nbsp;                    if((oldCost == 0 || oldCost &gt; cost + otherCost) &amp;&amp; otherCost != impassable){</b>
+<b class="nc">&nbsp;                        frontier.addFirst(newPos);</b>
+<b class="nc">&nbsp;                        weights[newPosArray] = cost + otherCost;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //every N iterations, check the time spent - this prevents extra calls to nano time, which itself is slow
+<b class="nc">&nbsp;            if(nsToRun &gt;= 0 &amp;&amp; (counter++) &gt;= updateStepInterval){</b>
+<b class="nc">&nbsp;                counter = 0;</b>
+<b class="nc">&nbsp;                if(Time.timeSinceNanos(start) &gt;= nsToRun){</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void addFlowCluster(FieldCache cache, int cluster, boolean addingFrontier){
+<b class="nc">&nbsp;        addFlowCluster(cache, cluster % cwidth, cluster / cwidth, addingFrontier);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void addFlowCluster(FieldCache cache, int cx, int cy, boolean addingFrontier){
+&nbsp;        //out of bounds
+<b class="nc">&nbsp;        if(cx &lt; 0 || cy &lt; 0 || cx &gt;= cwidth || cy &gt;= cheight) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        var fields = cache.fields;</b>
+<b class="nc">&nbsp;        int key = cx + cy * cwidth;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!fields.containsKey(key)){</b>
+<b class="nc">&nbsp;            fields.put(key, new int[clusterSize * clusterSize]);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(addingFrontier){</b>
+<b class="nc">&nbsp;                for(int dir = 0; dir &lt; 4; dir++){</b>
+<b class="nc">&nbsp;                    int ox = cx + nextOffsets[dir * 2], oy = cy + nextOffsets[dir * 2 + 1];</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(ox &lt; 0 || oy &lt; 0 || ox &gt;= cwidth || oy &gt;= cheight) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                    var otherField = fields.get(ox + oy * cwidth);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(otherField == null) continue;</b>
+&nbsp;
+&nbsp;                    int
+<b class="nc">&nbsp;                    relOffset = (dir + 2) % 4,</b>
+<b class="nc">&nbsp;                    movex = moveDirs[relOffset * 2],</b>
+<b class="nc">&nbsp;                    movey = moveDirs[relOffset * 2 + 1],</b>
+<b class="nc">&nbsp;                    otherx1 = offsets[relOffset * 2] * (clusterSize - 1),</b>
+<b class="nc">&nbsp;                    othery1 = offsets[relOffset * 2 + 1] * (clusterSize - 1);</b>
+&nbsp;
+&nbsp;                    //scan the edge of the cluster
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; clusterSize; i++){</b>
+<b class="nc">&nbsp;                        int x = otherx1 + movex * i, y = othery1 + movey * i;</b>
+&nbsp;
+&nbsp;                        //check to make sure it&#39;s not 0 (uninitialized flowfield data)
+<b class="nc">&nbsp;                        if(otherField[x + y * clusterSize] &gt; 0){</b>
+<b class="nc">&nbsp;                            int worldX = x + ox * clusterSize, worldY = y + oy * clusterSize;</b>
+&nbsp;
+&nbsp;                            //add the world-relative position to the frontier, so it recalculates
+<b class="nc">&nbsp;                            cache.frontier.addFirst(worldX + worldY * wwidth);</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(showDebug){</b>
+<b class="nc">&nbsp;                                Core.app.post(() -&gt; Fx.placeBlock.at(worldX *tilesize, worldY * tilesize, 1f));</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void initializePathRequest(PathRequest request, int team, int costId, int unitX, int unitY, int goalX, int goalY){
+<b class="nc">&nbsp;        PathCost pcost = idToCost(costId);</b>
+&nbsp;
+<b class="nc">&nbsp;        int goalPos = (goalX + goalY * wwidth);</b>
+&nbsp;
+<b class="nc">&nbsp;        int node = findClosestNode(team, costId, unitX, unitY);</b>
+<b class="nc">&nbsp;        int dest = findClosestNode(team, costId, goalX, goalY);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(dest == Integer.MAX_VALUE){</b>
+<b class="nc">&nbsp;            request.notFound = true;</b>
+&nbsp;            //no node found (TODO: invalid state??)
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var nodePath = clusterAstar(request, costId, node, dest);</b>
+&nbsp;
+&nbsp;        //no result found, bail out.
+<b class="nc">&nbsp;        if(nodePath == null){</b>
+<b class="nc">&nbsp;            request.notFound = true;</b>
+&nbsp;            //stop following the old path, it&#39;s not relevant now, it&#39;s just not possible to reach the destination anymore
+<b class="nc">&nbsp;            request.oldCache = null;</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        FieldCache cache = fields.get(FieldIndex.get(goalPos, costId, team));</b>
+&nbsp;        //if true, extra values are added on the sides of existing field cells that face new cells.
+<b class="nc">&nbsp;        boolean addingFrontier = true;</b>
+&nbsp;
+&nbsp;        //create the cache if it doesn&#39;t exist, and initialize it
+<b class="nc">&nbsp;        if(cache == null){</b>
+<b class="nc">&nbsp;            cache = new FieldCache(pcost, costId, team, goalPos);</b>
+<b class="nc">&nbsp;            fields.put(cache.mapKey, cache);</b>
+<b class="nc">&nbsp;            FieldCache fcache = cache;</b>
+&nbsp;            //register field in main thread for iteration
+<b class="nc">&nbsp;            Core.app.post(() -&gt; fieldList.add(fcache));</b>
+<b class="nc">&nbsp;            cache.frontier.addFirst(goalPos);</b>
+<b class="nc">&nbsp;            addingFrontier = false; //when it&#39;s a new field, there is no need to add to the frontier to merge the flowfield</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(nodePath != null){</b>
+<b class="nc">&nbsp;            int cx = unitX / clusterSize, cy = unitY / clusterSize;</b>
+&nbsp;
+<b class="nc">&nbsp;            addFlowCluster(cache, cx, cy, addingFrontier);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int i = -1; i &lt; nodePath.size; i++){</b>
+&nbsp;                int
+<b class="nc">&nbsp;                current = i == -1 ? node : nodePath.items[i],</b>
+<b class="nc">&nbsp;                cluster = NodeIndex.cluster(current),</b>
+<b class="nc">&nbsp;                dir = NodeIndex.dir(current),</b>
+<b class="nc">&nbsp;                dx = Geometry.d4[dir].x,</b>
+<b class="nc">&nbsp;                dy = Geometry.d4[dir].y,</b>
+<b class="nc">&nbsp;                ox = cluster % cwidth + dx,</b>
+<b class="nc">&nbsp;                oy = cluster / cwidth + dy;</b>
+&nbsp;
+<b class="nc">&nbsp;                addFlowCluster(cache, cluster, addingFrontier);</b>
+&nbsp;
+&nbsp;                //store directional/flipped version of cluster
+<b class="nc">&nbsp;                if(ox &gt;= 0 &amp;&amp; oy &gt;= 0 &amp;&amp; ox &lt; cwidth &amp;&amp; oy &lt; cheight){</b>
+<b class="nc">&nbsp;                    int other = ox + oy * cwidth;</b>
+&nbsp;
+<b class="nc">&nbsp;                    addFlowCluster(cache, other, addingFrontier);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private PathCost idToCost(int costId){
+<b class="nc">&nbsp;        return ControlPathfinder.costTypes.get(costId);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isNearObstacle(Unit unit, int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        return raycast(unit.team().id, unit.type.pathCost, x1, y1, x2, y2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Deprecated
+&nbsp;    public int nextTargetId(){
+<b class="nc">&nbsp;        return 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Deprecated
+&nbsp;    public boolean getPathPosition(Unit unit, int pathId, Vec2 destination, Vec2 out){
+<b class="nc">&nbsp;        return getPathPosition(unit, pathId, destination, out, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Deprecated
+&nbsp;    public boolean getPathPosition(Unit unit, int pathId, Vec2 destination, Vec2 out, @Nullable boolean[] noResultFound){
+<b class="nc">&nbsp;        return getPathPosition(unit, destination, destination, out, noResultFound);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean getPathPosition(Unit unit, Vec2 destination, Vec2 out, @Nullable boolean[] noResultFound){
+<b class="nc">&nbsp;        return getPathPosition(unit, destination, destination, out, noResultFound);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean getPathPosition(Unit unit, Vec2 destination, Vec2 mainDestination, Vec2 out, @Nullable boolean[] noResultFound){
+<b class="nc">&nbsp;        int costId = unit.type.pathCostId;</b>
+<b class="nc">&nbsp;        PathCost cost = idToCost(costId);</b>
+&nbsp;
+&nbsp;        int
+<b class="nc">&nbsp;        team = unit.team.id,</b>
+<b class="nc">&nbsp;        tileX = unit.tileX(),</b>
+<b class="nc">&nbsp;        tileY = unit.tileY(),</b>
+<b class="nc">&nbsp;        packedPos = world.packArray(tileX, tileY),</b>
+<b class="nc">&nbsp;        destX = World.toTile(mainDestination.x),</b>
+<b class="nc">&nbsp;        destY = World.toTile(mainDestination.y),</b>
+<b class="nc">&nbsp;        actualDestX = World.toTile(destination.x),</b>
+<b class="nc">&nbsp;        actualDestY = World.toTile(destination.y),</b>
+<b class="nc">&nbsp;        actualDestPos = actualDestX + actualDestY * wwidth,</b>
+<b class="nc">&nbsp;        destPos = destX + destY * wwidth;</b>
+&nbsp;
+<b class="nc">&nbsp;        PathRequest request = unitRequests.get(unit);</b>
+&nbsp;
+<b class="nc">&nbsp;        unit.hitboxTile(Tmp.r3);</b>
+&nbsp;        //tile rect size has tile size factored in, since the ray cannot have thickness
+<b class="nc">&nbsp;        float tileRectSize = tilesize + Tmp.r3.height;</b>
+&nbsp;
+<b class="nc">&nbsp;        int lastRaycastTile = request == null || world.tileChanges != request.lastWorldUpdate ? -1 : request.lastRaycastTile;</b>
+<b class="nc">&nbsp;        boolean raycastResult = request != null &amp;&amp; request.lastRaycastResult;</b>
+&nbsp;
+&nbsp;        //cache raycast results to run every time the world updates, and every tile the unit crosses
+<b class="nc">&nbsp;        if(lastRaycastTile != packedPos){</b>
+&nbsp;            //near the destination, standard raycasting tends to break down, so use the more permissive &#39;near&#39; variant that doesn&#39;t take into account edges of walls
+<b class="nc">&nbsp;            raycastResult = unit.within(destination, tilesize * 2.5f) ?</b>
+<b class="nc">&nbsp;                !raycastRect(unit.x, unit.y, destination.x, destination.y, team, cost, tileX, tileY, actualDestX, actualDestY, tileRectSize) :</b>
+<b class="nc">&nbsp;                !raycast(team, cost, tileX, tileY, actualDestX, actualDestY);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(request != null){</b>
+<b class="nc">&nbsp;                request.lastRaycastTile = packedPos;</b>
+<b class="nc">&nbsp;                request.lastRaycastResult = raycastResult;</b>
+<b class="nc">&nbsp;                request.lastWorldUpdate = world.tileChanges;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //if the destination can be trivially reached in a straight line, do that.
+<b class="nc">&nbsp;        if(raycastResult){</b>
+<b class="nc">&nbsp;            out.set(destination);</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean any = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        long fieldKey = FieldIndex.get(destPos, costId, team);</b>
+&nbsp;
+&nbsp;        //use existing request if it exists.
+<b class="nc">&nbsp;        if(request != null &amp;&amp; request.destination == destPos){</b>
+<b class="nc">&nbsp;            request.lastUpdateId = state.updateId;</b>
+&nbsp;
+<b class="nc">&nbsp;            Tile tileOn = unit.tileOn(), initialTileOn = tileOn;</b>
+&nbsp;            //TODO: should fields be accessible from this thread?
+<b class="nc">&nbsp;            FieldCache fieldCache = fields.get(fieldKey);</b>
+<b class="nc">&nbsp;            if(fieldCache == null) fieldCache = request.oldCache;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(fieldCache != null &amp;&amp; tileOn != null){</b>
+<b class="nc">&nbsp;                FieldCache old = request.oldCache;</b>
+<b class="nc">&nbsp;                FieldCache targetCache = old != null ? old : fieldCache;</b>
+<b class="nc">&nbsp;                boolean requeue = old == null;</b>
+&nbsp;                //nullify the old field to be GCed, as it cannot be relevant anymore (this path is complete)
+<b class="nc">&nbsp;                if(fieldCache != request.oldCache &amp;&amp; fieldCache.frontier.isEmpty() &amp;&amp; old != null){</b>
+<b class="nc">&nbsp;                    request.oldCache = null;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                fieldCache.lastUpdateId = state.updateId;</b>
+<b class="nc">&nbsp;                int maxIterations = 30; //TODO higher/lower number? is this still too slow?</b>
+<b class="nc">&nbsp;                int i = 0;</b>
+<b class="nc">&nbsp;                boolean recalc = false;</b>
+&nbsp;
+<b class="nc">&nbsp;                if(packedPos == actualDestPos){</b>
+<b class="nc">&nbsp;                    request.lastTargetTile = tileOn;</b>
+&nbsp;                //TODO last pos can change if the flowfield changes.
+<b class="nc">&nbsp;                }else if(initialTileOn.pos() != request.lastTile || request.lastTargetTile == null){</b>
+<b class="nc">&nbsp;                    boolean anyNearSolid = false;</b>
+&nbsp;
+&nbsp;                    //find the next tile until one near a solid block is discovered
+<b class="nc">&nbsp;                    while(i ++ &lt; maxIterations){</b>
+<b class="nc">&nbsp;                        int value = getCost(targetCache, tileOn.x, tileOn.y, requeue);</b>
+&nbsp;
+<b class="nc">&nbsp;                        Tile current = null;</b>
+<b class="nc">&nbsp;                        int minCost = 0;</b>
+<b class="nc">&nbsp;                        for(int dir = 0; dir &lt; 4; dir ++){</b>
+<b class="nc">&nbsp;                            Point2 point = Geometry.d4[dir];</b>
+<b class="nc">&nbsp;                            int dx = tileOn.x + point.x, dy = tileOn.y + point.y;</b>
+&nbsp;
+<b class="nc">&nbsp;                            Tile other = world.tile(dx, dy);</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(other == null) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                            int packed = world.packArray(dx, dy);</b>
+<b class="nc">&nbsp;                            int otherCost = getCost(targetCache, dx, dy, requeue), relCost = otherCost - value;</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(relCost &gt; 2 || otherCost &lt;= 0){</b>
+<b class="nc">&nbsp;                                anyNearSolid = true;</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            if((value == 0 || otherCost &lt; value) &amp;&amp; otherCost != impassable &amp;&amp; ((otherCost != 0 &amp;&amp; (current == null || otherCost &lt; minCost)) || packed == actualDestPos || packed == destPos) &amp;&amp; passable(unit.team.id, cost, packed)){</b>
+<b class="nc">&nbsp;                                current = other;</b>
+<b class="nc">&nbsp;                                minCost = otherCost;</b>
+&nbsp;                                //no need to keep searching.
+<b class="nc">&nbsp;                                if(packed == destPos || packed == actualDestPos){</b>
+<b class="nc">&nbsp;                                    break;</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+&nbsp;                        //TODO raycast spam = extremely slow
+&nbsp;                        //...flowfield integration spam is also really slow.
+<b class="nc">&nbsp;                        if(!(current == null || (costId == costIdGround &amp;&amp; current.dangerous() &amp;&amp; !tileOn.dangerous()))){</b>
+&nbsp;
+&nbsp;                            //when anyNearSolid is false, no solid tiles have been encountered anywhere so far, so raycasting is a waste of time
+<b class="nc">&nbsp;                            if(anyNearSolid &amp;&amp; !(tileOn.dangerous() &amp;&amp; costId == costIdGround) &amp;&amp; raycastRect(unit.x, unit.y, current.x * tilesize, current.y * tilesize, team, cost, initialTileOn.x, initialTileOn.y, current.x, current.y, tileRectSize)){</b>
+&nbsp;
+&nbsp;                                //TODO this may be a mistake
+<b class="nc">&nbsp;                                if(tileOn == initialTileOn){</b>
+<b class="nc">&nbsp;                                    recalc = true;</b>
+<b class="nc">&nbsp;                                    any = true;</b>
+&nbsp;                                }
+&nbsp;
+&nbsp;                                break;
+&nbsp;                            }else{
+<b class="nc">&nbsp;                                tileOn = current;</b>
+<b class="nc">&nbsp;                                any = true;</b>
+&nbsp;
+<b class="nc">&nbsp;                                int a = current.array();</b>
+&nbsp;
+<b class="nc">&nbsp;                                if(a == destPos || a == actualDestPos){</b>
+<b class="nc">&nbsp;                                    break;</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;
+&nbsp;                        }else{
+&nbsp;                            break;
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    request.lastTargetTile = any ? tileOn : null;</b>
+<b class="nc">&nbsp;                    if(showDebug &amp;&amp; tileOn != null &amp;&amp; Core.graphics.getFrameId() % 30 == 0){</b>
+<b class="nc">&nbsp;                        Fx.placeBlock.at(tileOn.worldx(), tileOn.worldy(), 1);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(request.lastTargetTile != null){</b>
+<b class="nc">&nbsp;                    if(showDebug &amp;&amp; Core.graphics.getFrameId() % 30 == 0){</b>
+<b class="nc">&nbsp;                        Fx.breakBlock.at(request.lastTargetTile.worldx(), request.lastTargetTile.worldy(), 1);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    out.set(request.lastTargetTile);</b>
+<b class="nc">&nbsp;                    request.lastTile = recalc ? -1 : initialTileOn.pos();</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(request == null){</b>
+&nbsp;
+&nbsp;            //queue new request.
+<b class="nc">&nbsp;            unitRequests.put(unit, request = new PathRequest(unit, team, costId, destPos));</b>
+&nbsp;
+<b class="nc">&nbsp;            PathRequest f = request;</b>
+&nbsp;
+&nbsp;            //on the pathfinding thread: initialize the request
+<b class="nc">&nbsp;            queue.post(() -&gt; {</b>
+<b class="nc">&nbsp;                threadPathRequests.add(f);</b>
+<b class="nc">&nbsp;                recalculatePath(f);</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            out.set(destination);</b>
+&nbsp;
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(noResultFound != null){</b>
+<b class="nc">&nbsp;            noResultFound[0] = request.notFound;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void recalculatePath(PathRequest request){
+<b class="nc">&nbsp;        initializePathRequest(request, request.team, request.costId, request.unit.tileX(), request.unit.tileY(), request.destination % wwidth, request.destination / wwidth);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private int getCost(FieldCache cache, int x, int y, boolean requeue){
+&nbsp;        try{
+<b class="nc">&nbsp;            int[] field = cache.fields.get(x / clusterSize + (y / clusterSize) * cwidth);</b>
+<b class="nc">&nbsp;            if(field == null){</b>
+<b class="nc">&nbsp;                if(!requeue) return 0;</b>
+&nbsp;                //request a new flow cluster if one wasn&#39;t found; this may be a spammed a bit, but the function will return early once it&#39;s created the first time
+<b class="nc">&nbsp;                queue.post(() -&gt; addFlowCluster(cache, x / clusterSize, y / clusterSize, true));</b>
+<b class="nc">&nbsp;                return 0;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return field[(x % clusterSize) + (y % clusterSize) * clusterSize];</b>
+<b class="nc">&nbsp;        }catch(ArrayIndexOutOfBoundsException e){</b>
+&nbsp;            //TODO: this crashes because the fields are being added while they&#39;re accessed. really bad. needs a long-term solution and some way to cache the map lookup results.
+&nbsp;            //using an array instead of a map would be nice, but that can mean something like 2500 entries in a sparse array, which is pretty terrible...
+<b class="nc">&nbsp;            return 0;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean raycast(int team, PathCost type, int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        int ww = wwidth, wh = wheight;</b>
+<b class="nc">&nbsp;        int x = x1, dx = Math.abs(x2 - x), sx = x &lt; x2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int y = y1, dy = Math.abs(y2 - y), sy = y &lt; y2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int e2, err = dx - dy;</b>
+&nbsp;
+<b class="nc">&nbsp;        while(x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; x &lt; ww &amp;&amp; y &lt; wh){</b>
+<b class="nc">&nbsp;            if(avoid(team, type, x + y * wwidth)) return true;</b>
+<b class="nc">&nbsp;            if(x == x2 &amp;&amp; y == y2) return false;</b>
+&nbsp;
+&nbsp;            //diagonal ver
+<b class="nc">&nbsp;            e2 = 2 * err;</b>
+<b class="nc">&nbsp;            if(e2 &gt; -dy){</b>
+<b class="nc">&nbsp;                err -= dy;</b>
+<b class="nc">&nbsp;                x += sx;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(e2 &lt; dx){</b>
+<b class="nc">&nbsp;                err += dx;</b>
+<b class="nc">&nbsp;                y += sy;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return 0 if nothing was hit, otherwise the packed coordinates. This is an internal function and will likely be moved - do not use!*/
+&nbsp;    public static int raycastFast(int team, PathCost type, int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        int ww = world.width(), wh = world.height();</b>
+<b class="nc">&nbsp;        int x = x1, dx = Math.abs(x2 - x), sx = x &lt; x2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int y = y1, dy = Math.abs(y2 - y), sy = y &lt; y2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int err = dx - dy;</b>
+&nbsp;
+<b class="nc">&nbsp;        while(x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; x &lt; ww &amp;&amp; y &lt; wh){</b>
+<b class="nc">&nbsp;            if(solid(team, type, x + y * wwidth, true)) return Point2.pack(x, y);</b>
+<b class="nc">&nbsp;            if(x == x2 &amp;&amp; y == y2) return 0;</b>
+&nbsp;
+&nbsp;            //no diagonals
+<b class="nc">&nbsp;            if(2 * err + dy &gt; dx - 2 * err){</b>
+<b class="nc">&nbsp;                err -= dy;</b>
+<b class="nc">&nbsp;                x += sx;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                err += dx;</b>
+<b class="nc">&nbsp;                y += sy;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return 0 if nothing was hit, otherwise the packed coordinates. This is an internal function and will likely be moved - do not use!*/
+&nbsp;    public static int raycastFastAvoid(int team, PathCost type, int x1, int y1, int x2, int y2){
+<b class="nc">&nbsp;        int ww = world.width(), wh = world.height();</b>
+<b class="nc">&nbsp;        int x = x1, dx = Math.abs(x2 - x), sx = x &lt; x2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int y = y1, dy = Math.abs(y2 - y), sy = y &lt; y2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int err = dx - dy;</b>
+&nbsp;
+<b class="nc">&nbsp;        while(x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; x &lt; ww &amp;&amp; y &lt; wh){</b>
+<b class="nc">&nbsp;            if(avoid(team, type, x + y * wwidth)) return Point2.pack(x, y);</b>
+<b class="nc">&nbsp;            if(x == x2 &amp;&amp; y == y2) return 0;</b>
+&nbsp;
+&nbsp;            //no diagonals
+<b class="nc">&nbsp;            if(2 * err + dy &gt; dx - 2 * err){</b>
+<b class="nc">&nbsp;                err -= dy;</b>
+<b class="nc">&nbsp;                x += sx;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                err += dx;</b>
+<b class="nc">&nbsp;                y += sy;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean overlap(int team, PathCost type, int x, int y, float startX, float startY, float endX, float endY, float rectSize){
+<b class="nc">&nbsp;        if(x &lt; 0 || y &lt; 0 || x &gt;= wwidth || y &gt;= wheight) return false;</b>
+<b class="nc">&nbsp;        if(!nearPassable(team, type, x + y * wwidth)){</b>
+<b class="nc">&nbsp;            return Intersector.intersectSegmentRectangleFast(startX, startY, endX, endY, x * tilesize - rectSize/2f, y * tilesize - rectSize/2f, rectSize, rectSize);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean raycastRect(float startX, float startY, float endX, float endY, int team, PathCost type, int x1, int y1, int x2, int y2, float rectSize){
+<b class="nc">&nbsp;        int ww = wwidth, wh = wheight;</b>
+<b class="nc">&nbsp;        int x = x1, dx = Math.abs(x2 - x), sx = x &lt; x2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int y = y1, dy = Math.abs(y2 - y), sy = y &lt; y2 ? 1 : -1;</b>
+<b class="nc">&nbsp;        int e2, err = dx - dy;</b>
+&nbsp;
+<b class="nc">&nbsp;        while(x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; x &lt; ww &amp;&amp; y &lt; wh){</b>
+<b class="nc">&nbsp;            if(</b>
+<b class="nc">&nbsp;            !nearPassable(team, type, x + y * wwidth) ||</b>
+<b class="nc">&nbsp;            overlap(team, type, x + 1, y, startX, startY, endX, endY, rectSize) ||</b>
+<b class="nc">&nbsp;            overlap(team, type, x - 1, y, startX, startY, endX, endY, rectSize) ||</b>
+<b class="nc">&nbsp;            overlap(team, type, x, y + 1, startX, startY, endX, endY, rectSize) ||</b>
+<b class="nc">&nbsp;            overlap(team, type, x, y - 1, startX, startY, endX, endY, rectSize)</b>
+<b class="nc">&nbsp;            ) return true;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(x == x2 &amp;&amp; y == y2) return false;</b>
+&nbsp;
+&nbsp;            //diagonal ver
+<b class="nc">&nbsp;            e2 = 2 * err;</b>
+<b class="nc">&nbsp;            if(e2 &gt; -dy){</b>
+<b class="nc">&nbsp;                err -= dy;</b>
+<b class="nc">&nbsp;                x += sx;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(e2 &lt; dx){</b>
+<b class="nc">&nbsp;                err += dx;</b>
+<b class="nc">&nbsp;                y += sy;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean avoid(int team, PathCost type, int tilePos){
+<b class="nc">&nbsp;        int cost = cost(team, type, tilePos);</b>
+<b class="nc">&nbsp;        return cost == impassable || cost &gt;= 2;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean passable(int team, PathCost cost, int pos){
+<b class="nc">&nbsp;        int amount = cost.getCost(team, pathfinder.tiles[pos]);</b>
+<b class="nc">&nbsp;        return amount != impassable &amp;&amp; amount &lt; solidCap;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean nearPassable(int team, PathCost cost, int pos){
+<b class="nc">&nbsp;        int amount = cost.getCost(team, pathfinder.tiles[pos]);</b>
+&nbsp;        //for standard units: never consider deep water (cost = 6000) passable
+&nbsp;        //for leg units: consider it passable
+<b class="nc">&nbsp;        return amount != impassable &amp;&amp; amount &lt; (cost == costLegs ? solidCap : 50);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean solid(int team, PathCost type, int x, int y){
+<b class="nc">&nbsp;        return x &lt; 0 || y &lt; 0 || x &gt;= wwidth || y &gt;= wheight || solid(team, type, x + y * wwidth, true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean solid(int team, PathCost type, int tilePos, boolean checkWall){
+<b class="nc">&nbsp;        int cost = cost(team, type, tilePos);</b>
+<b class="nc">&nbsp;        return cost == impassable || cost &gt;= solidCap;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static int cost(int team, PathCost cost, int tilePos){
+<b class="nc">&nbsp;        if(state.rules.limitMapArea &amp;&amp; !Team.get(team).isAI()){</b>
+<b class="nc">&nbsp;            int x = tilePos % wwidth, y = tilePos / wwidth;</b>
+<b class="nc">&nbsp;            if(x &lt; state.rules.limitX || y &lt; state.rules.limitY || x &gt; state.rules.limitX + state.rules.limitWidth || y &gt; state.rules.limitY + state.rules.limitHeight){</b>
+<b class="nc">&nbsp;                return impassable;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return cost.getCost(team, pathfinder.tiles[tilePos]);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void clusterChanged(int team, int pathCost, int cx, int cy){
+<b class="nc">&nbsp;        int index = cx + cy * cwidth;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var req : threadPathRequests){</b>
+<b class="nc">&nbsp;            long mapKey = FieldIndex.get(req.destination, pathCost, team);</b>
+<b class="nc">&nbsp;            var field = fields.get(mapKey);</b>
+<b class="nc">&nbsp;            if((field != null &amp;&amp; field.fields.containsKey(index)) || req.notFound){</b>
+<b class="nc">&nbsp;                invalidRequests.add(req);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateClustersComplete(int clusterIndex){
+<b class="fc">&nbsp;        for(int team = 0; team &lt; clusters.length; team++){</b>
+<b class="fc">&nbsp;            var dim1 = clusters[team];</b>
+<b class="fc">&nbsp;            if(dim1 != null){</b>
+<b class="nc">&nbsp;                for(int pathCost = 0; pathCost &lt; dim1.length; pathCost++){</b>
+<b class="nc">&nbsp;                    var dim2 = dim1[pathCost];</b>
+<b class="nc">&nbsp;                    if(dim2 != null){</b>
+<b class="nc">&nbsp;                        var cluster = dim2[clusterIndex];</b>
+<b class="nc">&nbsp;                        if(cluster != null){</b>
+<b class="nc">&nbsp;                            updateCluster(team, pathCost, clusterIndex % cwidth, clusterIndex / cwidth);</b>
+<b class="nc">&nbsp;                            clusterChanged(team, pathCost, clusterIndex % cwidth, clusterIndex / cwidth);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateClustersInner(int clusterIndex){
+<b class="fc">&nbsp;        for(int team = 0; team &lt; clusters.length; team++){</b>
+<b class="fc">&nbsp;            var dim1 = clusters[team];</b>
+<b class="fc">&nbsp;            if(dim1 != null){</b>
+<b class="nc">&nbsp;                for(int pathCost = 0; pathCost &lt; dim1.length; pathCost++){</b>
+<b class="nc">&nbsp;                    var dim2 = dim1[pathCost];</b>
+<b class="nc">&nbsp;                    if(dim2 != null){</b>
+<b class="nc">&nbsp;                        var cluster = dim2[clusterIndex];</b>
+<b class="nc">&nbsp;                        if(cluster != null){</b>
+<b class="nc">&nbsp;                            updateInnerEdges(team, pathCost, clusterIndex % cwidth, clusterIndex / cwidth, cluster);</b>
+<b class="nc">&nbsp;                            clusterChanged(team, pathCost, clusterIndex % cwidth, clusterIndex / cwidth);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void run(){
+<b class="fc">&nbsp;        long lastInvalidCheck = Time.millis() + invalidateCheckInterval;</b>
+&nbsp;
+&nbsp;        while(true){
+<b class="fc">&nbsp;            if(net.client()) return;</b>
+&nbsp;            try{
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;                if(state.isPlaying()){</b>
+<b class="fc">&nbsp;                    queue.run();</b>
+&nbsp;
+<b class="fc">&nbsp;                    clustersToUpdate.each(cluster -&gt; {</b>
+<b class="fc">&nbsp;                        updateClustersComplete(cluster);</b>
+&nbsp;
+&nbsp;                        //just in case: don&#39;t redundantly update inner clusters after you&#39;ve recalculated it entirely
+<b class="fc">&nbsp;                        clustersToInnerUpdate.remove(cluster);</b>
+&nbsp;                    });
+&nbsp;
+<b class="fc">&nbsp;                    clustersToInnerUpdate.each(cluster -&gt; {</b>
+&nbsp;                        //only recompute the inner links
+<b class="fc">&nbsp;                        updateClustersInner(cluster);</b>
+&nbsp;                    });
+&nbsp;
+<b class="fc">&nbsp;                    clustersToInnerUpdate.clear();</b>
+<b class="fc">&nbsp;                    clustersToUpdate.clear();</b>
+&nbsp;
+&nbsp;                    //periodically check for invalidated paths
+<b class="fc">&nbsp;                    if(Time.timeSinceMillis(lastInvalidCheck) &gt; invalidateCheckInterval){</b>
+<b class="fc">&nbsp;                        lastInvalidCheck = Time.millis();</b>
+&nbsp;
+<b class="fc">&nbsp;                        var it = invalidRequests.iterator();</b>
+<b class="fc">&nbsp;                        while(it.hasNext()){</b>
+<b class="nc">&nbsp;                            var request = it.next();</b>
+&nbsp;
+&nbsp;                            //invalid request, ignore it
+<b class="nc">&nbsp;                            if(request.invalidated){</b>
+<b class="nc">&nbsp;                                it.remove();</b>
+<b class="nc">&nbsp;                                continue;</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            long mapKey = FieldIndex.get(request.destination, request.costId, request.team);</b>
+&nbsp;
+<b class="nc">&nbsp;                            var field = fields.get(mapKey);</b>
+&nbsp;
+<b class="nc">&nbsp;                            if(field != null){</b>
+&nbsp;                                //it&#39;s only worth recalculating a path when the current frontier has finished; otherwise the unit will be following something incomplete.
+<b class="nc">&nbsp;                                if(field.frontier.isEmpty()){</b>
+&nbsp;
+&nbsp;                                    //remove the field, to be recalculated next update once recalculatePath is processed
+<b class="nc">&nbsp;                                    fields.remove(field.mapKey);</b>
+<b class="nc">&nbsp;                                    Core.app.post(() -&gt; fieldList.remove(field));</b>
+&nbsp;
+&nbsp;                                    //once the field is invalidated, make sure that all the requests that have it stored in their &#39;old&#39; field, so units don&#39;t stutter during recalculations
+<b class="nc">&nbsp;                                    for(var otherRequest : threadPathRequests){</b>
+<b class="nc">&nbsp;                                        if(otherRequest.destination == request.destination){</b>
+<b class="nc">&nbsp;                                            otherRequest.oldCache = field;</b>
+&nbsp;
+<b class="nc">&nbsp;                                            if(otherRequest != request){</b>
+<b class="nc">&nbsp;                                                queue.post(() -&gt; recalculatePath(otherRequest));</b>
+&nbsp;                                            }
+&nbsp;                                        }
+<b class="nc">&nbsp;                                    }</b>
+&nbsp;
+&nbsp;                                    //the recalculation is done next update, so multiple path requests in the same batch don&#39;t end up removing and recalculating the field multiple times.
+<b class="nc">&nbsp;                                    queue.post(() -&gt; recalculatePath(request));</b>
+&nbsp;                                    //it has been processed.
+<b class="nc">&nbsp;                                    it.remove();</b>
+&nbsp;                                }
+&nbsp;                            }else{ //there&#39;s no field, presumably because a previous request already invalidated it.
+<b class="nc">&nbsp;                                queue.post(() -&gt; recalculatePath(request));</b>
+<b class="nc">&nbsp;                                it.remove();</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //each update time (not total!) no longer than maxUpdate
+<b class="fc">&nbsp;                    for(FieldCache cache : fields.values()){</b>
+<b class="nc">&nbsp;                        updateFields(cache, maxUpdate);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                try{
+<b class="fc">&nbsp;                    Thread.sleep(updateInterval);</b>
+<b class="fc">&nbsp;                }catch(InterruptedException e){</b>
+&nbsp;                    //stop looping when interrupted externally
+&nbsp;                    return;
+<b class="fc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }catch(Throwable e){</b>
+<b class="nc">&nbsp;                e.printStackTrace();</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Struct
+<b class="nc">&nbsp;    static class FieldIndexStruct{</b>
+&nbsp;        int pos;
+&nbsp;        @StructField(8)
+&nbsp;        int costId;
+&nbsp;        @StructField(8)
+&nbsp;        int team;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Struct
+<b class="nc">&nbsp;    static class IntraEdgeStruct{</b>
+&nbsp;        @StructField(8)
+&nbsp;        int dir;
+&nbsp;        @StructField(8)
+&nbsp;        int portal;
+&nbsp;
+&nbsp;        float cost;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Struct
+<b class="nc">&nbsp;    static class NodeIndexStruct{</b>
+&nbsp;        @StructField(22)
+&nbsp;        int cluster;
+&nbsp;        @StructField(2)
+&nbsp;        int dir;
+&nbsp;        @StructField(8)
+&nbsp;        int portal;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

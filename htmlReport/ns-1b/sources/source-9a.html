@@ -1,0 +1,157 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TileOp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: TileOp (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TileOp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;/**
+&nbsp; * Bits used: 56 / 64
+&nbsp; * &lt;br&gt;  x [0..16]
+&nbsp; * &lt;br&gt;  y [16..32]
+&nbsp; * &lt;br&gt;  type [32..40]
+&nbsp; * &lt;br&gt;  value [40..56]
+&nbsp; */
+<b class="nc">&nbsp;public final class TileOp {</b>
+&nbsp;  public static final long bitMaskX = (long)(0b0000000000000000000000000000000000000000000000001111111111111111L);
+&nbsp;
+&nbsp;  public static final long bitMaskY = (long)(0b0000000000000000000000000000000011111111111111110000000000000000L);
+&nbsp;
+&nbsp;  public static final long bitMaskType = (long)(0b0000000000000000000000001111111100000000000000000000000000000000L);
+&nbsp;
+&nbsp;  public static final long bitMaskValue = (long)(0b0000000011111111111111110000000000000000000000000000000000000000L);
+&nbsp;
+&nbsp;  public static short x(long tileop) {
+<b class="nc">&nbsp;    return (short)((tileop &gt;&gt;&gt; 0) &amp; 0b0000000000000000000000000000000000000000000000001111111111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long x(long tileop, short value) {
+<b class="nc">&nbsp;    return (long)((tileop &amp; (~0b0000000000000000000000000000000000000000000000001111111111111111L)) | ((long)value &lt;&lt; 0L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static short y(long tileop) {
+<b class="nc">&nbsp;    return (short)((tileop &gt;&gt;&gt; 16) &amp; 0b0000000000000000000000000000000000000000000000001111111111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long y(long tileop, short value) {
+<b class="nc">&nbsp;    return (long)((tileop &amp; (~0b0000000000000000000000000000000011111111111111110000000000000000L)) | ((long)value &lt;&lt; 16L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static byte type(long tileop) {
+<b class="nc">&nbsp;    return (byte)((tileop &gt;&gt;&gt; 32) &amp; 0b0000000000000000000000000000000000000000000000000000000011111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long type(long tileop, byte value) {
+<b class="nc">&nbsp;    return (long)((tileop &amp; (~0b0000000000000000000000001111111100000000000000000000000000000000L)) | ((long)value &lt;&lt; 32L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static short value(long tileop) {
+<b class="nc">&nbsp;    return (short)((tileop &gt;&gt;&gt; 40) &amp; 0b0000000000000000000000000000000000000000000000001111111111111111L);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long value(long tileop, short value) {
+<b class="nc">&nbsp;    return (long)((tileop &amp; (~0b0000000011111111111111110000000000000000000000000000000000000000L)) | ((long)value &lt;&lt; 40L));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static long get(short x, short y, byte type, short value) {
+<b class="nc">&nbsp;    return (long)((((long)x &lt;&lt; 0L) &amp; 0b0000000000000000000000000000000000000000000000001111111111111111L) | (((long)y &lt;&lt; 16L) &amp; 0b0000000000000000000000000000000011111111111111110000000000000000L) | (((long)type &lt;&lt; 32L) &amp; 0b0000000000000000000000001111111100000000000000000000000000000000L) | (((long)value &lt;&lt; 40L) &amp; 0b0000000011111111111111110000000000000000000000000000000000000000L));</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

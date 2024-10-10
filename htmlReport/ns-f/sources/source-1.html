@@ -1,0 +1,545 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DesktopLauncher</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.desktop</a>
+</div>
+
+<h1>Coverage Summary for Class: DesktopLauncher (mindustry.desktop)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DesktopLauncher</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/141)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DesktopLauncher$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DesktopLauncher$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DesktopLauncher$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/176)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.desktop;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Files.*;
+&nbsp;import arc.backend.sdl.*;
+&nbsp;import arc.backend.sdl.jni.*;
+&nbsp;import arc.discord.*;
+&nbsp;import arc.discord.DiscordRPC.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.Log.*;
+&nbsp;import arc.util.serialization.*;
+&nbsp;import com.codedisaster.steamworks.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.desktop.steam.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.mod.Mods.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Net.*;
+&nbsp;import mindustry.service.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class DesktopLauncher extends ClientLauncher{
+&nbsp;    public final static long discordID = 610508934456934412L;
+<b class="nc">&nbsp;    boolean useDiscord = !OS.hasProp(&quot;nodiscord&quot;), loadError = false;</b>
+&nbsp;    Throwable steamError;
+&nbsp;
+&nbsp;    public static void main(String[] arg){
+&nbsp;        try{
+<b class="nc">&nbsp;            Vars.loadLogger();</b>
+<b class="nc">&nbsp;            new SdlApplication(new DesktopLauncher(arg), new SdlConfig(){{</b>
+<b class="nc">&nbsp;                title = &quot;Mindustry&quot;;</b>
+<b class="nc">&nbsp;                maximized = true;</b>
+<b class="nc">&nbsp;                width = 900;</b>
+<b class="nc">&nbsp;                height = 700;</b>
+&nbsp;                //request 3.1, which has instancing
+<b class="nc">&nbsp;                gl30Minor = 1;</b>
+<b class="nc">&nbsp;                gl30 = true;</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; arg.length; i++){</b>
+<b class="nc">&nbsp;                    if(arg[i].charAt(0) == &#39;-&#39;){</b>
+<b class="nc">&nbsp;                        String name = arg[i].substring(1);</b>
+&nbsp;                        try{
+<b class="nc">&nbsp;                            switch(name){</b>
+<b class="nc">&nbsp;                                case &quot;width&quot;: width = Integer.parseInt(arg[i + 1]); break;</b>
+<b class="nc">&nbsp;                                case &quot;height&quot;: height = Integer.parseInt(arg[i + 1]); break;</b>
+<b class="nc">&nbsp;                                case &quot;gl3&quot;: gl30 = true; break;</b>
+<b class="nc">&nbsp;                                case &quot;gl2&quot;: gl30 = false; break;</b>
+<b class="nc">&nbsp;                                case &quot;antialias&quot;: samples = 16; break;</b>
+<b class="nc">&nbsp;                                case &quot;debug&quot;: Log.level = LogLevel.debug; break;</b>
+<b class="nc">&nbsp;                                case &quot;maximized&quot;: maximized = Boolean.parseBoolean(arg[i + 1]); break;</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }catch(NumberFormatException number){</b>
+<b class="nc">&nbsp;                            Log.warn(&quot;Invalid parameter number value.&quot;);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;                setWindowIcon(FileType.internal, &quot;icons/icon_64.png&quot;);</b>
+&nbsp;            }});
+<b class="nc">&nbsp;        }catch(Throwable e){</b>
+<b class="nc">&nbsp;            handleCrash(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public DesktopLauncher(String[] args){</b>
+<b class="nc">&nbsp;        Version.init();</b>
+<b class="nc">&nbsp;        boolean useSteam = Version.modifier.contains(&quot;steam&quot;);</b>
+<b class="nc">&nbsp;        testMobile = Seq.with(args).contains(&quot;-testMobile&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(useDiscord){</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                DiscordRPC.connect(discordID);</b>
+<b class="nc">&nbsp;                Log.info(&quot;Initialized Discord rich presence.&quot;);</b>
+<b class="nc">&nbsp;                Runtime.getRuntime().addShutdownHook(new Thread(DiscordRPC::close));</b>
+<b class="nc">&nbsp;            }catch(NoDiscordClientException none){</b>
+&nbsp;                //don&#39;t log if no client is found
+<b class="nc">&nbsp;                useDiscord = false;</b>
+<b class="nc">&nbsp;            }catch(Throwable t){</b>
+<b class="nc">&nbsp;                useDiscord = false;</b>
+<b class="nc">&nbsp;                Log.warn(&quot;Failed to initialize Discord RPC - you are likely using a JVM &lt;16.&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(useSteam){</b>
+&nbsp;
+<b class="nc">&nbsp;            Events.on(ClientLoadEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;                if(steamError != null){</b>
+<b class="nc">&nbsp;                    Core.app.post(() -&gt; Core.app.post(() -&gt; Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                        ui.showErrorMessage(Core.bundle.format(&quot;steam.error&quot;, (steamError.getMessage() == null) ? steamError.getClass().getSimpleName() : steamError.getClass().getSimpleName() + &quot;: &quot; + steamError.getMessage()));</b>
+&nbsp;                    })));
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+&nbsp;            try{
+<b class="nc">&nbsp;                SteamAPI.loadLibraries();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!SteamAPI.init()){</b>
+<b class="nc">&nbsp;                    loadError = true;</b>
+<b class="nc">&nbsp;                    Log.err(&quot;Steam client not running.&quot;);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    initSteam(args);</b>
+<b class="nc">&nbsp;                    Vars.steam = true;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(SteamAPI.restartAppIfNecessary(SVars.steamID)){</b>
+<b class="nc">&nbsp;                    System.exit(0);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }catch(Throwable e){</b>
+<b class="nc">&nbsp;                steam = false;</b>
+<b class="nc">&nbsp;                Log.err(&quot;Failed to load Steam native libraries.&quot;);</b>
+<b class="nc">&nbsp;                logSteamError(e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void logSteamError(Throwable e){
+<b class="nc">&nbsp;        steamError = e;</b>
+<b class="nc">&nbsp;        loadError = true;</b>
+<b class="nc">&nbsp;        Log.err(e);</b>
+<b class="nc">&nbsp;        try(OutputStream s = new FileOutputStream(&quot;steam-error-log-&quot; + System.nanoTime() + &quot;.txt&quot;)){</b>
+<b class="nc">&nbsp;            String log = Strings.neatError(e);</b>
+<b class="nc">&nbsp;            s.write(log.getBytes());</b>
+<b class="nc">&nbsp;        }catch(Exception e2){</b>
+<b class="nc">&nbsp;            Log.err(e2);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void initSteam(String[] args){
+<b class="nc">&nbsp;        SVars.net = new SNet(new ArcNetProvider());</b>
+<b class="nc">&nbsp;        SVars.stats = new SStats();</b>
+<b class="nc">&nbsp;        SVars.workshop = new SWorkshop();</b>
+<b class="nc">&nbsp;        SVars.user = new SUser();</b>
+<b class="nc">&nbsp;        boolean[] isShutdown = {false};</b>
+&nbsp;
+<b class="nc">&nbsp;        service = new GameService(){</b>
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public boolean enabled(){
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void completeAchievement(String name){
+<b class="nc">&nbsp;                SVars.stats.stats.setAchievement(name);</b>
+<b class="nc">&nbsp;                SVars.stats.stats.storeStats();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void clearAchievement(String name){
+<b class="nc">&nbsp;                SVars.stats.stats.clearAchievement(name);</b>
+<b class="nc">&nbsp;                SVars.stats.stats.storeStats();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public boolean isAchieved(String name){
+<b class="nc">&nbsp;                return SVars.stats.stats.isAchieved(name, false);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public int getStat(String name, int def){
+<b class="nc">&nbsp;                return SVars.stats.stats.getStatI(name, def);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void setStat(String name, int amount){
+<b class="nc">&nbsp;                SVars.stats.stats.setStatI(name, amount);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public void storeStats(){
+<b class="nc">&nbsp;                SVars.stats.onUpdate();</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ClientLoadEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            Core.settings.defaults(&quot;name&quot;, SVars.net.friends.getPersonaName());</b>
+<b class="nc">&nbsp;            if(player.name.isEmpty()){</b>
+<b class="nc">&nbsp;                player.name = SVars.net.friends.getPersonaName();</b>
+<b class="nc">&nbsp;                Core.settings.put(&quot;name&quot;, player.name);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            steamPlayerName = SVars.net.friends.getPersonaName();</b>
+&nbsp;            //update callbacks
+<b class="nc">&nbsp;            Core.app.addListener(new ApplicationListener(){</b>
+&nbsp;                @Override
+&nbsp;                public void update(){
+<b class="nc">&nbsp;                    if(SteamAPI.isSteamRunning()){</b>
+<b class="nc">&nbsp;                        SteamAPI.runCallbacks();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                if(args.length &gt;= 2 &amp;&amp; args[0].equals(&quot;+connect_lobby&quot;)){</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        long id = Long.parseLong(args[1]);</b>
+<b class="nc">&nbsp;                        ui.join.connect(&quot;steam:&quot; + id, port);</b>
+<b class="nc">&nbsp;                    }catch(Exception e){</b>
+<b class="nc">&nbsp;                        Log.err(&quot;Failed to parse steam lobby ID: @&quot;, e.getMessage());</b>
+<b class="nc">&nbsp;                        e.printStackTrace();</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        Events.on(DisposeEvent.class, event -&gt; {</b>
+<b class="nc">&nbsp;            SteamAPI.shutdown();</b>
+<b class="nc">&nbsp;            isShutdown[0] = true;</b>
+&nbsp;        });
+&nbsp;
+&nbsp;        //steam shutdown hook
+<b class="nc">&nbsp;        Runtime.getRuntime().addShutdownHook(new Thread(() -&gt; {</b>
+<b class="nc">&nbsp;            if(!isShutdown[0]){</b>
+<b class="nc">&nbsp;                SteamAPI.shutdown();</b>
+&nbsp;            }
+&nbsp;        }));
+&nbsp;    }
+&nbsp;
+&nbsp;    static void handleCrash(Throwable e){
+<b class="nc">&nbsp;        boolean badGPU = false;</b>
+<b class="nc">&nbsp;        String finalMessage = Strings.getFinalMessage(e);</b>
+<b class="nc">&nbsp;        String total = Strings.getCauses(e).toString();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(total.contains(&quot;Couldn&#39;t create window&quot;) || total.contains(&quot;OpenGL 2.0 or higher&quot;) || total.toLowerCase().contains(&quot;pixel format&quot;) || total.contains(&quot;GLEW&quot;)|| total.contains(&quot;unsupported combination of formats&quot;)){</b>
+&nbsp;
+<b class="nc">&nbsp;            message(</b>
+<b class="nc">&nbsp;                total.contains(&quot;Couldn&#39;t create window&quot;) ? &quot;A graphics initialization error has occured! Try to update your graphics drivers:\n&quot; + finalMessage :</b>
+&nbsp;                            &quot;Your graphics card does not support the right OpenGL features.\n&quot; +
+&nbsp;                                    &quot;Try to update your graphics drivers. If this doesn&#39;t work, your computer may not support Mindustry.\n\n&quot; +
+<b class="nc">&nbsp;                                    &quot;Full message: &quot; + finalMessage);</b>
+<b class="nc">&nbsp;            badGPU = true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean fbgp = badGPU;</b>
+&nbsp;
+<b class="nc">&nbsp;        LoadedMod cause = CrashHandler.getModCause(e);</b>
+<b class="nc">&nbsp;        String causeString = cause == null ? (Structs.contains(e.getStackTrace(), st -&gt; st.getClassName().contains(&quot;rhino.gen.&quot;)) ? &quot;A mod or script has caused Mindustry to crash.\nConsider disabling your mods if the issue persists.\n&quot; : &quot;Mindustry has crashed.&quot;) :</b>
+<b class="nc">&nbsp;            &quot;&#39;&quot; + cause.meta.displayName + &quot;&#39; (&quot; + cause.name + &quot;) has caused Mindustry to crash.\nConsider disabling this mod if issues persist.\n&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;        CrashHandler.handle(e, file -&gt; {</b>
+<b class="nc">&nbsp;            Throwable fc = Strings.getFinalCause(e);</b>
+<b class="nc">&nbsp;            if(!fbgp){</b>
+<b class="nc">&nbsp;                message(causeString + &quot;\nThe logs have been saved in:\n&quot; + file.getAbsolutePath() + &quot;\n&quot; + fc.getClass().getSimpleName().replace(&quot;Exception&quot;, &quot;&quot;) + (fc.getMessage() == null ? &quot;&quot; : &quot;:\n&quot; + fc.getMessage()));</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Seq&lt;Fi&gt; getWorkshopContent(Class&lt;? extends Publishable&gt; type){
+<b class="nc">&nbsp;        return !steam ? super.getWorkshopContent(type) : SVars.workshop.getWorkshopFiles(type);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void viewListing(Publishable pub){
+<b class="nc">&nbsp;        SVars.workshop.viewListing(pub);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void viewListingID(String id){
+<b class="nc">&nbsp;        SVars.net.friends.activateGameOverlayToWebPage(&quot;steam://url/CommunityFilePage/&quot; + id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public NetProvider getNet(){
+<b class="nc">&nbsp;        return steam ? SVars.net : new ArcNetProvider();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void openWorkshop(){
+<b class="nc">&nbsp;        SVars.net.friends.activateGameOverlayToWebPage(&quot;https://steamcommunity.com/app/1127400/workshop/&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void publish(Publishable pub){
+<b class="nc">&nbsp;        SVars.workshop.publish(pub);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void inviteFriends(){
+<b class="nc">&nbsp;        SVars.net.showFriendInvites();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateLobby(){
+<b class="nc">&nbsp;        if(SVars.net != null){</b>
+<b class="nc">&nbsp;            SVars.net.updateLobby();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateRPC(){
+&nbsp;        //if we&#39;re using neither discord nor steam, do no work
+<b class="nc">&nbsp;        if(!useDiscord &amp;&amp; !steam) return;</b>
+&nbsp;
+&nbsp;        //common elements they each share
+<b class="nc">&nbsp;        boolean inGame = state.isGame();</b>
+<b class="nc">&nbsp;        String gameMapWithWave = &quot;Unknown Map&quot;;</b>
+<b class="nc">&nbsp;        String gameMode = &quot;&quot;;</b>
+<b class="nc">&nbsp;        String gamePlayersSuffix = &quot;&quot;;</b>
+<b class="nc">&nbsp;        String uiState = &quot;&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(inGame){</b>
+<b class="nc">&nbsp;            gameMapWithWave = Strings.capitalize(Strings.stripColors(state.map.name()));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(state.rules.waves){</b>
+<b class="nc">&nbsp;                gameMapWithWave += &quot; | Wave &quot; + state.wave;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            gameMode = state.rules.pvp ? &quot;PvP&quot; : state.rules.attackMode ? &quot;Attack&quot; : state.rules.infiniteResources ? &quot;Sandbox&quot; : &quot;Survival&quot;;</b>
+<b class="nc">&nbsp;            if(net.active() &amp;&amp; Groups.player.size() &gt; 1){</b>
+<b class="nc">&nbsp;                gamePlayersSuffix = &quot; | &quot; + Groups.player.size() + &quot; Players&quot;;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            if(ui.editor != null &amp;&amp; ui.editor.isShown()){</b>
+<b class="nc">&nbsp;                uiState = &quot;In Editor&quot;;</b>
+<b class="nc">&nbsp;            }else if(ui.planet != null &amp;&amp; ui.planet.isShown()){</b>
+<b class="nc">&nbsp;                uiState = &quot;In Launch Selection&quot;;</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                uiState = &quot;In Menu&quot;;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(useDiscord){</b>
+<b class="nc">&nbsp;            RichPresence presence = new RichPresence();</b>
+&nbsp;
+<b class="nc">&nbsp;            if(inGame){</b>
+<b class="nc">&nbsp;                presence.state = gameMode + gamePlayersSuffix;</b>
+<b class="nc">&nbsp;                presence.details = gameMapWithWave;</b>
+<b class="nc">&nbsp;                if(state.rules.waves){</b>
+<b class="nc">&nbsp;                    presence.largeImageText = &quot;Wave &quot; + state.wave;</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="nc">&nbsp;                presence.state = uiState;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            presence.largeImageKey = &quot;logo&quot;;</b>
+&nbsp;
+&nbsp;            try{
+<b class="nc">&nbsp;                DiscordRPC.send(presence);</b>
+<b class="nc">&nbsp;            }catch(Exception ignored){}</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(steam){</b>
+&nbsp;            //Steam mostly just expects us to give it a nice string, but it apparently expects &quot;steam_display&quot; to always be a loc token, so I&#39;ve uploaded this one which just passes through &#39;steam_status&#39; raw.
+<b class="nc">&nbsp;            SVars.net.friends.setRichPresence(&quot;steam_display&quot;, &quot;#steam_status_raw&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(inGame){</b>
+<b class="nc">&nbsp;                SVars.net.friends.setRichPresence(&quot;steam_status&quot;, gameMapWithWave);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                SVars.net.friends.setRichPresence(&quot;steam_status&quot;, uiState);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String getUUID(){
+<b class="nc">&nbsp;        if(steam){</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                byte[] result = new byte[8];</b>
+<b class="nc">&nbsp;                new Rand(SVars.user.user.getSteamID().getAccountID()).nextBytes(result);</b>
+<b class="nc">&nbsp;                return new String(Base64Coder.encode(result));</b>
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                e.printStackTrace();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return super.getUUID();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void message(String message){
+<b class="nc">&nbsp;        SDL.SDL_ShowSimpleMessageBox(SDL.SDL_MESSAGEBOX_ERROR, &quot;oh no&quot;, message);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

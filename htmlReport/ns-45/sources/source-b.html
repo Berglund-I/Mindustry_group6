@@ -1,0 +1,162 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawFlame</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawFlame (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawFlame</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.4%
+  </span>
+  <span class="absValue">
+    (7/23)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;public class DrawFlame extends DrawBlock{
+<b class="fc">&nbsp;    public Color flameColor = Color.valueOf(&quot;ffc999&quot;);</b>
+&nbsp;    public TextureRegion top;
+<b class="fc">&nbsp;    public float lightRadius = 60f, lightAlpha = 0.65f, lightSinScl = 10f, lightSinMag = 5;</b>
+<b class="fc">&nbsp;    public float flameRadius = 3f, flameRadiusIn = 1.9f, flameRadiusScl = 5f, flameRadiusMag = 2f, flameRadiusInMag = 1f;</b>
+<b class="fc">&nbsp;    public float flameX = 0, flameY = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;    public DrawFlame(){</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public DrawFlame(Color flameColor){</b>
+<b class="fc">&nbsp;        this.flameColor = flameColor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(Block block){
+<b class="nc">&nbsp;        top = Core.atlas.find(block.name + &quot;-top&quot;);</b>
+<b class="nc">&nbsp;        block.clipSize = Math.max(block.clipSize, (lightRadius + lightSinMag) * 2f * block.size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+<b class="nc">&nbsp;        if(build.warmup() &gt; 0f &amp;&amp; flameColor.a &gt; 0.001f){</b>
+<b class="nc">&nbsp;            float g = 0.3f;</b>
+<b class="nc">&nbsp;            float r = 0.06f;</b>
+<b class="nc">&nbsp;            float cr = Mathf.random(0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.block + 0.01f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.alpha(build.warmup());</b>
+<b class="nc">&nbsp;            Draw.rect(top, build.x, build.y);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.alpha(((1f - g) + Mathf.absin(Time.time, 8f, g) + Mathf.random(r) - r) * build.warmup());</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.tint(flameColor);</b>
+<b class="nc">&nbsp;            Fill.circle(build.x + flameX, build.y + flameY, flameRadius + Mathf.absin(Time.time, flameRadiusScl, flameRadiusMag) + cr);</b>
+<b class="nc">&nbsp;            Draw.color(1f, 1f, 1f, build.warmup());</b>
+<b class="nc">&nbsp;            Fill.circle(build.x + flameX, build.y + flameY, flameRadiusIn + Mathf.absin(Time.time, flameRadiusScl, flameRadiusInMag) + cr);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawLight(Building build){
+<b class="nc">&nbsp;        Drawf.light(build.x + flameX, build.y + flameY, (lightRadius + Mathf.absin(lightSinScl, lightSinMag)) * build.warmup() * build.block.size, flameColor, lightAlpha);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

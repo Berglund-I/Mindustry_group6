@@ -1,0 +1,182 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BlockConfigFragment</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.fragments</a>
+</div>
+
+<h1>Coverage Summary for Class: BlockConfigFragment (mindustry.ui.fragments)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BlockConfigFragment</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.fragments;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.actions.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class BlockConfigFragment{</b>
+<b class="nc">&nbsp;    Table table = new Table();</b>
+&nbsp;    Building selected;
+&nbsp;
+&nbsp;    public void build(Group parent){
+<b class="nc">&nbsp;        table.visible = false;</b>
+<b class="nc">&nbsp;        parent.addChild(table);</b>
+&nbsp;
+<b class="nc">&nbsp;        Events.on(ResetEvent.class, e -&gt; forceHide());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void forceHide(){
+<b class="nc">&nbsp;        table.visible = false;</b>
+<b class="nc">&nbsp;        selected = null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isShown(){
+<b class="nc">&nbsp;        return table.visible &amp;&amp; selected != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Building getSelected(){
+<b class="nc">&nbsp;        return selected;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void showConfig(Building tile){
+<b class="nc">&nbsp;        if(selected != null) selected.onConfigureClosed();</b>
+<b class="nc">&nbsp;        if(tile.configTapped()){</b>
+<b class="nc">&nbsp;            selected = tile;</b>
+&nbsp;
+<b class="nc">&nbsp;            table.visible = true;</b>
+<b class="nc">&nbsp;            table.clear();</b>
+<b class="nc">&nbsp;            table.background(null);</b>
+<b class="nc">&nbsp;            tile.buildConfiguration(table);</b>
+<b class="nc">&nbsp;            table.pack();</b>
+<b class="nc">&nbsp;            table.setTransform(true);</b>
+<b class="nc">&nbsp;            table.actions(Actions.scaleTo(0f, 1f), Actions.visible(true),</b>
+<b class="nc">&nbsp;            Actions.scaleTo(1f, 1f, 0.07f, Interp.pow3Out));</b>
+&nbsp;
+<b class="nc">&nbsp;            table.update(() -&gt; {</b>
+<b class="nc">&nbsp;                if(selected != null &amp;&amp; selected.shouldHideConfigure(player)){</b>
+<b class="nc">&nbsp;                    hideConfig();</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                table.setOrigin(Align.center);</b>
+<b class="nc">&nbsp;                if(selected == null || selected.block == Blocks.air || !selected.isValid()){</b>
+<b class="nc">&nbsp;                    hideConfig();</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    selected.updateTableAlign(table);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasConfigMouse(){
+<b class="nc">&nbsp;        Element e = Core.scene.getHoverElement();</b>
+<b class="nc">&nbsp;        return e != null &amp;&amp; (e == table || e.isDescendantOf(table));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void hideConfig(){
+<b class="nc">&nbsp;        if(selected != null) selected.onConfigureClosed();</b>
+<b class="nc">&nbsp;        selected = null;</b>
+<b class="nc">&nbsp;        table.actions(Actions.scaleTo(0f, 1f, 0.06f, Interp.pow3Out), Actions.visible(false));</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,152 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SyncComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: SyncComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SyncComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;import java.nio.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class SyncComp implements Entityc{</b>
+&nbsp;    transient long lastUpdated, updateSpacing;
+&nbsp;
+&nbsp;    //all these method bodies are internally generated
+<b class="nc">&nbsp;    void snapSync(){}</b>
+<b class="nc">&nbsp;    void snapInterpolation(){}</b>
+<b class="nc">&nbsp;    void readSync(Reads read){}</b>
+<b class="nc">&nbsp;    void writeSync(Writes write){}</b>
+<b class="nc">&nbsp;    void readSyncManual(FloatBuffer buffer){}</b>
+<b class="nc">&nbsp;    void writeSyncManual(FloatBuffer buffer){}</b>
+<b class="nc">&nbsp;    void afterSync(){}</b>
+<b class="nc">&nbsp;    void interpolate(){}</b>
+&nbsp;
+&nbsp;    boolean isSyncHidden(Player player){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void handleSyncHidden(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+&nbsp;        //interpolate the player if:
+&nbsp;        //- this is a client and the entity is everything except the local player
+&nbsp;        //- this is a server and the entity is a remote player
+<b class="nc">&nbsp;        if((Vars.net.client() &amp;&amp; !isLocal()) || isRemote()){</b>
+<b class="nc">&nbsp;            interpolate();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void remove(){
+&nbsp;        //notify client of removal
+<b class="nc">&nbsp;        if(Vars.net.client()){</b>
+<b class="nc">&nbsp;            Vars.netClient.addRemovedEntity(id());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

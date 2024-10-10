@@ -1,0 +1,310 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TractorBeamTurret</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense.turrets</a>
+</div>
+
+<h1>Coverage Summary for Class: TractorBeamTurret (mindustry.world.blocks.defense.turrets)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TractorBeamTurret</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (20/25)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TractorBeamTurret$TractorBeamBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (5/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29.2%
+  </span>
+  <span class="absValue">
+    (14/48)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (7/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46.6%
+  </span>
+  <span class="absValue">
+    (34/73)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense.turrets;
+&nbsp;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class TractorBeamTurret extends BaseTurret{
+<b class="fc">&nbsp;    public final int timerTarget = timers++;</b>
+<b class="fc">&nbsp;    public float retargetTime = 5f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float shootCone = 6f;</b>
+<b class="fc">&nbsp;    public float shootLength = 5f;</b>
+<b class="fc">&nbsp;    public float laserWidth = 0.6f;</b>
+<b class="fc">&nbsp;    public float force = 0.3f;</b>
+<b class="fc">&nbsp;    public float scaledForce = 0f;</b>
+<b class="fc">&nbsp;    public float damage = 0f;</b>
+<b class="fc">&nbsp;    public boolean targetAir = true, targetGround = false;</b>
+<b class="fc">&nbsp;    public Color laserColor = Color.white;</b>
+<b class="fc">&nbsp;    public StatusEffect status = StatusEffects.none;</b>
+<b class="fc">&nbsp;    public float statusDuration = 300;</b>
+&nbsp;
+<b class="fc">&nbsp;    public Sound shootSound = Sounds.tractorbeam;</b>
+<b class="fc">&nbsp;    public float shootSoundVolume = 0.9f;</b>
+&nbsp;
+&nbsp;    public @Load(value = &quot;@-base&quot;, fallback = &quot;block-@size&quot;) TextureRegion baseRegion;
+&nbsp;    public @Load(&quot;@-laser&quot;) TextureRegion laser;
+&nbsp;    public @Load(value = &quot;@-laser-start&quot;, fallback = &quot;@-laser-end&quot;) TextureRegion laserStart;
+&nbsp;    public @Load(&quot;@-laser-end&quot;) TextureRegion laserEnd;
+&nbsp;
+&nbsp;    public TractorBeamTurret(String name){
+<b class="fc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        rotateSpeed = 10f;</b>
+<b class="fc">&nbsp;        coolantMultiplier = 1f;</b>
+<b class="fc">&nbsp;        envEnabled |= Env.space;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{baseRegion, region};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.targetsAir, targetAir);</b>
+<b class="nc">&nbsp;        stats.add(Stat.targetsGround, targetGround);</b>
+<b class="nc">&nbsp;        if(damage &gt; 0) stats.add(Stat.damage, damage * 60f, StatUnit.perSecond);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        updateClipRadius(range + tilesize);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class TractorBeamBuild extends BaseTurretBuild{</b>
+&nbsp;        public @Nullable Unit target;
+&nbsp;        public float lastX, lastY, strength;
+&nbsp;        public boolean any;
+<b class="fc">&nbsp;        public float coolantMultiplier = 1f;</b>
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            float eff = efficiency * coolantMultiplier, edelta = eff * delta();</b>
+&nbsp;
+&nbsp;            //retarget
+<b class="fc">&nbsp;            if(timer(timerTarget, retargetTime)){</b>
+<b class="fc">&nbsp;                target = Units.closestEnemy(team, x, y, range, u -&gt; u.checkTarget(targetAir, targetGround));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //consume coolant
+<b class="fc">&nbsp;            if(target != null &amp;&amp; coolant != null){</b>
+<b class="nc">&nbsp;                float maxUsed = coolant.amount;</b>
+&nbsp;
+<b class="nc">&nbsp;                Liquid liquid = liquids.current();</b>
+&nbsp;
+<b class="nc">&nbsp;                float used = Math.min(Math.min(liquids.get(liquid), maxUsed * Time.delta), Math.max(0, (1f / coolantMultiplier) / liquid.heatCapacity));</b>
+&nbsp;
+<b class="nc">&nbsp;                liquids.remove(liquid, used);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(Mathf.chance(0.06 * used)){</b>
+<b class="nc">&nbsp;                    coolEffect.at(x + Mathf.range(size * tilesize / 2f), y + Mathf.range(size * tilesize / 2f));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                coolantMultiplier = 1f + (used * liquid.heatCapacity * coolantMultiplier);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            any = false;</b>
+&nbsp;
+&nbsp;            //look at target
+<b class="fc">&nbsp;            if(target != null &amp;&amp; target.within(this, range + target.hitSize/2f) &amp;&amp; target.team() != team &amp;&amp; target.checkTarget(targetAir, targetGround) &amp;&amp; efficiency &gt; 0.02f){</b>
+<b class="nc">&nbsp;                if(!headless){</b>
+<b class="nc">&nbsp;                    control.sound.loop(shootSound, this, shootSoundVolume);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                float dest = angleTo(target);</b>
+<b class="nc">&nbsp;                rotation = Angles.moveToward(rotation, dest, rotateSpeed * edelta);</b>
+<b class="nc">&nbsp;                lastX = target.x;</b>
+<b class="nc">&nbsp;                lastY = target.y;</b>
+<b class="nc">&nbsp;                strength = Mathf.lerpDelta(strength, 1f, 0.1f);</b>
+&nbsp;
+&nbsp;                //shoot when possible
+<b class="nc">&nbsp;                if(Angles.within(rotation, dest, shootCone)){</b>
+<b class="nc">&nbsp;                    if(damage &gt; 0){</b>
+<b class="nc">&nbsp;                        target.damageContinuous(damage * eff * state.rules.blockDamage(team));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(status != StatusEffects.none){</b>
+<b class="nc">&nbsp;                        target.apply(status, statusDuration);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    any = true;</b>
+<b class="nc">&nbsp;                    target.impulseNet(Tmp.v1.set(this).sub(target).limit((force + (1f - target.dst(this) / range) * scaledForce) * edelta));</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else{</b>
+<b class="fc">&nbsp;                strength = Mathf.lerpDelta(strength, 0, 0.1f);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            return super.shouldConsume() &amp;&amp; target != null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float estimateDps(){
+<b class="nc">&nbsp;            if(!any || damage &lt;= 0) return 0f;</b>
+<b class="nc">&nbsp;            return damage * 60f * efficiency * coolantMultiplier;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(baseRegion, x, y);</b>
+<b class="nc">&nbsp;            Drawf.shadow(region, x - (size / 2f), y - (size / 2f), rotation - 90);</b>
+<b class="nc">&nbsp;            Draw.rect(region, x, y, rotation - 90);</b>
+&nbsp;
+&nbsp;            //draw laser if applicable
+<b class="nc">&nbsp;            if(any){</b>
+<b class="nc">&nbsp;                Draw.z(Layer.bullet);</b>
+<b class="nc">&nbsp;                float ang = angleTo(lastX, lastY);</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.mixcol(laserColor, Mathf.absin(4f, 0.6f));</b>
+&nbsp;
+<b class="nc">&nbsp;                Drawf.laser(laser, laserStart, laserEnd,</b>
+<b class="nc">&nbsp;                x + Angles.trnsx(ang, shootLength), y + Angles.trnsy(ang, shootLength),</b>
+&nbsp;                lastX, lastY, strength * efficiency * laserWidth);
+&nbsp;
+<b class="nc">&nbsp;                Draw.mixcol();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+&nbsp;
+<b class="fc">&nbsp;            write.f(rotation);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+&nbsp;
+<b class="fc">&nbsp;            rotation = read.f();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

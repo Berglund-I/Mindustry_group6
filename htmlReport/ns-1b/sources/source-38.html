@@ -1,0 +1,189 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Groups</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: Groups (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Groups</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (5/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    81.1%
+  </span>
+  <span class="absValue">
+    (30/37)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.struct.Seq;
+&nbsp;import arc.util.pooling.Pool;
+&nbsp;import arc.util.pooling.Pools;
+&nbsp;import mindustry.entities.EntityGroup;
+&nbsp;
+<b class="nc">&nbsp;public class Groups {</b>
+&nbsp;  public static EntityGroup&lt;Entityc&gt; all;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;Building&gt; build;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;Bullet&gt; bullet;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;Drawc&gt; draw;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;Fire&gt; fire;
+&nbsp;
+<b class="fc">&nbsp;  private static Seq&lt;Pool.Poolable&gt; freeQueue = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;  public static boolean isClearing;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;WorldLabel&gt; label;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;Player&gt; player;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;PowerGraphUpdaterc&gt; powerGraph;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;Puddle&gt; puddle;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;Syncc&gt; sync;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;Unit&gt; unit;
+&nbsp;
+&nbsp;  public static EntityGroup&lt;WeatherState&gt; weather;
+&nbsp;
+&nbsp;  public static void clear() {
+<b class="fc">&nbsp;    isClearing = true;</b>
+<b class="fc">&nbsp;    all.clear();</b>
+<b class="fc">&nbsp;    player.clear();</b>
+<b class="fc">&nbsp;    bullet.clear();</b>
+<b class="fc">&nbsp;    unit.clear();</b>
+<b class="fc">&nbsp;    build.clear();</b>
+<b class="fc">&nbsp;    sync.clear();</b>
+<b class="fc">&nbsp;    draw.clear();</b>
+<b class="fc">&nbsp;    fire.clear();</b>
+<b class="fc">&nbsp;    puddle.clear();</b>
+<b class="fc">&nbsp;    weather.clear();</b>
+<b class="fc">&nbsp;    label.clear();</b>
+<b class="fc">&nbsp;    powerGraph.clear();</b>
+<b class="fc">&nbsp;    isClearing = false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void init() {
+<b class="fc">&nbsp;    all = new EntityGroup&lt;&gt;(mindustry.gen.Entityc.class, false, false, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__all ix) ix.setIndex__all(pos); });</b>
+<b class="fc">&nbsp;    player = new EntityGroup&lt;&gt;(mindustry.gen.Player.class, false, true, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__player ix) ix.setIndex__player(pos); });</b>
+<b class="fc">&nbsp;    bullet = new EntityGroup&lt;&gt;(mindustry.gen.Bullet.class, true, false, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__bullet ix) ix.setIndex__bullet(pos); });</b>
+<b class="fc">&nbsp;    unit = new EntityGroup&lt;&gt;(mindustry.gen.Unit.class, true, true, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__unit ix) ix.setIndex__unit(pos); });</b>
+<b class="fc">&nbsp;    build = new EntityGroup&lt;&gt;(mindustry.gen.Building.class, false, false, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__build ix) ix.setIndex__build(pos); });</b>
+<b class="fc">&nbsp;    sync = new EntityGroup&lt;&gt;(mindustry.gen.Syncc.class, false, true, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__sync ix) ix.setIndex__sync(pos); });</b>
+<b class="fc">&nbsp;    draw = new EntityGroup&lt;&gt;(mindustry.gen.Drawc.class, false, false, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__draw ix) ix.setIndex__draw(pos); });</b>
+<b class="fc">&nbsp;    fire = new EntityGroup&lt;&gt;(mindustry.gen.Fire.class, false, false, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__fire ix) ix.setIndex__fire(pos); });</b>
+<b class="fc">&nbsp;    puddle = new EntityGroup&lt;&gt;(mindustry.gen.Puddle.class, false, false, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__puddle ix) ix.setIndex__puddle(pos); });</b>
+<b class="fc">&nbsp;    weather = new EntityGroup&lt;&gt;(mindustry.gen.WeatherState.class, false, false, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__weather ix) ix.setIndex__weather(pos); });</b>
+<b class="fc">&nbsp;    label = new EntityGroup&lt;&gt;(mindustry.gen.WorldLabel.class, false, true, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__label ix) ix.setIndex__label(pos); });</b>
+<b class="fc">&nbsp;    powerGraph = new EntityGroup&lt;&gt;(mindustry.gen.PowerGraphUpdaterc.class, false, false, (e, pos) -&gt; { if(e instanceof mindustry.gen.IndexableEntity__powerGraph ix) ix.setIndex__powerGraph(pos); });</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void queueFree(Pool.Poolable obj) {
+<b class="fc">&nbsp;    freeQueue.add(obj);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void resize(float x, float y, float w, float h) {
+<b class="fc">&nbsp;    bullet.resize(x, y, w, h);</b>
+<b class="fc">&nbsp;    unit.resize(x, y, w, h);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  public static void update() {
+<b class="nc">&nbsp;    for(Pool.Poolable p : freeQueue) Pools.free(p);</b>
+<b class="nc">&nbsp;    freeQueue.clear();</b>
+<b class="nc">&nbsp;    bullet.updatePhysics();</b>
+<b class="nc">&nbsp;    unit.updatePhysics();</b>
+<b class="nc">&nbsp;    all.update();</b>
+<b class="nc">&nbsp;    bullet.collide();</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

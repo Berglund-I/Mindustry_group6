@@ -1,0 +1,1023 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DesktopInput</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.input</a>
+</div>
+
+<h1>Coverage Summary for Class: DesktopInput (mindustry.input)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DesktopInput</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/31)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/504)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.input;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.input.KeyCode.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static arc.Core.camera;
+&nbsp;import static arc.Core.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.input.PlaceMode.*;
+&nbsp;
+<b class="nc">&nbsp;public class DesktopInput extends InputHandler{</b>
+<b class="nc">&nbsp;    public Vec2 movement = new Vec2();</b>
+&nbsp;    /** Current cursor type. */
+<b class="nc">&nbsp;    public Cursor cursorType = SystemCursor.arrow;</b>
+&nbsp;    /** Position where the player started dragging a line. */
+<b class="nc">&nbsp;    public int selectX = -1, selectY = -1, schemX = -1, schemY = -1;</b>
+&nbsp;    /** Last known line positions.*/
+&nbsp;    public int lastLineX, lastLineY, schematicX, schematicY;
+&nbsp;    /** Whether selecting mode is active. */
+&nbsp;    public PlaceMode mode;
+&nbsp;    /** Animation scale for line. */
+&nbsp;    public float selectScale;
+&nbsp;    /** Selected build plan for movement. */
+&nbsp;    public @Nullable BuildPlan splan;
+&nbsp;    /** Whether player is currently deleting removal plans. */
+<b class="nc">&nbsp;    public boolean deleting = false, shouldShoot = false, panning = false;</b>
+&nbsp;    /** Mouse pan speed. */
+<b class="nc">&nbsp;    public float panScale = 0.005f, panSpeed = 4.5f, panBoostSpeed = 15f;</b>
+&nbsp;    /** Delta time between consecutive clicks. */
+<b class="nc">&nbsp;    public long selectMillis = 0;</b>
+&nbsp;    /** Previously selected tile. */
+&nbsp;    public Tile prevSelected;
+&nbsp;
+&nbsp;    /** Most recently selected control group by index */
+&nbsp;    public int lastCtrlGroup;
+&nbsp;    /** Time of most recent control group selection */
+&nbsp;    public long lastCtrlGroupSelectMillis;
+&nbsp;
+&nbsp;    boolean showHint(){
+<b class="nc">&nbsp;        return ui.hudfrag.shown &amp;&amp; Core.settings.getBool(&quot;hints&quot;) &amp;&amp; selectPlans.isEmpty() &amp;&amp; !player.dead() &amp;&amp;</b>
+<b class="nc">&nbsp;            (!isBuilding &amp;&amp; !Core.settings.getBool(&quot;buildautopause&quot;) || player.unit().isBuilding() || !player.dead() &amp;&amp; !player.unit().spawnedByCore());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void buildUI(Group group){
+&nbsp;        //building and respawn hints
+<b class="nc">&nbsp;        group.fill(t -&gt; {</b>
+<b class="nc">&nbsp;            t.color.a = 0f;</b>
+<b class="nc">&nbsp;            t.visible(() -&gt; (t.color.a = Mathf.lerpDelta(t.color.a, Mathf.num(showHint()), 0.15f)) &gt; 0.001f);</b>
+<b class="nc">&nbsp;            t.bottom();</b>
+<b class="nc">&nbsp;            t.table(Styles.black6, b -&gt; {</b>
+<b class="nc">&nbsp;                StringBuilder str = new StringBuilder();</b>
+<b class="nc">&nbsp;                b.defaults().left();</b>
+<b class="nc">&nbsp;                b.label(() -&gt; {</b>
+<b class="nc">&nbsp;                    if(!showHint()) return str;</b>
+<b class="nc">&nbsp;                    str.setLength(0);</b>
+<b class="nc">&nbsp;                    if(!isBuilding &amp;&amp; !Core.settings.getBool(&quot;buildautopause&quot;) &amp;&amp; !player.unit().isBuilding()){</b>
+<b class="nc">&nbsp;                        str.append(Core.bundle.format(&quot;enablebuilding&quot;, Core.keybinds.get(Binding.pause_building).key.toString()));</b>
+<b class="nc">&nbsp;                    }else if(player.unit().isBuilding()){</b>
+<b class="nc">&nbsp;                        str.append(Core.bundle.format(isBuilding ? &quot;pausebuilding&quot; : &quot;resumebuilding&quot;, Core.keybinds.get(Binding.pause_building).key.toString()))</b>
+<b class="nc">&nbsp;                            .append(&quot;\n&quot;).append(Core.bundle.format(&quot;cancelbuilding&quot;, Core.keybinds.get(Binding.clear_building).key.toString()))</b>
+<b class="nc">&nbsp;                            .append(&quot;\n&quot;).append(Core.bundle.format(&quot;selectschematic&quot;, Core.keybinds.get(Binding.schematic_select).key.toString()));</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    if(!player.dead() &amp;&amp; !player.unit().spawnedByCore()){</b>
+<b class="nc">&nbsp;                        str.append(str.length() != 0 ? &quot;\n&quot; : &quot;&quot;).append(Core.bundle.format(&quot;respawn&quot;, Core.keybinds.get(Binding.respawn).key.toString()));</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    return str;</b>
+<b class="nc">&nbsp;                }).style(Styles.outlineLabel);</b>
+<b class="nc">&nbsp;            }).margin(10f);</b>
+&nbsp;        });
+&nbsp;
+&nbsp;        //schematic controls
+<b class="nc">&nbsp;        group.fill(t -&gt; {</b>
+<b class="nc">&nbsp;            t.visible(() -&gt; ui.hudfrag.shown &amp;&amp; lastSchematic != null &amp;&amp; !selectPlans.isEmpty());</b>
+<b class="nc">&nbsp;            t.bottom();</b>
+<b class="nc">&nbsp;            t.table(Styles.black6, b -&gt; {</b>
+<b class="nc">&nbsp;                b.defaults().left();</b>
+<b class="nc">&nbsp;                b.label(() -&gt; Core.bundle.format(&quot;schematic.flip&quot;,</b>
+<b class="nc">&nbsp;                    Core.keybinds.get(Binding.schematic_flip_x).key.toString(),</b>
+<b class="nc">&nbsp;                    Core.keybinds.get(Binding.schematic_flip_y).key.toString())).style(Styles.outlineLabel).visible(() -&gt; Core.settings.getBool(&quot;hints&quot;));</b>
+<b class="nc">&nbsp;                b.row();</b>
+<b class="nc">&nbsp;                b.table(a -&gt; {</b>
+<b class="nc">&nbsp;                    a.button(&quot;@schematic.add&quot;, Icon.save, this::showSchematicSave).colspan(2).size(250f, 50f).disabled(f -&gt; lastSchematic == null || lastSchematic.file != null);</b>
+&nbsp;                });
+<b class="nc">&nbsp;            }).margin(6f);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawTop(){
+<b class="nc">&nbsp;        if(cursorType != SystemCursor.arrow &amp;&amp; scene.hasMouse()){</b>
+<b class="nc">&nbsp;           graphics.cursor(cursorType = SystemCursor.arrow);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(1f);</b>
+<b class="nc">&nbsp;        int cursorX = tileX(Core.input.mouseX());</b>
+<b class="nc">&nbsp;        int cursorY = tileY(Core.input.mouseY());</b>
+&nbsp;
+&nbsp;        //draw break selection
+<b class="nc">&nbsp;        if(mode == breaking){</b>
+<b class="nc">&nbsp;            drawBreakSelection(selectX, selectY, cursorX, cursorY, !(Core.input.keyDown(Binding.schematic_select) &amp;&amp; schemX != -1 &amp;&amp; schemY != -1) ? maxLength : Vars.maxSchematicSize, false);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!Core.scene.hasKeyboard() &amp;&amp; mode != breaking){</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Core.input.keyDown(Binding.schematic_select) &amp;&amp; schemX != -1 &amp;&amp; schemY != -1){</b>
+<b class="nc">&nbsp;                drawSelection(schemX, schemY, cursorX, cursorY, Vars.maxSchematicSize);</b>
+<b class="nc">&nbsp;            }else if(Core.input.keyDown(Binding.rebuild_select)){</b>
+<b class="nc">&nbsp;                drawRebuildSelection(schemX, schemY, cursorX, cursorY);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        drawCommanded();</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawBottom(){
+<b class="nc">&nbsp;        int cursorX = tileX(Core.input.mouseX());</b>
+<b class="nc">&nbsp;        int cursorY = tileY(Core.input.mouseY());</b>
+&nbsp;
+&nbsp;        //draw plan being moved
+<b class="nc">&nbsp;        if(splan != null){</b>
+<b class="nc">&nbsp;            boolean valid = validPlace(splan.x, splan.y, splan.block, splan.rotation, splan);</b>
+<b class="nc">&nbsp;            if(splan.block.rotate &amp;&amp; splan.block.drawArrow){</b>
+<b class="nc">&nbsp;                drawArrow(splan.block, splan.x, splan.y, splan.rotation, valid);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            splan.block.drawPlan(splan, allPlans(), valid);</b>
+&nbsp;
+<b class="nc">&nbsp;            drawSelected(splan.x, splan.y, splan.block, getPlan(splan.x, splan.y, splan.block.size, splan) != null ? Pal.remove : Pal.accent);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //draw hover plans
+<b class="nc">&nbsp;        if(mode == none &amp;&amp; !isPlacing()){</b>
+<b class="nc">&nbsp;            var plan = getPlan(cursorX, cursorY);</b>
+<b class="nc">&nbsp;            if(plan != null){</b>
+<b class="nc">&nbsp;                drawSelected(plan.x, plan.y, plan.breaking ? plan.tile().block() : plan.block, Pal.accent);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var items = selectPlans.items;</b>
+<b class="nc">&nbsp;        int size = selectPlans.size;</b>
+&nbsp;
+&nbsp;        //draw schematic plans
+<b class="nc">&nbsp;        for(int i = 0; i &lt; size; i++){</b>
+<b class="nc">&nbsp;            var plan = items[i];</b>
+<b class="nc">&nbsp;            plan.animScale = 1f;</b>
+<b class="nc">&nbsp;            drawPlan(plan);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //draw schematic plans - over version, cached results
+<b class="nc">&nbsp;        for(int i = 0; i &lt; size; i++){</b>
+<b class="nc">&nbsp;            var plan = items[i];</b>
+&nbsp;            //use cached value from previous invocation
+<b class="nc">&nbsp;            drawOverPlan(plan, plan.cachedValid);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(player.isBuilder()){</b>
+&nbsp;            //draw things that may be placed soon
+<b class="nc">&nbsp;            if(mode == placing &amp;&amp; block != null){</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; linePlans.size; i++){</b>
+<b class="nc">&nbsp;                    var plan = linePlans.get(i);</b>
+<b class="nc">&nbsp;                    if(i == linePlans.size - 1 &amp;&amp; plan.block.rotate &amp;&amp; plan.block.drawArrow){</b>
+<b class="nc">&nbsp;                        drawArrow(block, plan.x, plan.y, plan.rotation);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    drawPlan(linePlans.get(i));</b>
+&nbsp;                }
+<b class="nc">&nbsp;                linePlans.each(this::drawOverPlan);</b>
+<b class="nc">&nbsp;            }else if(isPlacing()){</b>
+<b class="nc">&nbsp;                int rot = block == null ? rotation : block.planRotation(rotation);</b>
+<b class="nc">&nbsp;                if(block.rotate &amp;&amp; block.drawArrow){</b>
+<b class="nc">&nbsp;                    drawArrow(block, cursorX, cursorY, rot);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                Draw.color();</b>
+<b class="nc">&nbsp;                boolean valid = validPlace(cursorX, cursorY, block, rot);</b>
+<b class="nc">&nbsp;                drawPlan(cursorX, cursorY, block, rot);</b>
+<b class="nc">&nbsp;                block.drawPlace(cursorX, cursorY, rot, valid);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(block.saveConfig){</b>
+<b class="nc">&nbsp;                    Draw.mixcol(!valid ? Pal.breakInvalid : Color.white, (!valid ? 0.4f : 0.24f) + Mathf.absin(Time.globalTime, 6f, 0.28f));</b>
+<b class="nc">&nbsp;                    bplan.set(cursorX, cursorY, rot, block);</b>
+<b class="nc">&nbsp;                    bplan.config = block.lastConfig;</b>
+<b class="nc">&nbsp;                    block.drawPlanConfig(bplan, allPlans());</b>
+<b class="nc">&nbsp;                    bplan.config = null;</b>
+<b class="nc">&nbsp;                    Draw.reset();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                drawOverlapCheck(block, cursorX, cursorY, valid);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        super.update();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(net.active() &amp;&amp; Core.input.keyTap(Binding.player_list) &amp;&amp; (scene.getKeyboardFocus() == null || scene.getKeyboardFocus().isDescendantOf(ui.listfrag.content) || scene.getKeyboardFocus().isDescendantOf(ui.minimapfrag.elem))){</b>
+<b class="nc">&nbsp;            ui.listfrag.toggle();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean locked = locked();</b>
+<b class="nc">&nbsp;        boolean panCam = false;</b>
+<b class="nc">&nbsp;        float camSpeed = (!Core.input.keyDown(Binding.boost) ? panSpeed : panBoostSpeed) * Time.delta;</b>
+<b class="nc">&nbsp;        boolean detached = settings.getBool(&quot;detach-camera&quot;, false);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!scene.hasField() &amp;&amp; !scene.hasDialog()){</b>
+<b class="nc">&nbsp;            if(input.keyTap(Binding.detach_camera)){</b>
+<b class="nc">&nbsp;                settings.put(&quot;detach-camera&quot;, detached = !detached);</b>
+<b class="nc">&nbsp;                if(!detached){</b>
+<b class="nc">&nbsp;                    panning = false;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(input.keyDown(Binding.pan)){</b>
+<b class="nc">&nbsp;                panCam = true;</b>
+<b class="nc">&nbsp;                panning = true;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if((Math.abs(Core.input.axis(Binding.move_x)) &gt; 0 || Math.abs(Core.input.axis(Binding.move_y)) &gt; 0 || input.keyDown(Binding.mouse_move))){</b>
+<b class="nc">&nbsp;                panning = false;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        panning |= detached;</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        if(!locked){</b>
+<b class="nc">&nbsp;            if(((player.dead() || state.isPaused() || detached) &amp;&amp; !ui.chatfrag.shown()) &amp;&amp; !scene.hasField() &amp;&amp; !scene.hasDialog()){</b>
+<b class="nc">&nbsp;                if(input.keyDown(Binding.mouse_move)){</b>
+<b class="nc">&nbsp;                    panCam = true;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Core.camera.position.add(Tmp.v1.setZero().add(Core.input.axis(Binding.move_x), Core.input.axis(Binding.move_y)).nor().scl(camSpeed));</b>
+<b class="nc">&nbsp;            }else if(!player.dead() &amp;&amp; !panning){</b>
+&nbsp;                //TODO do not pan
+<b class="nc">&nbsp;                Team corePanTeam = state.won ? state.rules.waveTeam : player.team();</b>
+<b class="nc">&nbsp;                Position coreTarget = state.gameOver &amp;&amp; !state.rules.pvp &amp;&amp; corePanTeam.data().lastCore != null ? corePanTeam.data().lastCore : null;</b>
+<b class="nc">&nbsp;                Core.camera.position.lerpDelta(coreTarget != null ? coreTarget : player, Core.settings.getBool(&quot;smoothcamera&quot;) ? 0.08f : 1f);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(panCam){</b>
+<b class="nc">&nbsp;                Core.camera.position.x += Mathf.clamp((Core.input.mouseX() - Core.graphics.getWidth() / 2f) * panScale, -1, 1) * camSpeed;</b>
+<b class="nc">&nbsp;                Core.camera.position.y += Mathf.clamp((Core.input.mouseY() - Core.graphics.getHeight() / 2f) * panScale, -1, 1) * camSpeed;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        shouldShoot = !scene.hasMouse() &amp;&amp; !locked;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!locked &amp;&amp; block == null &amp;&amp; !scene.hasField() &amp;&amp; !scene.hasDialog() &amp;&amp;</b>
+&nbsp;                //disable command mode when player unit can boost and command mode binding is the same
+<b class="nc">&nbsp;                !(!player.dead() &amp;&amp; player.unit().type.canBoost &amp;&amp; keybinds.get(Binding.command_mode).key == keybinds.get(Binding.boost).key)){</b>
+<b class="nc">&nbsp;            if(settings.getBool(&quot;commandmodehold&quot;)){</b>
+<b class="nc">&nbsp;                commandMode = input.keyDown(Binding.command_mode);</b>
+<b class="nc">&nbsp;            }else if(input.keyTap(Binding.command_mode)){</b>
+<b class="nc">&nbsp;                commandMode = !commandMode;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            commandMode = false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //validate commanding units
+<b class="nc">&nbsp;        selectedUnits.removeAll(u -&gt; !u.isCommandable() || !u.isValid());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(commandMode &amp;&amp; !scene.hasField() &amp;&amp; !scene.hasDialog()){</b>
+<b class="nc">&nbsp;            if(input.keyTap(Binding.select_all_units)){</b>
+<b class="nc">&nbsp;                selectedUnits.clear();</b>
+<b class="nc">&nbsp;                commandBuildings.clear();</b>
+<b class="nc">&nbsp;                for(var unit : player.team().data().units){</b>
+<b class="nc">&nbsp;                    if(unit.isCommandable()){</b>
+<b class="nc">&nbsp;                        selectedUnits.add(unit);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(input.keyTap(Binding.select_all_unit_factories)){</b>
+<b class="nc">&nbsp;                selectedUnits.clear();</b>
+<b class="nc">&nbsp;                commandBuildings.clear();</b>
+<b class="nc">&nbsp;                for(var build : player.team().data().buildings){</b>
+<b class="nc">&nbsp;                    if(build.block.commandable){</b>
+<b class="nc">&nbsp;                        commandBuildings.add(build);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; controlGroupBindings.length; i++){</b>
+<b class="nc">&nbsp;                if(input.keyTap(controlGroupBindings[i])){</b>
+&nbsp;
+&nbsp;                    //create control group if it doesn&#39;t exist yet
+<b class="nc">&nbsp;                    if(controlGroups[i] == null) controlGroups[i] = new IntSeq();</b>
+&nbsp;
+<b class="nc">&nbsp;                    IntSeq group = controlGroups[i];</b>
+<b class="nc">&nbsp;                    boolean creating = input.keyDown(Binding.create_control_group);</b>
+&nbsp;
+&nbsp;                    //clear existing if making a new control group
+&nbsp;                    //if any of the control group edit buttons are pressed take the current selection
+<b class="nc">&nbsp;                    if(creating){</b>
+<b class="nc">&nbsp;                        group.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;                        IntSeq selectedUnitIds = selectedUnits.mapInt(u -&gt; u.id);</b>
+<b class="nc">&nbsp;                        if(Core.settings.getBool(&quot;distinctcontrolgroups&quot;, true)){</b>
+<b class="nc">&nbsp;                            for(IntSeq cg : controlGroups){</b>
+<b class="nc">&nbsp;                                if(cg != null){</b>
+<b class="nc">&nbsp;                                    cg.removeAll(selectedUnitIds);</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                        group.addAll(selectedUnitIds);</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //remove invalid units
+<b class="nc">&nbsp;                    for(int j = 0; j &lt; group.size; j++){</b>
+<b class="nc">&nbsp;                        Unit u = Groups.unit.getByID(group.get(j));</b>
+<b class="nc">&nbsp;                        if(u == null || !u.isCommandable() || !u.isValid()){</b>
+<b class="nc">&nbsp;                            group.removeIndex(j);</b>
+<b class="nc">&nbsp;                            j --;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    //replace the selected units with the current control group
+<b class="nc">&nbsp;                    if(!group.isEmpty() &amp;&amp; !creating){</b>
+<b class="nc">&nbsp;                        selectedUnits.clear();</b>
+<b class="nc">&nbsp;                        commandBuildings.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;                        group.each(id -&gt; {</b>
+<b class="nc">&nbsp;                            var unit = Groups.unit.getByID(id);</b>
+<b class="nc">&nbsp;                            if(unit != null){</b>
+<b class="nc">&nbsp;                                selectedUnits.addAll(unit);</b>
+&nbsp;                            }
+&nbsp;                        });
+&nbsp;
+&nbsp;                        //double tap to center camera
+<b class="nc">&nbsp;                        if(lastCtrlGroup == i &amp;&amp; Time.timeSinceMillis(lastCtrlGroupSelectMillis) &lt; 400){</b>
+<b class="nc">&nbsp;                            float totalX = 0, totalY = 0;</b>
+<b class="nc">&nbsp;                            for(Unit unit : selectedUnits){</b>
+<b class="nc">&nbsp;                                totalX += unit.x;</b>
+<b class="nc">&nbsp;                                totalY += unit.y;</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                            panning = true;</b>
+<b class="nc">&nbsp;                            Core.camera.position.set(totalX / selectedUnits.size, totalY / selectedUnits.size);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        lastCtrlGroup = i;</b>
+<b class="nc">&nbsp;                        lastCtrlGroupSelectMillis = Time.millis();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!scene.hasMouse() &amp;&amp; !locked &amp;&amp; state.rules.possessionAllowed){</b>
+<b class="nc">&nbsp;            if(Core.input.keyDown(Binding.control) &amp;&amp; Core.input.keyTap(Binding.select)){</b>
+<b class="nc">&nbsp;                Unit on = selectedUnit();</b>
+<b class="nc">&nbsp;                var build = selectedControlBuild();</b>
+<b class="nc">&nbsp;                if(on != null){</b>
+<b class="nc">&nbsp;                    Call.unitControl(player, on);</b>
+<b class="nc">&nbsp;                    shouldShoot = false;</b>
+<b class="nc">&nbsp;                    recentRespawnTimer = 1f;</b>
+<b class="nc">&nbsp;                }else if(build != null){</b>
+<b class="nc">&nbsp;                    Call.buildingControlSelect(player, build);</b>
+<b class="nc">&nbsp;                    recentRespawnTimer = 1f;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!player.dead() &amp;&amp; !state.isPaused() &amp;&amp; !scene.hasField() &amp;&amp; !locked){</b>
+<b class="nc">&nbsp;            updateMovement(player.unit());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Core.input.keyTap(Binding.respawn)){</b>
+<b class="nc">&nbsp;                controlledType = null;</b>
+<b class="nc">&nbsp;                recentRespawnTimer = 1f;</b>
+<b class="nc">&nbsp;                Call.unitClear(player);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyRelease(Binding.select)){</b>
+<b class="nc">&nbsp;            player.shooting = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.isGame() &amp;&amp; !scene.hasDialog() &amp;&amp; !scene.hasField()){</b>
+<b class="nc">&nbsp;            if(Core.input.keyTap(Binding.minimap)) ui.minimapfrag.toggle();</b>
+<b class="nc">&nbsp;            if(Core.input.keyTap(Binding.planet_map) &amp;&amp; state.isCampaign()) ui.planet.toggle();</b>
+<b class="nc">&nbsp;            if(Core.input.keyTap(Binding.research) &amp;&amp; state.isCampaign()) ui.research.toggle();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.isMenu() || Core.scene.hasDialog()) return;</b>
+&nbsp;
+&nbsp;        //zoom camera
+<b class="nc">&nbsp;        if((!Core.scene.hasScroll() || Core.input.keyDown(Binding.diagonal_placement)) &amp;&amp; !ui.chatfrag.shown() &amp;&amp; !ui.consolefrag.shown() &amp;&amp; Math.abs(Core.input.axisTap(Binding.zoom)) &gt; 0</b>
+<b class="nc">&nbsp;            &amp;&amp; !Core.input.keyDown(Binding.rotateplaced) &amp;&amp; (Core.input.keyDown(Binding.diagonal_placement) ||</b>
+<b class="nc">&nbsp;                !keybinds.get(Binding.zoom).equals(keybinds.get(Binding.rotate)) || ((!player.isBuilder() || !isPlacing() || !block.rotate) &amp;&amp; selectPlans.isEmpty()))){</b>
+<b class="nc">&nbsp;            renderer.scaleCamera(Core.input.axisTap(Binding.zoom));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.select) &amp;&amp; !Core.scene.hasMouse()){</b>
+<b class="nc">&nbsp;            Tile selected = world.tileWorld(input.mouseWorldX(), input.mouseWorldY());</b>
+<b class="nc">&nbsp;            if(selected != null){</b>
+<b class="nc">&nbsp;                Call.tileTap(player, selected);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(player.dead() || locked){</b>
+<b class="nc">&nbsp;            cursorType = SystemCursor.arrow;</b>
+<b class="nc">&nbsp;            if(!Core.scene.hasMouse()){</b>
+<b class="nc">&nbsp;                Core.graphics.cursor(cursorType);</b>
+&nbsp;            }
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        pollInput();</b>
+&nbsp;
+&nbsp;        //deselect if not placing
+<b class="nc">&nbsp;        if(!isPlacing() &amp;&amp; mode == placing){</b>
+<b class="nc">&nbsp;            mode = none;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(player.shooting &amp;&amp; !canShoot()){</b>
+<b class="nc">&nbsp;            player.shooting = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(isPlacing() &amp;&amp; player.isBuilder()){</b>
+<b class="nc">&nbsp;            cursorType = SystemCursor.hand;</b>
+<b class="nc">&nbsp;            selectScale = Mathf.lerpDelta(selectScale, 1f, 0.2f);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            selectScale = 0f;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!Core.input.keyDown(Binding.diagonal_placement) &amp;&amp; Math.abs((int)Core.input.axisTap(Binding.rotate)) &gt; 0){</b>
+<b class="nc">&nbsp;            rotation = Mathf.mod(rotation + (int)Core.input.axisTap(Binding.rotate), 4);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(splan != null){</b>
+<b class="nc">&nbsp;                splan.rotation = Mathf.mod(splan.rotation + (int)Core.input.axisTap(Binding.rotate), 4);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(isPlacing() &amp;&amp; mode == placing){</b>
+<b class="nc">&nbsp;                updateLine(selectX, selectY);</b>
+<b class="nc">&nbsp;            }else if(!selectPlans.isEmpty() &amp;&amp; !ui.chatfrag.shown()){</b>
+<b class="nc">&nbsp;                rotatePlans(selectPlans, Mathf.sign(Core.input.axisTap(Binding.rotate)));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Tile cursor = tileAt(Core.input.mouseX(), Core.input.mouseY());</b>
+&nbsp;
+<b class="nc">&nbsp;        cursorType = SystemCursor.arrow;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(cursor != null){</b>
+<b class="nc">&nbsp;            if(cursor.build != null &amp;&amp; cursor.build.interactable(player.team())){</b>
+<b class="nc">&nbsp;                cursorType = cursor.build.getCursor();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(canRepairDerelict(cursor)){</b>
+<b class="nc">&nbsp;                cursorType = ui.repairCursor;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if((isPlacing() &amp;&amp; player.isBuilder()) || !selectPlans.isEmpty()){</b>
+<b class="nc">&nbsp;                cursorType = SystemCursor.hand;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!isPlacing() &amp;&amp; canMine(cursor)){</b>
+<b class="nc">&nbsp;                cursorType = ui.drillCursor;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(commandMode &amp;&amp; selectedUnits.any()){</b>
+<b class="nc">&nbsp;                boolean canAttack = (cursor.build != null &amp;&amp; !cursor.build.inFogTo(player.team()) &amp;&amp; cursor.build.team != player.team());</b>
+&nbsp;
+<b class="nc">&nbsp;                if(!canAttack){</b>
+<b class="nc">&nbsp;                    var unit = selectedEnemyUnit(input.mouseWorldX(), input.mouseWorldY());</b>
+<b class="nc">&nbsp;                    if(unit != null){</b>
+<b class="nc">&nbsp;                        canAttack = selectedUnits.contains(u -&gt; u.canTarget(unit));</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(canAttack){</b>
+<b class="nc">&nbsp;                    cursorType = ui.targetCursor;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(input.keyTap(Binding.command_queue) &amp;&amp; keybinds.get(Binding.command_queue).key.type != KeyType.mouse){</b>
+<b class="nc">&nbsp;                    commandTap(input.mouseX(), input.mouseY(), true);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(getPlan(cursor.x, cursor.y) != null &amp;&amp; mode == none){</b>
+<b class="nc">&nbsp;                cursorType = SystemCursor.hand;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(canTapPlayer(Core.input.mouseWorld().x, Core.input.mouseWorld().y)){</b>
+<b class="nc">&nbsp;                cursorType = ui.unloadCursor;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;            if(cursor.build != null &amp;&amp; cursor.interactable(player.team()) &amp;&amp; !isPlacing() &amp;&amp; Math.abs(Core.input.axisTap(Binding.rotate)) &gt; 0 &amp;&amp; Core.input.keyDown(Binding.rotateplaced) &amp;&amp; cursor.block().rotate &amp;&amp; cursor.block().quickRotate){</b>
+<b class="nc">&nbsp;                Call.rotateBlock(player, cursor.build, Core.input.axisTap(Binding.rotate) &gt; 0);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!Core.scene.hasMouse()){</b>
+<b class="nc">&nbsp;            Core.graphics.cursor(cursorType);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            cursorType = SystemCursor.arrow;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void useSchematic(Schematic schem){
+<b class="nc">&nbsp;        block = null;</b>
+<b class="nc">&nbsp;        schematicX = tileX(getMouseX());</b>
+<b class="nc">&nbsp;        schematicY = tileY(getMouseY());</b>
+&nbsp;
+<b class="nc">&nbsp;        selectPlans.clear();</b>
+<b class="nc">&nbsp;        selectPlans.addAll(schematics.toPlans(schem, schematicX, schematicY));</b>
+<b class="nc">&nbsp;        mode = none;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isBreaking(){
+<b class="nc">&nbsp;        return mode == breaking;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void buildPlacementUI(Table table){
+<b class="nc">&nbsp;        table.image().color(Pal.gray).height(4f).colspan(4).growX();</b>
+<b class="nc">&nbsp;        table.row();</b>
+<b class="nc">&nbsp;        table.left().margin(0f).defaults().size(48f).left();</b>
+&nbsp;
+<b class="nc">&nbsp;        table.button(Icon.paste, Styles.clearNonei, () -&gt; {</b>
+<b class="nc">&nbsp;            ui.schematics.show();</b>
+<b class="nc">&nbsp;        }).tooltip(&quot;@schematics&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        table.button(Icon.book, Styles.clearNonei, () -&gt; {</b>
+<b class="nc">&nbsp;            ui.database.show();</b>
+<b class="nc">&nbsp;        }).tooltip(&quot;@database&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        table.button(Icon.tree, Styles.clearNonei, () -&gt; {</b>
+<b class="nc">&nbsp;            ui.research.show();</b>
+<b class="nc">&nbsp;        }).visible(() -&gt; state.isCampaign()).tooltip(&quot;@research&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        table.button(Icon.map, Styles.clearNonei, () -&gt; {</b>
+<b class="nc">&nbsp;            ui.planet.show();</b>
+<b class="nc">&nbsp;        }).visible(() -&gt; state.isCampaign()).tooltip(&quot;@planetmap&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void pollInput(){
+<b class="nc">&nbsp;        if(scene.hasField()) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        Tile selected = tileAt(Core.input.mouseX(), Core.input.mouseY());</b>
+<b class="nc">&nbsp;        int cursorX = tileX(Core.input.mouseX());</b>
+<b class="nc">&nbsp;        int cursorY = tileY(Core.input.mouseY());</b>
+<b class="nc">&nbsp;        int rawCursorX = World.toTile(Core.input.mouseWorld().x), rawCursorY = World.toTile(Core.input.mouseWorld().y);</b>
+&nbsp;
+&nbsp;        //automatically pause building if the current build queue is empty
+<b class="nc">&nbsp;        if(Core.settings.getBool(&quot;buildautopause&quot;) &amp;&amp; isBuilding &amp;&amp; !player.unit().isBuilding()){</b>
+<b class="nc">&nbsp;            isBuilding = false;</b>
+<b class="nc">&nbsp;            buildWasAutoPaused = true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!selectPlans.isEmpty()){</b>
+<b class="nc">&nbsp;            int shiftX = rawCursorX - schematicX, shiftY = rawCursorY - schematicY;</b>
+&nbsp;
+<b class="nc">&nbsp;            selectPlans.each(s -&gt; {</b>
+<b class="nc">&nbsp;                s.x += shiftX;</b>
+<b class="nc">&nbsp;                s.y += shiftY;</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            schematicX += shiftX;</b>
+<b class="nc">&nbsp;            schematicY += shiftY;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.deselect) &amp;&amp; !ui.minimapfrag.shown() &amp;&amp; !isPlacing() &amp;&amp; player.unit().plans.isEmpty() &amp;&amp; !commandMode){</b>
+<b class="nc">&nbsp;            player.unit().mineTile = null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.clear_building) &amp;&amp; !player.dead()){</b>
+<b class="nc">&nbsp;            player.unit().clearBuilding();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if((Core.input.keyTap(Binding.schematic_select) || Core.input.keyTap(Binding.rebuild_select)) &amp;&amp; !Core.scene.hasKeyboard() &amp;&amp; mode != breaking){</b>
+<b class="nc">&nbsp;            schemX = rawCursorX;</b>
+<b class="nc">&nbsp;            schemY = rawCursorY;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.schematic_menu) &amp;&amp; !Core.scene.hasKeyboard()){</b>
+<b class="nc">&nbsp;            if(ui.schematics.isShown()){</b>
+<b class="nc">&nbsp;                ui.schematics.hide();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                ui.schematics.show();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.clear_building) || isPlacing()){</b>
+<b class="nc">&nbsp;            lastSchematic = null;</b>
+<b class="nc">&nbsp;            selectPlans.clear();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!Core.scene.hasKeyboard() &amp;&amp; selectX == -1 &amp;&amp; selectY == -1 &amp;&amp; schemX != -1 &amp;&amp; schemY != -1){</b>
+<b class="nc">&nbsp;            if(Core.input.keyRelease(Binding.schematic_select)){</b>
+<b class="nc">&nbsp;                lastSchematic = schematics.create(schemX, schemY, rawCursorX, rawCursorY);</b>
+<b class="nc">&nbsp;                useSchematic(lastSchematic);</b>
+<b class="nc">&nbsp;                if(selectPlans.isEmpty()){</b>
+<b class="nc">&nbsp;                    lastSchematic = null;</b>
+&nbsp;                }
+<b class="nc">&nbsp;                schemX = -1;</b>
+<b class="nc">&nbsp;                schemY = -1;</b>
+<b class="nc">&nbsp;            }else if(input.keyRelease(Binding.rebuild_select)){</b>
+&nbsp;
+<b class="nc">&nbsp;                rebuildArea(schemX, schemY, rawCursorX, rawCursorY);</b>
+<b class="nc">&nbsp;                schemX = -1;</b>
+<b class="nc">&nbsp;                schemY = -1;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!selectPlans.isEmpty()){</b>
+<b class="nc">&nbsp;            if(Core.input.keyTap(Binding.schematic_flip_x)){</b>
+<b class="nc">&nbsp;                flipPlans(selectPlans, true);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Core.input.keyTap(Binding.schematic_flip_y)){</b>
+<b class="nc">&nbsp;                flipPlans(selectPlans, false);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(splan != null){</b>
+<b class="nc">&nbsp;            float offset = ((splan.block.size + 2) % 2) * tilesize / 2f;</b>
+<b class="nc">&nbsp;            float x = Core.input.mouseWorld().x + offset;</b>
+<b class="nc">&nbsp;            float y = Core.input.mouseWorld().y + offset;</b>
+<b class="nc">&nbsp;            splan.x = (int)(x / tilesize);</b>
+<b class="nc">&nbsp;            splan.y = (int)(y / tilesize);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(block == null || mode != placing){</b>
+<b class="nc">&nbsp;            linePlans.clear();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.pause_building)){</b>
+<b class="nc">&nbsp;            isBuilding = !isBuilding;</b>
+<b class="nc">&nbsp;            buildWasAutoPaused = false;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(isBuilding){</b>
+<b class="nc">&nbsp;                player.shooting = false;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if((cursorX != lastLineX || cursorY != lastLineY) &amp;&amp; isPlacing() &amp;&amp; mode == placing){</b>
+<b class="nc">&nbsp;            updateLine(selectX, selectY);</b>
+<b class="nc">&nbsp;            lastLineX = cursorX;</b>
+<b class="nc">&nbsp;            lastLineY = cursorY;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //select some units
+<b class="nc">&nbsp;        if(Core.input.keyRelease(Binding.select) &amp;&amp; commandRect){</b>
+<b class="nc">&nbsp;            selectUnitsRect();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.select) &amp;&amp; !Core.scene.hasMouse()){</b>
+<b class="nc">&nbsp;            tappedOne = false;</b>
+<b class="nc">&nbsp;            BuildPlan plan = getPlan(cursorX, cursorY);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Core.input.keyDown(Binding.break_block)){</b>
+<b class="nc">&nbsp;                mode = none;</b>
+<b class="nc">&nbsp;            }else if(!selectPlans.isEmpty()){</b>
+<b class="nc">&nbsp;                flushPlans(selectPlans);</b>
+<b class="nc">&nbsp;            }else if(isPlacing()){</b>
+<b class="nc">&nbsp;                selectX = cursorX;</b>
+<b class="nc">&nbsp;                selectY = cursorY;</b>
+<b class="nc">&nbsp;                lastLineX = cursorX;</b>
+<b class="nc">&nbsp;                lastLineY = cursorY;</b>
+<b class="nc">&nbsp;                mode = placing;</b>
+<b class="nc">&nbsp;                updateLine(selectX, selectY);</b>
+<b class="nc">&nbsp;            }else if(plan != null &amp;&amp; !plan.breaking &amp;&amp; mode == none &amp;&amp; !plan.initialized &amp;&amp; plan.progress &lt;= 0f){</b>
+<b class="nc">&nbsp;                splan = plan;</b>
+<b class="nc">&nbsp;            }else if(plan != null &amp;&amp; plan.breaking){</b>
+<b class="nc">&nbsp;                deleting = true;</b>
+<b class="nc">&nbsp;            }else if(commandMode){</b>
+<b class="nc">&nbsp;                commandRect = true;</b>
+<b class="nc">&nbsp;                commandRectX = input.mouseWorldX();</b>
+<b class="nc">&nbsp;                commandRectY = input.mouseWorldY();</b>
+<b class="nc">&nbsp;            }else if(!checkConfigTap() &amp;&amp; selected != null &amp;&amp; !tryRepairDerelict(selected)){</b>
+&nbsp;                //only begin shooting if there&#39;s no cursor event
+<b class="nc">&nbsp;                if(!tryTapPlayer(Core.input.mouseWorld().x, Core.input.mouseWorld().y) &amp;&amp; !tileTapped(selected.build) &amp;&amp; !player.unit().activelyBuilding() &amp;&amp; !droppingItem</b>
+<b class="nc">&nbsp;                    &amp;&amp; !(tryStopMine(selected) || (!settings.getBool(&quot;doubletapmine&quot;) || selected == prevSelected &amp;&amp; Time.timeSinceMillis(selectMillis) &lt; 500) &amp;&amp; tryBeginMine(selected)) &amp;&amp; !Core.scene.hasKeyboard()){</b>
+<b class="nc">&nbsp;                    player.shooting = shouldShoot;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(!Core.scene.hasKeyboard()){ //if it&#39;s out of bounds, shooting is just fine</b>
+<b class="nc">&nbsp;                player.shooting = shouldShoot;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            selectMillis = Time.millis();</b>
+<b class="nc">&nbsp;            prevSelected = selected;</b>
+<b class="nc">&nbsp;        }else if(Core.input.keyTap(Binding.deselect) &amp;&amp; isPlacing()){</b>
+<b class="nc">&nbsp;            block = null;</b>
+<b class="nc">&nbsp;            mode = none;</b>
+<b class="nc">&nbsp;        }else if(Core.input.keyTap(Binding.deselect) &amp;&amp; !selectPlans.isEmpty()){</b>
+<b class="nc">&nbsp;            selectPlans.clear();</b>
+<b class="nc">&nbsp;            lastSchematic = null;</b>
+<b class="nc">&nbsp;        }else if(Core.input.keyTap(Binding.break_block) &amp;&amp; !Core.scene.hasMouse() &amp;&amp; player.isBuilder() &amp;&amp; !commandMode){</b>
+&nbsp;            //is recalculated because setting the mode to breaking removes potential multiblock cursor offset
+<b class="nc">&nbsp;            deleting = false;</b>
+<b class="nc">&nbsp;            mode = breaking;</b>
+<b class="nc">&nbsp;            selectX = tileX(Core.input.mouseX());</b>
+<b class="nc">&nbsp;            selectY = tileY(Core.input.mouseY());</b>
+<b class="nc">&nbsp;            schemX = rawCursorX;</b>
+<b class="nc">&nbsp;            schemY = rawCursorY;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyDown(Binding.select) &amp;&amp; mode == none &amp;&amp; !isPlacing() &amp;&amp; deleting){</b>
+<b class="nc">&nbsp;            var plan = getPlan(cursorX, cursorY);</b>
+<b class="nc">&nbsp;            if(plan != null &amp;&amp; plan.breaking){</b>
+<b class="nc">&nbsp;                player.unit().plans().remove(plan);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            deleting = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(mode == placing &amp;&amp; block != null){</b>
+<b class="nc">&nbsp;            if(!overrideLineRotation &amp;&amp; !Core.input.keyDown(Binding.diagonal_placement) &amp;&amp; (selectX != cursorX || selectY != cursorY) &amp;&amp; ((int)Core.input.axisTap(Binding.rotate) != 0)){</b>
+<b class="nc">&nbsp;                rotation = ((int)((Angles.angle(selectX, selectY, cursorX, cursorY) + 45) / 90f)) % 4;</b>
+<b class="nc">&nbsp;                overrideLineRotation = true;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            overrideLineRotation = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyRelease(Binding.break_block) &amp;&amp; Core.input.keyDown(Binding.schematic_select) &amp;&amp; mode == breaking){</b>
+<b class="nc">&nbsp;            lastSchematic = schematics.create(schemX, schemY, rawCursorX, rawCursorY);</b>
+<b class="nc">&nbsp;            schemX = -1;</b>
+<b class="nc">&nbsp;            schemY = -1;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyRelease(Binding.break_block) || Core.input.keyRelease(Binding.select)){</b>
+&nbsp;
+<b class="nc">&nbsp;            if(mode == placing &amp;&amp; block != null){ //touch up while placing, place everything in selection</b>
+<b class="nc">&nbsp;                if(input.keyDown(Binding.boost)){</b>
+<b class="nc">&nbsp;                    flushPlansReverse(linePlans);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    flushPlans(linePlans);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                linePlans.clear();</b>
+<b class="nc">&nbsp;                Events.fire(new LineConfirmEvent());</b>
+<b class="nc">&nbsp;            }else if(mode == breaking){ //touch up while breaking, break everything in selection</b>
+<b class="nc">&nbsp;                removeSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.maxSchematicSize);</b>
+<b class="nc">&nbsp;                if(lastSchematic != null){</b>
+<b class="nc">&nbsp;                    useSchematic(lastSchematic);</b>
+<b class="nc">&nbsp;                    lastSchematic = null;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;            selectX = -1;</b>
+<b class="nc">&nbsp;            selectY = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;            tryDropItems(selected == null ? null : selected.build, Core.input.mouseWorld().x, Core.input.mouseWorld().y);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(splan != null){</b>
+<b class="nc">&nbsp;                if(getPlan(splan.x, splan.y, splan.block.size, splan) != null){</b>
+<b class="nc">&nbsp;                    player.unit().plans().remove(splan, true);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                splan = null;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            mode = none;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.toggle_block_status)){</b>
+<b class="nc">&nbsp;            Core.settings.put(&quot;blockstatus&quot;, !Core.settings.getBool(&quot;blockstatus&quot;));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(Core.input.keyTap(Binding.toggle_power_lines)){</b>
+<b class="nc">&nbsp;            if(Core.settings.getInt(&quot;lasersopacity&quot;) == 0){</b>
+<b class="nc">&nbsp;                Core.settings.put(&quot;lasersopacity&quot;, Core.settings.getInt(&quot;preferredlaseropacity&quot;, 100));</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                Core.settings.put(&quot;preferredlaseropacity&quot;, Core.settings.getInt(&quot;lasersopacity&quot;));</b>
+<b class="nc">&nbsp;                Core.settings.put(&quot;lasersopacity&quot;, 0);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean tap(float x, float y, int count, KeyCode button){
+<b class="nc">&nbsp;        if(scene.hasMouse() || !commandMode) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        tappedOne = true;</b>
+&nbsp;
+&nbsp;        //click: select a single unit
+<b class="nc">&nbsp;        if(button == KeyCode.mouseLeft){</b>
+<b class="nc">&nbsp;            if(count &gt;= 2){</b>
+<b class="nc">&nbsp;                selectTypedUnits();</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                tapCommandUnit();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return super.tap(x, y, count, button);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean touchDown(float x, float y, int pointer, KeyCode button){
+<b class="nc">&nbsp;        if(scene.hasMouse() || !commandMode) return false;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(button == KeyCode.mouseRight){</b>
+<b class="nc">&nbsp;            commandTap(x, y);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(button == keybinds.get(Binding.command_queue).key){</b>
+<b class="nc">&nbsp;            commandTap(x, y, true);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return super.touchDown(x, y, pointer, button);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean selectedBlock(){
+<b class="nc">&nbsp;        return isPlacing() &amp;&amp; mode != breaking;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float getMouseX(){
+<b class="nc">&nbsp;        return Core.input.mouseX();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float getMouseY(){
+<b class="nc">&nbsp;        return Core.input.mouseY();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateState(){
+<b class="nc">&nbsp;        super.updateState();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.isMenu()){</b>
+<b class="nc">&nbsp;            lastSchematic = null;</b>
+<b class="nc">&nbsp;            droppingItem = false;</b>
+<b class="nc">&nbsp;            mode = none;</b>
+<b class="nc">&nbsp;            block = null;</b>
+<b class="nc">&nbsp;            splan = null;</b>
+<b class="nc">&nbsp;            selectPlans.clear();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void panCamera(Vec2 position){
+<b class="nc">&nbsp;        if(!locked()){</b>
+<b class="nc">&nbsp;            panning = true;</b>
+<b class="nc">&nbsp;            camera.position.set(position);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void updateMovement(Unit unit){
+<b class="nc">&nbsp;        boolean omni = unit.type.omniMovement;</b>
+&nbsp;
+<b class="nc">&nbsp;        float speed = unit.speed();</b>
+<b class="nc">&nbsp;        float xa = Core.input.axis(Binding.move_x);</b>
+<b class="nc">&nbsp;        float ya = Core.input.axis(Binding.move_y);</b>
+<b class="nc">&nbsp;        boolean boosted = (unit instanceof Mechc &amp;&amp; unit.isFlying());</b>
+&nbsp;
+<b class="nc">&nbsp;        if(settings.getBool(&quot;detach-camera&quot;)){</b>
+<b class="nc">&nbsp;            Vec2 targetPos = camera.position;</b>
+&nbsp;
+<b class="nc">&nbsp;            movement.set(targetPos).sub(player).limit(speed);</b>
+&nbsp;
+<b class="nc">&nbsp;            if(player.within(targetPos, 15f)){</b>
+<b class="nc">&nbsp;                movement.setZero();</b>
+<b class="nc">&nbsp;                unit.vel.approachDelta(Vec2.ZERO, unit.speed() * unit.type().accel / 2f);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else{</b>
+<b class="nc">&nbsp;            movement.set(xa, ya).nor().scl(speed);</b>
+<b class="nc">&nbsp;            if(Core.input.keyDown(Binding.mouse_move)){</b>
+<b class="nc">&nbsp;                movement.add(input.mouseWorld().sub(player).scl(1f / 25f * speed)).limit(speed);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float mouseAngle = Angles.mouseAngle(unit.x, unit.y);</b>
+<b class="nc">&nbsp;        boolean aimCursor = omni &amp;&amp; player.shooting &amp;&amp; unit.type.hasWeapons() &amp;&amp; unit.type.faceTarget &amp;&amp; !boosted;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(aimCursor){</b>
+<b class="nc">&nbsp;            unit.lookAt(mouseAngle);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            unit.lookAt(unit.prefRotation());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        unit.movePref(movement);</b>
+&nbsp;
+<b class="nc">&nbsp;        unit.aim(Core.input.mouseWorld());</b>
+<b class="nc">&nbsp;        unit.controlWeapons(true, player.shooting &amp;&amp; !boosted);</b>
+&nbsp;
+<b class="nc">&nbsp;        player.boosting = Core.input.keyDown(Binding.boost);</b>
+<b class="nc">&nbsp;        player.mouseX = unit.aimX();</b>
+<b class="nc">&nbsp;        player.mouseY = unit.aimY();</b>
+&nbsp;
+&nbsp;        //update payload input
+<b class="nc">&nbsp;        if(unit instanceof Payloadc){</b>
+<b class="nc">&nbsp;            if(Core.input.keyTap(Binding.pickupCargo)){</b>
+<b class="nc">&nbsp;                tryPickupPayload();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Core.input.keyTap(Binding.dropCargo)){</b>
+<b class="nc">&nbsp;                tryDropPayload();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

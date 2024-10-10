@@ -1,0 +1,606 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Logic</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.core</a>
+</div>
+
+<h1>Coverage Summary for Class: Logic (mindustry.core)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Logic</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25.8%
+  </span>
+  <span class="absValue">
+    (8/31)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.3%
+  </span>
+  <span class="absValue">
+    (54/232)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.core;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.core.GameState.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.maps.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.type.Weather.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Logic module.
+&nbsp; * Handles all logic for entities and waves.
+&nbsp; * Handles game state events.
+&nbsp; * Does not store any game state itself.
+&nbsp; * &lt;p&gt;
+&nbsp; * This class should &lt;i&gt;not&lt;/i&gt; call any outside methods to change state of modules, but instead fire events.
+&nbsp; */
+&nbsp;public class Logic implements ApplicationListener{
+&nbsp;
+<b class="fc">&nbsp;    public Logic(){</b>
+&nbsp;
+<b class="fc">&nbsp;        Events.on(BlockDestroyEvent.class, event -&gt; {</b>
+&nbsp;            //skip if rule is off
+<b class="nc">&nbsp;            if(!state.rules.ghostBlocks) return;</b>
+&nbsp;
+&nbsp;            //blocks that get broken are appended to the team&#39;s broken block queue
+<b class="nc">&nbsp;            Tile tile = event.tile;</b>
+&nbsp;            //skip null entities or un-rebuildables, for obvious reasons
+<b class="nc">&nbsp;            if(tile.build == null || !tile.block().rebuildable) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            tile.build.addPlan(true);</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(BlockBuildEndEvent.class, event -&gt; {</b>
+<b class="fc">&nbsp;            if(!event.breaking){</b>
+<b class="fc">&nbsp;                checkOverlappingPlans(event.team, event.tile);</b>
+&nbsp;
+<b class="fc">&nbsp;                if(event.team == state.rules.defaultTeam){</b>
+<b class="fc">&nbsp;                    state.stats.placedBlockCount.increment(event.tile.block());</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(PayloadDropEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.build != null){</b>
+<b class="nc">&nbsp;                checkOverlappingPlans(e.build.team, e.build.tile);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;        //when loading a &#39;damaged&#39; sector, propagate the damage
+<b class="fc">&nbsp;        Events.on(SaveLoadEvent.class, e -&gt; {</b>
+<b class="fc">&nbsp;            if(state.isCampaign()){</b>
+<b class="fc">&nbsp;                state.rules.coreIncinerates = true;</b>
+&nbsp;
+&nbsp;                //TODO why is this even a thing?
+<b class="fc">&nbsp;                state.rules.canGameOver = true;</b>
+&nbsp;
+&nbsp;                //fresh map has no sector info
+<b class="fc">&nbsp;                if(!e.isMap){</b>
+<b class="nc">&nbsp;                    SectorInfo info = state.rules.sector.info;</b>
+<b class="nc">&nbsp;                    info.write();</b>
+&nbsp;
+&nbsp;                    //only simulate waves if the planet allows it
+<b class="nc">&nbsp;                    if(state.rules.sector.planet.allowWaveSimulation){</b>
+&nbsp;                        //how much wave time has passed
+<b class="nc">&nbsp;                        int wavesPassed = info.wavesPassed;</b>
+&nbsp;
+&nbsp;                        //wave has passed, remove all enemies, they are assumed to be dead
+<b class="nc">&nbsp;                        if(wavesPassed &gt; 0){</b>
+<b class="nc">&nbsp;                            Groups.unit.each(u -&gt; {</b>
+<b class="nc">&nbsp;                                if(u.team == state.rules.waveTeam){</b>
+<b class="nc">&nbsp;                                    u.remove();</b>
+&nbsp;                                }
+&nbsp;                            });
+&nbsp;                        }
+&nbsp;
+&nbsp;                        //simulate passing of waves
+<b class="nc">&nbsp;                        if(wavesPassed &gt; 0){</b>
+&nbsp;                            //simulate wave counter moving forward
+<b class="nc">&nbsp;                            state.wave += wavesPassed;</b>
+<b class="nc">&nbsp;                            state.wavetime = state.rules.waveSpacing * state.getPlanet().campaignRules.difficulty.waveTimeMultiplier;</b>
+&nbsp;
+<b class="nc">&nbsp;                            SectorDamage.applyCalculatedDamage();</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    state.getSector().planet.applyRules(state.rules);</b>
+&nbsp;
+&nbsp;                    //reset values
+<b class="nc">&nbsp;                    info.damage = 0f;</b>
+<b class="nc">&nbsp;                    info.wavesPassed = 0;</b>
+<b class="nc">&nbsp;                    info.hasCore = true;</b>
+<b class="nc">&nbsp;                    info.secondsPassed = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;                    state.rules.sector.saveInfo();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(PlayEvent.class, e -&gt; {</b>
+&nbsp;            //reset weather on play
+<b class="nc">&nbsp;            var randomWeather = state.rules.weather.copy().shuffle();</b>
+<b class="nc">&nbsp;            float sum = 0f;</b>
+<b class="nc">&nbsp;            for(var weather : randomWeather){</b>
+<b class="nc">&nbsp;                weather.cooldown = sum + Mathf.random(weather.maxFrequency);</b>
+<b class="nc">&nbsp;                sum += weather.cooldown;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;            //tick resets on new save play
+<b class="nc">&nbsp;            state.tick = 0f;</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(WorldLoadEvent.class, e -&gt; {</b>
+&nbsp;            //enable infinite ammo for wave team by default
+<b class="fc">&nbsp;            state.rules.waveTeam.rules().infiniteAmmo = true;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(state.isCampaign()){</b>
+&nbsp;                //enable building AI on campaign unless the preset disables it
+&nbsp;
+<b class="fc">&nbsp;                state.rules.coreIncinerates = true;</b>
+<b class="fc">&nbsp;                state.rules.waveTeam.rules().infiniteResources = true;</b>
+<b class="fc">&nbsp;                state.rules.waveTeam.rules().buildSpeedMultiplier *= state.getPlanet().enemyBuildSpeedMultiplier;</b>
+&nbsp;
+&nbsp;                //fill enemy cores by default? TODO decide
+<b class="fc">&nbsp;                for(var core : state.rules.waveTeam.cores()){</b>
+<b class="fc">&nbsp;                    for(Item item : content.items()){</b>
+<b class="fc">&nbsp;                        core.items.set(item, core.block.itemCapacity);</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //save settings
+<b class="fc">&nbsp;            Core.settings.manualSave();</b>
+&nbsp;        });
+&nbsp;
+&nbsp;        //sync research
+<b class="fc">&nbsp;        Events.on(UnlockEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(net.server()){</b>
+<b class="nc">&nbsp;                Call.researched(e.content);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(SectorCaptureEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(!net.client() &amp;&amp; e.sector == state.getSector() &amp;&amp; e.sector.isBeingPlayed()){</b>
+<b class="nc">&nbsp;                state.rules.waveTeam.data().destroyToDerelict();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(BlockDestroyEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.tile.build instanceof CoreBuild core &amp;&amp; core.team.isAI() &amp;&amp; state.rules.coreDestroyClear){</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                    core.team.data().timeDestroy(core.x, core.y, state.rules.enemyCoreBuildRadius);</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+&nbsp;        //listen to core changes; if all cores have been destroyed, set to derelict.
+<b class="fc">&nbsp;        Events.on(CoreChangeEvent.class, e -&gt; Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;            if(state.rules.cleanupDeadTeams &amp;&amp; state.rules.pvp &amp;&amp; !e.core.isAdded() &amp;&amp; e.core.team != Team.derelict &amp;&amp; e.core.team.cores().isEmpty()){</b>
+<b class="nc">&nbsp;                e.core.team.data().destroyToDerelict();</b>
+&nbsp;            }
+&nbsp;        }));
+&nbsp;
+<b class="fc">&nbsp;        Events.on(BlockBuildEndEvent.class, e -&gt; {</b>
+<b class="fc">&nbsp;            if(e.team == state.rules.defaultTeam){</b>
+<b class="fc">&nbsp;                if(e.breaking){</b>
+<b class="fc">&nbsp;                    state.stats.buildingsDeconstructed++;</b>
+&nbsp;                }else{
+<b class="fc">&nbsp;                    state.stats.buildingsBuilt++;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(BlockDestroyEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.tile.team() == state.rules.defaultTeam){</b>
+<b class="nc">&nbsp;                state.stats.buildingsDestroyed ++;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(UnitDestroyEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.unit.team() != state.rules.defaultTeam){</b>
+<b class="nc">&nbsp;                state.stats.enemyUnitsDestroyed ++;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        Events.on(UnitCreateEvent.class, e -&gt; {</b>
+<b class="nc">&nbsp;            if(e.unit.team == state.rules.defaultTeam){</b>
+<b class="nc">&nbsp;                state.stats.unitsCreated++;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkOverlappingPlans(Team team, Tile tile){
+<b class="fc">&nbsp;        TeamData data = team.data();</b>
+<b class="fc">&nbsp;        Iterator&lt;BlockPlan&gt; it = data.plans.iterator();</b>
+<b class="fc">&nbsp;        var bounds = tile.block().bounds(tile.x, tile.y, Tmp.r1);</b>
+<b class="fc">&nbsp;        while(it.hasNext()){</b>
+<b class="nc">&nbsp;            BlockPlan b = it.next();</b>
+<b class="nc">&nbsp;            Block block = content.block(b.block);</b>
+<b class="nc">&nbsp;            if(bounds.overlaps(block.bounds(b.x, b.y, Tmp.r2))){</b>
+<b class="nc">&nbsp;                b.removed = true;</b>
+<b class="nc">&nbsp;                it.remove();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds starting items, resets wave time, and sets state to playing. */
+&nbsp;    public void play(){
+<b class="nc">&nbsp;        state.set(State.playing);</b>
+&nbsp;        //grace period of 2x wave time before game starts
+<b class="nc">&nbsp;        state.wavetime = (state.rules.initialWaveSpacing &lt;= 0 ? state.rules.waveSpacing * 2 : state.rules.initialWaveSpacing) * (state.isCampaign() ? state.getPlanet().campaignRules.difficulty.waveTimeMultiplier : 1f);;</b>
+<b class="nc">&nbsp;        Events.fire(new PlayEvent());</b>
+&nbsp;
+&nbsp;        //add starting items
+<b class="nc">&nbsp;        if(!state.isCampaign() || !state.rules.sector.planet.allowLaunchLoadout || (state.rules.sector.preset != null &amp;&amp; state.rules.sector.preset.addStartingItems)){</b>
+<b class="nc">&nbsp;            for(TeamData team : state.teams.getActive()){</b>
+<b class="nc">&nbsp;                if(team.hasCore()){</b>
+<b class="nc">&nbsp;                    CoreBuild entity = team.core();</b>
+<b class="nc">&nbsp;                    entity.items.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(ItemStack stack : state.rules.loadout){</b>
+&nbsp;                        //make sure to cap storage
+<b class="nc">&nbsp;                        entity.items.add(stack.item, Math.min(stack.amount, entity.storageCapacity - entity.items.get(stack.item)));</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //heal all cores on game start
+<b class="nc">&nbsp;        for(TeamData team : state.teams.getActive()){</b>
+<b class="nc">&nbsp;            for(var entity : team.cores){</b>
+<b class="nc">&nbsp;                entity.heal();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reset(){
+<b class="fc">&nbsp;        State prev = state.getState();</b>
+&nbsp;        //recreate gamestate - sets state to menu
+<b class="fc">&nbsp;        state = new GameState();</b>
+&nbsp;        //fire change event, since it was technically changed
+<b class="fc">&nbsp;        Events.fire(new StateChangeEvent(prev, State.menu));</b>
+&nbsp;
+<b class="fc">&nbsp;        Groups.clear();</b>
+<b class="fc">&nbsp;        Time.clear();</b>
+<b class="fc">&nbsp;        Events.fire(new ResetEvent());</b>
+<b class="fc">&nbsp;        world.tiles = new Tiles(0, 0);</b>
+&nbsp;
+&nbsp;        //save settings on reset
+<b class="fc">&nbsp;        Core.settings.manualSave();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void skipWave(){
+<b class="nc">&nbsp;        runWave();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void runWave(){
+<b class="fc">&nbsp;        spawner.spawnEnemies();</b>
+<b class="fc">&nbsp;        state.wave++;</b>
+<b class="fc">&nbsp;        state.wavetime = state.rules.waveSpacing * (state.isCampaign() ? state.getPlanet().campaignRules.difficulty.waveTimeMultiplier : 1f);</b>
+&nbsp;
+<b class="fc">&nbsp;        Events.fire(new WaveEvent());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkGameState(){
+&nbsp;        //campaign maps do not have a &#39;win&#39; state!
+<b class="nc">&nbsp;        if(state.isCampaign()){</b>
+&nbsp;            //gameover only when cores are dead
+<b class="nc">&nbsp;            if(state.teams.playerCores().size == 0 &amp;&amp; !state.gameOver){</b>
+<b class="nc">&nbsp;                state.gameOver = true;</b>
+<b class="nc">&nbsp;                Events.fire(new GameOverEvent(state.rules.waveTeam));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //check if there are no enemy spawns
+<b class="nc">&nbsp;            if(state.rules.waves &amp;&amp; spawner.countSpawns() + state.teams.cores(state.rules.waveTeam).size &lt;= 0){</b>
+&nbsp;                //if yes, waves get disabled
+<b class="nc">&nbsp;                state.rules.waves = false;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //if there&#39;s a &quot;win&quot; wave and no enemies are present, win automatically
+<b class="nc">&nbsp;            if(state.rules.waves &amp;&amp; (state.enemies == 0 &amp;&amp; state.rules.winWave &gt; 0 &amp;&amp; state.wave &gt;= state.rules.winWave &amp;&amp; !spawner.isSpawning()) ||</b>
+<b class="nc">&nbsp;                (state.rules.attackMode &amp;&amp; state.rules.waveTeam.cores().isEmpty())){</b>
+&nbsp;
+<b class="nc">&nbsp;                if(state.rules.sector.preset != null &amp;&amp; state.rules.sector.preset.attackAfterWaves &amp;&amp; !state.rules.attackMode){</b>
+&nbsp;                    //activate attack mode to destroy cores after waves are done.
+<b class="nc">&nbsp;                    state.rules.attackMode = true;</b>
+<b class="nc">&nbsp;                    state.rules.waves = false;</b>
+<b class="nc">&nbsp;                    Call.setRules(state.rules);</b>
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Call.sectorCapture();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            if(!state.rules.attackMode &amp;&amp; state.teams.playerCores().size == 0 &amp;&amp; !state.gameOver){</b>
+<b class="nc">&nbsp;                state.gameOver = true;</b>
+<b class="nc">&nbsp;                Events.fire(new GameOverEvent(state.rules.waveTeam));</b>
+<b class="nc">&nbsp;            }else if(state.rules.attackMode){</b>
+&nbsp;                //count # of teams alive
+<b class="nc">&nbsp;                int countAlive = state.teams.getActive().count(t -&gt; t.hasCore() &amp;&amp; t.team != Team.derelict);</b>
+&nbsp;
+<b class="nc">&nbsp;                if((countAlive &lt;= 1 || (!state.rules.pvp &amp;&amp; state.rules.defaultTeam.core() == null)) &amp;&amp; !state.gameOver){</b>
+&nbsp;                    //find team that won
+<b class="nc">&nbsp;                    TeamData left = state.teams.getActive().find(t -&gt; t.hasCore() &amp;&amp; t.team != Team.derelict);</b>
+<b class="nc">&nbsp;                    Events.fire(new GameOverEvent(left == null ? Team.derelict : left.team));</b>
+<b class="nc">&nbsp;                    state.gameOver = true;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }else if(!state.gameOver &amp;&amp; state.rules.waves &amp;&amp; (state.enemies == 0 &amp;&amp; state.rules.winWave &gt; 0 &amp;&amp; state.wave &gt;= state.rules.winWave &amp;&amp; !spawner.isSpawning())){</b>
+<b class="nc">&nbsp;                state.gameOver = true;</b>
+<b class="nc">&nbsp;                Events.fire(new GameOverEvent(state.rules.defaultTeam));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void updateWeather(){
+<b class="nc">&nbsp;        state.rules.weather.removeAll(w -&gt; w.weather == null);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(WeatherEntry entry : state.rules.weather){</b>
+&nbsp;            //update cooldown
+<b class="nc">&nbsp;            entry.cooldown -= Time.delta;</b>
+&nbsp;
+&nbsp;            //create new event when not active
+<b class="nc">&nbsp;            if((entry.cooldown &lt; 0 || entry.always) &amp;&amp; !entry.weather.isActive()){</b>
+<b class="nc">&nbsp;                float duration = entry.always ? Float.POSITIVE_INFINITY : Mathf.random(entry.minDuration, entry.maxDuration);</b>
+<b class="nc">&nbsp;                entry.cooldown = duration + Mathf.random(entry.minFrequency, entry.maxFrequency);</b>
+<b class="nc">&nbsp;                Tmp.v1.setToRandomDirection();</b>
+<b class="nc">&nbsp;                Call.createWeather(entry.weather, entry.intensity, duration, Tmp.v1.x, Tmp.v1.y);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.server)
+&nbsp;    public static void sectorCapture(){
+&nbsp;        //the sector has been conquered - waves get disabled
+<b class="nc">&nbsp;        state.rules.waves = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.rules.sector == null){</b>
+&nbsp;            //disable attack mode
+<b class="nc">&nbsp;            state.rules.attackMode = false;</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean initial = !state.rules.sector.info.wasCaptured;</b>
+&nbsp;
+<b class="nc">&nbsp;        state.rules.sector.info.wasCaptured = true;</b>
+&nbsp;
+&nbsp;        //fire capture event
+<b class="nc">&nbsp;        Events.fire(new SectorCaptureEvent(state.rules.sector, initial));</b>
+&nbsp;
+&nbsp;        //disable attack mode
+<b class="nc">&nbsp;        state.rules.attackMode = false;</b>
+&nbsp;
+&nbsp;        //map is over, no more world processor objective stuff
+<b class="nc">&nbsp;        state.rules.disableWorldProcessors = true;</b>
+&nbsp;
+<b class="nc">&nbsp;        Call.clearObjectives();</b>
+&nbsp;
+&nbsp;        //save, just in case
+<b class="nc">&nbsp;        if(!headless &amp;&amp; !net.client()){</b>
+<b class="nc">&nbsp;            control.saves.saveSector(state.rules.sector);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.both)
+&nbsp;    public static void updateGameOver(Team winner){
+<b class="nc">&nbsp;        state.gameOver = true;</b>
+<b class="nc">&nbsp;        if(!headless){</b>
+<b class="nc">&nbsp;            state.won = player.team() == winner;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Remote(called = Loc.both)
+&nbsp;    public static void gameOver(Team winner){
+<b class="nc">&nbsp;        state.stats.wavesLasted = state.wave;</b>
+<b class="nc">&nbsp;        state.won = player.team() == winner;</b>
+<b class="nc">&nbsp;        Time.run(60f * 3f, () -&gt; ui.restart.show(winner));</b>
+<b class="nc">&nbsp;        netClient.setQuiet();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //called when the remote server researches something
+&nbsp;    @Remote
+&nbsp;    public static void researched(Content content){
+<b class="nc">&nbsp;        if(!(content instanceof UnlockableContent u)) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean was = u.unlockedNow();</b>
+<b class="nc">&nbsp;        state.rules.researched.add(u.name);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(!was){</b>
+<b class="nc">&nbsp;            Events.fire(new UnlockEvent(u));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+&nbsp;        //save the settings before quitting
+<b class="nc">&nbsp;        netServer.admins.forceSave();</b>
+<b class="nc">&nbsp;        Core.settings.manualSave();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        Events.fire(Trigger.update);</b>
+<b class="nc">&nbsp;        universe.updateGlobal();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(Core.settings.modified() &amp;&amp; !state.isPlaying()){</b>
+<b class="nc">&nbsp;            netServer.admins.forceSave();</b>
+<b class="nc">&nbsp;            Core.settings.forceSave();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean runStateCheck = !net.client() &amp;&amp; !world.isInvalidMap() &amp;&amp; !state.isEditor() &amp;&amp; state.rules.canGameOver;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(state.isGame()){</b>
+<b class="nc">&nbsp;            if(!net.client()){</b>
+<b class="nc">&nbsp;                state.enemies = Groups.unit.count(u -&gt; u.team() == state.rules.waveTeam &amp;&amp; u.isEnemy());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(!state.isPaused()){</b>
+<b class="nc">&nbsp;                float delta = Core.graphics.getDeltaTime();</b>
+<b class="nc">&nbsp;                state.tick += Float.isNaN(delta) || Float.isInfinite(delta) ? 0f : delta * 60f;</b>
+<b class="nc">&nbsp;                state.updateId ++;</b>
+<b class="nc">&nbsp;                state.teams.updateTeamStats();</b>
+<b class="nc">&nbsp;                MapPreviewLoader.checkPreviews();</b>
+&nbsp;
+<b class="nc">&nbsp;                if(state.rules.fog){</b>
+<b class="nc">&nbsp;                    fogControl.update();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(state.isCampaign()){</b>
+<b class="nc">&nbsp;                    state.rules.sector.info.update();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(state.isCampaign()){</b>
+<b class="nc">&nbsp;                    universe.update();</b>
+&nbsp;                }
+<b class="nc">&nbsp;                Time.update();</b>
+&nbsp;
+<b class="nc">&nbsp;                logicVars.update();</b>
+&nbsp;
+&nbsp;                //weather is serverside
+<b class="nc">&nbsp;                if(!net.client() &amp;&amp; !state.isEditor()){</b>
+<b class="nc">&nbsp;                    updateWeather();</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(TeamData data : state.teams.getActive()){</b>
+&nbsp;                        //does not work on PvP so built-in attack maps can have it on by default without issues
+<b class="nc">&nbsp;                        if(data.team.rules().buildAi &amp;&amp; !state.rules.pvp){</b>
+<b class="nc">&nbsp;                            if(data.buildAi == null) data.buildAi = new BaseBuilderAI(data);</b>
+<b class="nc">&nbsp;                            data.buildAi.update();</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        if(data.team.rules().rtsAi){</b>
+<b class="nc">&nbsp;                            if(data.rtsAi == null) data.rtsAi = new RtsAI(data);</b>
+<b class="nc">&nbsp;                            data.rtsAi.update();</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(!state.isEditor()){</b>
+<b class="nc">&nbsp;                    state.rules.objectives.update();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(state.rules.waves &amp;&amp; state.rules.waveTimer &amp;&amp; !state.gameOver){</b>
+<b class="nc">&nbsp;                    if(!isWaitingWave()){</b>
+<b class="nc">&nbsp;                        state.wavetime = Math.max(state.wavetime - Time.delta, 0);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if(!net.client() &amp;&amp; state.wavetime &lt;= 0 &amp;&amp; state.rules.waves){</b>
+<b class="nc">&nbsp;                    runWave();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                //apply weather attributes
+<b class="nc">&nbsp;                state.envAttrs.clear();</b>
+<b class="nc">&nbsp;                state.envAttrs.add(state.rules.attributes);</b>
+<b class="nc">&nbsp;                Groups.weather.each(w -&gt; state.envAttrs.add(w.weather.attrs, w.opacity));</b>
+&nbsp;
+<b class="nc">&nbsp;                Groups.update();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(runStateCheck){</b>
+<b class="nc">&nbsp;                checkGameState();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }else if(netServer.isWaitingForPlayers() &amp;&amp; runStateCheck){</b>
+<b class="nc">&nbsp;            checkGameState();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether the wave timer is paused due to enemies */
+&nbsp;    public boolean isWaitingWave(){
+<b class="nc">&nbsp;        return (state.rules.waitEnemies || (state.wave &gt;= state.rules.winWave &amp;&amp; state.rules.winWave &gt; 0)) &amp;&amp; state.enemies &gt; 0;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,393 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > EntityGroup</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities</a>
+</div>
+
+<h1>Coverage Summary for Class: EntityGroup (mindustry.entities)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EntityGroup</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (19/38)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.9%
+  </span>
+  <span class="absValue">
+    (55/106)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Represents a group of a certain type of entity.*/
+&nbsp;@SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;public class EntityGroup&lt;T extends Entityc&gt; implements Iterable&lt;T&gt;{
+<b class="fc">&nbsp;    private static int lastId = 0;</b>
+&nbsp;
+&nbsp;    private final Seq&lt;T&gt; array;
+<b class="fc">&nbsp;    private final Seq&lt;T&gt; intersectArray = new Seq&lt;&gt;();</b>
+<b class="fc">&nbsp;    private final Rect viewport = new Rect();</b>
+<b class="fc">&nbsp;    private final Rect intersectRect = new Rect();</b>
+&nbsp;    private final EntityIndexer indexer;
+&nbsp;    private IntMap&lt;T&gt; map;
+&nbsp;    private QuadTree tree;
+&nbsp;    private boolean clearing;
+&nbsp;
+&nbsp;    private int index;
+&nbsp;
+&nbsp;    public static int nextId(){
+<b class="fc">&nbsp;        if(lastId &gt;= Integer.MAX_VALUE - 2) lastId = 0;</b>
+<b class="fc">&nbsp;        return lastId++;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Makes sure the next ID counter is higher than this number, so future entities cannot possibly use this ID. */
+&nbsp;    public static void checkNextId(int id){
+<b class="fc">&nbsp;        lastId = Math.max(lastId, id + 1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public EntityGroup(Class&lt;T&gt; type, boolean spatial, boolean mapping){
+<b class="nc">&nbsp;        this(type, spatial, mapping, null);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public EntityGroup(Class&lt;T&gt; type, boolean spatial, boolean mapping, EntityIndexer indexer){</b>
+<b class="fc">&nbsp;        array = new Seq&lt;&gt;(false, 32, type);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(spatial){</b>
+<b class="fc">&nbsp;            tree = new QuadTree&lt;&gt;(new Rect(0, 0, 0, 0));</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(mapping){</b>
+<b class="fc">&nbsp;            map = new IntMap&lt;&gt;();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        this.indexer = indexer;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return entities with colliding IDs, or an empty array. */
+&nbsp;    public Seq&lt;T&gt; checkIDCollisions(){
+<b class="nc">&nbsp;        Seq&lt;T&gt; out = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        IntSet ints = new IntSet();</b>
+<b class="nc">&nbsp;        each(u -&gt; {</b>
+<b class="nc">&nbsp;            if(!ints.add(u.id())){</b>
+<b class="nc">&nbsp;                out.add(u);</b>
+&nbsp;            }
+&nbsp;        });
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void sort(Comparator&lt;? super T&gt; comp){
+<b class="nc">&nbsp;        array.sort(comp);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void collide(){
+<b class="nc">&nbsp;        collisions.collide((EntityGroup&lt;? extends Hitboxc&gt;)this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updatePhysics(){
+<b class="nc">&nbsp;        collisions.updatePhysics((EntityGroup&lt;? extends Hitboxc&gt;)this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(){
+<b class="fc">&nbsp;        for(index = 0; index &lt; array.size; index++){</b>
+<b class="fc">&nbsp;            array.items[index].update();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;T&gt; copy(){
+<b class="nc">&nbsp;        return copy(new Seq&lt;&gt;());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;T&gt; copy(Seq&lt;T&gt; arr){
+<b class="nc">&nbsp;        arr.addAll(array);</b>
+<b class="nc">&nbsp;        return arr;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void each(Cons&lt;T&gt; cons){
+<b class="nc">&nbsp;        for(index = 0; index &lt; array.size; index++){</b>
+<b class="nc">&nbsp;            cons.get(array.items[index]);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void each(Boolf&lt;T&gt; filter, Cons&lt;T&gt; cons){
+<b class="nc">&nbsp;        for(index = 0; index &lt; array.size; index++){</b>
+<b class="nc">&nbsp;            if(filter.get(array.items[index])) cons.get(array.items[index]);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(Cons&lt;T&gt; cons){
+<b class="nc">&nbsp;        Core.camera.bounds(viewport);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(index = 0; index &lt; array.size; index++){</b>
+<b class="nc">&nbsp;            Drawc draw = (Drawc)array.items[index];</b>
+<b class="nc">&nbsp;            float clip = draw.clipSize();</b>
+<b class="nc">&nbsp;            if(viewport.overlaps(draw.x() - clip/2f, draw.y() - clip/2f, clip, clip)){</b>
+<b class="nc">&nbsp;                cons.get((T)draw);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean useTree(){
+<b class="nc">&nbsp;        return tree != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean mappingEnabled(){
+<b class="fc">&nbsp;        return map != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public T getByID(int id){
+<b class="fc">&nbsp;        if(map == null) throw new RuntimeException(&quot;Mapping is not enabled for group &quot; + id + &quot;!&quot;);</b>
+<b class="fc">&nbsp;        return map.get(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeByID(int id){
+<b class="nc">&nbsp;        if(map == null) throw new RuntimeException(&quot;Mapping is not enabled for group &quot; + id + &quot;!&quot;);</b>
+<b class="nc">&nbsp;        T t = map.get(id);</b>
+<b class="nc">&nbsp;        if(t != null){ //remove if present in map already</b>
+<b class="nc">&nbsp;            t.remove();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void intersect(float x, float y, float width, float height, Cons&lt;? super T&gt; out){
+&nbsp;        //don&#39;t waste time for empty groups
+<b class="nc">&nbsp;        if(isEmpty()) return;</b>
+<b class="nc">&nbsp;        tree.intersect(x, y, width, height, out);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean intersect(float x, float y, float width, float height, Boolf&lt;? super T&gt; out){
+&nbsp;        //don&#39;t waste time for empty groups
+<b class="fc">&nbsp;        if(isEmpty()) return false;</b>
+<b class="nc">&nbsp;        return tree.intersect(x, y, width, height, out);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;T&gt; intersect(float x, float y, float width, float height){
+<b class="fc">&nbsp;        intersectArray.clear();</b>
+&nbsp;        //don&#39;t waste time for empty groups
+<b class="fc">&nbsp;        if(isEmpty()) return intersectArray;</b>
+<b class="nc">&nbsp;        tree.intersect(intersectRect.set(x, y, width, height), intersectArray);</b>
+<b class="nc">&nbsp;        return intersectArray;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public QuadTree tree(){
+<b class="nc">&nbsp;        if(tree == null) throw new RuntimeException(&quot;This group does not support quadtrees! Enable quadtrees when creating it.&quot;);</b>
+<b class="nc">&nbsp;        return tree;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Resizes the internal quadtree, if it is enabled.*/
+&nbsp;    public void resize(float x, float y, float w, float h){
+<b class="fc">&nbsp;        if(tree != null){</b>
+<b class="fc">&nbsp;            tree = new QuadTree&lt;&gt;(new Rect(x, y, w, h));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isEmpty(){
+<b class="fc">&nbsp;        return array.size == 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public T index(int i){
+<b class="nc">&nbsp;        return array.get(i);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int size(){
+<b class="fc">&nbsp;        return array.size;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean contains(Boolf&lt;T&gt; pred){
+<b class="nc">&nbsp;        return array.contains(pred);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int count(Boolf&lt;T&gt; pred){
+<b class="fc">&nbsp;        return array.count(pred);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(T type){
+<b class="fc">&nbsp;        if(type == null) throw new RuntimeException(&quot;Cannot add a null entity!&quot;);</b>
+<b class="fc">&nbsp;        array.add(type);</b>
+&nbsp;
+<b class="fc">&nbsp;        if(mappingEnabled()){</b>
+<b class="fc">&nbsp;            map.put(type.id(), type);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int addIndex(T type){
+<b class="fc">&nbsp;        int index = array.size;</b>
+<b class="fc">&nbsp;        add(type);</b>
+<b class="fc">&nbsp;        return index;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void remove(T type){
+<b class="nc">&nbsp;        if(clearing) return;</b>
+<b class="nc">&nbsp;        if(type == null) throw new RuntimeException(&quot;Cannot remove a null entity!&quot;);</b>
+<b class="nc">&nbsp;        int idx = array.indexOf(type, true);</b>
+<b class="nc">&nbsp;        if(idx != -1){</b>
+<b class="nc">&nbsp;            array.remove(idx);</b>
+&nbsp;
+&nbsp;            //fix incorrect HEAD index since it was swapped
+<b class="nc">&nbsp;            if(array.size &gt; 0 &amp;&amp; idx != array.size){</b>
+<b class="nc">&nbsp;                var swapped = array.items[idx];</b>
+<b class="nc">&nbsp;                if(indexer != null) indexer.change(swapped, idx);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(map != null){</b>
+<b class="nc">&nbsp;                map.remove(type.id());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //fix iteration index when removing
+<b class="nc">&nbsp;            if(index &gt;= idx){</b>
+<b class="nc">&nbsp;                index --;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeIndex(T type, int position){
+<b class="fc">&nbsp;        if(clearing) return;</b>
+<b class="fc">&nbsp;        if(type == null) throw new RuntimeException(&quot;Cannot remove a null entity!&quot;);</b>
+<b class="fc">&nbsp;        if(position != -1 &amp;&amp; position &lt; array.size){</b>
+&nbsp;
+&nbsp;            //rarely the entity index is wrong; fallback to slow implementation
+<b class="fc">&nbsp;            if(array.items[position] != type){</b>
+<b class="nc">&nbsp;                remove(type);</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+&nbsp;            //swap head with current
+<b class="fc">&nbsp;            if(array.size &gt; 1){</b>
+<b class="fc">&nbsp;                var head = array.items[array.size - 1];</b>
+<b class="fc">&nbsp;                if(indexer != null) indexer.change(head, position);</b>
+<b class="fc">&nbsp;                array.items[position] = head;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            array.size --;</b>
+<b class="fc">&nbsp;            array.items[array.size] = null;</b>
+&nbsp;
+<b class="fc">&nbsp;            if(map != null){</b>
+<b class="fc">&nbsp;                map.remove(type.id());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            //fix iteration index when removing
+<b class="fc">&nbsp;            if(index &gt;= position){</b>
+<b class="fc">&nbsp;                index --;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clear(){
+<b class="fc">&nbsp;        clearing = true;</b>
+&nbsp;
+<b class="fc">&nbsp;        array.each(Entityc::remove);</b>
+<b class="fc">&nbsp;        array.clear();</b>
+<b class="fc">&nbsp;        if(map != null) map.clear();</b>
+&nbsp;
+<b class="fc">&nbsp;        clearing = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public T find(Boolf&lt;T&gt; pred){
+<b class="fc">&nbsp;        return array.find(pred);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public T first(){
+<b class="nc">&nbsp;        return array.first();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Iterator&lt;T&gt; iterator(){
+<b class="fc">&nbsp;        return array.iterator();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

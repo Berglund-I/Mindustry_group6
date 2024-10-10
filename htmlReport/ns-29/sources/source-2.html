@@ -1,0 +1,364 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > IconConverter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.tools</a>
+</div>
+
+<h1>Coverage Summary for Class: IconConverter (mindustry.tools)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">IconConverter</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/99)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.tools;
+&nbsp;
+&nbsp;import arc.files.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;
+<b class="nc">&nbsp;public class IconConverter{</b>
+<b class="nc">&nbsp;    StringBuilder out = new StringBuilder();</b>
+&nbsp;    float width, height;
+&nbsp;
+&nbsp;    public static void main(String[] __){
+&nbsp;        /*
+&nbsp;        Process for adding an icon to the font:
+&nbsp;        1. Have an SVG ready, possibly created with this tool.
+&nbsp;        2. Go to Fontello and load the config.json from core/assets-raw/fontgen/config.json
+&nbsp;        3. Drag the SVG in.
+&nbsp;        4. Export the config and font file, replace the old config.
+&nbsp;        5. Take the font (ttf) from the zip, open it in FontForge, and merge it into font.woff and icon.ttf. Usually, you would do view -&gt; go to (the 0x unicode index).
+&nbsp;        **/
+&nbsp;
+<b class="nc">&nbsp;        Log.info(&quot;Converting icons...&quot;);</b>
+<b class="nc">&nbsp;        Time.mark();</b>
+<b class="nc">&nbsp;        Fi.get(&quot;fontgen/icons&quot;).deleteDirectory();</b>
+<b class="nc">&nbsp;        Fi.get(&quot;fontgen/icon_parts&quot;).deleteDirectory();</b>
+<b class="nc">&nbsp;        Fi[] list = new Fi(&quot;icons&quot;).list();</b>
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;Fi&gt; files = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Fi img : list){</b>
+<b class="nc">&nbsp;            if(img.extension().equals(&quot;png&quot;)){</b>
+<b class="nc">&nbsp;                Fi dst = new Fi(&quot;fontgen/icons&quot;).child(img.nameWithoutExtension().replace(&quot;icon-&quot;, &quot;&quot;) + &quot;.svg&quot;);</b>
+<b class="nc">&nbsp;                new IconConverter().convert(new Pixmap(img), dst);</b>
+<b class="nc">&nbsp;                dst.copyTo(new Fi(&quot;fontgen/icon_parts/&quot;).child(dst.name()));</b>
+<b class="nc">&nbsp;                files.add(dst);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Seq&lt;String&gt; args = Seq.with(&quot;inkscape&quot;, &quot;--batch-process&quot;, &quot;--actions&quot;, &quot;select-all; path-union; fit-canvas-to-selection; export-overwrite; export-do&quot;);</b>
+<b class="nc">&nbsp;        args.addAll(files.map(Fi::absolutePath));</b>
+&nbsp;
+<b class="nc">&nbsp;        Fi.get(&quot;fontgen/extra&quot;).findAll().each(f -&gt; f.copyTo(Fi.get(&quot;fontgen/icons&quot;).child(f.name())));</b>
+&nbsp;
+<b class="nc">&nbsp;        Log.info(&quot;Merging paths...&quot;);</b>
+<b class="nc">&nbsp;        Log.info(OS.exec(args.toArray(String.class)));</b>
+&nbsp;
+<b class="nc">&nbsp;        Log.info(&quot;Done converting icons in &amp;lm@&amp;lgs.&quot;, Time.elapsed()/1000f);</b>
+<b class="nc">&nbsp;        System.exit(0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void convert(Pixmap pixmap, Fi output){
+<b class="nc">&nbsp;        boolean[][] grid = new boolean[pixmap.width][pixmap.height];</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = 0; x &lt; pixmap.width; x++){</b>
+<b class="nc">&nbsp;            for(int y = 0; y &lt; pixmap.height; y++){</b>
+<b class="nc">&nbsp;                grid[x][pixmap.height - 1 - y] = !pixmap.empty(x, y);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        float xscl = 1f, yscl = 1f;//resolution / (float)pixmap.getWidth(), yscl = resolution / (float)pixmap.getHeight();</b>
+<b class="nc">&nbsp;        float scl = xscl;</b>
+&nbsp;
+<b class="nc">&nbsp;        width = pixmap.width;</b>
+<b class="nc">&nbsp;        height = pixmap.height;</b>
+&nbsp;
+<b class="nc">&nbsp;        out.append(&quot;&lt;svg width=\&quot;&quot;).append(pixmap.width).append(&quot;\&quot; height=\&quot;&quot;).append(pixmap.height).append(&quot;\&quot;&gt;\n&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int x = -1; x &lt; pixmap.width; x++){</b>
+<b class="nc">&nbsp;            for(int y = -1; y &lt; pixmap.height; y++){</b>
+<b class="nc">&nbsp;                int index = index(x, y, pixmap.width, pixmap.height, grid);</b>
+&nbsp;
+<b class="nc">&nbsp;                float leftx = x * xscl, boty = y * yscl, rightx = x * xscl + xscl, topy = y * xscl + yscl,</b>
+<b class="nc">&nbsp;                midx = x * xscl + xscl / 2f, midy = y * yscl + yscl / 2f;</b>
+&nbsp;
+<b class="nc">&nbsp;                switch(index){</b>
+&nbsp;                    case 0:
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 1:
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        leftx, midy,
+&nbsp;                        leftx, topy,
+&nbsp;                        midx, topy
+&nbsp;                        );
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 2:
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        midx, topy,
+&nbsp;                        rightx, topy,
+&nbsp;                        rightx, midy
+&nbsp;                        );
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 3:
+<b class="nc">&nbsp;                        rect(leftx, midy, scl, scl / 2f);</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 4:
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        midx, boty,
+&nbsp;                        rightx, boty,
+&nbsp;                        rightx, midy
+&nbsp;                        );
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 5:
+&nbsp;                        //ambiguous
+&nbsp;
+&nbsp;                        //7
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        leftx, midy,
+&nbsp;                        midx, midy,
+&nbsp;                        midx, boty
+&nbsp;                        );
+&nbsp;
+&nbsp;                        //13
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        midx, topy,
+&nbsp;                        midx, midy,
+&nbsp;                        rightx, midy
+&nbsp;                        );
+&nbsp;
+<b class="nc">&nbsp;                        rect(leftx, midy, scl / 2f, scl / 2f);</b>
+<b class="nc">&nbsp;                        rect(midx, boty, scl / 2f, scl / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 6:
+<b class="nc">&nbsp;                        rect(midx, boty, scl / 2f, scl);</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 7:
+&nbsp;                        //invert triangle
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        leftx, midy,
+&nbsp;                        midx, midy,
+&nbsp;                        midx, boty
+&nbsp;                        );
+&nbsp;
+&nbsp;                        //3
+<b class="nc">&nbsp;                        rect(leftx, midy, scl, scl / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        rect(midx, boty, scl / 2f, scl / 2f);</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 8:
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        leftx, boty,
+&nbsp;                        leftx, midy,
+&nbsp;                        midx, boty
+&nbsp;                        );
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 9:
+<b class="nc">&nbsp;                        rect(leftx, boty, scl / 2f, scl);</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 10:
+&nbsp;                        //ambiguous
+&nbsp;
+&nbsp;                        //11
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        midx, boty,
+&nbsp;                        midx, midy,
+&nbsp;                        rightx, midy
+&nbsp;                        );
+&nbsp;
+&nbsp;                        //14
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        leftx, midy,
+&nbsp;                        midx, midy,
+&nbsp;                        midx, topy
+&nbsp;                        );
+&nbsp;
+<b class="nc">&nbsp;                        rect(midx, midy, scl / 2f, scl / 2f);</b>
+<b class="nc">&nbsp;                        rect(leftx, boty, scl / 2f, scl / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 11:
+&nbsp;                        //invert triangle
+&nbsp;
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        midx, boty,
+&nbsp;                        midx, midy,
+&nbsp;                        rightx, midy
+&nbsp;                        );
+&nbsp;
+&nbsp;                        //3
+<b class="nc">&nbsp;                        rect(leftx, midy, scl, scl / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        rect(leftx, boty, scl / 2f, scl / 2f);</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 12:
+<b class="nc">&nbsp;                        rect(leftx, boty, scl, scl / 2f);</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 13:
+&nbsp;                        //invert triangle
+&nbsp;
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        midx, topy,
+&nbsp;                        midx, midy,
+&nbsp;                        rightx, midy
+&nbsp;                        );
+&nbsp;
+&nbsp;                        //12
+<b class="nc">&nbsp;                        rect(leftx, boty, scl, scl / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        rect(leftx, midy, scl / 2f, scl / 2f);</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 14:
+&nbsp;                        //invert triangle
+&nbsp;
+<b class="nc">&nbsp;                        tri(</b>
+&nbsp;                        leftx, midy,
+&nbsp;                        midx, midy,
+&nbsp;                        midx, topy
+&nbsp;                        );
+&nbsp;
+&nbsp;                        //12
+<b class="nc">&nbsp;                        rect(leftx, boty, scl, scl / 2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                        rect(midx, midy, scl / 2f, scl / 2f);</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 15:
+<b class="nc">&nbsp;                        square(midx, midy, scl);</b>
+&nbsp;                        break;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        out.append(&quot;&lt;/svg&gt;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        output.writeString(out.toString());</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    void square(float x, float y, float size){
+<b class="nc">&nbsp;        rect(x - size/2f, y - size/2f, size, size);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void tri(float x1, float y1, float x2, float y2, float x3, float y3){
+<b class="nc">&nbsp;        out.append(&quot;&lt;polygon points=\&quot;&quot;);</b>
+<b class="nc">&nbsp;        out.append(x1 + 0.5f).append(&quot;,&quot;).append(flip(y1 + 0.5f)).append(&quot; &quot;);</b>
+<b class="nc">&nbsp;        out.append(x2 + 0.5f).append(&quot;,&quot;).append(flip(y2 + 0.5f)).append(&quot; &quot;);</b>
+<b class="nc">&nbsp;        out.append(x3 + 0.5f).append(&quot;,&quot;).append(flip(y3 + 0.5f)).append(&quot;\&quot; &quot;);</b>
+<b class="nc">&nbsp;        out.append(&quot;style=\&quot;fill:white\&quot; /&gt;\n&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void rect(float x1, float y1, float width, float height){
+<b class="nc">&nbsp;        out.append(&quot;&lt;rect x=\&quot;&quot;)</b>
+<b class="nc">&nbsp;            .append(x1 + 0.5f).append(&quot;\&quot; y=\&quot;&quot;).append(flip(y1 + 0.5f) - height)</b>
+<b class="nc">&nbsp;            .append(&quot;\&quot; width=\&quot;&quot;).append(width).append(&quot;\&quot; height=\&quot;&quot;)</b>
+<b class="nc">&nbsp;            .append(height).append(&quot;\&quot; style=\&quot;fill:white\&quot; /&gt;\n&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    float flip(float y){
+<b class="nc">&nbsp;        return height - y;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int index(int x, int y, int w, int h, boolean[][] grid){
+<b class="nc">&nbsp;        int botleft = sample(grid, x, y);</b>
+<b class="nc">&nbsp;        int botright = sample(grid, x + 1, y);</b>
+<b class="nc">&nbsp;        int topright = sample(grid, x + 1, y + 1);</b>
+<b class="nc">&nbsp;        int topleft = sample(grid, x, y + 1);</b>
+<b class="nc">&nbsp;        return (botleft &lt;&lt; 3) | (botright &lt;&lt; 2) | (topright &lt;&lt; 1) | topleft;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int sample(boolean[][] grid, int x, int y){
+<b class="nc">&nbsp;        return (x &lt; 0 || y &lt; 0 || x &gt;= grid.length || y &gt;= grid[0].length) ? 0 : grid[x][y] ? 1 : 0;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

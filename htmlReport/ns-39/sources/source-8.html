@@ -1,0 +1,149 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SeaBush</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.environment</a>
+</div>
+
+<h1>Coverage Summary for Class: SeaBush (mindustry.world.blocks.environment)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SeaBush</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.3%
+  </span>
+  <span class="absValue">
+    (6/17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.environment;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;public class SeaBush extends Prop{
+&nbsp;    public @Load(value = &quot;@-bot&quot;, fallback = &quot;@&quot;) TextureRegion botRegion;
+&nbsp;    public @Load(value = &quot;@-center&quot;) TextureRegion centerRegion;
+&nbsp;
+<b class="fc">&nbsp;    public int lobesMin = 7, lobesMax = 7;</b>
+<b class="fc">&nbsp;    public float botAngle = 60f, origin = 0.1f;</b>
+<b class="fc">&nbsp;    public float sclMin = 30f, sclMax = 50f, magMin = 5f, magMax = 15f, timeRange = 40f, spread = 0f;</b>
+&nbsp;
+<b class="fc">&nbsp;    static Rand rand = new Rand();</b>
+&nbsp;
+&nbsp;    public SeaBush(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        variants = 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawBase(Tile tile){
+<b class="nc">&nbsp;        rand.setSeed(tile.pos());</b>
+<b class="nc">&nbsp;        float offset = rand.random(180f);</b>
+<b class="nc">&nbsp;        int lobes = rand.random(lobesMin, lobesMax);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; lobes; i++){</b>
+<b class="nc">&nbsp;            float ba =  i / (float)lobes * 360f + offset + rand.range(spread), angle = ba + Mathf.sin(Time.time + rand.random(0, timeRange), rand.random(sclMin, sclMax), rand.random(magMin, magMax));</b>
+<b class="nc">&nbsp;            float w = region.width * region.scl(), h = region.height * region.scl();</b>
+<b class="nc">&nbsp;            var region = Angles.angleDist(ba, 225f) &lt;= botAngle ? botRegion : this.region;</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(region,</b>
+<b class="nc">&nbsp;                tile.worldx() - Angles.trnsx(angle, origin) + w*0.5f, tile.worldy() - Angles.trnsy(angle, origin),</b>
+&nbsp;                w, h,
+&nbsp;                origin*4f, h/2f,
+&nbsp;                angle
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(centerRegion.found()){</b>
+<b class="nc">&nbsp;            Draw.rect(centerRegion, tile.worldx(), tile.worldy());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

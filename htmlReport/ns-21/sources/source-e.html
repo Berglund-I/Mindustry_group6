@@ -1,0 +1,380 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LStatement</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: LStatement (mindustry.logic)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LStatement</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (2/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2%
+  </span>
+  <span class="absValue">
+    (2/102)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LStatement$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    5.7%
+  </span>
+  <span class="absValue">
+    (2/35)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.9%
+  </span>
+  <span class="absValue">
+    (2/105)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.logic;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.*;
+&nbsp;import arc.scene.actions.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.logic.LCanvas.*;
+&nbsp;import mindustry.logic.LExecutor.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.logic.LCanvas.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * A statement is an intermediate representation of an instruction, to be used mostly in UI.
+&nbsp; * Contains all relevant variable information. */
+<b class="fc">&nbsp;public abstract class LStatement{</b>
+&nbsp;    public transient @Nullable StatementElem elem;
+&nbsp;
+&nbsp;    public abstract void build(Table table);
+&nbsp;
+&nbsp;    public abstract LInstruction build(LAssembler builder);
+&nbsp;
+&nbsp;    public LCategory category(){
+<b class="nc">&nbsp;        return LCategory.unknown;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public LStatement copy(){
+<b class="nc">&nbsp;        StringBuilder build = new StringBuilder();</b>
+<b class="nc">&nbsp;        write(build);</b>
+&nbsp;        //assume privileged when copying, because there&#39;s no way privileged instructions can appear here anyway, and the instructions get validated on load anyway
+<b class="nc">&nbsp;        Seq&lt;LStatement&gt; read = LAssembler.read(build.toString(), true);</b>
+<b class="nc">&nbsp;        return read.size == 0 ? null : read.first();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hidden(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Privileged instructions are only allowed in world processors. */
+&nbsp;    public boolean privileged(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** If true, this statement is considered useless with privileged processors and is not allowed in them. */
+&nbsp;    public boolean nonPrivileged(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //protected methods are only for internal UI layout utilities
+&nbsp;
+&nbsp;    protected void param(Cell&lt;Label&gt; label){
+<b class="nc">&nbsp;        String text = name() + &quot;.&quot; + label.get().getText().toString().trim();</b>
+<b class="nc">&nbsp;        tooltip(label, text);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String sanitize(String value){
+<b class="nc">&nbsp;        if(value.length() == 0){</b>
+<b class="nc">&nbsp;            return &quot;&quot;;</b>
+<b class="nc">&nbsp;        }else if(value.length() == 1){</b>
+<b class="nc">&nbsp;            if(value.charAt(0) == &#39;&quot;&#39; || value.charAt(0) == &#39;;&#39; || value.charAt(0) == &#39; &#39;){</b>
+<b class="nc">&nbsp;                return &quot;invalid&quot;;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            StringBuilder res = new StringBuilder(value.length());</b>
+<b class="nc">&nbsp;            if(value.charAt(0) == &#39;&quot;&#39; &amp;&amp; value.charAt(value.length() - 1) == &#39;&quot;&#39;){</b>
+<b class="nc">&nbsp;                res.append(&#39;\&quot;&#39;);</b>
+&nbsp;                //strip out extra quotes
+<b class="nc">&nbsp;                for(int i = 1; i &lt; value.length() - 1; i++){</b>
+<b class="nc">&nbsp;                    if(value.charAt(i) == &#39;&quot;&#39;){</b>
+<b class="nc">&nbsp;                        res.append(&#39;\&#39;&#39;);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        res.append(value.charAt(i));</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;                res.append(&#39;\&quot;&#39;);</b>
+&nbsp;            }else{
+&nbsp;                //otherwise, strip out semicolons, spaces and quotes
+<b class="nc">&nbsp;                for(int i = 0; i &lt; value.length(); i++){</b>
+<b class="nc">&nbsp;                    char c = value.charAt(i);</b>
+<b class="nc">&nbsp;                    res.append(switch(c){</b>
+<b class="nc">&nbsp;                        case &#39;;&#39; -&gt; &#39;s&#39;;</b>
+<b class="nc">&nbsp;                        case &#39;&quot;&#39; -&gt; &#39;\&#39;&#39;;</b>
+<b class="nc">&nbsp;                        case &#39; &#39; -&gt; &#39;_&#39;;</b>
+<b class="nc">&nbsp;                        default -&gt; c;</b>
+&nbsp;                    });
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return res.toString();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return value;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Cell&lt;TextField&gt; field(Table table, String value, Cons&lt;String&gt; setter){
+<b class="nc">&nbsp;        return table.field(value, Styles.nodeField, s -&gt; setter.get(sanitize(s)))</b>
+<b class="nc">&nbsp;            .size(144f, 40f).pad(2f).color(table.color);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Cell&lt;TextField&gt; fields(Table table, String desc, String value, Cons&lt;String&gt; setter){
+<b class="nc">&nbsp;        table.add(desc).padLeft(10).left().self(this::param);</b>
+<b class="nc">&nbsp;        return field(table, value, setter).width(85f).padRight(10).left();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Puts the text and field in one table, taking up one cell. */
+&nbsp;    protected Cell&lt;TextField&gt; fieldst(Table table, String desc, String value, Cons&lt;String&gt; setter){
+<b class="nc">&nbsp;        Cell[] result = {null};</b>
+<b class="nc">&nbsp;        table.table(t -&gt; {</b>
+<b class="nc">&nbsp;            t.setColor(table.color);</b>
+<b class="nc">&nbsp;            t.add(desc).padLeft(10).left().self(this::param);</b>
+<b class="nc">&nbsp;            result[0] = field(t, value, setter).width(85f).padRight(10).left();</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        return result[0];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Adds color edit button */
+&nbsp;    protected Cell&lt;Button&gt; col(Table table, String value, Cons&lt;Color&gt; setter){
+<b class="nc">&nbsp;        return table.button(b -&gt; {</b>
+<b class="nc">&nbsp;            b.image(Icon.pencilSmall);</b>
+<b class="nc">&nbsp;            b.clicked(() -&gt; {</b>
+<b class="nc">&nbsp;                Color current = Pal.accent.cpy();</b>
+<b class="nc">&nbsp;                if(value.startsWith(&quot;%&quot;)){</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        current = Color.valueOf(value.substring(1));</b>
+<b class="nc">&nbsp;                    }catch(Exception ignored){}</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                ui.picker.show(current, setter);</b>
+&nbsp;            });
+<b class="nc">&nbsp;        }, Styles.logict, () -&gt; {}).size(40f).padLeft(-11).color(table.color);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Cell&lt;TextField&gt; fields(Table table, String value, Cons&lt;String&gt; setter){
+<b class="nc">&nbsp;        return field(table, value, setter).width(85f);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void row(Table table){
+<b class="nc">&nbsp;        if(LCanvas.useRows()){</b>
+<b class="nc">&nbsp;            table.row();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected &lt;T&gt; void showSelect(Button b, T[] values, T current, Cons&lt;T&gt; getter, int cols, Cons&lt;Cell&gt; sizer){
+<b class="nc">&nbsp;        showSelectTable(b, (t, hide) -&gt; {</b>
+<b class="nc">&nbsp;            ButtonGroup&lt;Button&gt; group = new ButtonGroup&lt;&gt;();</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+<b class="nc">&nbsp;            t.defaults().size(60f, 38f);</b>
+&nbsp;
+<b class="nc">&nbsp;            for(T p : values){</b>
+<b class="nc">&nbsp;                sizer.get(t.button(p.toString(), Styles.logicTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                    getter.get(p);</b>
+<b class="nc">&nbsp;                    hide.run();</b>
+<b class="nc">&nbsp;                }).self(c -&gt; {</b>
+<b class="nc">&nbsp;                    if(p instanceof Enum e){</b>
+<b class="nc">&nbsp;                        tooltip(c, e);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }).checked(current.equals(p)).group(group));</b>
+&nbsp;
+<b class="nc">&nbsp;                if(++i % cols == 0) t.row();</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    protected &lt;T&gt; void showSelect(Button b, T[] values, T current, Cons&lt;T&gt; getter){
+<b class="nc">&nbsp;        showSelect(b, values, current, getter, 4, c -&gt; {});</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void showSelectTable(Button b, Cons2&lt;Table, Runnable&gt; hideCons){
+<b class="nc">&nbsp;        Table t = new Table(Tex.paneSolid){</b>
+&nbsp;            @Override
+&nbsp;            public float getPrefHeight(){
+<b class="nc">&nbsp;                return Math.min(super.getPrefHeight(), Core.graphics.getHeight());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public float getPrefWidth(){
+<b class="nc">&nbsp;                return Math.min(super.getPrefWidth(), Core.graphics.getWidth());</b>
+&nbsp;            }
+&nbsp;        };
+<b class="nc">&nbsp;        t.margin(4);</b>
+&nbsp;
+&nbsp;        //triggers events behind the element to simulate deselection
+<b class="nc">&nbsp;        Element hitter = new Element();</b>
+&nbsp;
+<b class="nc">&nbsp;        Runnable hide = () -&gt; {</b>
+<b class="nc">&nbsp;            Core.app.post(hitter::remove);</b>
+<b class="nc">&nbsp;            t.actions(Actions.fadeOut(0.3f, Interp.fade), Actions.remove());</b>
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        hitter.fillParent = true;</b>
+<b class="nc">&nbsp;        hitter.tapped(hide);</b>
+&nbsp;
+<b class="nc">&nbsp;        Core.scene.add(hitter);</b>
+<b class="nc">&nbsp;        Core.scene.add(t);</b>
+&nbsp;
+<b class="nc">&nbsp;        t.update(() -&gt; {</b>
+<b class="nc">&nbsp;            if(b.parent == null || !b.isDescendantOf(Core.scene.root)){</b>
+<b class="nc">&nbsp;                Core.app.post(() -&gt; {</b>
+<b class="nc">&nbsp;                    hitter.remove();</b>
+<b class="nc">&nbsp;                    t.remove();</b>
+&nbsp;                });
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            b.localToStageCoordinates(Tmp.v1.set(b.getWidth()/2f, b.getHeight()/2f));</b>
+<b class="nc">&nbsp;            t.setPosition(Tmp.v1.x, Tmp.v1.y, Align.center);</b>
+<b class="nc">&nbsp;            if(t.getWidth() &gt; Core.scene.getWidth()) t.setWidth(Core.graphics.getWidth());</b>
+<b class="nc">&nbsp;            if(t.getHeight() &gt; Core.scene.getHeight()) t.setHeight(Core.graphics.getHeight());</b>
+<b class="nc">&nbsp;            t.keepInStage();</b>
+<b class="nc">&nbsp;            t.invalidateHierarchy();</b>
+<b class="nc">&nbsp;            t.pack();</b>
+&nbsp;        });
+<b class="nc">&nbsp;        t.actions(Actions.alpha(0), Actions.fadeIn(0.3f, Interp.fade));</b>
+&nbsp;
+<b class="nc">&nbsp;        t.top().pane(inner -&gt; {</b>
+<b class="nc">&nbsp;            inner.top();</b>
+<b class="nc">&nbsp;            hideCons.get(inner, hide);</b>
+<b class="nc">&nbsp;        }).pad(0f).top().scrollX(false);</b>
+&nbsp;
+<b class="nc">&nbsp;        t.pack();</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void afterRead(){}</b>
+&nbsp;
+&nbsp;    public void write(StringBuilder builder){
+<b class="nc">&nbsp;        LogicIO.write(this, builder);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setupUI(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void saveUI(){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String name(){
+<b class="nc">&nbsp;        return Strings.insertSpaces(getClass().getSimpleName().replace(&quot;Statement&quot;, &quot;&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

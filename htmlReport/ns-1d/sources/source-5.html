@@ -1,0 +1,289 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MeshBuilder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics.g3d</a>
+</div>
+
+<h1>Coverage Summary for Class: MeshBuilder (mindustry.graphics.g3d)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MeshBuilder</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/71)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MeshBuilder$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/74)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics.g3d;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import mindustry.graphics.g3d.PlanetGrid.*;
+&nbsp;import mindustry.maps.generators.*;
+&nbsp;
+<b class="nc">&nbsp;public class MeshBuilder{</b>
+<b class="nc">&nbsp;    private static final Vec3 v1 = new Vec3(), v2 = new Vec3(), v3 = new Vec3(), v4 = new Vec3();</b>
+<b class="nc">&nbsp;    private static final float[] floats = new float[3 + 3 + 1];</b>
+&nbsp;    private static Mesh mesh;
+&nbsp;
+&nbsp;    public static Mesh buildIcosphere(int divisions, float radius, Color color){
+<b class="nc">&nbsp;        begin(20 * (2 &lt;&lt; (2 * divisions - 1)) * 3);</b>
+&nbsp;
+<b class="nc">&nbsp;        MeshResult result = Icosphere.create(divisions);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; result.indices.size; i+= 3){</b>
+<b class="nc">&nbsp;            v1.set(result.vertices.items, result.indices.items[i] * 3).setLength(radius);</b>
+<b class="nc">&nbsp;            v2.set(result.vertices.items, result.indices.items[i + 1] * 3).setLength(radius);</b>
+<b class="nc">&nbsp;            v3.set(result.vertices.items, result.indices.items[i + 2] * 3).setLength(radius);</b>
+&nbsp;
+<b class="nc">&nbsp;            verts(v1, v3, v2, normal(v1, v2, v3).scl(-1f), color);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return end();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Mesh buildIcosphere(int divisions, float radius){
+<b class="nc">&nbsp;        return buildIcosphere(divisions, radius, Color.white);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Mesh buildPlanetGrid(PlanetGrid grid, Color color, float scale){
+<b class="nc">&nbsp;        int total = 0;</b>
+<b class="nc">&nbsp;        for(Ptile tile : grid.tiles){</b>
+<b class="nc">&nbsp;            total += tile.corners.length * 2;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        begin(total);</b>
+<b class="nc">&nbsp;        for(Ptile tile : grid.tiles){</b>
+<b class="nc">&nbsp;            Corner[] c = tile.corners;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; c.length; i++){</b>
+<b class="nc">&nbsp;                Vec3 a = v1.set(c[i].v).scl(scale);</b>
+<b class="nc">&nbsp;                Vec3 b = v2.set(c[(i + 1) % c.length].v).scl(scale);</b>
+&nbsp;
+<b class="nc">&nbsp;                vert(a, Vec3.Z, color);</b>
+<b class="nc">&nbsp;                vert(b, Vec3.Z, color);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return end();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Mesh buildHex(Color color, int divisions, boolean lines, float radius){
+<b class="nc">&nbsp;        return buildHex(new HexMesher(){</b>
+&nbsp;            @Override
+&nbsp;            public float getHeight(Vec3 position){
+<b class="nc">&nbsp;                return 0;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            @Override
+&nbsp;            public Color getColor(Vec3 position){
+<b class="nc">&nbsp;                return color;</b>
+&nbsp;            }
+&nbsp;        }, divisions, lines, radius, 0);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Mesh buildHex(HexMesher mesher, int divisions, boolean lines, float radius, float intensity){
+<b class="nc">&nbsp;        PlanetGrid grid = PlanetGrid.create(divisions);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(mesher instanceof PlanetGenerator generator){</b>
+<b class="nc">&nbsp;            generator.seed = generator.baseSeed;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        begin(grid.tiles.length * 12);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Ptile tile : grid.tiles){</b>
+<b class="nc">&nbsp;            if(mesher.skip(tile.v)){</b>
+<b class="nc">&nbsp;                continue;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Corner[] c = tile.corners;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Corner corner : c){</b>
+<b class="nc">&nbsp;                corner.v.setLength((1f + mesher.getHeight(v2.set(corner.v)) * intensity) * radius);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Vec3 nor = normal(c[0].v, c[2].v, c[4].v);</b>
+<b class="nc">&nbsp;            Color color = mesher.getColor(v2.set(tile.v));</b>
+&nbsp;
+<b class="nc">&nbsp;            if(lines){</b>
+<b class="nc">&nbsp;                nor.set(1f, 1f, 1f);</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; c.length; i++){</b>
+<b class="nc">&nbsp;                    Vec3 v1 = c[i].v;</b>
+<b class="nc">&nbsp;                    Vec3 v2 = c[(i + 1) % c.length].v;</b>
+&nbsp;
+<b class="nc">&nbsp;                    vert(v1, nor, color);</b>
+<b class="nc">&nbsp;                    vert(v2, nor, color);</b>
+&nbsp;                }
+&nbsp;            }else{
+<b class="nc">&nbsp;                verts(c[0].v, c[1].v, c[2].v, nor, color);</b>
+<b class="nc">&nbsp;                verts(c[0].v, c[2].v, c[3].v, nor, color);</b>
+<b class="nc">&nbsp;                verts(c[0].v, c[3].v, c[4].v, nor, color);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(c.length &gt; 5){</b>
+<b class="nc">&nbsp;                    verts(c[0].v, c[4].v, c[5].v, nor, color);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            //restore mutated corners
+<b class="nc">&nbsp;            for(Corner corner : c){</b>
+<b class="nc">&nbsp;                corner.v.nor();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return end();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void begin(int count){
+<b class="nc">&nbsp;        mesh = new Mesh(true, count, 0,</b>
+&nbsp;        VertexAttribute.position3,
+&nbsp;        VertexAttribute.normal,
+&nbsp;        VertexAttribute.color
+&nbsp;        );
+&nbsp;
+<b class="nc">&nbsp;        mesh.getVerticesBuffer().limit(mesh.getVerticesBuffer().capacity());</b>
+<b class="nc">&nbsp;        mesh.getVerticesBuffer().position(0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Mesh end(){
+<b class="nc">&nbsp;        Mesh last = mesh;</b>
+<b class="nc">&nbsp;        last.getVerticesBuffer().limit(last.getVerticesBuffer().position());</b>
+<b class="nc">&nbsp;        mesh = null;</b>
+<b class="nc">&nbsp;        return last;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Vec3 normal(Vec3 v1, Vec3 v2, Vec3 v3){
+<b class="nc">&nbsp;        return v4.set(v2).sub(v1).crs(v3.x - v1.x, v3.y - v1.y, v3.z - v1.z).nor();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void verts(Vec3 a, Vec3 b, Vec3 c, Vec3 normal, Color color){
+<b class="nc">&nbsp;        vert(a, normal, color);</b>
+<b class="nc">&nbsp;        vert(b, normal, color);</b>
+<b class="nc">&nbsp;        vert(c, normal, color);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void vert(Vec3 a, Vec3 normal, Color color){
+<b class="nc">&nbsp;        floats[0] = a.x;</b>
+<b class="nc">&nbsp;        floats[1] = a.y;</b>
+<b class="nc">&nbsp;        floats[2] = a.z;</b>
+&nbsp;
+<b class="nc">&nbsp;        floats[3] = normal.x;</b>
+<b class="nc">&nbsp;        floats[4] = normal.y;</b>
+<b class="nc">&nbsp;        floats[5] = normal.z;</b>
+&nbsp;
+<b class="nc">&nbsp;        floats[6] = color.toFloatBits();</b>
+<b class="nc">&nbsp;        mesh.getVerticesBuffer().put(floats);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

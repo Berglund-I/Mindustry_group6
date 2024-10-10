@@ -1,0 +1,404 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DirectionalForceProjector</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.defense</a>
+</div>
+
+<h1>Coverage Summary for Class: DirectionalForceProjector (mindustry.world.blocks.defense)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DirectionalForceProjector</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/46)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DirectionalForceProjector$DirectionalForceProjectorBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/66)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/112)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.defense;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;//TODO use completely different layer
+&nbsp;//TODO consume heat
+&nbsp;//TODO broken class!!!!!
+&nbsp;public class DirectionalForceProjector extends Block{
+<b class="nc">&nbsp;    protected static final Vec2 intersectOut = new Vec2(), p1 = new Vec2(), p2 = new Vec2();</b>
+&nbsp;    protected static DirectionalForceProjectorBuild paramEntity;
+&nbsp;    protected static Effect paramEffect;
+<b class="nc">&nbsp;    protected static final Cons&lt;Bullet&gt; dirShieldConsumer = b -&gt; {</b>
+<b class="nc">&nbsp;        if(b.team != paramEntity.team &amp;&amp; b.type.absorbable){</b>
+&nbsp;            //just in case
+<b class="nc">&nbsp;            float deltaAdd = 1.1f;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(Intersector.intersectSegments(b.x, b.y,</b>
+&nbsp;                    b.x + b.vel.x * (Time.delta + deltaAdd),
+&nbsp;                    b.y + b.vel.y * (Time.delta + deltaAdd), p1.x, p1.y, p2.x, p2.y, intersectOut)){
+<b class="nc">&nbsp;                b.set(intersectOut);</b>
+<b class="nc">&nbsp;                b.absorb();</b>
+<b class="nc">&nbsp;                paramEffect.at(b);</b>
+<b class="nc">&nbsp;                paramEntity.hit = 1f;</b>
+<b class="nc">&nbsp;                paramEntity.buildup += b.damage();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+<b class="nc">&nbsp;    public float width = 30f;</b>
+<b class="nc">&nbsp;    public float shieldHealth = 3000f;</b>
+<b class="nc">&nbsp;    public float cooldownNormal = 1.75f;</b>
+<b class="nc">&nbsp;    public float cooldownLiquid = 1.5f;</b>
+<b class="nc">&nbsp;    public float cooldownBrokenBase = 0.35f;</b>
+&nbsp;
+<b class="nc">&nbsp;    public Effect absorbEffect = Fx.absorb;</b>
+<b class="nc">&nbsp;    public Effect shieldBreakEffect = Fx.shieldBreak;</b>
+&nbsp;    public @Load(&quot;@-top&quot;) TextureRegion topRegion;
+&nbsp;
+<b class="nc">&nbsp;    public float length = 40f;</b>
+<b class="nc">&nbsp;    public float padSize = 40f;</b>
+&nbsp;
+&nbsp;    public DirectionalForceProjector(String name){
+<b class="nc">&nbsp;        super(name);</b>
+&nbsp;
+<b class="nc">&nbsp;        rotate = true;</b>
+<b class="nc">&nbsp;        rotateDraw = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        update = true;</b>
+<b class="nc">&nbsp;        solid = true;</b>
+<b class="nc">&nbsp;        group = BlockGroup.projectors;</b>
+<b class="nc">&nbsp;        envEnabled |= Env.space;</b>
+<b class="nc">&nbsp;        ambientSound = Sounds.shield;</b>
+<b class="nc">&nbsp;        ambientSoundVolume = 0.08f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="nc">&nbsp;        updateClipRadius((width + 3f));</b>
+&nbsp;
+<b class="nc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(length &lt; 0){</b>
+<b class="nc">&nbsp;            length = size * tilesize/2f;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="nc">&nbsp;        super.setBars();</b>
+<b class="nc">&nbsp;        addBar(&quot;shield&quot;, (DirectionalForceProjectorBuild entity) -&gt; new Bar(&quot;stat.shieldhealth&quot;, Pal.accent, () -&gt; entity.broken ? 0f : 1f - entity.buildup / (shieldHealth)).blink(Color.white));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+<b class="nc">&nbsp;        stats.add(Stat.shieldHealth, shieldHealth, StatUnit.none);</b>
+<b class="nc">&nbsp;        stats.add(Stat.cooldownTime, (int) (shieldHealth / cooldownBrokenBase / 60f), StatUnit.seconds);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlace(int x, int y, int rotation, boolean valid){
+<b class="nc">&nbsp;        drawPotentialLinks(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        x *= tilesize;</b>
+<b class="nc">&nbsp;        y *= tilesize;</b>
+&nbsp;
+<b class="nc">&nbsp;        Tmp.v1.set(length - size/2f, (width + size/2f)).rotate(rotation * 90).add(x, y);</b>
+<b class="nc">&nbsp;        Tmp.v2.set(length - size/2f, -(width + size/2f)).rotate(rotation * 90).add(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;        Drawf.dashLine(Color.lightGray, x, y, Tmp.v1.x, Tmp.v1.y);</b>
+<b class="nc">&nbsp;        Drawf.dashLine(Color.lightGray, x, y, Tmp.v2.x, Tmp.v2.y);</b>
+<b class="nc">&nbsp;        Drawf.dashLine(Pal.accent, Tmp.v1.x, Tmp.v1.y, Tmp.v2.x, Tmp.v2.y);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public class DirectionalForceProjectorBuild extends Building{</b>
+<b class="nc">&nbsp;        public boolean broken = true;</b>
+&nbsp;        public float buildup, hit, warmup, shieldRadius;
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldAmbientSound(){
+<b class="nc">&nbsp;            return !broken &amp;&amp; shieldRadius &gt; 1f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void pickedUp(){
+<b class="nc">&nbsp;            super.pickedUp();</b>
+<b class="nc">&nbsp;            shieldRadius = warmup = 0f;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="nc">&nbsp;            shieldRadius = Mathf.lerpDelta(shieldRadius, broken ? 0f : warmup * width, 0.05f);</b>
+&nbsp;
+&nbsp;            //TODO ?????????????????
+<b class="nc">&nbsp;            if(Mathf.chanceDelta(buildup / shieldHealth * 0.1f)){</b>
+<b class="nc">&nbsp;                Fx.reactorsmoke.at(x + Mathf.range(tilesize / 2f), y + Mathf.range(tilesize / 2f));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            warmup = Mathf.lerpDelta(warmup, efficiency, 0.1f);</b>
+&nbsp;
+&nbsp;            //TODO aaaaaaaaaaaaAAAAAAAAAAAAAAaa
+<b class="nc">&nbsp;            if(buildup &gt; 0 &amp;&amp; false){</b>
+&nbsp;                float scale = !broken ? cooldownNormal : cooldownBrokenBase;
+&nbsp;                Consume cons = null;
+&nbsp;                //if(cons.valid(this)){
+&nbsp;                //    cons.update(this);
+&nbsp;                //    scale *= (cooldownLiquid * (1f + (liquids.current().heatCapacity - 0.4f) * 0.9f));
+&nbsp;                //}
+&nbsp;
+&nbsp;                buildup -= delta() * scale;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(broken &amp;&amp; buildup &lt;= 0){</b>
+<b class="nc">&nbsp;                broken = false;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(buildup &gt;= shieldHealth &amp;&amp; !broken){</b>
+<b class="nc">&nbsp;                broken = true;</b>
+<b class="nc">&nbsp;                buildup = shieldHealth;</b>
+<b class="nc">&nbsp;                shieldBreakEffect.at(x, y, shieldRadius, team.color);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(hit &gt; 0f){</b>
+<b class="nc">&nbsp;                hit -= 1f / 5f * Time.delta;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            deflectBullets();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void deflectBullets(){
+&nbsp;
+<b class="nc">&nbsp;            if(shieldRadius &gt; 0 &amp;&amp; !broken){</b>
+<b class="nc">&nbsp;                paramEntity = this;</b>
+<b class="nc">&nbsp;                paramEffect = absorbEffect;</b>
+&nbsp;
+&nbsp;                //top
+<b class="nc">&nbsp;                p1.set(length, shieldRadius).rotate(rotdeg());</b>
+&nbsp;                //bot
+<b class="nc">&nbsp;                p2.set(length, -shieldRadius).rotate(rotdeg());</b>
+&nbsp;
+&nbsp;                //&quot;check&quot; radius is grown to catch bullets moving at high velocity
+<b class="nc">&nbsp;                Tmp.r1.set(p2.x, p2.y, p1.x - p2.x, p1.y - p2.y).normalize().grow(padSize);</b>
+&nbsp;
+<b class="nc">&nbsp;                p1.add(x, y);</b>
+<b class="nc">&nbsp;                p2.add(x, y);</b>
+&nbsp;
+<b class="nc">&nbsp;                Groups.bullet.intersect(x + Tmp.r1.x, y + Tmp.r1.y, Tmp.r1.width, Tmp.r1.height, dirShieldConsumer);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            super.draw();</b>
+&nbsp;
+&nbsp;            //TODO wrong
+<b class="nc">&nbsp;            if(buildup &gt; 0f){</b>
+<b class="nc">&nbsp;                Draw.alpha(buildup / shieldHealth * 0.75f);</b>
+<b class="nc">&nbsp;                Draw.z(Layer.blockAdditive);</b>
+<b class="nc">&nbsp;                Draw.blend(Blending.additive);</b>
+<b class="nc">&nbsp;                Draw.rect(topRegion, x, y);</b>
+<b class="nc">&nbsp;                Draw.blend();</b>
+<b class="nc">&nbsp;                Draw.z(Layer.block);</b>
+<b class="nc">&nbsp;                Draw.reset();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            drawShield();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void drawShield(){
+<b class="nc">&nbsp;            if(!broken &amp;&amp; shieldRadius &gt; 0){</b>
+<b class="nc">&nbsp;                float rot = rotdeg();</b>
+&nbsp;
+<b class="nc">&nbsp;                p1.set(length, shieldRadius).rotate(rot).add(this);</b>
+<b class="nc">&nbsp;                p2.set(length, -shieldRadius).rotate(rot).add(this);</b>
+<b class="nc">&nbsp;                float size = 4f;</b>
+<b class="nc">&nbsp;                Tmp.r1.set(p2.x, p2.y, p1.x - p2.x, p1.y - p2.y).normalize().grow(size);</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.z(Layer.shields);</b>
+&nbsp;
+<b class="nc">&nbsp;                Draw.color(team.color, Color.white, Mathf.clamp(hit));</b>
+&nbsp;
+<b class="nc">&nbsp;                if(renderer.animateShields){</b>
+<b class="nc">&nbsp;                    Fill.rect(Tmp.r1);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Tmp.v1.set(length - size/2f, (shieldRadius + size/2f)).rotate(rot).add(this);</b>
+<b class="nc">&nbsp;                    Tmp.v2.set(length - size/2f, -(shieldRadius + size/2f)).rotate(rot).add(this);</b>
+&nbsp;
+&nbsp;                    //Fill.tri(x, y, Tmp.v1.x, Tmp.v1.y, Tmp.v2.x, Tmp.v2.y);
+<b class="nc">&nbsp;                    Lines.stroke(3f);</b>
+<b class="nc">&nbsp;                    Lines.line(x, y, Tmp.v1.x, Tmp.v1.y);</b>
+<b class="nc">&nbsp;                    Lines.line(x, y, Tmp.v2.x, Tmp.v2.y);</b>
+&nbsp;
+<b class="nc">&nbsp;                    Draw.z(Layer.shields);</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int i : Mathf.signs){</b>
+<b class="nc">&nbsp;                        Tmp.v1.set(length - size/2f, (shieldRadius + size/2f) * i).rotate(rot).add(this);</b>
+<b class="nc">&nbsp;                        Tmp.v3.set(length + size/2f, (shieldRadius + size/2f) * i).rotate(rot).add(this);</b>
+<b class="nc">&nbsp;                        Tmp.v2.set(length, (shieldRadius + size) * i).rotate(rot).add(this);</b>
+<b class="nc">&nbsp;                        Fill.tri(Tmp.v1.x, Tmp.v1.y, Tmp.v2.x, Tmp.v2.y, Tmp.v3.x, Tmp.v3.y);</b>
+&nbsp;                    }
+&nbsp;                }else{
+<b class="nc">&nbsp;                    Lines.stroke(1.5f);</b>
+<b class="nc">&nbsp;                    Draw.alpha(0.09f + Mathf.clamp(0.08f * hit));</b>
+<b class="nc">&nbsp;                    Fill.rect(Tmp.r1);</b>
+<b class="nc">&nbsp;                    Draw.alpha(1f);</b>
+<b class="nc">&nbsp;                    Lines.rect(Tmp.r1);</b>
+<b class="nc">&nbsp;                    Draw.reset();</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Draw.reset();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //TODO
+&nbsp;        /*
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+&nbsp;            super.write(write);
+&nbsp;            write.bool(broken);
+&nbsp;            write.f(buildup);
+&nbsp;            write.f(radscl);
+&nbsp;            write.f(warmup);
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+&nbsp;            super.read(read, revision);
+&nbsp;            broken = read.bool();
+&nbsp;            buildup = read.f();
+&nbsp;            radscl = read.f();
+&nbsp;            warmup = read.f();
+&nbsp;        }*/
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

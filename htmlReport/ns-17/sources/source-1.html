@@ -1,0 +1,363 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawPart</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.part</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawPart (mindustry.entities.part)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawPart</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (5/6)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DrawPart$PartFunc</td>
+  </tr>
+  <tr>
+    <td class="name">DrawPart$PartMove</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (10/10)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DrawPart$PartParams</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.8%
+  </span>
+  <span class="absValue">
+    (2/17)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DrawPart$PartProgress</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.8%
+  </span>
+  <span class="absValue">
+    (22/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (22/33)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    68.3%
+  </span>
+  <span class="absValue">
+    (28/41)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    59.1%
+  </span>
+  <span class="absValue">
+    (39/66)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.part;
+&nbsp;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;
+<b class="fc">&nbsp;public abstract class DrawPart{</b>
+<b class="fc">&nbsp;    public static final PartParams params = new PartParams();</b>
+&nbsp;
+&nbsp;    /** If true, turret shading is used. Don&#39;t touch this, it is set up in unit/block init()! */
+&nbsp;    public boolean turretShading;
+&nbsp;    /** If true, the layer is overridden to be under the weapon/turret itself. */
+<b class="fc">&nbsp;    public boolean under = false;</b>
+&nbsp;    /** For units, this is the index of the weapon this part gets its progress for. */
+<b class="fc">&nbsp;    public int weaponIndex = 0;</b>
+&nbsp;    /** Which recoil counter to use. &lt; 0 to use base recoil.  */
+<b class="fc">&nbsp;    public int recoilIndex = -1;</b>
+&nbsp;
+&nbsp;    public abstract void draw(PartParams params);
+&nbsp;    public abstract void load(String name);
+<b class="nc">&nbsp;    public void getOutlines(Seq&lt;TextureRegion&gt; out){}</b>
+&nbsp;
+&nbsp;    /** Parameters for drawing a part in draw(). */
+<b class="fc">&nbsp;    public static class PartParams{</b>
+&nbsp;        //TODO document
+&nbsp;        public float warmup, reload, smoothReload, heat, recoil, life, charge;
+&nbsp;        public float x, y, rotation;
+<b class="fc">&nbsp;        public int sideOverride = -1, sideMultiplier = 1;</b>
+&nbsp;
+&nbsp;        public PartParams set(float warmup, float reload, float smoothReload, float heat, float recoil, float charge, float x, float y, float rotation){
+<b class="nc">&nbsp;            this.warmup = warmup;</b>
+<b class="nc">&nbsp;            this.reload = reload;</b>
+<b class="nc">&nbsp;            this.heat = heat;</b>
+<b class="nc">&nbsp;            this.recoil = recoil;</b>
+<b class="nc">&nbsp;            this.smoothReload = smoothReload;</b>
+<b class="nc">&nbsp;            this.charge = charge;</b>
+<b class="nc">&nbsp;            this.x = x;</b>
+<b class="nc">&nbsp;            this.y = y;</b>
+<b class="nc">&nbsp;            this.rotation = rotation;</b>
+<b class="nc">&nbsp;            this.sideOverride = -1;</b>
+<b class="nc">&nbsp;            this.life = 0f;</b>
+<b class="nc">&nbsp;            this.sideMultiplier = 1;</b>
+<b class="nc">&nbsp;            return this;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public PartParams setRecoil(float recoils){
+<b class="nc">&nbsp;            this.recoil = recoils;</b>
+<b class="nc">&nbsp;            return this;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class PartMove{
+<b class="fc">&nbsp;        public PartProgress progress = PartProgress.warmup;</b>
+&nbsp;        public float x, y, gx, gy, rot;
+&nbsp;
+<b class="fc">&nbsp;        public PartMove(PartProgress progress, float x, float y, float gx, float gy, float rot){</b>
+<b class="fc">&nbsp;            this.progress = progress;</b>
+<b class="fc">&nbsp;            this.x = x;</b>
+<b class="fc">&nbsp;            this.y = y;</b>
+<b class="fc">&nbsp;            this.gx = gx;</b>
+<b class="fc">&nbsp;            this.gy = gy;</b>
+<b class="fc">&nbsp;            this.rot = rot;</b>
+&nbsp;        }
+&nbsp;        public PartMove(PartProgress progress, float x, float y, float rot){
+<b class="fc">&nbsp;            this(progress, x, y, 0, 0, rot);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        public PartMove(){</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface PartProgress{
+&nbsp;        /** Reload of the weapon - 1 right after shooting, 0 when ready to fire*/
+&nbsp;        PartProgress
+<b class="fc">&nbsp;        reload = p -&gt; p.reload,</b>
+&nbsp;        /** Reload, but smoothed out, so there is no sudden jump between 0-1. */
+<b class="fc">&nbsp;        smoothReload = p -&gt; p.smoothReload,</b>
+&nbsp;        /** Weapon warmup, 0 when not firing, 1 when actively shooting. Not equivalent to heat. */
+<b class="fc">&nbsp;        warmup = p -&gt; p.warmup,</b>
+&nbsp;        /** Weapon charge, 0 when beginning to charge, 1 when finished */
+<b class="fc">&nbsp;        charge = p -&gt; p.charge,</b>
+&nbsp;        /** Weapon recoil with no curve applied. */
+<b class="fc">&nbsp;        recoil = p -&gt; p.recoil,</b>
+&nbsp;        /** Weapon heat, 1 when just fired, 0, when it has cooled down (duration depends on weapon) */
+<b class="fc">&nbsp;        heat = p -&gt; p.heat,</b>
+&nbsp;        /** Lifetime fraction, 0 to 1. Only for missiles. */
+<b class="fc">&nbsp;        life = p -&gt; p.life,</b>
+&nbsp;        /** Current unscaled value of Time.time. */
+<b class="fc">&nbsp;        time = p -&gt; Time.time;</b>
+&nbsp;        
+&nbsp;        float get(PartParams p);
+&nbsp;
+&nbsp;        static PartProgress constant(float value){
+<b class="nc">&nbsp;            return p -&gt; value;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default float getClamp(PartParams p){
+<b class="nc">&nbsp;            return Mathf.clamp(get(p));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress inv(){
+<b class="fc">&nbsp;            return p -&gt; 1f - get(p);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress slope(){
+<b class="fc">&nbsp;            return p -&gt; Mathf.slope(get(p));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress clamp(){
+<b class="nc">&nbsp;            return p -&gt; Mathf.clamp(get(p));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress add(float amount){
+<b class="fc">&nbsp;            return p -&gt; get(p) + amount;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress add(PartProgress other){
+<b class="fc">&nbsp;            return p -&gt; get(p) + other.get(p);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress delay(float amount){
+<b class="fc">&nbsp;            return p -&gt; (get(p) - amount) / (1f - amount);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress curve(float offset, float duration){
+<b class="fc">&nbsp;            return p -&gt; (get(p) - offset) / duration;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress sustain(float offset, float grow, float sustain){
+<b class="fc">&nbsp;            return p -&gt; {</b>
+<b class="nc">&nbsp;                float val = get(p) - offset;</b>
+<b class="nc">&nbsp;                return Math.min(Math.max(val, 0f) / grow, (grow + sustain + grow - val) / grow);</b>
+&nbsp;            };
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress shorten(float amount){
+<b class="fc">&nbsp;            return p -&gt; get(p) / (1f - amount);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress compress(float start, float end){
+<b class="fc">&nbsp;            return p -&gt; Mathf.curve(get(p), start, end);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress blend(PartProgress other, float amount){
+<b class="fc">&nbsp;            return p -&gt; Mathf.lerp(get(p), other.get(p), amount);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress mul(PartProgress other){
+<b class="nc">&nbsp;            return p -&gt; get(p) * other.get(p);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress mul(float amount){
+<b class="fc">&nbsp;            return p -&gt; get(p) * amount;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress min(PartProgress other){
+<b class="fc">&nbsp;            return p -&gt; Math.min(get(p), other.get(p));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress sin(float offset, float scl, float mag){
+<b class="fc">&nbsp;            return p -&gt; get(p) + Mathf.sin(Time.time + offset, scl, mag);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress sin(float scl, float mag){
+<b class="nc">&nbsp;            return p -&gt; get(p) + Mathf.sin(scl, mag);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress absin(float scl, float mag){
+<b class="nc">&nbsp;            return p -&gt; get(p) + Mathf.absin(scl, mag);</b>
+&nbsp;        }
+&nbsp;        
+&nbsp;        default PartProgress mod(float amount){
+<b class="nc">&nbsp;            return p -&gt; Mathf.mod(get(p), amount);</b>
+&nbsp;        }
+&nbsp;        
+&nbsp;        default PartProgress loop(float time){
+<b class="nc">&nbsp;            return p -&gt; Mathf.mod(get(p)/time, 1);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress apply(PartProgress other, PartFunc func){
+<b class="nc">&nbsp;            return p -&gt; func.get(get(p), other.get(p));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default PartProgress curve(Interp interp){
+<b class="fc">&nbsp;            return p -&gt; interp.apply(get(p));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface PartFunc{
+&nbsp;        float get(float a, float b);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

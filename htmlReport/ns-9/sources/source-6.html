@@ -1,0 +1,195 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TypeIOResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.annotations.util</a>
+</div>
+
+<h1>Coverage Summary for Class: TypeIOResolver (mindustry.annotations.util)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TypeIOResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TypeIOResolver$ClassSerializer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.annotations.util;
+&nbsp;
+&nbsp;import arc.struct.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.annotations.*;
+&nbsp;
+&nbsp;import javax.lang.model.element.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * This class finds reader and writer methods.
+&nbsp; */
+<b class="nc">&nbsp;public class TypeIOResolver{</b>
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Finds all class serializers for all types and returns them. Logs errors when necessary.
+&nbsp;     * Maps fully qualified class names to their serializers.
+&nbsp;     */
+&nbsp;    public static ClassSerializer resolve(BaseProcessor processor){
+<b class="nc">&nbsp;        ClassSerializer out = new ClassSerializer(new ObjectMap&lt;&gt;(), new ObjectMap&lt;&gt;(), new ObjectMap&lt;&gt;(), new ObjectMap&lt;&gt;());</b>
+<b class="nc">&nbsp;        for(Stype type : processor.types(TypeIOHandler.class)){</b>
+&nbsp;            //look at all TypeIOHandler methods
+<b class="nc">&nbsp;            Seq&lt;Smethod&gt; methods = type.methods();</b>
+<b class="nc">&nbsp;            for(Smethod meth : methods){</b>
+<b class="nc">&nbsp;                if(meth.is(Modifier.PUBLIC) &amp;&amp; meth.is(Modifier.STATIC)){</b>
+<b class="nc">&nbsp;                    Seq&lt;Svar&gt; params = meth.params();</b>
+&nbsp;                    //2 params, second one is type, first is writer
+<b class="nc">&nbsp;                    if(params.size == 2 &amp;&amp; params.first().tname().toString().equals(&quot;arc.util.io.Writes&quot;)){</b>
+&nbsp;                        //Net suffix indicates that this should only be used for sync operations
+<b class="nc">&nbsp;                        ObjectMap&lt;String, String&gt; targetMap = meth.name().endsWith(&quot;Net&quot;) ? out.netWriters : out.writers;</b>
+&nbsp;
+<b class="nc">&nbsp;                        targetMap.put(fix(params.get(1).tname().toString()), type.fullName() + &quot;.&quot; + meth.name());</b>
+<b class="nc">&nbsp;                    }else if(params.size == 1 &amp;&amp; params.first().tname().toString().equals(&quot;arc.util.io.Reads&quot;) &amp;&amp; !meth.isVoid()){</b>
+&nbsp;                        //1 param, one is reader, returns type
+<b class="nc">&nbsp;                        out.readers.put(fix(meth.retn().toString()), type.fullName() + &quot;.&quot; + meth.name());</b>
+<b class="nc">&nbsp;                    }else if(params.size == 2 &amp;&amp; params.first().tname().toString().equals(&quot;arc.util.io.Reads&quot;) &amp;&amp; !meth.isVoid() &amp;&amp; meth.ret().equals(meth.params().get(1).mirror())){</b>
+&nbsp;                        //2 params, one is reader, other is type, returns type - these are made to reduce garbage allocated
+<b class="nc">&nbsp;                        out.mutatorReaders.put(fix(meth.retn().toString()), type.fullName() + &quot;.&quot; + meth.name());</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return out;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** makes sure type names don&#39;t contain &#39;gen&#39; */
+&nbsp;    private static String fix(String str){
+<b class="nc">&nbsp;        return str.replace(&quot;mindustry.gen&quot;, &quot;&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Information about read/write methods for class types. */
+&nbsp;    public static class ClassSerializer{
+&nbsp;        public final ObjectMap&lt;String, String&gt; writers, readers, mutatorReaders, netWriters;
+&nbsp;
+<b class="nc">&nbsp;        public ClassSerializer(ObjectMap&lt;String, String&gt; writers, ObjectMap&lt;String, String&gt; readers, ObjectMap&lt;String, String&gt; mutatorReaders, ObjectMap&lt;String, String&gt; netWriters){</b>
+<b class="nc">&nbsp;            this.writers = writers;</b>
+<b class="nc">&nbsp;            this.readers = readers;</b>
+<b class="nc">&nbsp;            this.mutatorReaders = mutatorReaders;</b>
+<b class="nc">&nbsp;            this.netWriters = netWriters;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getNetWriter(String type, String fallback){
+<b class="nc">&nbsp;            return netWriters.get(type, writers.get(type, fallback));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

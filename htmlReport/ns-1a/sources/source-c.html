@@ -1,0 +1,507 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Saves</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.game</a>
+</div>
+
+<h1>Coverage Summary for Class: Saves (mindustry.game)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Saves</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (6/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    13.6%
+  </span>
+  <span class="absValue">
+    (12/88)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Saves$SaveSlot</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/75)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (6/48)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.4%
+  </span>
+  <span class="absValue">
+    (12/163)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.game;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.assets.*;
+&nbsp;import arc.files.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.core.GameState.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.io.SaveIO.*;
+&nbsp;import mindustry.maps.Map;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.text.*;
+&nbsp;import java.util.*;
+&nbsp;import java.util.concurrent.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Saves{</b>
+<b class="fc">&nbsp;    private static final DateFormat dateFormat = SimpleDateFormat.getDateTimeInstance();</b>
+&nbsp;
+<b class="fc">&nbsp;    Seq&lt;SaveSlot&gt; saves = new Seq&lt;&gt;();</b>
+&nbsp;    @Nullable SaveSlot current;
+&nbsp;    private @Nullable SaveSlot lastSectorSave;
+&nbsp;    private boolean saving;
+&nbsp;    private float time;
+&nbsp;
+&nbsp;    long totalPlaytime;
+&nbsp;    private long lastTimestamp;
+&nbsp;
+<b class="fc">&nbsp;    public Saves(){</b>
+<b class="fc">&nbsp;        Core.assets.setLoader(Texture.class, &quot;.spreview&quot;, new SavePreviewLoader());</b>
+&nbsp;
+<b class="fc">&nbsp;        Events.on(StateChangeEvent.class, event -&gt; {</b>
+<b class="fc">&nbsp;            if(event.to == State.menu){</b>
+<b class="fc">&nbsp;                totalPlaytime = 0;</b>
+<b class="fc">&nbsp;                lastTimestamp = 0;</b>
+<b class="fc">&nbsp;                current = null;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        saves.clear();</b>
+&nbsp;
+&nbsp;        //read saves in parallel
+<b class="nc">&nbsp;        Seq&lt;Future&lt;SaveSlot&gt;&gt; futures = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(Fi file : saveDirectory.list()){</b>
+<b class="nc">&nbsp;            if(!file.name().contains(&quot;backup&quot;) &amp;&amp; SaveIO.isSaveValid(file)){</b>
+<b class="nc">&nbsp;                futures.add(mainExecutor.submit(() -&gt; {</b>
+<b class="nc">&nbsp;                    SaveSlot slot = new SaveSlot(file);</b>
+<b class="nc">&nbsp;                    slot.meta = SaveIO.getMeta(file);</b>
+<b class="nc">&nbsp;                    return slot;</b>
+&nbsp;                }));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(var future : futures){</b>
+&nbsp;            try{
+<b class="nc">&nbsp;                saves.add(future.get());</b>
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                Log.err(e);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        //clear saves from build &lt;130 that had the new naval sectors.
+<b class="nc">&nbsp;        saves.removeAll(s -&gt; {</b>
+<b class="nc">&nbsp;            if(s.getSector() != null &amp;&amp; (s.getSector().id == 108 || s.getSector().id == 216) &amp;&amp; s.meta.build &lt;= 130 &amp;&amp; s.meta.build &gt; 0){</b>
+<b class="nc">&nbsp;                s.getSector().clearInfo();</b>
+<b class="nc">&nbsp;                s.file.delete();</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        lastSectorSave = saves.find(s -&gt; s.isSector() &amp;&amp; s.getName().equals(Core.settings.getString(&quot;last-sector-save&quot;, &quot;&lt;none&gt;&quot;)));</b>
+&nbsp;
+&nbsp;        //automatically assign sector save slots
+<b class="nc">&nbsp;        for(SaveSlot slot : saves){</b>
+<b class="nc">&nbsp;            if(slot.getSector() != null){</b>
+<b class="nc">&nbsp;                if(slot.getSector().save != null){</b>
+<b class="nc">&nbsp;                    Log.warn(&quot;Sector @ has two corresponding saves: @ and @&quot;, slot.getSector(), slot.getSector().save.file, slot.file);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                slot.getSector().save = slot;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable SaveSlot getLastSector(){
+<b class="nc">&nbsp;        return lastSectorSave;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable SaveSlot getCurrent(){
+<b class="fc">&nbsp;        return current;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        if(current != null &amp;&amp; state.isGame()</b>
+<b class="nc">&nbsp;        &amp;&amp; !(state.isPaused() &amp;&amp; Core.scene.hasDialog())){</b>
+<b class="nc">&nbsp;            if(lastTimestamp != 0){</b>
+<b class="nc">&nbsp;                totalPlaytime += Time.timeSinceMillis(lastTimestamp);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            lastTimestamp = Time.millis();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(state.isGame() &amp;&amp; !state.gameOver &amp;&amp; current != null &amp;&amp; current.isAutosave()){</b>
+<b class="nc">&nbsp;            time += Time.delta;</b>
+<b class="nc">&nbsp;            if(time &gt; Core.settings.getInt(&quot;saveinterval&quot;) * 60 &amp;&amp; !Vars.disableSave){</b>
+<b class="nc">&nbsp;                saving = true;</b>
+&nbsp;
+&nbsp;                try{
+<b class="nc">&nbsp;                    current.save();</b>
+<b class="nc">&nbsp;                }catch(Throwable t){</b>
+<b class="nc">&nbsp;                    Log.err(t);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                Time.runTask(3f, () -&gt; saving = false);</b>
+&nbsp;
+<b class="nc">&nbsp;                time = 0;</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            time = 0;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public long getTotalPlaytime(){
+<b class="fc">&nbsp;        return totalPlaytime;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resetSave(){
+<b class="nc">&nbsp;        current = null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isSaving(){
+<b class="fc">&nbsp;        return saving;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Fi getSectorFile(Sector sector){
+<b class="nc">&nbsp;        return saveDirectory.child(&quot;sector-&quot; + sector.planet.name + &quot;-&quot; + sector.id + &quot;.&quot; + saveExtension);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void saveSector(Sector sector){
+<b class="nc">&nbsp;        if(sector.save == null){</b>
+<b class="nc">&nbsp;            sector.save = new SaveSlot(getSectorFile(sector));</b>
+<b class="nc">&nbsp;            sector.save.setName(sector.save.file.nameWithoutExtension());</b>
+<b class="nc">&nbsp;            saves.add(sector.save);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        sector.save.setAutosave(true);</b>
+<b class="nc">&nbsp;        sector.save.save();</b>
+<b class="nc">&nbsp;        lastSectorSave = sector.save;</b>
+<b class="nc">&nbsp;        Core.settings.put(&quot;last-sector-save&quot;, sector.save.getName());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SaveSlot addSave(String name){
+<b class="nc">&nbsp;        SaveSlot slot = new SaveSlot(getNextSlotFile());</b>
+<b class="nc">&nbsp;        slot.setName(name);</b>
+<b class="nc">&nbsp;        saves.add(slot);</b>
+<b class="nc">&nbsp;        slot.save();</b>
+<b class="nc">&nbsp;        return slot;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SaveSlot importSave(Fi file) throws IOException{
+<b class="nc">&nbsp;        SaveSlot slot = new SaveSlot(getNextSlotFile());</b>
+<b class="nc">&nbsp;        slot.importFile(file);</b>
+<b class="nc">&nbsp;        slot.setName(file.nameWithoutExtension());</b>
+&nbsp;
+<b class="nc">&nbsp;        saves.add(slot);</b>
+<b class="nc">&nbsp;        slot.meta = SaveIO.getMeta(slot.file);</b>
+<b class="nc">&nbsp;        current = slot;</b>
+<b class="nc">&nbsp;        return slot;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Fi getNextSlotFile(){
+<b class="nc">&nbsp;        int i = 0;</b>
+&nbsp;        Fi file;
+<b class="nc">&nbsp;        while((file = saveDirectory.child(i + &quot;.&quot; + saveExtension)).exists()){</b>
+<b class="nc">&nbsp;            i ++;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return file;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;SaveSlot&gt; getSaveSlots(){
+<b class="nc">&nbsp;        return saves;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void deleteAll(){
+<b class="nc">&nbsp;        for(SaveSlot slot : saves.copy()){</b>
+<b class="nc">&nbsp;            if(!slot.isSector()){</b>
+<b class="nc">&nbsp;                slot.delete();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public class SaveSlot{
+&nbsp;        public final Fi file;
+&nbsp;        boolean requestedPreview;
+&nbsp;        public SaveMeta meta;
+&nbsp;
+<b class="nc">&nbsp;        public SaveSlot(Fi file){</b>
+<b class="nc">&nbsp;            this.file = file;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void load() throws SaveException{
+&nbsp;            try{
+<b class="nc">&nbsp;                SaveIO.load(file);</b>
+<b class="nc">&nbsp;                meta = SaveIO.getMeta(file);</b>
+<b class="nc">&nbsp;                current = this;</b>
+<b class="nc">&nbsp;                totalPlaytime = meta.timePlayed;</b>
+<b class="nc">&nbsp;                savePreview();</b>
+<b class="nc">&nbsp;            }catch(Throwable e){</b>
+<b class="nc">&nbsp;                throw new SaveException(e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void save(){
+<b class="nc">&nbsp;            long prev = totalPlaytime;</b>
+&nbsp;
+<b class="nc">&nbsp;            SaveIO.save(file);</b>
+<b class="nc">&nbsp;            meta = SaveIO.getMeta(file);</b>
+<b class="nc">&nbsp;            if(state.isGame()){</b>
+<b class="nc">&nbsp;                current = this;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            totalPlaytime = prev;</b>
+<b class="nc">&nbsp;            savePreview();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private void savePreview(){
+<b class="nc">&nbsp;            if(Core.assets.isLoaded(loadPreviewFile().path())){</b>
+<b class="nc">&nbsp;                Core.assets.unload(loadPreviewFile().path());</b>
+&nbsp;            }
+<b class="nc">&nbsp;            mainExecutor.submit(() -&gt; {</b>
+&nbsp;                try{
+<b class="nc">&nbsp;                    previewFile().writePng(renderer.minimap.getPixmap());</b>
+<b class="nc">&nbsp;                    requestedPreview = false;</b>
+<b class="nc">&nbsp;                }catch(Throwable t){</b>
+<b class="nc">&nbsp;                    Log.err(t);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+&nbsp;        public Texture previewTexture(){
+<b class="nc">&nbsp;            if(!previewFile().exists()){</b>
+<b class="nc">&nbsp;                return null;</b>
+<b class="nc">&nbsp;            }else if(Core.assets.isLoaded(loadPreviewFile().path())){</b>
+<b class="nc">&nbsp;                return Core.assets.get(loadPreviewFile().path());</b>
+<b class="nc">&nbsp;            }else if(!requestedPreview){</b>
+<b class="nc">&nbsp;                Core.assets.load(new AssetDescriptor&lt;&gt;(loadPreviewFile(), Texture.class));</b>
+<b class="nc">&nbsp;                requestedPreview = true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private String index(){
+<b class="nc">&nbsp;            return file.nameWithoutExtension();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private Fi previewFile(){
+<b class="nc">&nbsp;            return mapPreviewDirectory.child(&quot;save_slot_&quot; + index() + &quot;.png&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private Fi loadPreviewFile(){
+<b class="nc">&nbsp;            return previewFile().sibling(previewFile().name() + &quot;.spreview&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isHidden(){
+<b class="nc">&nbsp;            return isSector();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getPlayTime(){
+<b class="nc">&nbsp;            return Strings.formatMillis(current == this ? totalPlaytime : meta.timePlayed);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public long getTimestamp(){
+<b class="nc">&nbsp;            return meta.timestamp;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getDate(){
+<b class="nc">&nbsp;            return dateFormat.format(new Date(meta.timestamp));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Map getMap(){
+<b class="nc">&nbsp;            return meta.map;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void cautiousLoad(Runnable run){
+<b class="nc">&nbsp;            Seq&lt;String&gt; mods = Seq.with(getMods());</b>
+<b class="nc">&nbsp;            mods.removeAll(Vars.mods.getModStrings());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!mods.isEmpty()){</b>
+<b class="nc">&nbsp;                ui.showConfirm(&quot;@warning&quot;, Core.bundle.format(&quot;mod.missing&quot;, mods.toString(&quot;\n&quot;)), run);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                run.run();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getName(){
+<b class="nc">&nbsp;            return Core.settings.getString(&quot;save-&quot; + index() + &quot;-name&quot;, &quot;untitled&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void setName(String name){
+<b class="nc">&nbsp;            Core.settings.put(&quot;save-&quot; + index() + &quot;-name&quot;, name);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public String[] getMods(){
+<b class="nc">&nbsp;            return meta.mods;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public @Nullable Sector getSector(){
+<b class="nc">&nbsp;            return meta == null || meta.rules == null ? null : meta.rules.sector;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isSector(){
+<b class="nc">&nbsp;            return getSector() != null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Gamemode mode(){
+<b class="nc">&nbsp;            return meta.rules.mode();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public int getBuild(){
+<b class="nc">&nbsp;            return meta.build;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public int getWave(){
+<b class="nc">&nbsp;            return meta.wave;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isAutosave(){
+<b class="nc">&nbsp;            return Core.settings.getBool(&quot;save-&quot; + index() + &quot;-autosave&quot;, true);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void setAutosave(boolean save){
+<b class="nc">&nbsp;            Core.settings.put(&quot;save-&quot; + index() + &quot;-autosave&quot;, save);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void importFile(Fi from) throws IOException{
+&nbsp;            try{
+<b class="nc">&nbsp;                from.copyTo(file);</b>
+<b class="nc">&nbsp;                if(previewFile().exists()){</b>
+<b class="nc">&nbsp;                    requestedPreview = false;</b>
+<b class="nc">&nbsp;                    previewFile().delete();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                throw new IOException(e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void exportFile(Fi to) throws IOException{
+&nbsp;            try{
+<b class="nc">&nbsp;                file.copyTo(to);</b>
+<b class="nc">&nbsp;            }catch(Exception e){</b>
+<b class="nc">&nbsp;                throw new IOException(e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void delete(){
+<b class="nc">&nbsp;            if(SaveIO.backupFileFor(file).exists()){</b>
+<b class="nc">&nbsp;                SaveIO.backupFileFor(file).delete();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            file.delete();</b>
+<b class="nc">&nbsp;            saves.remove(this, true);</b>
+<b class="nc">&nbsp;            if(this == current){</b>
+<b class="nc">&nbsp;                current = null;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if(Core.assets.isLoaded(loadPreviewFile().path())){</b>
+<b class="nc">&nbsp;                Core.assets.unload(loadPreviewFile().path());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

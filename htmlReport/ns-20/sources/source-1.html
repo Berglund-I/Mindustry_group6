@@ -1,0 +1,187 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LegacyIO</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.io.versions</a>
+</div>
+
+<h1>Coverage Summary for Class: LegacyIO (mindustry.io.versions)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LegacyIO</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.8%
+  </span>
+  <span class="absValue">
+    (1/36)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.io.versions;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.ui.dialogs.JoinDialog.*;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;
+<b class="nc">&nbsp;public class LegacyIO{</b>
+&nbsp;    /** Maps old unit names to new ones. */
+<b class="fc">&nbsp;    public static final StringMap unitMap = StringMap.of(</b>
+&nbsp;    &quot;titan&quot;, &quot;mace&quot;,
+&nbsp;    &quot;chaos-array&quot;, &quot;scepter&quot;,
+&nbsp;    &quot;eradicator&quot;, &quot;reign&quot;,
+&nbsp;    &quot;eruptor&quot;, &quot;atrax&quot;,
+&nbsp;    &quot;wraith&quot;, &quot;flare&quot;,
+&nbsp;    &quot;ghoul&quot;, &quot;horizon&quot;,
+&nbsp;    &quot;revenant&quot;, &quot;zenith&quot;,
+&nbsp;    &quot;lich&quot;, &quot;antumbra&quot;,
+&nbsp;    &quot;reaper&quot;, &quot;eclipse&quot;,
+&nbsp;    &quot;draug&quot;, &quot;mono&quot;,
+&nbsp;    &quot;phantom&quot;, &quot;poly&quot;,
+&nbsp;    &quot;spirit&quot;, &quot;poly&quot;
+&nbsp;    );
+&nbsp;
+&nbsp;    public static Seq&lt;Server&gt; readServers(){
+<b class="nc">&nbsp;        Seq&lt;Server&gt; arr = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;        try{
+<b class="nc">&nbsp;            byte[] bytes = Core.settings.getBytes(&quot;server-list&quot;);</b>
+<b class="nc">&nbsp;            DataInputStream stream = new DataInputStream(new ByteArrayInputStream(bytes));</b>
+&nbsp;
+<b class="nc">&nbsp;            int length = stream.readInt();</b>
+<b class="nc">&nbsp;            if(length &gt; 0){</b>
+&nbsp;                //name of type, irrelevant
+<b class="nc">&nbsp;                stream.readUTF();</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int i = 0; i &lt; length; i++){</b>
+<b class="nc">&nbsp;                    Server server = new Server();</b>
+<b class="nc">&nbsp;                    server.ip = stream.readUTF();</b>
+<b class="nc">&nbsp;                    server.port = stream.readInt();</b>
+<b class="nc">&nbsp;                    arr.add(server);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return arr;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void readResearch(){
+&nbsp;        try{
+<b class="nc">&nbsp;            byte[] bytes = Core.settings.getBytes(&quot;unlocks&quot;);</b>
+<b class="nc">&nbsp;            DataInputStream stream = new DataInputStream(new ByteArrayInputStream(bytes));</b>
+&nbsp;
+<b class="nc">&nbsp;            int length = stream.readInt();</b>
+<b class="nc">&nbsp;            if(length &gt; 0){</b>
+<b class="nc">&nbsp;                stream.readUTF(); //name of key type</b>
+<b class="nc">&nbsp;                stream.readUTF(); //name of value type</b>
+&nbsp;
+&nbsp;                //each element is an array list
+<b class="nc">&nbsp;                for(int i = 0; i &lt; length; i++){</b>
+<b class="nc">&nbsp;                    ContentType type = ContentType.all[stream.readInt()];</b>
+<b class="nc">&nbsp;                    int arrLength = stream.readInt();</b>
+<b class="nc">&nbsp;                    if(arrLength &gt; 0){</b>
+<b class="nc">&nbsp;                        stream.readUTF(); //type of contents (String)</b>
+<b class="nc">&nbsp;                        for(int j = 0; j &lt; arrLength; j++){</b>
+<b class="nc">&nbsp;                            String name = stream.readUTF();</b>
+<b class="nc">&nbsp;                            Content out = Vars.content.getByName(type, name);</b>
+<b class="nc">&nbsp;                            if(out instanceof UnlockableContent u){</b>
+<b class="nc">&nbsp;                                u.quietUnlock();</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }catch(Exception e){</b>
+<b class="nc">&nbsp;            Log.err(e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,417 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Sector</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: Sector (mindustry.type)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Sector</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.6%
+  </span>
+  <span class="absValue">
+    (7/31)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.5%
+  </span>
+  <span class="absValue">
+    (33/93)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Sector$SectorRect</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    77.8%
+  </span>
+  <span class="absValue">
+    (7/9)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    24.2%
+  </span>
+  <span class="absValue">
+    (8/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    39.2%
+  </span>
+  <span class="absValue">
+    (40/102)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.Saves.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.g3d.PlanetGrid.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** A small section of a planet. */
+&nbsp;public class Sector{
+<b class="fc">&nbsp;    private static final Seq&lt;Sector&gt; tmpSeq1 = new Seq&lt;&gt;();</b>
+&nbsp;
+&nbsp;    public final SectorRect rect;
+&nbsp;    public final Plane plane;
+&nbsp;    public final Planet planet;
+&nbsp;    public final Ptile tile;
+&nbsp;    public final int id;
+&nbsp;
+&nbsp;    public @Nullable SaveSlot save;
+&nbsp;    public @Nullable SectorPreset preset;
+<b class="fc">&nbsp;    public SectorInfo info = new SectorInfo();</b>
+&nbsp;
+&nbsp;    /** Number 0-1 indicating the difficulty based on nearby bases. */
+&nbsp;    public float threat;
+&nbsp;    public boolean generateEnemyBase;
+&nbsp;
+<b class="fc">&nbsp;    public Sector(Planet planet, Ptile tile){</b>
+<b class="fc">&nbsp;        this.planet = planet;</b>
+<b class="fc">&nbsp;        this.tile = tile;</b>
+<b class="fc">&nbsp;        this.plane = new Plane();</b>
+&nbsp;        //empty sector tile needs a special rect
+<b class="fc">&nbsp;        if(tile.corners.length == 0){</b>
+<b class="fc">&nbsp;            rect = new SectorRect(1f, Vec3.Zero.cpy(), Vec3.Y.cpy(), Vec3.X.cpy(), 0f);</b>
+&nbsp;        }else{
+<b class="fc">&nbsp;            this.rect = makeRect();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        this.id = tile.id;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seq&lt;Sector&gt; near(){
+<b class="fc">&nbsp;        tmpSeq1.clear();</b>
+<b class="fc">&nbsp;        for(Ptile tile : tile.tiles){</b>
+<b class="fc">&nbsp;            tmpSeq1.add(planet.getSector(tile));</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return tmpSeq1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void near(Cons&lt;Sector&gt; cons){
+<b class="nc">&nbsp;        for(Ptile tile : tile.tiles){</b>
+<b class="nc">&nbsp;            cons.get(planet.getSector(tile));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Displays threat as a formatted string. */
+&nbsp;    public String displayThreat(){
+<b class="nc">&nbsp;        float step = 0.25f;</b>
+<b class="nc">&nbsp;        String color = Tmp.c1.set(Color.white).lerp(Color.scarlet, Mathf.round(threat, step)).toString();</b>
+<b class="nc">&nbsp;        String[] threats = {&quot;low&quot;, &quot;medium&quot;, &quot;high&quot;, &quot;extreme&quot;, &quot;eradication&quot;};</b>
+<b class="nc">&nbsp;        int index = Math.min((int)(threat / step), threats.length - 1);</b>
+<b class="nc">&nbsp;        return &quot;[#&quot; + color + &quot;]&quot; + Core.bundle.get(&quot;threat.&quot; + threats[index]);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether this sector can be landed on at all.
+&nbsp;     * Only sectors adjacent to non-wave sectors can be landed on. */
+&nbsp;    public boolean unlocked(){
+<b class="nc">&nbsp;        return hasBase() || (preset != null &amp;&amp; preset.alwaysUnlocked);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean allowLaunchSchematics(){
+<b class="nc">&nbsp;        return (preset != null &amp;&amp; preset.overrideLaunchDefaults) ? preset.allowLaunchSchematics : planet.allowLaunchSchematics;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean allowLaunchLoadout(){
+<b class="fc">&nbsp;        return (preset != null &amp;&amp; preset.overrideLaunchDefaults) ? preset.allowLaunchLoadout : planet.allowLaunchLoadout;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void saveInfo(){
+<b class="nc">&nbsp;        Core.settings.putJson(planet.name + &quot;-s-&quot; + id + &quot;-info&quot;, info);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void loadInfo(){
+<b class="fc">&nbsp;        info = Core.settings.getJson(planet.name + &quot;-s-&quot; + id + &quot;-info&quot;, SectorInfo.class, SectorInfo::new);</b>
+&nbsp;
+&nbsp;        //fix an old naming bug; this doesn&#39;t happen with new saves, but old saves need manual fixes
+<b class="fc">&nbsp;        if(info.resources.contains(Blocks.water)){</b>
+<b class="nc">&nbsp;            info.resources.remove(Blocks.water);</b>
+<b class="nc">&nbsp;            info.resources.add(Liquids.water);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if(info.resources.contains(u -&gt; u == null)){</b>
+<b class="nc">&nbsp;            info.resources = info.resources.select(u -&gt; u != null);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Removes any sector info. */
+&nbsp;    public void clearInfo(){
+<b class="nc">&nbsp;        info = new SectorInfo();</b>
+<b class="nc">&nbsp;        Core.settings.remove(planet.name + &quot;-s-&quot; + id + &quot;-info&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float getProductionScale(){
+<b class="nc">&nbsp;        return Math.max(1f - info.damage, 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAttacked(){
+<b class="nc">&nbsp;        if(isBeingPlayed()) return state.rules.waves || state.rules.attackMode;</b>
+<b class="nc">&nbsp;        return save != null &amp;&amp; (info.waves || info.attack) &amp;&amp; info.hasCore;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether the player has a base (active save with a core) here. */
+&nbsp;    public boolean hasBase(){
+<b class="nc">&nbsp;        return save != null &amp;&amp; info.hasCore &amp;&amp; !(Vars.state.isGame() &amp;&amp; Vars.state.rules.sector == this &amp;&amp; state.gameOver);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return whether the enemy has a generated base here. */
+&nbsp;    public boolean hasEnemyBase(){
+<b class="fc">&nbsp;        return ((generateEnemyBase &amp;&amp; preset == null) || (preset != null &amp;&amp; preset.captureWave == 0)) &amp;&amp; (save == null || info.attack);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isBeingPlayed(){
+&nbsp;        //after the launch dialog, a sector is no longer considered being played
+<b class="nc">&nbsp;        return Vars.state.isGame() &amp;&amp; Vars.state.rules.sector == this &amp;&amp; !Vars.state.gameOver &amp;&amp; !net.client();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String name(){
+<b class="nc">&nbsp;        if(preset != null &amp;&amp; info.name == null) return preset.localizedName;</b>
+&nbsp;        //single-sector &quot;planets&quot; use their own name for the sector name.
+<b class="nc">&nbsp;        if(info.name == null &amp;&amp; planet.sectors.size == 1){</b>
+<b class="nc">&nbsp;            return planet.localizedName;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return info.name == null ? id + &quot;&quot; : info.name;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setName(String name){
+<b class="nc">&nbsp;        info.name = name;</b>
+<b class="nc">&nbsp;        saveInfo();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public TextureRegion icon(){
+<b class="nc">&nbsp;        return info.contentIcon != null ? info.contentIcon.uiIcon : info.icon == null ? null : Fonts.getLargeIcon(info.icon);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public String iconChar(){
+<b class="nc">&nbsp;        if(info.contentIcon != null) return info.contentIcon.emoji();</b>
+<b class="nc">&nbsp;        if(info.icon != null) return (char)Iconc.codes.get(info.icon) + &quot;&quot;;</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isCaptured(){
+<b class="nc">&nbsp;        if(isBeingPlayed()) return !info.waves &amp;&amp; !info.attack;</b>
+<b class="nc">&nbsp;        return save != null &amp;&amp; !info.waves &amp;&amp; !info.attack;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasSave(){
+<b class="nc">&nbsp;        return save != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean locked(){
+<b class="nc">&nbsp;        return !unlocked();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return light dot product in the range [0, 1]. */
+&nbsp;    public float getLight(){
+<b class="nc">&nbsp;        Vec3 normal = Tmp.v31.set(tile.v).rotate(Vec3.Y, -planet.getRotation()).nor();</b>
+<b class="nc">&nbsp;        Vec3 light = Tmp.v32.set(planet.solarSystem.position).sub(planet.position).nor();</b>
+&nbsp;        //lightness in [0, 1]
+<b class="nc">&nbsp;        return (normal.dot(light) + 1f) / 2f;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return the sector size, in tiles */
+&nbsp;    public int getSize(){
+<b class="nc">&nbsp;        return planet.generator == null ? 1 : planet.generator.getSectorSize(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeItems(ItemSeq items){
+<b class="nc">&nbsp;        ItemSeq copy = items.copy();</b>
+<b class="nc">&nbsp;        copy.each((i, a) -&gt; copy.set(i, -a));</b>
+<b class="nc">&nbsp;        addItems(copy);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeItem(Item item, int amount){
+<b class="nc">&nbsp;        ItemSeq seq = new ItemSeq();</b>
+<b class="nc">&nbsp;        seq.add(item, -amount);</b>
+<b class="nc">&nbsp;        addItems(seq);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addItems(ItemSeq items){
+&nbsp;
+<b class="nc">&nbsp;        if(isBeingPlayed()){</b>
+<b class="nc">&nbsp;            if(state.rules.defaultTeam.core() != null){</b>
+<b class="nc">&nbsp;                ItemModule storage = state.rules.defaultTeam.items();</b>
+<b class="nc">&nbsp;                int cap = state.rules.defaultTeam.core().storageCapacity;</b>
+<b class="nc">&nbsp;                items.each((item, amount) -&gt; storage.add(item, Math.min(cap - storage.get(item), amount)));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }else if(hasBase()){</b>
+<b class="nc">&nbsp;            items.each((item, amount) -&gt; info.items.add(item, Math.min(info.storageCapacity - info.items.get(item), amount)));</b>
+<b class="nc">&nbsp;            info.items.checkNegative();</b>
+<b class="nc">&nbsp;            saveInfo();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @return items currently in this sector, taking into account playing state. */
+&nbsp;    public ItemSeq items(){
+<b class="nc">&nbsp;        ItemSeq count = new ItemSeq();</b>
+&nbsp;
+&nbsp;        //for sectors being played on, add items directly
+<b class="nc">&nbsp;        if(isBeingPlayed()){</b>
+<b class="nc">&nbsp;            if(state.rules.defaultTeam.core() != null) count.add(state.rules.defaultTeam.items());</b>
+&nbsp;        }else{
+&nbsp;            //add items already present
+<b class="nc">&nbsp;            count.add(info.items);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return count;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return planet.name + &quot;#&quot; + id + &quot; (&quot; + name() + &quot;)&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Projects this sector onto a 4-corner square for use in map gen.
+&nbsp;     * Allocates a new object. Do not call in the main loop. */
+&nbsp;    protected SectorRect makeRect(){
+<b class="fc">&nbsp;        Vec3[] corners = new Vec3[tile.corners.length];</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; corners.length; i++){</b>
+<b class="fc">&nbsp;            corners[i] = tile.corners[i].v.cpy().setLength(planet.radius);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Tmp.v33.setZero();</b>
+<b class="fc">&nbsp;        for(Vec3 c : corners){</b>
+<b class="fc">&nbsp;            Tmp.v33.add(c);</b>
+&nbsp;        }
+&nbsp;        //v33 is now the center of this shape
+<b class="fc">&nbsp;        Vec3 center = Tmp.v33.scl(1f / corners.length).cpy();</b>
+&nbsp;        //radius of circle
+<b class="fc">&nbsp;        float radius = Tmp.v33.dst(corners[0]) * 0.98f;</b>
+&nbsp;
+&nbsp;        //get plane that these points are on
+<b class="fc">&nbsp;        plane.set(corners[0], corners[2], corners[4]);</b>
+&nbsp;
+&nbsp;        //relative vectors
+<b class="fc">&nbsp;        Vec3 planeTop = plane.project(center.cpy().add(0f, 1f, 0f)).sub(center).setLength(radius);</b>
+<b class="fc">&nbsp;        Vec3 planeRight = plane.project(center.cpy().rotate(Vec3.Y, -4f)).sub(center).setLength(radius);</b>
+&nbsp;
+&nbsp;        //get angle from first corner to top vector
+<b class="fc">&nbsp;        Vec3 first = corners[1].cpy().sub(center); //first vector relative to center</b>
+<b class="fc">&nbsp;        float angle = first.angle(planeTop);</b>
+&nbsp;
+<b class="fc">&nbsp;        return new SectorRect(radius, center, planeTop, planeRight, angle);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class SectorRect{
+&nbsp;        public final Vec3 center, top, right;
+<b class="fc">&nbsp;        public final Vec3 result = new Vec3();</b>
+&nbsp;        public final float radius, rotation;
+&nbsp;
+<b class="fc">&nbsp;        public SectorRect(float radius, Vec3 center, Vec3 top, Vec3 right, float rotation){</b>
+<b class="fc">&nbsp;            this.center = center;</b>
+<b class="fc">&nbsp;            this.top = top;</b>
+<b class="fc">&nbsp;            this.right = right;</b>
+<b class="fc">&nbsp;            this.radius = radius;</b>
+<b class="fc">&nbsp;            this.rotation = rotation;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        /** Project a coordinate into 3D space.
+&nbsp;         * Both coordinates should be normalized to floats in the range [0, 1] */
+&nbsp;        public Vec3 project(float x, float y){
+<b class="nc">&nbsp;            float nx = (x - 0.5f) * 2f, ny = (y - 0.5f) * 2f;</b>
+<b class="nc">&nbsp;            return result.set(center).add(right, nx).add(top, ny);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

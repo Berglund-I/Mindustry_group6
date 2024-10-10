@@ -1,0 +1,165 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DrawHeatOutput</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.draw</a>
+</div>
+
+<h1>Coverage Summary for Class: DrawHeatOutput (mindustry.world.draw)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DrawHeatOutput</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (8/24)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.draw;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.heat.*;
+&nbsp;
+&nbsp;public class DrawHeatOutput extends DrawBlock{
+&nbsp;    public TextureRegion heat, glow, top1, top2;
+&nbsp;
+<b class="fc">&nbsp;    public Color heatColor = new Color(1f, 0.22f, 0.22f, 0.8f);</b>
+<b class="fc">&nbsp;    public float heatPulse = 0.3f, heatPulseScl = 10f, glowMult = 1.2f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public int rotOffset = 0;</b>
+<b class="fc">&nbsp;    public boolean drawGlow = true;</b>
+&nbsp;
+<b class="fc">&nbsp;    public DrawHeatOutput(){}</b>
+&nbsp;
+<b class="fc">&nbsp;    public DrawHeatOutput(int rotOffset, boolean drawGlow){</b>
+<b class="fc">&nbsp;        this.rotOffset = rotOffset;</b>
+<b class="fc">&nbsp;        this.drawGlow = drawGlow;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Building build){
+<b class="nc">&nbsp;        float rotdeg = (build.rotation + rotOffset) * 90;</b>
+<b class="nc">&nbsp;        Draw.rect(Mathf.mod((build.rotation + rotOffset), 4) &gt; 1 ? top2 : top1, build.x, build.y, rotdeg);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(build instanceof HeatBlock heater &amp;&amp; heater.heat() &gt; 0){</b>
+<b class="nc">&nbsp;            Draw.z(Layer.blockAdditive);</b>
+<b class="nc">&nbsp;            Draw.blend(Blending.additive);</b>
+<b class="nc">&nbsp;            Draw.color(heatColor, heater.heatFrac() * (heatColor.a * (1f - heatPulse + Mathf.absin(heatPulseScl, heatPulse))));</b>
+<b class="nc">&nbsp;            if(heat.found()) Draw.rect(heat, build.x, build.y, rotdeg);</b>
+<b class="nc">&nbsp;            Draw.color(Draw.getColor().mul(glowMult));</b>
+<b class="nc">&nbsp;            if(drawGlow &amp;&amp; glow.found()) Draw.rect(glow, build.x, build.y);</b>
+<b class="nc">&nbsp;            Draw.blend();</b>
+<b class="nc">&nbsp;            Draw.color();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlan(Block block, BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        Draw.rect(Mathf.mod((plan.rotation + rotOffset), 4) &gt; 1 ? top2 : top1, plan.drawx(), plan.drawy(), (plan.rotation + rotOffset) * 90);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(Block block){
+<b class="nc">&nbsp;        heat = Core.atlas.find(block.name + &quot;-heat&quot;);</b>
+<b class="nc">&nbsp;        glow = Core.atlas.find(block.name + &quot;-glow&quot;);</b>
+<b class="nc">&nbsp;        top1 = Core.atlas.find(block.name + &quot;-top1&quot;);</b>
+<b class="nc">&nbsp;        top2 = Core.atlas.find(block.name + &quot;-top2&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //TODO currently no icons due to concerns with rotation
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

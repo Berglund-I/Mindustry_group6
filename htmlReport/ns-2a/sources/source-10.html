@@ -1,0 +1,346 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > StatusEffect</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.type</a>
+</div>
+
+<h1>Coverage Summary for Class: StatusEffect (mindustry.type)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StatusEffect</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.4%
+  </span>
+  <span class="absValue">
+    (11/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.6%
+  </span>
+  <span class="absValue">
+    (40/84)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">StatusEffect$TransitionHandler</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    52.4%
+  </span>
+  <span class="absValue">
+    (11/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.6%
+  </span>
+  <span class="absValue">
+    (40/84)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.type;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.graphics.MultiPacker.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class StatusEffect extends UnlockableContent{
+&nbsp;    /** Damage dealt by the unit with the effect. */
+<b class="fc">&nbsp;    public float damageMultiplier = 1f;</b>
+&nbsp;    /** Unit health multiplier. */
+<b class="fc">&nbsp;    public float healthMultiplier = 1f;</b>
+&nbsp;    /** Unit speed multiplier. */
+<b class="fc">&nbsp;    public float speedMultiplier = 1f;</b>
+&nbsp;    /** Unit reload multiplier. */
+<b class="fc">&nbsp;    public float reloadMultiplier = 1f;</b>
+&nbsp;    /** Unit build speed multiplier. */
+<b class="fc">&nbsp;    public float buildSpeedMultiplier = 1f;</b>
+&nbsp;    /** Unit drag multiplier. */
+<b class="fc">&nbsp;    public float dragMultiplier = 1f;</b>
+&nbsp;    /** Damage dealt upon transition to an affinity. */
+<b class="fc">&nbsp;    public float transitionDamage = 0f;</b>
+&nbsp;    /** Unit weapon(s) disabled. */
+<b class="fc">&nbsp;    public boolean disarm = false;</b>
+&nbsp;    /** Damage per frame. */
+&nbsp;    public float damage;
+&nbsp;    /** Chance of effect appearing. */
+<b class="fc">&nbsp;    public float effectChance = 0.15f;</b>
+&nbsp;    /** Should the effect be given a parent. */
+&nbsp;    public boolean parentizeEffect;
+&nbsp;    /** If true, the effect never disappears. */
+&nbsp;    public boolean permanent;
+&nbsp;    /** If true, this effect will only react with other effects and cannot be applied. */
+&nbsp;    public boolean reactive;
+&nbsp;    /** Special flag for the dynamic effect type with custom stats - do not use. */
+<b class="fc">&nbsp;    public boolean dynamic = false;</b>
+&nbsp;    /** Whether to show this effect in the database. */
+<b class="fc">&nbsp;    public boolean show = true;</b>
+&nbsp;    /** Tint color of effect. */
+<b class="fc">&nbsp;    public Color color = Color.white.cpy();</b>
+&nbsp;    /** Effect that happens randomly on top of the affected unit. */
+<b class="fc">&nbsp;    public Effect effect = Fx.none;</b>
+&nbsp;    /** Effect that is displayed once when applied to a unit. */
+<b class="fc">&nbsp;    public Effect applyEffect = Fx.none;</b>
+&nbsp;    /** Whether the apply effect should display even if effect is already on the unit. */
+&nbsp;    public boolean applyExtend;
+&nbsp;    /** Tint color of apply effect. */
+<b class="fc">&nbsp;    public Color applyColor = Color.white.cpy();</b>
+&nbsp;    /** Should the apply effect be given a parent. */
+&nbsp;    public boolean parentizeApplyEffect;
+&nbsp;    /** Affinity &amp; opposite values for stat displays. */
+<b class="fc">&nbsp;    public ObjectSet&lt;StatusEffect&gt; affinities = new ObjectSet&lt;&gt;(), opposites = new ObjectSet&lt;&gt;();</b>
+&nbsp;    /** Set to false to disable outline generation. */
+<b class="fc">&nbsp;    public boolean outline = true;</b>
+&nbsp;    /** Transition handler map. */
+<b class="fc">&nbsp;    protected ObjectMap&lt;StatusEffect, TransitionHandler&gt; transitions = new ObjectMap&lt;&gt;();</b>
+&nbsp;    /** Called on init. */
+<b class="fc">&nbsp;    protected Runnable initblock = () -&gt; {};</b>
+&nbsp;
+&nbsp;    public StatusEffect(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        allDatabaseTabs = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+<b class="fc">&nbsp;        if(initblock != null){</b>
+<b class="fc">&nbsp;            initblock.run();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void init(Runnable run){
+<b class="fc">&nbsp;        this.initblock = run;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean isHidden(){
+<b class="nc">&nbsp;        return localizedName.equals(name) || !show;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        if(damageMultiplier != 1) stats.addPercent(Stat.damageMultiplier, damageMultiplier);</b>
+<b class="nc">&nbsp;        if(healthMultiplier != 1) stats.addPercent(Stat.healthMultiplier, healthMultiplier);</b>
+<b class="nc">&nbsp;        if(speedMultiplier != 1) stats.addPercent(Stat.speedMultiplier, speedMultiplier);</b>
+<b class="nc">&nbsp;        if(reloadMultiplier != 1) stats.addPercent(Stat.reloadMultiplier, reloadMultiplier);</b>
+<b class="nc">&nbsp;        if(buildSpeedMultiplier != 1) stats.addPercent(Stat.buildSpeedMultiplier, buildSpeedMultiplier);</b>
+<b class="nc">&nbsp;        if(damage &gt; 0) stats.add(Stat.damage, damage * 60f, StatUnit.perSecond);</b>
+<b class="nc">&nbsp;        if(damage &lt; 0) stats.add(Stat.healing, -damage * 60f, StatUnit.perSecond);</b>
+&nbsp;
+<b class="nc">&nbsp;        boolean reacts = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(var e : opposites.toSeq().sort()){</b>
+<b class="nc">&nbsp;            stats.add(Stat.opposites, e.emoji() + e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if(reactive){</b>
+<b class="nc">&nbsp;            var other = Vars.content.statusEffects().find(f -&gt; f.affinities.contains(this));</b>
+<b class="nc">&nbsp;            if(other != null &amp;&amp; other.transitionDamage &gt; 0){</b>
+<b class="nc">&nbsp;                stats.add(Stat.reactive, other.emoji() + other + &quot; / [accent]&quot; + (int)other.transitionDamage + &quot;[lightgray] &quot; + Stat.damage.localized());</b>
+<b class="nc">&nbsp;                reacts = true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        //don&#39;t list affinities *and* reactions, as that would be redundant
+<b class="nc">&nbsp;        if(!reacts){</b>
+<b class="nc">&nbsp;            for(var e : affinities.toSeq().sort()){</b>
+<b class="nc">&nbsp;                stats.add(Stat.affinities, e.emoji() + e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if(affinities.size &gt; 0 &amp;&amp; transitionDamage != 0){</b>
+<b class="nc">&nbsp;                stats.add(Stat.affinities, &quot;/ [accent]&quot; + (int)transitionDamage + &quot; &quot; + Stat.damage.localized());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean showUnlock(){
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Runs every tick on the affected unit while time is greater than 0. */
+&nbsp;    public void update(Unit unit, float time){
+<b class="nc">&nbsp;        if(damage &gt; 0){</b>
+<b class="nc">&nbsp;            unit.damageContinuousPierce(damage);</b>
+<b class="nc">&nbsp;        }else if(damage &lt; 0){ //heal unit</b>
+<b class="nc">&nbsp;            unit.heal(-1f * damage * Time.delta);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(effect != Fx.none &amp;&amp; Mathf.chanceDelta(effectChance)){</b>
+<b class="nc">&nbsp;            Tmp.v1.rnd(Mathf.range(unit.type.hitSize/2f));</b>
+<b class="nc">&nbsp;            effect.at(unit.x + Tmp.v1.x, unit.y + Tmp.v1.y, 0, color, parentizeEffect ? unit : null);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Called when status effect is removed. */
+&nbsp;    public void onRemoved(Unit unit){
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void trans(StatusEffect effect, TransitionHandler handler){
+<b class="fc">&nbsp;        transitions.put(effect, handler);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void affinity(StatusEffect effect, TransitionHandler handler){
+<b class="fc">&nbsp;        affinities.add(effect);</b>
+<b class="fc">&nbsp;        effect.affinities.add(this);</b>
+<b class="fc">&nbsp;        trans(effect, handler);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void opposite(StatusEffect... effect){
+<b class="fc">&nbsp;        for(var other : effect){</b>
+<b class="fc">&nbsp;            handleOpposite(other);</b>
+<b class="fc">&nbsp;            other.handleOpposite(this);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void handleOpposite(StatusEffect other){
+<b class="fc">&nbsp;        opposites.add(other);</b>
+<b class="fc">&nbsp;        trans(other, (unit, result, time) -&gt; {</b>
+<b class="nc">&nbsp;            result.time -= time * 0.5f;</b>
+<b class="nc">&nbsp;            if(result.time &lt;= 0f){</b>
+<b class="nc">&nbsp;                result.time = time;</b>
+<b class="nc">&nbsp;                result.effect = other;</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(Unit unit, float time){
+<b class="nc">&nbsp;        draw(unit); //Backwards compatibility</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void draw(Unit unit){
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean reactsWith(StatusEffect effect){
+<b class="nc">&nbsp;        return transitions.containsKey(effect);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Called when transitioning between two status effects.
+&nbsp;     * @param to The state to transition to
+&nbsp;     * @param time The applies status effect time
+&nbsp;     * @return whether a reaction occurred
+&nbsp;     */
+&nbsp;    public boolean applyTransition(Unit unit, StatusEffect to, StatusEntry entry, float time){
+<b class="fc">&nbsp;        var trans = transitions.get(to);</b>
+<b class="fc">&nbsp;        if(trans != null){</b>
+<b class="nc">&nbsp;            trans.handle(unit, entry, time);</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void applied(Unit unit, float time, boolean extend){
+<b class="fc">&nbsp;        if(!extend || applyExtend) applyEffect.at(unit.x, unit.y, 0, applyColor, parentizeApplyEffect ? unit : null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void createIcons(MultiPacker packer){
+<b class="nc">&nbsp;        super.createIcons(packer);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(outline){</b>
+<b class="nc">&nbsp;            makeOutline(PageType.ui, packer, uiIcon, true, Pal.gray, 3);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return localizedName;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ContentType getContentType(){
+<b class="fc">&nbsp;        return ContentType.status;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface TransitionHandler{
+&nbsp;        void handle(Unit unit, StatusEntry current, float time);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

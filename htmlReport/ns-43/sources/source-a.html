@@ -1,0 +1,521 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UnitFactory</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.units</a>
+</div>
+
+<h1>Coverage Summary for Class: UnitFactory (mindustry.world.blocks.units)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UnitFactory</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.5%
+  </span>
+  <span class="absValue">
+    (4/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.7%
+  </span>
+  <span class="absValue">
+    (29/77)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">UnitFactory$UnitFactoryBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.4%
+  </span>
+  <span class="absValue">
+    (7/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.1%
+  </span>
+  <span class="absValue">
+    (30/83)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UnitFactory$UnitPlan</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (12/42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.2%
+  </span>
+  <span class="absValue">
+    (63/165)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.units;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;public class UnitFactory extends UnitBlock{
+<b class="fc">&nbsp;    public int[] capacities = {};</b>
+&nbsp;
+<b class="fc">&nbsp;    public Seq&lt;UnitPlan&gt; plans = new Seq&lt;&gt;(4);</b>
+&nbsp;
+&nbsp;    public UnitFactory(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        update = true;</b>
+<b class="fc">&nbsp;        hasPower = true;</b>
+<b class="fc">&nbsp;        hasItems = true;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+<b class="fc">&nbsp;        configurable = true;</b>
+<b class="fc">&nbsp;        clearOnDoubleTap = true;</b>
+<b class="fc">&nbsp;        outputsPayload = true;</b>
+<b class="fc">&nbsp;        rotate = true;</b>
+<b class="fc">&nbsp;        regionRotated1 = 1;</b>
+<b class="fc">&nbsp;        commandable = true;</b>
+<b class="fc">&nbsp;        ambientSound = Sounds.respawning;</b>
+&nbsp;
+<b class="fc">&nbsp;        config(Integer.class, (UnitFactoryBuild tile, Integer i) -&gt; {</b>
+<b class="nc">&nbsp;            if(!configurable) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(tile.currentPlan == i) return;</b>
+<b class="nc">&nbsp;            tile.currentPlan = i &lt; 0 || i &gt;= plans.size ? -1 : i;</b>
+<b class="nc">&nbsp;            tile.progress = 0;</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        config(UnitType.class, (UnitFactoryBuild tile, UnitType val) -&gt; {</b>
+<b class="nc">&nbsp;            if(!configurable) return;</b>
+&nbsp;
+<b class="nc">&nbsp;            int next = plans.indexOf(p -&gt; p.unit == val);</b>
+<b class="nc">&nbsp;            if(tile.currentPlan == next) return;</b>
+<b class="nc">&nbsp;            tile.currentPlan = next;</b>
+<b class="nc">&nbsp;            tile.progress = 0;</b>
+&nbsp;        });
+&nbsp;
+<b class="fc">&nbsp;        consume(new ConsumeItemDynamic((UnitFactoryBuild e) -&gt; e.currentPlan != -1 ? plans.get(Math.min(e.currentPlan, plans.size - 1)).requirements : ItemStack.empty));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        capacities = new int[Vars.content.items().size];</b>
+<b class="fc">&nbsp;        for(UnitPlan plan : plans){</b>
+<b class="fc">&nbsp;            for(ItemStack stack : plan.requirements){</b>
+<b class="fc">&nbsp;                capacities[stack.item.id] = Math.max(capacities[stack.item.id], stack.amount * 2);</b>
+<b class="fc">&nbsp;                itemCapacity = Math.max(itemCapacity, stack.amount * 2);</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        consumeBuilder.each(c -&gt; c.multiplier = b -&gt; state.rules.unitCost(b.team));</b>
+&nbsp;
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setBars(){
+<b class="fc">&nbsp;        super.setBars();</b>
+<b class="fc">&nbsp;        addBar(&quot;progress&quot;, (UnitFactoryBuild e) -&gt; new Bar(&quot;bar.progress&quot;, Pal.ammo, e::fraction));</b>
+&nbsp;
+<b class="fc">&nbsp;        addBar(&quot;units&quot;, (UnitFactoryBuild e) -&gt;</b>
+<b class="nc">&nbsp;        new Bar(</b>
+<b class="nc">&nbsp;            () -&gt; e.unit() == null ? &quot;[lightgray]&quot; + Iconc.cancel :</b>
+<b class="nc">&nbsp;                Core.bundle.format(&quot;bar.unitcap&quot;,</b>
+<b class="nc">&nbsp;                    Fonts.getUnicodeStr(e.unit().name),</b>
+<b class="nc">&nbsp;                    e.team.data().countType(e.unit()),</b>
+<b class="nc">&nbsp;                    e.unit() == null ? Units.getStringCap(e.team) : (e.unit().useUnitCap ? Units.getStringCap(e.team) : &quot;?&quot;)</b>
+&nbsp;                ),
+<b class="nc">&nbsp;            () -&gt; Pal.power,</b>
+<b class="nc">&nbsp;            () -&gt; e.unit() == null ? 0f : (e.unit().useUnitCap ? (float)e.team.data().countType(e.unit()) / Units.getCap(e.team) : 1f)</b>
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean outputsItems(){
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void setStats(){
+<b class="nc">&nbsp;        super.setStats();</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.remove(Stat.itemCapacity);</b>
+&nbsp;
+<b class="nc">&nbsp;        stats.add(Stat.output, table -&gt; {</b>
+<b class="nc">&nbsp;            table.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(var plan : plans){</b>
+<b class="nc">&nbsp;                table.table(Styles.grayPanel, t -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(plan.unit.isBanned()){</b>
+<b class="nc">&nbsp;                        t.image(Icon.cancel).color(Pal.remove).size(40);</b>
+&nbsp;                        return;
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if(plan.unit.unlockedNow()){</b>
+<b class="nc">&nbsp;                        t.image(plan.unit.uiIcon).size(40).pad(10f).left().scaling(Scaling.fit).with(i -&gt; StatValues.withTooltip(i, plan.unit));</b>
+<b class="nc">&nbsp;                        t.table(info -&gt; {</b>
+<b class="nc">&nbsp;                            info.add(plan.unit.localizedName).left();</b>
+<b class="nc">&nbsp;                            info.row();</b>
+<b class="nc">&nbsp;                            info.add(Strings.autoFixed(plan.time / 60f, 1) + &quot; &quot; + Core.bundle.get(&quot;unit.seconds&quot;)).color(Color.lightGray);</b>
+<b class="nc">&nbsp;                        }).left();</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.table(req -&gt; {</b>
+<b class="nc">&nbsp;                            req.right();</b>
+<b class="nc">&nbsp;                            for(int i = 0; i &lt; plan.requirements.length; i++){</b>
+<b class="nc">&nbsp;                                if(i % 6 == 0){</b>
+<b class="nc">&nbsp;                                    req.row();</b>
+&nbsp;                                }
+&nbsp;
+<b class="nc">&nbsp;                                ItemStack stack = plan.requirements[i];</b>
+<b class="nc">&nbsp;                                req.add(StatValues.displayItem(stack.item, stack.amount, plan.time, true)).pad(5);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }).right().grow().pad(10f);</b>
+&nbsp;                    }else{
+<b class="nc">&nbsp;                        t.image(Icon.lock).color(Pal.darkerGray).size(40);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }).growX().pad(5);</b>
+<b class="nc">&nbsp;                table.row();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return new TextureRegion[]{region, outRegion, topRegion};</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        Draw.rect(region, plan.drawx(), plan.drawy());</b>
+<b class="nc">&nbsp;        Draw.rect(outRegion, plan.drawx(), plan.drawy(), plan.rotation * 90);</b>
+<b class="nc">&nbsp;        Draw.rect(topRegion, plan.drawx(), plan.drawy());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class UnitPlan{
+&nbsp;        public UnitType unit;
+&nbsp;        public ItemStack[] requirements;
+&nbsp;        public float time;
+&nbsp;
+<b class="fc">&nbsp;        public UnitPlan(UnitType unit, float time, ItemStack[] requirements){</b>
+<b class="fc">&nbsp;            this.unit = unit;</b>
+<b class="fc">&nbsp;            this.time = time;</b>
+<b class="fc">&nbsp;            this.requirements = requirements;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        UnitPlan(){}</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class UnitFactoryBuild extends UnitBuild{</b>
+&nbsp;        public @Nullable Vec2 commandPos;
+<b class="fc">&nbsp;        public int currentPlan = -1;</b>
+&nbsp;
+&nbsp;        public float fraction(){
+<b class="nc">&nbsp;            return currentPlan == -1 ? 0 : progress / plans.get(currentPlan).time;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void created(){
+&nbsp;            //auto-set to the first plan, it&#39;s better than nothing.
+<b class="fc">&nbsp;            if(currentPlan == -1){</b>
+<b class="fc">&nbsp;                currentPlan = plans.indexOf(u -&gt; u.unit.unlockedNow());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Vec2 getCommandPosition(){
+<b class="nc">&nbsp;            return commandPos;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void onCommand(Vec2 target){
+<b class="nc">&nbsp;            commandPos = target;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Object senseObject(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.config) return currentPlan == -1 ? null : plans.get(currentPlan).unit;</b>
+<b class="nc">&nbsp;            return super.senseObject(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldActiveSound(){
+<b class="nc">&nbsp;            return shouldConsume();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public double sense(LAccess sensor){
+<b class="nc">&nbsp;            if(sensor == LAccess.progress) return Mathf.clamp(fraction());</b>
+<b class="nc">&nbsp;            if(sensor == LAccess.itemCapacity) return Mathf.round(itemCapacity * state.rules.unitCost(team));</b>
+<b class="nc">&nbsp;            return super.sense(sensor);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void buildConfiguration(Table table){
+<b class="nc">&nbsp;            Seq&lt;UnitType&gt; units = Seq.with(plans).map(u -&gt; u.unit).retainAll(u -&gt; u.unlockedNow() &amp;&amp; !u.isBanned());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(units.any()){</b>
+<b class="nc">&nbsp;                ItemSelection.buildTable(UnitFactory.this, table, units, () -&gt; currentPlan == -1 ? null : plans.get(currentPlan).unit, unit -&gt; configure(plans.indexOf(u -&gt; u.unit == unit)), selectionRows, selectionColumns);</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                table.table(Styles.black3, t -&gt; t.add(&quot;@none&quot;).color(Color.lightGray));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptPayload(Building source, Payload payload){
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void display(Table table){
+<b class="nc">&nbsp;            super.display(table);</b>
+&nbsp;
+<b class="nc">&nbsp;            TextureRegionDrawable reg = new TextureRegionDrawable();</b>
+&nbsp;
+<b class="nc">&nbsp;            table.row();</b>
+<b class="nc">&nbsp;            table.table(t -&gt; {</b>
+<b class="nc">&nbsp;                t.left();</b>
+<b class="nc">&nbsp;                t.image().update(i -&gt; {</b>
+<b class="nc">&nbsp;                    i.setDrawable(currentPlan == -1 ? Icon.cancel : reg.set(plans.get(currentPlan).unit.uiIcon));</b>
+<b class="nc">&nbsp;                    i.setScaling(Scaling.fit);</b>
+<b class="nc">&nbsp;                    i.setColor(currentPlan == -1 ? Color.lightGray : Color.white);</b>
+<b class="nc">&nbsp;                }).size(32).padBottom(-4).padRight(2);</b>
+<b class="nc">&nbsp;                t.label(() -&gt; currentPlan == -1 ? &quot;@none&quot; : plans.get(currentPlan).unit.localizedName).wrap().width(230f).color(Color.lightGray);</b>
+<b class="nc">&nbsp;            }).left();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public Object config(){
+<b class="nc">&nbsp;            return currentPlan;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            Draw.rect(region, x, y);</b>
+<b class="nc">&nbsp;            Draw.rect(outRegion, x, y, rotdeg());</b>
+&nbsp;
+<b class="nc">&nbsp;            if(currentPlan != -1){</b>
+<b class="nc">&nbsp;                UnitPlan plan = plans.get(currentPlan);</b>
+<b class="nc">&nbsp;                Draw.draw(Layer.blockOver, () -&gt; Drawf.construct(this, plan.unit, rotdeg() - 90f, progress / plan.time, speedScl, time));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.blockOver);</b>
+&nbsp;
+<b class="nc">&nbsp;            payRotation = rotdeg();</b>
+<b class="nc">&nbsp;            drawPayload();</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.z(Layer.blockOver + 0.1f);</b>
+&nbsp;
+<b class="nc">&nbsp;            Draw.rect(topRegion, x, y);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void updateTile(){
+<b class="fc">&nbsp;            if(!configurable){</b>
+<b class="fc">&nbsp;                currentPlan = 0;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(currentPlan &lt; 0 || currentPlan &gt;= plans.size){</b>
+<b class="fc">&nbsp;                currentPlan = -1;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if(efficiency &gt; 0 &amp;&amp; currentPlan != -1){</b>
+<b class="nc">&nbsp;                time += edelta() * speedScl * Vars.state.rules.unitBuildSpeed(team);</b>
+<b class="nc">&nbsp;                progress += edelta() * Vars.state.rules.unitBuildSpeed(team);</b>
+<b class="nc">&nbsp;                speedScl = Mathf.lerpDelta(speedScl, 1f, 0.05f);</b>
+&nbsp;            }else{
+<b class="fc">&nbsp;                speedScl = Mathf.lerpDelta(speedScl, 0f, 0.05f);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            moveOutPayload();</b>
+&nbsp;
+<b class="fc">&nbsp;            if(currentPlan != -1 &amp;&amp; payload == null){</b>
+<b class="fc">&nbsp;                UnitPlan plan = plans.get(currentPlan);</b>
+&nbsp;
+&nbsp;                //make sure to reset plan when the unit got banned after placement
+<b class="fc">&nbsp;                if(plan.unit.isBanned()){</b>
+<b class="nc">&nbsp;                    currentPlan = -1;</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if(progress &gt;= plan.time){</b>
+<b class="nc">&nbsp;                    progress %= 1f;</b>
+&nbsp;
+<b class="nc">&nbsp;                    Unit unit = plan.unit.create(team);</b>
+<b class="nc">&nbsp;                    if(commandPos != null &amp;&amp; unit.isCommandable()){</b>
+<b class="nc">&nbsp;                        unit.command().commandPosition(commandPos);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    payload = new UnitPayload(unit);</b>
+<b class="nc">&nbsp;                    payVector.setZero();</b>
+<b class="nc">&nbsp;                    consume();</b>
+<b class="nc">&nbsp;                    Events.fire(new UnitCreateEvent(payload.unit, this));</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                progress = Mathf.clamp(progress, 0, plan.time);</b>
+<b class="fc">&nbsp;            }else{</b>
+<b class="fc">&nbsp;                progress = 0f;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean shouldConsume(){
+<b class="fc">&nbsp;            if(currentPlan == -1) return false;</b>
+<b class="fc">&nbsp;            return enabled &amp;&amp; payload == null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int getMaximumAccepted(Item item){
+<b class="nc">&nbsp;            return Mathf.round(capacities[item.id] * state.rules.unitCost(team));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean acceptItem(Building source, Item item){
+<b class="nc">&nbsp;            return currentPlan != -1 &amp;&amp; items.get(item) &lt; getMaximumAccepted(item) &amp;&amp;</b>
+<b class="nc">&nbsp;                Structs.contains(plans.get(currentPlan).requirements, stack -&gt; stack.item == item);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public @Nullable UnitType unit(){
+<b class="nc">&nbsp;            return currentPlan == - 1 ? null : plans.get(currentPlan).unit;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public byte version(){
+<b class="fc">&nbsp;            return 2;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void write(Writes write){
+<b class="fc">&nbsp;            super.write(write);</b>
+<b class="fc">&nbsp;            write.f(progress);</b>
+<b class="fc">&nbsp;            write.s(currentPlan);</b>
+<b class="fc">&nbsp;            TypeIO.writeVecNullable(write, commandPos);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void read(Reads read, byte revision){
+<b class="fc">&nbsp;            super.read(read, revision);</b>
+<b class="fc">&nbsp;            progress = read.f();</b>
+<b class="fc">&nbsp;            currentPlan = read.s();</b>
+<b class="fc">&nbsp;            if(revision &gt;= 2){</b>
+<b class="fc">&nbsp;                commandPos = TypeIO.readVecNullable(read);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

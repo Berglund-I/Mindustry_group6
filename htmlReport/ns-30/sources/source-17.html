@@ -1,0 +1,334 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LaunchLoadoutDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.ui.dialogs</a>
+</div>
+
+<h1>Coverage Summary for Class: LaunchLoadoutDialog (mindustry.ui.dialogs)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LaunchLoadoutDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/125)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.ui.dialogs;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.SchematicsDialog.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Dialog for selecting loadout at sector launch. */
+&nbsp;public class LaunchLoadoutDialog extends BaseDialog{
+<b class="nc">&nbsp;    LoadoutDialog loadout = new LoadoutDialog();</b>
+&nbsp;    //total required items
+<b class="nc">&nbsp;    ItemSeq total = new ItemSeq();</b>
+&nbsp;    //currently selected schematic
+&nbsp;    Schematic selected;
+&nbsp;    //validity of loadout items
+&nbsp;    boolean valid;
+&nbsp;    //last calculated capacity
+&nbsp;    int lastCapacity;
+&nbsp;
+&nbsp;    public LaunchLoadoutDialog(){
+<b class="nc">&nbsp;        super(&quot;@configure&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void show(CoreBlock core, Sector sector, Sector destination, Runnable confirm){
+<b class="nc">&nbsp;        cont.clear();</b>
+<b class="nc">&nbsp;        buttons.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.defaults().size(160f, 64f);</b>
+<b class="nc">&nbsp;        buttons.button(&quot;@back&quot;, Icon.left, this::hide);</b>
+&nbsp;
+<b class="nc">&nbsp;        addCloseListener();</b>
+&nbsp;
+<b class="nc">&nbsp;        ItemSeq sitems = sector.items();</b>
+&nbsp;
+&nbsp;        //hide nonsensical items
+<b class="nc">&nbsp;        ItemSeq launch = universe.getLaunchResources();</b>
+<b class="nc">&nbsp;        if(sector.planet.allowLaunchLoadout){</b>
+<b class="nc">&nbsp;            for(var item : content.items()){</b>
+<b class="nc">&nbsp;                if(!item.isOnPlanet(sector.planet)){</b>
+<b class="nc">&nbsp;                    launch.set(item, 0);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;            universe.updateLaunchResources(launch);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //updates sum requirements
+<b class="nc">&nbsp;        Runnable update = () -&gt; {</b>
+<b class="nc">&nbsp;            int cap = lastCapacity = (int)(sector.planet.launchCapacityMultiplier * selected.findCore().itemCapacity);</b>
+&nbsp;
+&nbsp;            //cap resources based on core type
+<b class="nc">&nbsp;            ItemSeq schems = selected.requirements();</b>
+<b class="nc">&nbsp;            ItemSeq resources = universe.getLaunchResources();</b>
+<b class="nc">&nbsp;            resources.min(cap);</b>
+&nbsp;
+<b class="nc">&nbsp;            int capacity = lastCapacity;</b>
+&nbsp;
+<b class="nc">&nbsp;            if(!destination.allowLaunchLoadout()){</b>
+<b class="nc">&nbsp;                resources.clear();</b>
+&nbsp;                //TODO this should be set to a proper loadout based on sector.
+<b class="nc">&nbsp;                if(destination.preset != null){</b>
+<b class="nc">&nbsp;                    var rules = destination.preset.generator.map.rules();</b>
+<b class="nc">&nbsp;                    for(var stack : rules.loadout){</b>
+<b class="nc">&nbsp;                        if(stack.item.isOnPlanet(sector.planet)){</b>
+<b class="nc">&nbsp;                            resources.add(stack.item, stack.amount);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;            }else if(getMax()){</b>
+<b class="nc">&nbsp;                for(Item item : content.items()){</b>
+<b class="nc">&nbsp;                    resources.set(item, Mathf.clamp(sitems.get(item) - schems.get(item), 0, capacity));</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            universe.updateLaunchResources(resources);</b>
+&nbsp;
+<b class="nc">&nbsp;            total.clear();</b>
+<b class="nc">&nbsp;            selected.requirements().each(total::add);</b>
+<b class="nc">&nbsp;            universe.getLaunchResources().each(total::add);</b>
+<b class="nc">&nbsp;            valid = sitems.has(total);</b>
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        Cons&lt;Table&gt; rebuild = table -&gt; {</b>
+<b class="nc">&nbsp;            table.clearChildren();</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            ItemSeq schems = selected.requirements();</b>
+<b class="nc">&nbsp;            ItemSeq launches = universe.getLaunchResources();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(ItemStack s : total){</b>
+<b class="nc">&nbsp;                int as = schems.get(s.item), al = launches.get(s.item);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(as + al == 0) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                table.image(s.item.uiIcon).left().size(iconSmall);</b>
+&nbsp;
+<b class="nc">&nbsp;                String amountStr = (al + as) + (destination.allowLaunchLoadout() ? &quot;[gray] (&quot; + (al + &quot; + &quot; + as + &quot;)&quot;) : &quot;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                table.add(</b>
+<b class="nc">&nbsp;                    sitems.has(s.item, s.amount) ? amountStr :</b>
+<b class="nc">&nbsp;                    &quot;[scarlet]&quot; + (Math.min(sitems.get(s.item), s.amount) + &quot;[lightgray]/&quot; + amountStr)).padLeft(2).left().padRight(4);</b>
+&nbsp;
+<b class="nc">&nbsp;                if(++i % 4 == 0){</b>
+<b class="nc">&nbsp;                    table.row();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        };
+&nbsp;
+<b class="nc">&nbsp;        Table items = new Table();</b>
+&nbsp;
+<b class="nc">&nbsp;        Runnable rebuildItems = () -&gt; rebuild.get(items);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(destination.allowLaunchLoadout()){</b>
+<b class="nc">&nbsp;            buttons.button(&quot;@resources.max&quot;, Icon.add, Styles.togglet, () -&gt; {</b>
+<b class="nc">&nbsp;                setMax(!getMax());</b>
+<b class="nc">&nbsp;                update.run();</b>
+<b class="nc">&nbsp;                rebuildItems.run();</b>
+<b class="nc">&nbsp;            }).checked(b -&gt; getMax());</b>
+&nbsp;
+<b class="nc">&nbsp;            buttons.button(&quot;@resources&quot;, Icon.edit, () -&gt; {</b>
+<b class="nc">&nbsp;                ItemSeq stacks = universe.getLaunchResources();</b>
+<b class="nc">&nbsp;                Seq&lt;ItemStack&gt; out = stacks.toSeq();</b>
+&nbsp;
+<b class="nc">&nbsp;                ItemSeq realItems = sitems.copy();</b>
+<b class="nc">&nbsp;                selected.requirements().each(realItems::remove);</b>
+&nbsp;
+<b class="nc">&nbsp;                loadout.show(lastCapacity, realItems, out, i -&gt; i.unlocked() &amp;&amp; i.isOnPlanet(sector.planet), out::clear, () -&gt; {}, () -&gt; {</b>
+<b class="nc">&nbsp;                    universe.updateLaunchResources(new ItemSeq(out));</b>
+<b class="nc">&nbsp;                    update.run();</b>
+<b class="nc">&nbsp;                    rebuildItems.run();</b>
+&nbsp;                });
+<b class="nc">&nbsp;            }).disabled(b -&gt; getMax());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean rows = Core.graphics.isPortrait() &amp;&amp; mobile;</b>
+&nbsp;
+<b class="nc">&nbsp;        if(rows) buttons.row();</b>
+&nbsp;
+<b class="nc">&nbsp;        var cell = buttons.button(&quot;@launch.text&quot;, Icon.ok, () -&gt; {</b>
+<b class="nc">&nbsp;            universe.updateLoadout(core, selected);</b>
+<b class="nc">&nbsp;            confirm.run();</b>
+<b class="nc">&nbsp;            hide();</b>
+<b class="nc">&nbsp;        }).disabled(b -&gt; !valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(rows){</b>
+<b class="nc">&nbsp;            cell.colspan(2).size(160f + 160f + 4f, 64f);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int cols = Math.max((int)(Core.graphics.getWidth() / Scl.scl(230)), 1);</b>
+<b class="nc">&nbsp;        ButtonGroup&lt;Button&gt; group = new ButtonGroup&lt;&gt;();</b>
+<b class="nc">&nbsp;        selected = universe.getLoadout(core);</b>
+<b class="nc">&nbsp;        if(selected == null) selected = schematics.getLoadouts().get((CoreBlock)Blocks.coreShard).first();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.add(Core.bundle.format(&quot;launch.from&quot;, sector.name())).row();</b>
+&nbsp;
+<b class="nc">&nbsp;        if(destination.allowLaunchSchematics()){</b>
+<b class="nc">&nbsp;            cont.pane(t -&gt; {</b>
+<b class="nc">&nbsp;                int[] i = {0};</b>
+&nbsp;
+<b class="nc">&nbsp;                Cons&lt;Schematic&gt; handler = s -&gt; {</b>
+<b class="nc">&nbsp;                    if(s.tiles.contains(tile -&gt; !tile.block.supportsEnv(sector.planet.defaultEnv) ||</b>
+&nbsp;                    //make sure block can be built here.
+<b class="nc">&nbsp;                    !tile.block.isOnPlanet(sector.planet))){</b>
+&nbsp;                        return;
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    t.button(b -&gt; b.add(new SchematicImage(s)), Styles.togglet, () -&gt; {</b>
+<b class="nc">&nbsp;                        selected = s;</b>
+<b class="nc">&nbsp;                        update.run();</b>
+<b class="nc">&nbsp;                        rebuildItems.run();</b>
+<b class="nc">&nbsp;                    }).group(group).pad(4).checked(s == selected).size(200f);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(++i[0] % cols == 0){</b>
+<b class="nc">&nbsp;                        t.row();</b>
+&nbsp;                    }
+&nbsp;                };
+&nbsp;
+<b class="nc">&nbsp;                if(destination.allowLaunchSchematics() || schematics.getDefaultLoadout(core) == null){</b>
+<b class="nc">&nbsp;                    for(var entry : schematics.getLoadouts()){</b>
+<b class="nc">&nbsp;                        if(entry.key.size &lt;= core.size){</b>
+<b class="nc">&nbsp;                            for(Schematic s : entry.value){</b>
+<b class="nc">&nbsp;                                handler.get(s);</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }else{
+&nbsp;                    //only allow launching with the standard loadout schematic
+<b class="nc">&nbsp;                    handler.get(schematics.getDefaultLoadout(core));</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }).growX().scrollX(false);</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.row();</b>
+&nbsp;
+<b class="nc">&nbsp;            cont.label(() -&gt; Core.bundle.format(&quot;launch.capacity&quot;, lastCapacity)).row();</b>
+<b class="nc">&nbsp;            cont.row();</b>
+<b class="nc">&nbsp;        }else if(destination.preset != null &amp;&amp; destination.preset.description != null){</b>
+<b class="nc">&nbsp;            cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;                p.add(destination.preset.description).grow().wrap().labelAlign(Align.center);</b>
+<b class="nc">&nbsp;            }).pad(10f).grow().row();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        cont.pane(items);</b>
+<b class="nc">&nbsp;        cont.row();</b>
+<b class="nc">&nbsp;        cont.add(&quot;@sector.missingresources&quot;).visible(() -&gt; !valid);</b>
+&nbsp;
+<b class="nc">&nbsp;        update.run();</b>
+<b class="nc">&nbsp;        rebuildItems.run();</b>
+&nbsp;
+<b class="nc">&nbsp;        show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void setMax(boolean max){
+<b class="nc">&nbsp;        Core.settings.put(&quot;maxresources&quot;, max);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean getMax(){
+<b class="nc">&nbsp;        return Core.settings.getBool(&quot;maxresources&quot;, true);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

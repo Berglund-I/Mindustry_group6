@@ -1,0 +1,909 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Unit</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: Unit (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Unit</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21.2%
+  </span>
+  <span class="absValue">
+    (25/118)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.4%
+  </span>
+  <span class="absValue">
+    (51/144)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.Graphics.*;
+&nbsp;import arc.Graphics.Cursor.*;
+&nbsp;import arc.audio.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.util.*;
+&nbsp;import arc.util.io.*;
+&nbsp;import arc.util.noise.*;
+&nbsp;import arc.util.pooling.*;
+&nbsp;import java.nio.*;
+&nbsp;import java.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.ai.*;
+&nbsp;import mindustry.ai.types.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.async.*;
+&nbsp;import mindustry.async.PhysicsProcess.*;
+&nbsp;import mindustry.audio.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.core.*;
+&nbsp;import mindustry.ctype.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.entities.EntityCollisions.*;
+&nbsp;import mindustry.entities.abilities.*;
+&nbsp;import mindustry.entities.bullet.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.game.EventType.*;
+&nbsp;import mindustry.game.Teams.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.input.*;
+&nbsp;import mindustry.logic.*;
+&nbsp;import mindustry.net.*;
+&nbsp;import mindustry.net.Administration.*;
+&nbsp;import mindustry.net.Packets.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.world.*;
+&nbsp;import mindustry.world.blocks.*;
+&nbsp;import mindustry.world.blocks.ConstructBlock.*;
+&nbsp;import mindustry.world.blocks.environment.*;
+&nbsp;import mindustry.world.blocks.heat.*;
+&nbsp;import mindustry.world.blocks.heat.HeatConductor.*;
+&nbsp;import mindustry.world.blocks.logic.LogicBlock.*;
+&nbsp;import mindustry.world.blocks.payloads.*;
+&nbsp;import mindustry.world.blocks.power.*;
+&nbsp;import mindustry.world.blocks.storage.*;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock.*;
+&nbsp;import mindustry.world.consumers.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;import mindustry.world.modules.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.entities.Puddles.*;
+&nbsp;import static mindustry.logic.GlobalVars.*;
+&nbsp;
+&nbsp;import arc.math.geom.Vec2;
+&nbsp;import arc.struct.Queue;
+&nbsp;import arc.util.Nullable;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.async.PhysicsProcess;
+&nbsp;import mindustry.entities.abilities.Ability;
+&nbsp;import mindustry.entities.units.BuildPlan;
+&nbsp;import mindustry.entities.units.WeaponMount;
+&nbsp;import mindustry.game.Team;
+&nbsp;import mindustry.graphics.Trail;
+&nbsp;import mindustry.type.ItemStack;
+&nbsp;import mindustry.type.UnitType;
+&nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.world.blocks.environment.Floor;
+&nbsp;
+<b class="fc">&nbsp;public abstract class Unit implements Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, IndexableEntity__all, IndexableEntity__draw, IndexableEntity__sync, IndexableEntity__unit, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {</b>
+<b class="fc">&nbsp;  public Ability[] abilities = {};</b>
+&nbsp;
+&nbsp;  public transient float aimX;
+&nbsp;
+&nbsp;  public transient float aimY;
+&nbsp;
+&nbsp;  public float ammo;
+&nbsp;
+&nbsp;  public transient float armor;
+&nbsp;
+<b class="fc">&nbsp;  public transient float armorOverride = -1.0F;</b>
+&nbsp;
+<b class="fc">&nbsp;  public transient float buildAlpha = 0.0F;</b>
+&nbsp;
+<b class="fc">&nbsp;  public transient float buildSpeedMultiplier = 1;</b>
+&nbsp;
+<b class="fc">&nbsp;  public transient float damageMultiplier = 1;</b>
+&nbsp;
+&nbsp;  public transient boolean dead;
+&nbsp;
+&nbsp;  public transient float deltaX;
+&nbsp;
+&nbsp;  public transient float deltaY;
+&nbsp;
+<b class="fc">&nbsp;  public transient boolean disarmed = false;</b>
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  public transient UnitType dockedType;
+&nbsp;
+<b class="fc">&nbsp;  public transient float drag = 0.0F;</b>
+&nbsp;
+<b class="fc">&nbsp;  public transient float dragMultiplier = 1;</b>
+&nbsp;
+&nbsp;  public transient float drownTime;
+&nbsp;
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float elevation;
+&nbsp;
+&nbsp;  public double flag;
+&nbsp;
+&nbsp;  public transient float healTime;
+&nbsp;
+&nbsp;  public float health;
+&nbsp;
+<b class="fc">&nbsp;  public transient float healthMultiplier = 1;</b>
+&nbsp;
+&nbsp;  public transient float hitSize;
+&nbsp;
+&nbsp;  public transient float hitTime;
+&nbsp;
+&nbsp;  public transient boolean hovering;
+&nbsp;
+<b class="fc">&nbsp;  public transient int id = EntityGroup.nextId();</b>
+&nbsp;
+<b class="fc">&nbsp;  protected transient int index__all = -1;</b>
+&nbsp;
+<b class="fc">&nbsp;  protected transient int index__draw = -1;</b>
+&nbsp;
+<b class="fc">&nbsp;  protected transient int index__sync = -1;</b>
+&nbsp;
+<b class="fc">&nbsp;  protected transient int index__unit = -1;</b>
+&nbsp;
+&nbsp;  public boolean isShooting;
+&nbsp;
+&nbsp;  public transient float itemTime;
+&nbsp;
+&nbsp;  public transient String lastCommanded;
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  public transient Floor lastDrownFloor;
+&nbsp;
+&nbsp;  public transient int lastFogPos;
+&nbsp;
+&nbsp;  public transient long lastUpdated;
+&nbsp;
+&nbsp;  public transient float lastX;
+&nbsp;
+&nbsp;  public transient float lastY;
+&nbsp;
+<b class="fc">&nbsp;  public transient float maxHealth = 1.0F;</b>
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public Tile mineTile;
+&nbsp;
+&nbsp;  public transient float mineTimer;
+&nbsp;
+<b class="fc">&nbsp;  @Annotations.SyncLocal</b>
+&nbsp;  public WeaponMount[] mounts = {};
+&nbsp;
+&nbsp;  public transient PhysicsProcess.PhysicRef physref;
+&nbsp;
+<b class="fc">&nbsp;  @Annotations.SyncLocal</b>
+&nbsp;  public Queue&lt;BuildPlan&gt; plans = new Queue&lt;&gt;(1);
+&nbsp;
+<b class="fc">&nbsp;  public transient float reloadMultiplier = 1;</b>
+&nbsp;
+&nbsp;  @Annotations.SyncField(false)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float rotation;
+&nbsp;
+<b class="fc">&nbsp;  public transient float shadowAlpha = -1.0F;</b>
+&nbsp;
+&nbsp;  public float shield;
+&nbsp;
+<b class="fc">&nbsp;  public transient float shieldAlpha = 0.0F;</b>
+&nbsp;
+&nbsp;  public boolean spawnedByCore;
+&nbsp;
+<b class="fc">&nbsp;  public transient float speedMultiplier = 1;</b>
+&nbsp;
+&nbsp;  public transient float splashTimer;
+&nbsp;
+<b class="fc">&nbsp;  public ItemStack stack = new ItemStack();</b>
+&nbsp;
+<b class="fc">&nbsp;  public Team team = Team.derelict;</b>
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  public transient Trail trail;
+&nbsp;
+<b class="fc">&nbsp;  public UnitType type = UnitTypes.alpha;</b>
+&nbsp;
+<b class="fc">&nbsp;  @Annotations.SyncLocal</b>
+&nbsp;  public boolean updateBuilding = true;
+&nbsp;
+&nbsp;  public transient long updateSpacing;
+&nbsp;
+<b class="fc">&nbsp;  @Annotations.SyncLocal</b>
+&nbsp;  public Vec2 vel = new Vec2();
+&nbsp;
+&nbsp;  @Annotations.SyncField(true)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float x;
+&nbsp;
+&nbsp;  @Annotations.SyncField(true)
+&nbsp;  @Annotations.SyncLocal
+&nbsp;  public float y;
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Vec2 vel() {
+<b class="fc">&nbsp;    return vel;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Queue&lt;BuildPlan&gt; plans() {
+<b class="fc">&nbsp;    return plans;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean dead() {
+<b class="nc">&nbsp;    return dead;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean disarmed() {
+<b class="nc">&nbsp;    return disarmed;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean hovering() {
+<b class="nc">&nbsp;    return hovering;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean isShooting() {
+<b class="nc">&nbsp;    return isShooting;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean spawnedByCore() {
+<b class="nc">&nbsp;    return spawnedByCore;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public boolean updateBuilding() {
+<b class="nc">&nbsp;    return updateBuilding;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public double flag() {
+<b class="nc">&nbsp;    return flag;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float aimX() {
+<b class="nc">&nbsp;    return aimX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float aimY() {
+<b class="nc">&nbsp;    return aimY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float ammo() {
+<b class="nc">&nbsp;    return ammo;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float armor() {
+<b class="nc">&nbsp;    return armor;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float armorOverride() {
+<b class="nc">&nbsp;    return armorOverride;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float buildAlpha() {
+<b class="nc">&nbsp;    return buildAlpha;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float buildSpeedMultiplier() {
+<b class="nc">&nbsp;    return buildSpeedMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float damageMultiplier() {
+<b class="nc">&nbsp;    return damageMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float deltaX() {
+<b class="fc">&nbsp;    return deltaX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float deltaY() {
+<b class="fc">&nbsp;    return deltaY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float drag() {
+<b class="nc">&nbsp;    return drag;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float dragMultiplier() {
+<b class="nc">&nbsp;    return dragMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float drownTime() {
+<b class="nc">&nbsp;    return drownTime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float elevation() {
+<b class="nc">&nbsp;    return elevation;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float healTime() {
+<b class="nc">&nbsp;    return healTime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float health() {
+<b class="nc">&nbsp;    return health;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float healthMultiplier() {
+<b class="nc">&nbsp;    return healthMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float hitTime() {
+<b class="nc">&nbsp;    return hitTime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float itemTime() {
+<b class="nc">&nbsp;    return itemTime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float lastX() {
+<b class="nc">&nbsp;    return lastX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float lastY() {
+<b class="nc">&nbsp;    return lastY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float maxHealth() {
+<b class="nc">&nbsp;    return maxHealth;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float mineTimer() {
+<b class="nc">&nbsp;    return mineTimer;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float reloadMultiplier() {
+<b class="nc">&nbsp;    return reloadMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float rotation() {
+<b class="fc">&nbsp;    return rotation;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float shadowAlpha() {
+<b class="nc">&nbsp;    return shadowAlpha;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float shield() {
+<b class="nc">&nbsp;    return shield;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float shieldAlpha() {
+<b class="nc">&nbsp;    return shieldAlpha;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float speedMultiplier() {
+<b class="fc">&nbsp;    return speedMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float splashTimer() {
+<b class="nc">&nbsp;    return splashTimer;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float x() {
+<b class="fc">&nbsp;    return x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public float y() {
+<b class="fc">&nbsp;    return y;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int id() {
+<b class="fc">&nbsp;    return id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public int lastFogPos() {
+<b class="nc">&nbsp;    return lastFogPos;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public String lastCommanded() {
+<b class="nc">&nbsp;    return lastCommanded;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public long lastUpdated() {
+<b class="nc">&nbsp;    return lastUpdated;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public long updateSpacing() {
+<b class="nc">&nbsp;    return updateSpacing;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public PhysicsProcess.PhysicRef physref() {
+<b class="nc">&nbsp;    return physref;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Ability[] abilities() {
+<b class="nc">&nbsp;    return abilities;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public WeaponMount[] mounts() {
+<b class="fc">&nbsp;    return mounts;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Team team() {
+<b class="fc">&nbsp;    return team;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Trail trail() {
+<b class="nc">&nbsp;    return trail;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public ItemStack stack() {
+<b class="nc">&nbsp;    return stack;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public UnitType dockedType() {
+<b class="nc">&nbsp;    return dockedType;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public UnitType type() {
+<b class="fc">&nbsp;    return type;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Tile mineTile() {
+<b class="nc">&nbsp;    return mineTile;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Floor lastDrownFloor() {
+<b class="nc">&nbsp;    return lastDrownFloor;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void abilities(Ability[] abilities) {
+<b class="nc">&nbsp;    this.abilities = abilities;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void aimX(float aimX) {
+<b class="nc">&nbsp;    this.aimX = aimX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void aimY(float aimY) {
+<b class="nc">&nbsp;    this.aimY = aimY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void ammo(float ammo) {
+<b class="fc">&nbsp;    this.ammo = ammo;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void armor(float armor) {
+<b class="nc">&nbsp;    this.armor = armor;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void armorOverride(float armorOverride) {
+<b class="nc">&nbsp;    this.armorOverride = armorOverride;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void buildAlpha(float buildAlpha) {
+<b class="nc">&nbsp;    this.buildAlpha = buildAlpha;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void buildSpeedMultiplier(float buildSpeedMultiplier) {
+<b class="fc">&nbsp;    this.buildSpeedMultiplier = buildSpeedMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void damageMultiplier(float damageMultiplier) {
+<b class="nc">&nbsp;    this.damageMultiplier = damageMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void dead(boolean dead) {
+<b class="nc">&nbsp;    this.dead = dead;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void deltaX(float deltaX) {
+<b class="nc">&nbsp;    this.deltaX = deltaX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void deltaY(float deltaY) {
+<b class="nc">&nbsp;    this.deltaY = deltaY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void disarmed(boolean disarmed) {
+<b class="nc">&nbsp;    this.disarmed = disarmed;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void dockedType(UnitType dockedType) {
+<b class="nc">&nbsp;    this.dockedType = dockedType;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void drag(float drag) {
+<b class="nc">&nbsp;    this.drag = drag;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void dragMultiplier(float dragMultiplier) {
+<b class="nc">&nbsp;    this.dragMultiplier = dragMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void drownTime(float drownTime) {
+<b class="nc">&nbsp;    this.drownTime = drownTime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void elevation(float elevation) {
+<b class="nc">&nbsp;    this.elevation = elevation;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void flag(double flag) {
+<b class="nc">&nbsp;    this.flag = flag;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void healTime(float healTime) {
+<b class="nc">&nbsp;    this.healTime = healTime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void health(float health) {
+<b class="fc">&nbsp;    this.health = health;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void healthMultiplier(float healthMultiplier) {
+<b class="nc">&nbsp;    this.healthMultiplier = healthMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void hitSize(float hitSize) {
+<b class="fc">&nbsp;    this.hitSize = hitSize;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void hitTime(float hitTime) {
+<b class="nc">&nbsp;    this.hitTime = hitTime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void hovering(boolean hovering) {
+<b class="nc">&nbsp;    this.hovering = hovering;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void id(int id) {
+<b class="fc">&nbsp;    this.id = id;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void isShooting(boolean isShooting) {
+<b class="nc">&nbsp;    this.isShooting = isShooting;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void itemTime(float itemTime) {
+<b class="nc">&nbsp;    this.itemTime = itemTime;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastCommanded(String lastCommanded) {
+<b class="nc">&nbsp;    this.lastCommanded = lastCommanded;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastDrownFloor(Floor lastDrownFloor) {
+<b class="nc">&nbsp;    this.lastDrownFloor = lastDrownFloor;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastFogPos(int lastFogPos) {
+<b class="nc">&nbsp;    this.lastFogPos = lastFogPos;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastUpdated(long lastUpdated) {
+<b class="nc">&nbsp;    this.lastUpdated = lastUpdated;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastX(float lastX) {
+<b class="nc">&nbsp;    this.lastX = lastX;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void lastY(float lastY) {
+<b class="nc">&nbsp;    this.lastY = lastY;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void maxHealth(float maxHealth) {
+<b class="fc">&nbsp;    this.maxHealth = maxHealth;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void mineTile(Tile mineTile) {
+<b class="nc">&nbsp;    this.mineTile = mineTile;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void mineTimer(float mineTimer) {
+<b class="nc">&nbsp;    this.mineTimer = mineTimer;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void mounts(WeaponMount[] mounts) {
+<b class="nc">&nbsp;    this.mounts = mounts;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void physref(PhysicsProcess.PhysicRef physref) {
+<b class="nc">&nbsp;    this.physref = physref;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void plans(Queue&lt;BuildPlan&gt; plans) {
+<b class="nc">&nbsp;    this.plans = plans;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void reloadMultiplier(float reloadMultiplier) {
+<b class="nc">&nbsp;    this.reloadMultiplier = reloadMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void rotation(float rotation) {
+<b class="fc">&nbsp;    this.rotation = rotation;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__all(int index) {
+<b class="nc">&nbsp;    index__all = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__draw(int index) {
+<b class="fc">&nbsp;    index__draw = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__sync(int index) {
+<b class="fc">&nbsp;    index__sync = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void setIndex__unit(int index) {
+<b class="fc">&nbsp;    index__unit = index;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void shadowAlpha(float shadowAlpha) {
+<b class="nc">&nbsp;    this.shadowAlpha = shadowAlpha;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void shield(float shield) {
+<b class="nc">&nbsp;    this.shield = shield;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void shieldAlpha(float shieldAlpha) {
+<b class="nc">&nbsp;    this.shieldAlpha = shieldAlpha;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void spawnedByCore(boolean spawnedByCore) {
+<b class="nc">&nbsp;    this.spawnedByCore = spawnedByCore;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void speedMultiplier(float speedMultiplier) {
+<b class="fc">&nbsp;    this.speedMultiplier = speedMultiplier;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void splashTimer(float splashTimer) {
+<b class="nc">&nbsp;    this.splashTimer = splashTimer;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void stack(ItemStack stack) {
+<b class="nc">&nbsp;    this.stack = stack;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void team(Team team) {
+<b class="nc">&nbsp;    this.team = team;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void trail(Trail trail) {
+<b class="nc">&nbsp;    this.trail = trail;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void type(UnitType type) {
+<b class="nc">&nbsp;    this.type = type;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void updateBuilding(boolean updateBuilding) {
+<b class="fc">&nbsp;    this.updateBuilding = updateBuilding;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void updateSpacing(long updateSpacing) {
+<b class="nc">&nbsp;    this.updateSpacing = updateSpacing;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void vel(Vec2 vel) {
+<b class="nc">&nbsp;    this.vel = vel;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void x(float x) {
+<b class="nc">&nbsp;    this.x = x;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void y(float y) {
+<b class="nc">&nbsp;    this.y = y;</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

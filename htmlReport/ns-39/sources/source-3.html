@@ -1,0 +1,130 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > EmptyFloor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.environment</a>
+</div>
+
+<h1>Coverage Summary for Class: EmptyFloor (mindustry.world.blocks.environment)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EmptyFloor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55.6%
+  </span>
+  <span class="absValue">
+    (5/9)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.environment;
+&nbsp;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;/** Empty floor is *not* equivalent to air. Unlike air, it is solid, and still draws neighboring tile edges. */
+&nbsp;public class EmptyFloor extends Floor{
+&nbsp;
+&nbsp;    public EmptyFloor(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        variants = 0;</b>
+<b class="fc">&nbsp;        canShadow = false;</b>
+<b class="fc">&nbsp;        placeableOn = false;</b>
+<b class="fc">&nbsp;        solid = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawBase(Tile tile){
+&nbsp;        //draws only edges, never itself
+<b class="nc">&nbsp;        drawEdges(tile);</b>
+&nbsp;
+<b class="nc">&nbsp;        Floor floor = tile.overlay();</b>
+<b class="nc">&nbsp;        if(floor != Blocks.air &amp;&amp; floor != this){</b>
+<b class="nc">&nbsp;            floor.drawBase(tile);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BoundedComp</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.comp</a>
+</div>
+
+<h1>Coverage Summary for Class: BoundedComp (mindustry.entities.comp)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BoundedComp</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.comp;
+&nbsp;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;abstract class BoundedComp implements Velc, Posc, Healthc, Flyingc{</b>
+&nbsp;    static final float warpDst = 30f;
+&nbsp;
+&nbsp;    @Import UnitType type;
+&nbsp;    @Import float x, y;
+&nbsp;    @Import Team team;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(){
+<b class="nc">&nbsp;        if(!type.bounded) return;</b>
+&nbsp;        
+<b class="nc">&nbsp;        float bot = 0f, left = 0f, top = world.unitHeight(), right = world.unitWidth();</b>
+&nbsp;
+&nbsp;        //TODO hidden map rules only apply to player teams? should they?
+<b class="nc">&nbsp;        if(state.rules.limitMapArea &amp;&amp; !team.isAI()){</b>
+<b class="nc">&nbsp;            bot = state.rules.limitY * tilesize;</b>
+<b class="nc">&nbsp;            left = state.rules.limitX * tilesize;</b>
+<b class="nc">&nbsp;            top = state.rules.limitHeight * tilesize + bot;</b>
+<b class="nc">&nbsp;            right = state.rules.limitWidth * tilesize + left;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if(!net.client() || isLocal()){</b>
+&nbsp;
+<b class="nc">&nbsp;            float dx = 0f, dy = 0f;</b>
+&nbsp;
+&nbsp;            //repel unit out of bounds
+<b class="nc">&nbsp;            if(x &lt; left) dx += (-(x - left)/warpDst);</b>
+<b class="nc">&nbsp;            if(y &lt; bot) dy += (-(y - bot)/warpDst);</b>
+<b class="nc">&nbsp;            if(x &gt; right) dx -= (x - right)/warpDst;</b>
+<b class="nc">&nbsp;            if(y &gt; top) dy -= (y - top)/warpDst;</b>
+&nbsp;
+<b class="nc">&nbsp;            velAddNet(dx * Time.delta, dy * Time.delta);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //clamp position if not flying
+<b class="nc">&nbsp;        if(isGrounded()){</b>
+<b class="nc">&nbsp;            x = Mathf.clamp(x, left, right - tilesize);</b>
+<b class="nc">&nbsp;            y = Mathf.clamp(y, bot, top - tilesize);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //kill when out of bounds
+<b class="nc">&nbsp;        if(x &lt; -finalWorldBounds + left || y &lt; -finalWorldBounds + bot || x &gt;= right + finalWorldBounds || y &gt;= top + finalWorldBounds){</b>
+<b class="nc">&nbsp;            kill();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

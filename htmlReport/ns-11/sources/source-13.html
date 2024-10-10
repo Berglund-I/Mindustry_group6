@@ -1,0 +1,599 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > WaveInfoDialog</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.editor</a>
+</div>
+
+<h1>Coverage Summary for Class: WaveInfoDialog (mindustry.editor)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WaveInfoDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/58)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/297)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">WaveInfoDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WaveInfoDialog$Sort</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/66)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/311)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.editor;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.func.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.input.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.scene.event.*;
+&nbsp;import arc.scene.style.*;
+&nbsp;import arc.scene.ui.*;
+&nbsp;import arc.scene.ui.TextField.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.*;
+&nbsp;import mindustry.content.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.io.*;
+&nbsp;import mindustry.type.*;
+&nbsp;import mindustry.ui.*;
+&nbsp;import mindustry.ui.dialogs.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;import static mindustry.game.SpawnGroup.*;
+&nbsp;
+&nbsp;public class WaveInfoDialog extends BaseDialog{
+<b class="nc">&nbsp;    Seq&lt;SpawnGroup&gt; groups = new Seq&lt;&gt;();</b>
+&nbsp;    private @Nullable SpawnGroup expandedGroup;
+&nbsp;
+&nbsp;    private Table table;
+<b class="nc">&nbsp;    private int search = -1;</b>
+&nbsp;    private @Nullable UnitType filterType;
+<b class="nc">&nbsp;    private Sort sort = Sort.begin;</b>
+<b class="nc">&nbsp;    private boolean reverseSort = false;</b>
+&nbsp;    private boolean checkedSpawns;
+<b class="nc">&nbsp;    private WaveGraph graph = new WaveGraph();</b>
+&nbsp;
+&nbsp;    public WaveInfoDialog(){
+<b class="nc">&nbsp;        super(&quot;@waves.title&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        shown(() -&gt; {</b>
+<b class="nc">&nbsp;            checkedSpawns = false;</b>
+<b class="nc">&nbsp;            setup();</b>
+&nbsp;        });
+<b class="nc">&nbsp;        hidden(() -&gt; state.rules.spawns = groups);</b>
+&nbsp;
+<b class="nc">&nbsp;        onResize(this::setup);</b>
+<b class="nc">&nbsp;        addCloseButton();</b>
+&nbsp;
+<b class="nc">&nbsp;        buttons.button(&quot;@waves.edit&quot;, Icon.edit, () -&gt; {</b>
+<b class="nc">&nbsp;            BaseDialog dialog = new BaseDialog(&quot;@waves.edit&quot;);</b>
+<b class="nc">&nbsp;            dialog.addCloseButton();</b>
+<b class="nc">&nbsp;            dialog.setFillParent(false);</b>
+<b class="nc">&nbsp;            dialog.cont.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                var style = Styles.cleart;</b>
+<b class="nc">&nbsp;                t.defaults().size(280f, 64f).pad(2f);</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;@waves.copy&quot;, Icon.copy, style, () -&gt; {</b>
+<b class="nc">&nbsp;                    ui.showInfoFade(&quot;@waves.copied&quot;);</b>
+<b class="nc">&nbsp;                    Core.app.setClipboardText(maps.writeWaves(groups));</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).disabled(b -&gt; groups == null || groups.isEmpty()).marginLeft(12f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;@waves.load&quot;, Icon.download, style, () -&gt; {</b>
+&nbsp;                    try{
+<b class="nc">&nbsp;                        groups = maps.readWaves(Core.app.getClipboardText());</b>
+<b class="nc">&nbsp;                        buildGroups();</b>
+<b class="nc">&nbsp;                    }catch(Exception e){</b>
+<b class="nc">&nbsp;                        Log.err(e);</b>
+<b class="nc">&nbsp;                        ui.showErrorMessage(&quot;@waves.invalid&quot;);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                }).disabled(Core.app.getClipboardText() == null || !Core.app.getClipboardText().startsWith(&quot;[&quot;)).marginLeft(12f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;@clear&quot;, Icon.none, style, () -&gt; ui.showConfirm(&quot;@confirm&quot;, &quot;@settings.clear.confirm&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                    groups.clear();</b>
+<b class="nc">&nbsp;                    buildGroups();</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                })).marginLeft(12f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(&quot;@settings.reset&quot;, Icon.refresh, style, () -&gt; ui.showConfirm(&quot;@confirm&quot;, &quot;@settings.clear.confirm&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                    groups = JsonIO.copy(waves.get());</b>
+<b class="nc">&nbsp;                    buildGroups();</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                })).marginLeft(12f);</b>
+&nbsp;            });
+&nbsp;
+<b class="nc">&nbsp;            dialog.show();</b>
+<b class="nc">&nbsp;        }).size(250f, 64f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(experimental){</b>
+<b class="nc">&nbsp;            buttons.button(Core.bundle.get(&quot;waves.random&quot;), Icon.refresh, () -&gt; {</b>
+<b class="nc">&nbsp;                groups.clear();</b>
+<b class="nc">&nbsp;                groups = Waves.generate(1f / 10f);</b>
+<b class="nc">&nbsp;                buildGroups();</b>
+<b class="nc">&nbsp;            }).width(200f);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void setup(){
+<b class="nc">&nbsp;        groups = JsonIO.copy(state.rules.spawns.isEmpty() ? waves.get() : state.rules.spawns);</b>
+<b class="nc">&nbsp;        if(groups == null) groups = new Seq&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.clear();</b>
+<b class="nc">&nbsp;        cont.stack(new Table(Tex.clear, main -&gt; {</b>
+<b class="nc">&nbsp;            main.table(s -&gt; {</b>
+<b class="nc">&nbsp;                s.image(Icon.zoom).padRight(8);</b>
+<b class="nc">&nbsp;                s.field(search &lt; 0 ? &quot;&quot; : (search + 1) + &quot;&quot;, TextFieldFilter.digitsOnly, text -&gt; {</b>
+<b class="nc">&nbsp;                    search = groups.any() ? Strings.parseInt(text, 0) - 1 : -1;</b>
+<b class="nc">&nbsp;                    buildGroups();</b>
+<b class="nc">&nbsp;                }).growX().maxTextLength(8).get().setMessageText(&quot;@waves.search&quot;);</b>
+<b class="nc">&nbsp;                s.button(Icon.units, Styles.emptyi, () -&gt; showUnits(type -&gt; filterType = type, true)).size(46f).tooltip(&quot;@waves.filter&quot;)</b>
+<b class="nc">&nbsp;                .update(b -&gt; b.getStyle().imageUp = filterType != null ? new TextureRegionDrawable(filterType.uiIcon) : Icon.filter);</b>
+<b class="nc">&nbsp;            }).growX().pad(6f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;            main.pane(t -&gt; table = t).grow().padRight(8f).scrollX(false).row();</b>
+&nbsp;
+<b class="nc">&nbsp;            main.table(t -&gt; {</b>
+<b class="nc">&nbsp;                t.button(&quot;@add&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                    showUnits(type -&gt; groups.add(expandedGroup = new SpawnGroup(type)), false);</b>
+<b class="nc">&nbsp;                    buildGroups();</b>
+<b class="nc">&nbsp;                }).growX().height(70f);</b>
+&nbsp;
+<b class="nc">&nbsp;                t.button(Icon.filter, () -&gt; {</b>
+<b class="nc">&nbsp;                    BaseDialog dialog = new BaseDialog(&quot;@waves.sort&quot;);</b>
+<b class="nc">&nbsp;                    dialog.setFillParent(false);</b>
+<b class="nc">&nbsp;                    dialog.cont.table(Tex.button, f -&gt; {</b>
+<b class="nc">&nbsp;                        for(Sort s : Sort.all){</b>
+<b class="nc">&nbsp;                            f.button(&quot;@waves.sort.&quot; + s, Styles.flatTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                                sort = s;</b>
+<b class="nc">&nbsp;                                dialog.hide();</b>
+<b class="nc">&nbsp;                                buildGroups();</b>
+<b class="nc">&nbsp;                            }).size(150f, 60f).checked(s == sort);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }).row();</b>
+<b class="nc">&nbsp;                    dialog.cont.check(&quot;@waves.sort.reverse&quot;, b -&gt; {</b>
+<b class="nc">&nbsp;                        reverseSort = b;</b>
+<b class="nc">&nbsp;                        buildGroups();</b>
+<b class="nc">&nbsp;                    }).padTop(4).checked(reverseSort).padBottom(8f);</b>
+<b class="nc">&nbsp;                    dialog.addCloseButton();</b>
+<b class="nc">&nbsp;                    dialog.show();</b>
+<b class="nc">&nbsp;                }).size(64f, 70f).padLeft(6f);</b>
+<b class="nc">&nbsp;            }).growX();</b>
+&nbsp;
+<b class="nc">&nbsp;        }), new Label(&quot;@waves.none&quot;){{</b>
+<b class="nc">&nbsp;            visible(() -&gt; groups.isEmpty());</b>
+<b class="nc">&nbsp;            this.touchable = Touchable.disabled;</b>
+<b class="nc">&nbsp;            setWrap(true);</b>
+<b class="nc">&nbsp;            setAlignment(Align.center, Align.center);</b>
+<b class="nc">&nbsp;        }}).width(390f).growY();</b>
+&nbsp;
+<b class="nc">&nbsp;        cont.add(graph = new WaveGraph()).grow();</b>
+&nbsp;
+<b class="nc">&nbsp;        buildGroups();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void buildGroups(){
+<b class="nc">&nbsp;        table.clear();</b>
+<b class="nc">&nbsp;        table.top();</b>
+<b class="nc">&nbsp;        table.margin(10f);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(groups != null){</b>
+<b class="nc">&nbsp;            groups.sort(Structs.comps(Structs.comparingFloat(sort.sort), Structs.comparingFloat(sort.secondary)));</b>
+<b class="nc">&nbsp;            if(reverseSort) groups.reverse();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(SpawnGroup group : groups){</b>
+<b class="nc">&nbsp;                if(group.effect == StatusEffects.none) group.effect = null;</b>
+<b class="nc">&nbsp;                if((search &gt;= 0 &amp;&amp; group.getSpawned(search) &lt;= 0) || (filterType != null &amp;&amp; group.type != filterType)) continue;</b>
+&nbsp;
+<b class="nc">&nbsp;                table.table(Tex.button, t -&gt; {</b>
+<b class="nc">&nbsp;                    t.margin(0).defaults().pad(3).padLeft(5f).growX().left();</b>
+<b class="nc">&nbsp;                    t.button(b -&gt; {</b>
+<b class="nc">&nbsp;                        b.left();</b>
+<b class="nc">&nbsp;                        b.image(group.type.uiIcon).size(32f).padRight(3).scaling(Scaling.fit);</b>
+<b class="nc">&nbsp;                        b.add(group.type.localizedName).color(Pal.accent);</b>
+&nbsp;
+<b class="nc">&nbsp;                        b.add().growX();</b>
+&nbsp;
+<b class="nc">&nbsp;                        b.label(() -&gt; (group.begin + 1) + &quot;&quot;).color(Color.lightGray).minWidth(45f).labelAlign(Align.left).left();</b>
+&nbsp;
+<b class="nc">&nbsp;                        b.button(Icon.copySmall, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                            groups.insert(groups.indexOf(group) + 1, expandedGroup = group.copy());</b>
+<b class="nc">&nbsp;                            buildGroups();</b>
+<b class="nc">&nbsp;                        }).pad(-6).size(46f).tooltip(&quot;@editor.copy&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                        b.button(group.effect != null ?</b>
+<b class="nc">&nbsp;                            new TextureRegionDrawable(group.effect.uiIcon) :</b>
+<b class="nc">&nbsp;                            Icon.logicSmall,</b>
+<b class="nc">&nbsp;                        Styles.emptyi, () -&gt; showEffects(group)).pad(-6).size(46f).scaling(Scaling.fit).tooltip(group.effect != null ? group.effect.localizedName : &quot;@none&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                        b.button(Icon.unitsSmall, Styles.emptyi, () -&gt; showUnits(type -&gt; group.type = type, false)).pad(-6).size(46f).tooltip(&quot;@stat.unittype&quot;);</b>
+<b class="nc">&nbsp;                        b.button(Icon.cancel, Styles.emptyi, () -&gt; {</b>
+<b class="nc">&nbsp;                            groups.remove(group);</b>
+<b class="nc">&nbsp;                            if(expandedGroup == group) expandedGroup = null;</b>
+<b class="nc">&nbsp;                            table.getCell(t).pad(0f);</b>
+<b class="nc">&nbsp;                            t.remove();</b>
+<b class="nc">&nbsp;                            buildGroups();</b>
+<b class="nc">&nbsp;                        }).pad(-6).size(46f).padRight(-12f).tooltip(&quot;@waves.remove&quot;);</b>
+<b class="nc">&nbsp;                        b.clicked(KeyCode.mouseMiddle, () -&gt; {</b>
+<b class="nc">&nbsp;                            groups.insert(groups.indexOf(group) + 1, expandedGroup = group.copy());</b>
+<b class="nc">&nbsp;                            buildGroups();</b>
+&nbsp;                        });
+&nbsp;                    }, () -&gt; {
+<b class="nc">&nbsp;                        expandedGroup = expandedGroup == group ? null : group;</b>
+<b class="nc">&nbsp;                        buildGroups();</b>
+<b class="nc">&nbsp;                    }).height(46f).pad(-6f).padBottom(0f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                    if(expandedGroup == group){</b>
+<b class="nc">&nbsp;                        t.table(spawns -&gt; {</b>
+<b class="nc">&nbsp;                            spawns.field(&quot;&quot; + (group.begin + 1), TextFieldFilter.digitsOnly, text -&gt; {</b>
+<b class="nc">&nbsp;                                if(Strings.canParsePositiveInt(text)){</b>
+<b class="nc">&nbsp;                                    group.begin = Strings.parseInt(text) - 1;</b>
+<b class="nc">&nbsp;                                    updateWaves();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).width(100f);</b>
+<b class="nc">&nbsp;                            spawns.add(&quot;@waves.to&quot;).padLeft(4).padRight(4);</b>
+<b class="nc">&nbsp;                            spawns.field(group.end == never ? &quot;&quot; : (group.end + 1) + &quot;&quot;, TextFieldFilter.digitsOnly, text -&gt; {</b>
+<b class="nc">&nbsp;                                if(Strings.canParsePositiveInt(text)){</b>
+<b class="nc">&nbsp;                                    group.end = Strings.parseInt(text) - 1;</b>
+<b class="nc">&nbsp;                                    updateWaves();</b>
+<b class="nc">&nbsp;                                }else if(text.isEmpty()){</b>
+<b class="nc">&nbsp;                                    group.end = never;</b>
+<b class="nc">&nbsp;                                    updateWaves();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).width(100f).get().setMessageText(&quot;?&quot;);</b>
+<b class="nc">&nbsp;                        }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.table(p -&gt; {</b>
+<b class="nc">&nbsp;                            p.add(&quot;@waves.every&quot;).padRight(4);</b>
+<b class="nc">&nbsp;                            p.field(group.spacing + &quot;&quot;, TextFieldFilter.digitsOnly, text -&gt; {</b>
+<b class="nc">&nbsp;                                if(Strings.canParsePositiveInt(text) &amp;&amp; Strings.parseInt(text) &gt; 0){</b>
+<b class="nc">&nbsp;                                    group.spacing = Strings.parseInt(text);</b>
+<b class="nc">&nbsp;                                    updateWaves();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).width(100f);</b>
+<b class="nc">&nbsp;                            p.add(&quot;@waves.waves&quot;).padLeft(4);</b>
+<b class="nc">&nbsp;                        }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.table(a -&gt; {</b>
+<b class="nc">&nbsp;                            a.field(group.unitAmount + &quot;&quot;, TextFieldFilter.digitsOnly, text -&gt; {</b>
+<b class="nc">&nbsp;                                if(Strings.canParsePositiveInt(text)){</b>
+<b class="nc">&nbsp;                                    group.unitAmount = Strings.parseInt(text);</b>
+<b class="nc">&nbsp;                                    updateWaves();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).width(80f);</b>
+&nbsp;
+<b class="nc">&nbsp;                            a.add(&quot; + &quot;);</b>
+<b class="nc">&nbsp;                            a.field(Strings.fixed(Math.max((Mathf.zero(group.unitScaling) ? 0 : 1f / group.unitScaling), 0), 2), TextFieldFilter.floatsOnly, text -&gt; {</b>
+<b class="nc">&nbsp;                                if(Strings.canParsePositiveFloat(text)){</b>
+<b class="nc">&nbsp;                                    group.unitScaling = 1f / Strings.parseFloat(text);</b>
+<b class="nc">&nbsp;                                    updateWaves();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).width(80f);</b>
+<b class="nc">&nbsp;                            a.add(&quot;@waves.perspawn&quot;).padLeft(4);</b>
+<b class="nc">&nbsp;                        }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.table(a -&gt; {</b>
+<b class="nc">&nbsp;                            a.field(group.max + &quot;&quot;, TextFieldFilter.digitsOnly, text -&gt; {</b>
+<b class="nc">&nbsp;                                if(Strings.canParsePositiveInt(text)){</b>
+<b class="nc">&nbsp;                                    group.max = Strings.parseInt(text);</b>
+<b class="nc">&nbsp;                                    updateWaves();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).width(80f);</b>
+&nbsp;
+<b class="nc">&nbsp;                            a.add(&quot;@waves.max&quot;).padLeft(5);</b>
+<b class="nc">&nbsp;                        }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.table(a -&gt; {</b>
+<b class="nc">&nbsp;                            a.field((int)group.shields + &quot;&quot;, TextFieldFilter.digitsOnly, text -&gt; {</b>
+<b class="nc">&nbsp;                                if(Strings.canParsePositiveInt(text)){</b>
+<b class="nc">&nbsp;                                    group.shields = Strings.parseInt(text);</b>
+<b class="nc">&nbsp;                                    updateWaves();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).width(80f);</b>
+&nbsp;
+<b class="nc">&nbsp;                            a.add(&quot; + &quot;);</b>
+<b class="nc">&nbsp;                            a.field((int)group.shieldScaling + &quot;&quot;, TextFieldFilter.digitsOnly, text -&gt; {</b>
+<b class="nc">&nbsp;                                if(Strings.canParsePositiveInt(text)){</b>
+<b class="nc">&nbsp;                                    group.shieldScaling = Strings.parseInt(text);</b>
+<b class="nc">&nbsp;                                    updateWaves();</b>
+&nbsp;                                }
+<b class="nc">&nbsp;                            }).width(80f);</b>
+<b class="nc">&nbsp;                            a.add(&quot;@waves.shields&quot;).padLeft(4);</b>
+<b class="nc">&nbsp;                        }).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.check(&quot;@waves.guardian&quot;, b -&gt; {</b>
+<b class="nc">&nbsp;                            group.effect = (b ? StatusEffects.boss : null);</b>
+<b class="nc">&nbsp;                            buildGroups();</b>
+<b class="nc">&nbsp;                        }).padTop(4).update(b -&gt; b.setChecked(group.effect == StatusEffects.boss)).padBottom(8f).row();</b>
+&nbsp;
+<b class="nc">&nbsp;                        t.table(a -&gt; {</b>
+<b class="nc">&nbsp;                            a.add(&quot;@waves.spawn&quot;).padRight(8);</b>
+&nbsp;
+<b class="nc">&nbsp;                            a.button(&quot;&quot;, () -&gt; {</b>
+<b class="nc">&nbsp;                                if(!checkedSpawns){</b>
+&nbsp;                                    //recalculate waves when changed
+<b class="nc">&nbsp;                                    Vars.spawner.reset();</b>
+<b class="nc">&nbsp;                                    checkedSpawns = true;</b>
+&nbsp;                                }
+&nbsp;
+<b class="nc">&nbsp;                                BaseDialog dialog = new BaseDialog(&quot;@waves.spawn.select&quot;);</b>
+<b class="nc">&nbsp;                                dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;                                    p.background(Tex.button).margin(10f);</b>
+<b class="nc">&nbsp;                                    int i = 0;</b>
+<b class="nc">&nbsp;                                    int cols = 4;</b>
+<b class="nc">&nbsp;                                    int max = 20;</b>
+&nbsp;
+<b class="nc">&nbsp;                                    if(spawner.getSpawns().size &gt;= max){</b>
+<b class="nc">&nbsp;                                        p.add(&quot;[lightgray](first &quot; + max + &quot;)&quot;).colspan(cols).padBottom(4).row();</b>
+&nbsp;                                    }
+&nbsp;
+<b class="nc">&nbsp;                                    for(var spawn : spawner.getSpawns()){</b>
+<b class="nc">&nbsp;                                        p.button(spawn.x + &quot;, &quot; + spawn.y, Styles.flatTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                                            group.spawn = Point2.pack(spawn.x, spawn.y);</b>
+<b class="nc">&nbsp;                                            dialog.hide();</b>
+<b class="nc">&nbsp;                                        }).size(110f, 45f).checked(spawn.pos() == group.spawn);</b>
+&nbsp;
+<b class="nc">&nbsp;                                        if(++i % cols == 0){</b>
+<b class="nc">&nbsp;                                            p.row();</b>
+&nbsp;                                        }
+&nbsp;
+&nbsp;                                        //only display first 20 spawns, you don&#39;t need to see more.
+<b class="nc">&nbsp;                                        if(i &gt;= 20){</b>
+<b class="nc">&nbsp;                                            break;</b>
+&nbsp;                                        }
+<b class="nc">&nbsp;                                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                                    if(spawner.getSpawns().isEmpty()){</b>
+<b class="nc">&nbsp;                                        p.add(&quot;@waves.spawn.none&quot;);</b>
+&nbsp;                                    }else{
+<b class="nc">&nbsp;                                        p.button(&quot;@waves.spawn.all&quot;, Styles.flatTogglet, () -&gt; {</b>
+<b class="nc">&nbsp;                                            group.spawn = -1;</b>
+<b class="nc">&nbsp;                                            dialog.hide();</b>
+<b class="nc">&nbsp;                                        }).size(110f, 45f).checked(-1 == group.spawn);</b>
+&nbsp;                                    }
+<b class="nc">&nbsp;                                }).grow();</b>
+<b class="nc">&nbsp;                                dialog.setFillParent(false);</b>
+<b class="nc">&nbsp;                                dialog.addCloseButton();</b>
+<b class="nc">&nbsp;                                dialog.show();</b>
+<b class="nc">&nbsp;                            }).width(160f).height(36f).get().getLabel().setText(() -&gt; group.spawn == -1 ? &quot;@waves.spawn.all&quot; : Point2.x(group.spawn) + &quot;, &quot; + Point2.y(group.spawn));</b>
+&nbsp;
+<b class="nc">&nbsp;                        }).padBottom(8f).row();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }).width(340f).pad(8);</b>
+&nbsp;
+<b class="nc">&nbsp;                table.row();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if(table.getChildren().isEmpty() &amp;&amp; groups.any()){</b>
+<b class="nc">&nbsp;                table.add(&quot;@none.found&quot;);</b>
+&nbsp;            }
+&nbsp;        }else{
+<b class="nc">&nbsp;            table.add(&quot;@editor.default&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        updateWaves();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void showUnits(Cons&lt;UnitType&gt; cons, boolean reset){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(reset ? &quot;@waves.filter&quot; : &quot;&quot;);</b>
+<b class="nc">&nbsp;        dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            p.defaults().pad(2).fillX();</b>
+<b class="nc">&nbsp;            if(reset){</b>
+<b class="nc">&nbsp;                p.button(t -&gt; {</b>
+<b class="nc">&nbsp;                    t.left();</b>
+<b class="nc">&nbsp;                    t.image(Icon.none).size(8 * 4).scaling(Scaling.fit).padRight(2f);</b>
+<b class="nc">&nbsp;                    t.add(&quot;@settings.resetKey&quot;);</b>
+&nbsp;                }, () -&gt; {
+<b class="nc">&nbsp;                    cons.get(null);</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                    buildGroups();</b>
+<b class="nc">&nbsp;                }).margin(12f);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            int i = reset ? 1 : 0;</b>
+<b class="nc">&nbsp;            for(UnitType type : content.units()){</b>
+<b class="nc">&nbsp;                if(type.isHidden()) continue;</b>
+<b class="nc">&nbsp;                p.button(t -&gt; {</b>
+<b class="nc">&nbsp;                    t.left();</b>
+<b class="nc">&nbsp;                    t.image(type.uiIcon).size(8 * 4).scaling(Scaling.fit).padRight(2f);</b>
+<b class="nc">&nbsp;                    t.add(type.localizedName);</b>
+&nbsp;                }, () -&gt; {
+<b class="nc">&nbsp;                    cons.get(type);</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                    buildGroups();</b>
+<b class="nc">&nbsp;                }).margin(12f);</b>
+<b class="nc">&nbsp;                if(++i % 3 == 0) p.row();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }).growX().scrollX(false);</b>
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void showEffects(SpawnGroup group){
+<b class="nc">&nbsp;        BaseDialog dialog = new BaseDialog(&quot;&quot;);</b>
+<b class="nc">&nbsp;        dialog.cont.pane(p -&gt; {</b>
+<b class="nc">&nbsp;            p.defaults().pad(2).fillX();</b>
+<b class="nc">&nbsp;            p.button(t -&gt; {</b>
+<b class="nc">&nbsp;                t.left();</b>
+<b class="nc">&nbsp;                t.image(Icon.none).size(8 * 4).scaling(Scaling.fit).padRight(2f);</b>
+<b class="nc">&nbsp;                t.add(&quot;@settings.resetKey&quot;);</b>
+&nbsp;            }, () -&gt; {
+<b class="nc">&nbsp;                group.effect = null;</b>
+<b class="nc">&nbsp;                dialog.hide();</b>
+<b class="nc">&nbsp;                buildGroups();</b>
+<b class="nc">&nbsp;            }).margin(12f);</b>
+<b class="nc">&nbsp;            int i = 1;</b>
+<b class="nc">&nbsp;            for(StatusEffect effect : content.statusEffects()){</b>
+<b class="nc">&nbsp;                if(effect.isHidden() || effect.reactive) continue;</b>
+<b class="nc">&nbsp;                p.button(t -&gt; {</b>
+<b class="nc">&nbsp;                    t.left();</b>
+<b class="nc">&nbsp;                    t.image(effect.uiIcon).size(8 * 4).scaling(Scaling.fit).padRight(2f);</b>
+<b class="nc">&nbsp;                    t.add(effect.localizedName);</b>
+&nbsp;                }, () -&gt; {
+<b class="nc">&nbsp;                    group.effect = effect;</b>
+<b class="nc">&nbsp;                    dialog.hide();</b>
+<b class="nc">&nbsp;                    buildGroups();</b>
+<b class="nc">&nbsp;                }).margin(12f);</b>
+<b class="nc">&nbsp;                if(++i % 3 == 0) p.row();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }).growX().scrollX(false);</b>
+<b class="nc">&nbsp;        dialog.addCloseButton();</b>
+<b class="nc">&nbsp;        dialog.show();</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    enum Sort{</b>
+<b class="nc">&nbsp;        begin(g -&gt; g.begin, g -&gt; g.type.id),</b>
+<b class="nc">&nbsp;        health(g -&gt; g.type.health),</b>
+<b class="nc">&nbsp;        type(g -&gt; g.type.id);</b>
+&nbsp;
+<b class="nc">&nbsp;        static final Sort[] all = values();</b>
+&nbsp;
+&nbsp;        final Floatf&lt;SpawnGroup&gt; sort, secondary;
+&nbsp;
+&nbsp;        Sort(Floatf&lt;SpawnGroup&gt; sort){
+<b class="nc">&nbsp;            this(sort, g -&gt; g.begin);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Sort(Floatf&lt;SpawnGroup&gt; sort, Floatf&lt;SpawnGroup&gt; secondary){</b>
+<b class="nc">&nbsp;            this.sort = sort;</b>
+<b class="nc">&nbsp;            this.secondary = secondary;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void updateWaves(){
+<b class="nc">&nbsp;        graph.groups = groups;</b>
+<b class="nc">&nbsp;        graph.rebuild();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

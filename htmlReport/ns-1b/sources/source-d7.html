@@ -1,0 +1,148 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Builderc</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.gen</a>
+</div>
+
+<h1>Coverage Summary for Class: Builderc (mindustry.gen)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Builderc</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
+&nbsp;
+&nbsp;import arc.struct.Queue;
+&nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.entities.units.BuildPlan;
+&nbsp;
+&nbsp;/**
+&nbsp; * Interface for {@link mindustry.entities.comp.BuilderComp}
+&nbsp; */
+&nbsp;@Annotations.EntityInterface
+&nbsp;@SuppressWarnings(&quot;deprecation&quot;)
+&nbsp;public interface Builderc extends Entityc, Flyingc, Healthc, Hitboxc, Posc, Rotc, Statusc, Teamc, Velc {
+&nbsp;  /**
+&nbsp;   * @return  the build plan currently active, or the one at the top of the queue.
+&nbsp;   */
+&nbsp;  BuildPlan buildPlan();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * @return whether this plan should be skipped, in favor of the next one. 
+&nbsp;   */
+&nbsp;  boolean shouldSkip(BuildPlan plan, Building core);
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Add another build plans to the queue, if it doesn&#39;t exist there yet. 
+&nbsp;   */
+&nbsp;  void addBuild(BuildPlan place, boolean tail);
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Add another build plans to the tail of the queue, if it doesn&#39;t exist there yet. 
+&nbsp;   */
+&nbsp;  void addBuild(BuildPlan place);
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Clears the placement queue. 
+&nbsp;   */
+&nbsp;  void clearBuilding();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Draw all current build plans. Does not draw the beam effect, only the positions. 
+&nbsp;   */
+&nbsp;  void drawBuildPlans();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Return whether this builder&#39;s place queue contains items. 
+&nbsp;   */
+&nbsp;  boolean isBuilding();
+&nbsp;
+&nbsp;  Queue&lt;BuildPlan&gt; plans();
+&nbsp;
+&nbsp;  boolean activelyBuilding();
+&nbsp;
+&nbsp;  boolean canBuild();
+&nbsp;
+&nbsp;  boolean updateBuilding();
+&nbsp;
+&nbsp;  float buildAlpha();
+&nbsp;
+&nbsp;  void afterRead();
+&nbsp;
+&nbsp;  void buildAlpha(float buildAlpha);
+&nbsp;
+&nbsp;  void drawBuilding();
+&nbsp;
+&nbsp;  void drawBuildingBeam(float px, float py);
+&nbsp;
+&nbsp;  void drawPlan(BuildPlan plan, float alpha);
+&nbsp;
+&nbsp;  void drawPlanTop(BuildPlan plan, float alpha);
+&nbsp;
+&nbsp;  void plans(Queue&lt;BuildPlan&gt; plans);
+&nbsp;
+&nbsp;  void removeBuild(int x, int y, boolean breaking);
+&nbsp;
+&nbsp;  void update();
+&nbsp;
+&nbsp;  void updateBuildLogic();
+&nbsp;
+&nbsp;  void updateBuilding(boolean updateBuilding);
+&nbsp;
+&nbsp;  void validatePlans();
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,257 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Battery</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.world.blocks.power</a>
+</div>
+
+<h1>Coverage Summary for Class: Battery (mindustry.world.blocks.power)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Battery</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (3/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70%
+  </span>
+  <span class="absValue">
+    (14/20)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Battery$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Battery$BatteryBuild</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (1/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.7%
+  </span>
+  <span class="absValue">
+    (1/13)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    35.7%
+  </span>
+  <span class="absValue">
+    (5/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (18/36)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.world.blocks.power;
+&nbsp;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.struct.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.annotations.Annotations.*;
+&nbsp;import mindustry.entities.units.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.draw.*;
+&nbsp;import mindustry.world.meta.*;
+&nbsp;
+&nbsp;public class Battery extends PowerDistributor{
+&nbsp;    public @Nullable DrawBlock drawer;
+&nbsp;
+<b class="fc">&nbsp;    public Color emptyLightColor = Color.valueOf(&quot;f8c266&quot;);</b>
+<b class="fc">&nbsp;    public Color fullLightColor = Color.valueOf(&quot;fb9567&quot;);</b>
+&nbsp;
+&nbsp;    @Deprecated
+&nbsp;    public @Load(&quot;@-top&quot;) TextureRegion topRegion;
+&nbsp;
+&nbsp;    public Battery(String name){
+<b class="fc">&nbsp;        super(name);</b>
+<b class="fc">&nbsp;        outputsPower = true;</b>
+<b class="fc">&nbsp;        consumesPower = true;</b>
+<b class="fc">&nbsp;        canOverdrive = false;</b>
+<b class="fc">&nbsp;        flags = EnumSet.of(BlockFlag.battery);</b>
+&nbsp;        //TODO could be supported everywhere...
+<b class="fc">&nbsp;        envEnabled |= Env.space;</b>
+<b class="fc">&nbsp;        destructible = true;</b>
+&nbsp;        //batteries don&#39;t need to update
+<b class="fc">&nbsp;        update = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(){
+<b class="fc">&nbsp;        super.init();</b>
+&nbsp;
+<b class="fc">&nbsp;        checkDrawDefault();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    void checkDrawDefault(){
+<b class="fc">&nbsp;        if(drawer == null){</b>
+<b class="fc">&nbsp;            drawer = new DrawMulti(new DrawDefault(), new DrawPower(){{</b>
+<b class="fc">&nbsp;                emptyLightColor = Battery.this.emptyLightColor;</b>
+<b class="fc">&nbsp;                fullLightColor = Battery.this.fullLightColor;</b>
+&nbsp;            }}, new DrawRegion(&quot;-top&quot;));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void load(){
+<b class="nc">&nbsp;        checkDrawDefault();</b>
+&nbsp;
+<b class="nc">&nbsp;        super.load();</b>
+<b class="nc">&nbsp;        drawer.load(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void drawPlanRegion(BuildPlan plan, Eachable&lt;BuildPlan&gt; list){
+<b class="nc">&nbsp;        drawer.drawPlan(this, plan, list);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public TextureRegion[] icons(){
+<b class="nc">&nbsp;        return drawer.finalIcons(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void getRegionsToOutline(Seq&lt;TextureRegion&gt; out){
+<b class="nc">&nbsp;        drawer.getRegionsToOutline(this, out);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public class BatteryBuild extends Building{</b>
+&nbsp;        @Override
+&nbsp;        public void draw(){
+<b class="nc">&nbsp;            drawer.draw(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void drawLight(){
+<b class="nc">&nbsp;            super.drawLight();</b>
+<b class="nc">&nbsp;            drawer.drawLight(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public float warmup(){
+<b class="nc">&nbsp;            return power.status;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public void overwrote(Seq&lt;Building&gt; previous){
+<b class="nc">&nbsp;            for(Building other : previous){</b>
+<b class="nc">&nbsp;                if(other.power != null &amp;&amp; other.block.consPower != null &amp;&amp; other.block.consPower.buffered){</b>
+<b class="nc">&nbsp;                    float amount = other.block.consPower.capacity * other.power.status;</b>
+<b class="nc">&nbsp;                    power.status = Mathf.clamp(power.status + amount / consPower.capacity);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public BlockStatus status(){
+<b class="nc">&nbsp;            if(Mathf.equal(power.status, 0f, 0.001f)) return BlockStatus.noInput;</b>
+<b class="nc">&nbsp;            if(Mathf.equal(power.status, 1f, 0.001f)) return BlockStatus.active;</b>
+<b class="nc">&nbsp;            return BlockStatus.noOutput;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

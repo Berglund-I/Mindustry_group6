@@ -1,0 +1,204 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > SuppressionFieldAbility</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.abilities</a>
+</div>
+
+<h1>Coverage Summary for Class: SuppressionFieldAbility (mindustry.entities.abilities)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SuppressionFieldAbility</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38%
+  </span>
+  <span class="absValue">
+    (19/50)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.abilities;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.scene.ui.layout.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.entities.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.graphics.*;
+&nbsp;import mindustry.type.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="fc">&nbsp;public class SuppressionFieldAbility extends Ability{</b>
+<b class="fc">&nbsp;    protected static Rand rand = new Rand();</b>
+&nbsp;
+<b class="fc">&nbsp;    public float reload = 60f * 1.5f;</b>
+<b class="fc">&nbsp;    public float range = 200f;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float orbRadius = 4.1f, orbMidScl = 0.33f, orbSinScl = 8f, orbSinMag = 1f;</b>
+<b class="fc">&nbsp;    public Color color = Pal.suppress;</b>
+<b class="fc">&nbsp;    public float layer = Layer.effect;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float x = 0f, y = 0f;</b>
+<b class="fc">&nbsp;    public int particles = 15;</b>
+<b class="fc">&nbsp;    public float particleSize = 4f;</b>
+<b class="fc">&nbsp;    public float particleLen = 7f;</b>
+<b class="fc">&nbsp;    public float rotateScl = 3f;</b>
+<b class="fc">&nbsp;    public float particleLife = 110f;</b>
+<b class="fc">&nbsp;    public boolean active = true;</b>
+<b class="fc">&nbsp;    public Interp particleInterp = f -&gt; Interp.circleOut.apply(Interp.slope.apply(f));</b>
+<b class="fc">&nbsp;    public Color particleColor = Pal.sap.cpy();</b>
+<b class="fc">&nbsp;    public Color effectColor = Pal.sapBullet;</b>
+&nbsp;
+<b class="fc">&nbsp;    public float applyParticleChance = 13f;</b>
+&nbsp;
+&nbsp;    protected float timer;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void init(UnitType type){
+<b class="fc">&nbsp;        if(!active) display = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void addStats(Table t){
+<b class="nc">&nbsp;        super.addStats(t);</b>
+<b class="nc">&nbsp;        t.add(Core.bundle.format(&quot;bullet.range&quot;, Strings.autoFixed(range / tilesize, 2)));</b>
+<b class="nc">&nbsp;        t.row();</b>
+<b class="nc">&nbsp;        t.add(abilityStat(&quot;duration&quot;, Strings.autoFixed(reload / 60f, 2)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void update(Unit unit){
+<b class="nc">&nbsp;        if(!active) return;</b>
+&nbsp;
+<b class="nc">&nbsp;        if((timer += Time.delta) &gt;= reload){</b>
+<b class="nc">&nbsp;            Tmp.v1.set(x, y).rotate(unit.rotation - 90f).add(unit);</b>
+<b class="nc">&nbsp;            Damage.applySuppression(unit.team, Tmp.v1.x, Tmp.v1.y, range, reload, reload, applyParticleChance, unit, effectColor);</b>
+<b class="nc">&nbsp;            timer = 0f;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void draw(Unit unit){
+<b class="nc">&nbsp;        Draw.z(layer);</b>
+&nbsp;
+<b class="nc">&nbsp;        float rad = orbRadius + Mathf.absin(orbSinScl, orbSinMag);</b>
+<b class="nc">&nbsp;        Tmp.v1.set(x, y).rotate(unit.rotation - 90f).add(unit);</b>
+<b class="nc">&nbsp;        float rx = Tmp.v1.x, ry = Tmp.v1.y;</b>
+&nbsp;
+<b class="nc">&nbsp;        float base = (Time.time / particleLife);</b>
+<b class="nc">&nbsp;        rand.setSeed(unit.id + hashCode());</b>
+<b class="nc">&nbsp;        Draw.color(particleColor);</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; particles; i++){</b>
+<b class="nc">&nbsp;            float fin = (rand.random(1f) + base) % 1f, fout = 1f - fin;</b>
+<b class="nc">&nbsp;            float angle = rand.random(360f) + (Time.time / rotateScl + unit.rotation) % 360f;</b>
+<b class="nc">&nbsp;            float len = particleLen * particleInterp.apply(fout);</b>
+<b class="nc">&nbsp;            Fill.circle(</b>
+<b class="nc">&nbsp;            rx + Angles.trnsx(angle, len),</b>
+<b class="nc">&nbsp;            ry + Angles.trnsy(angle, len),</b>
+<b class="nc">&nbsp;            particleSize * Mathf.slope(fin)</b>
+&nbsp;            );
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Lines.stroke(2f);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        Lines.circle(rx, ry, rad);</b>
+&nbsp;
+<b class="nc">&nbsp;        Draw.color(color);</b>
+<b class="nc">&nbsp;        Fill.circle(rx, ry, rad * orbMidScl);</b>
+&nbsp;
+<b class="nc">&nbsp;        if(active){</b>
+&nbsp;            //TODO draw range when selected?
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Draw.reset();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,171 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Pixelator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.graphics</a>
+</div>
+
+<h1>Coverage Summary for Class: Pixelator (mindustry.graphics)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Pixelator</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.graphics;
+&nbsp;
+&nbsp;import arc.*;
+&nbsp;import arc.graphics.*;
+&nbsp;import arc.graphics.Texture.*;
+&nbsp;import arc.graphics.g2d.*;
+&nbsp;import arc.graphics.gl.*;
+&nbsp;import arc.math.*;
+&nbsp;import arc.util.*;
+&nbsp;
+&nbsp;import static arc.Core.*;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+<b class="nc">&nbsp;public class Pixelator implements Disposable{</b>
+<b class="nc">&nbsp;    private FrameBuffer buffer = new FrameBuffer();</b>
+&nbsp;    private float px, py, pre;
+&nbsp;
+&nbsp;    {
+<b class="nc">&nbsp;        buffer.getTexture().setFilter(TextureFilter.nearest, TextureFilter.nearest);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void drawPixelate(){
+<b class="nc">&nbsp;        pre = renderer.getScale();</b>
+<b class="nc">&nbsp;        float scale = renderer.getScale();</b>
+<b class="nc">&nbsp;        scale = (int)scale;</b>
+<b class="nc">&nbsp;        renderer.setScale(scale);</b>
+<b class="nc">&nbsp;        camera.width = (int)camera.width;</b>
+<b class="nc">&nbsp;        camera.height = (int)camera.height;</b>
+&nbsp;
+<b class="nc">&nbsp;        px = Core.camera.position.x;</b>
+<b class="nc">&nbsp;        py = Core.camera.position.y;</b>
+<b class="nc">&nbsp;        Core.camera.position.set((int)px + ((int)(camera.width) % 2 == 0 ? 0 : 0.5f), (int)py + ((int)(camera.height) % 2 == 0 ? 0 : 0.5f));</b>
+&nbsp;
+<b class="nc">&nbsp;        int w = (int)Core.camera.width, h = (int)Core.camera.height;</b>
+<b class="nc">&nbsp;        if(renderer.isCutscene()){</b>
+<b class="nc">&nbsp;            w = (int)(Core.camera.width * renderer.landScale() / renderer.getScale());</b>
+<b class="nc">&nbsp;            h = (int)(Core.camera.height * renderer.landScale() / renderer.getScale());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        w = Mathf.clamp(w, 2, graphics.getWidth());</b>
+<b class="nc">&nbsp;        h = Mathf.clamp(h, 2, graphics.getHeight());</b>
+&nbsp;
+<b class="nc">&nbsp;        buffer.resize(w, h);</b>
+&nbsp;
+<b class="nc">&nbsp;        buffer.begin(Color.clear);</b>
+<b class="nc">&nbsp;        renderer.draw();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void register(){
+<b class="nc">&nbsp;        Draw.draw(Layer.end, () -&gt; {</b>
+<b class="nc">&nbsp;            buffer.end();</b>
+&nbsp;
+<b class="nc">&nbsp;            Blending.disabled.apply();</b>
+<b class="nc">&nbsp;            buffer.blit(Shaders.screenspace);</b>
+&nbsp;
+<b class="nc">&nbsp;            Core.camera.position.set(px, py);</b>
+<b class="nc">&nbsp;            renderer.setScale(pre);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean enabled(){
+<b class="nc">&nbsp;        return renderer.pixelate;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void dispose(){
+<b class="nc">&nbsp;        buffer.dispose();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>

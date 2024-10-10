@@ -1,0 +1,298 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BuildPlan</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mindustry.entities.units</a>
+</div>
+
+<h1>Coverage Summary for Class: BuildPlan (mindustry.entities.units)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BuildPlan</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.1%
+  </span>
+  <span class="absValue">
+    (8/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.2%
+  </span>
+  <span class="absValue">
+    (22/78)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mindustry.entities.units;
+&nbsp;
+&nbsp;import arc.func.*;
+&nbsp;import arc.math.geom.*;
+&nbsp;import arc.math.geom.QuadTree.*;
+&nbsp;import arc.util.*;
+&nbsp;import mindustry.game.*;
+&nbsp;import mindustry.gen.*;
+&nbsp;import mindustry.world.*;
+&nbsp;
+&nbsp;import static mindustry.Vars.*;
+&nbsp;
+&nbsp;/** Class for storing build plans. Can be either a place or remove plan. */
+&nbsp;public class BuildPlan implements Position, QuadTreeObject{
+&nbsp;    /** Position and rotation of this plan. */
+&nbsp;    public int x, y, rotation;
+&nbsp;    /** Block being placed. If null, this is a breaking plan.*/
+&nbsp;    public @Nullable Block block;
+&nbsp;    /** Whether this is a break plan.*/
+&nbsp;    public boolean breaking;
+&nbsp;    /** Config int. Not used unless hasConfig is true.*/
+&nbsp;    public Object config;
+&nbsp;    /** Original position, only used in schematics.*/
+&nbsp;    public int originalX, originalY, originalWidth, originalHeight;
+&nbsp;
+&nbsp;    /** Last progress.*/
+&nbsp;    public float progress;
+&nbsp;    /** Whether construction has started for this plan. */
+&nbsp;    public boolean initialized, stuck, cachedValid;
+&nbsp;    /** If true, this plan is in the world. If false, it is being rendered in a schematic. */
+<b class="fc">&nbsp;    public boolean worldContext = true;</b>
+&nbsp;
+&nbsp;    /** Visual scale. Used only for rendering.*/
+<b class="fc">&nbsp;    public float animScale = 0f;</b>
+&nbsp;
+&nbsp;    /** This creates a build plan. */
+<b class="fc">&nbsp;    public BuildPlan(int x, int y, int rotation, Block block){</b>
+<b class="fc">&nbsp;        this.x = x;</b>
+<b class="fc">&nbsp;        this.y = y;</b>
+<b class="fc">&nbsp;        if(block != null) this.rotation = block.planRotation(rotation);</b>
+<b class="fc">&nbsp;        this.block = block;</b>
+<b class="fc">&nbsp;        this.breaking = false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** This creates a build plan with a config. */
+<b class="nc">&nbsp;    public BuildPlan(int x, int y, int rotation, Block block, Object config){</b>
+<b class="nc">&nbsp;        this.x = x;</b>
+<b class="nc">&nbsp;        this.y = y;</b>
+<b class="nc">&nbsp;        if(block != null) this.rotation = block.planRotation(rotation);</b>
+<b class="nc">&nbsp;        this.block = block;</b>
+<b class="nc">&nbsp;        this.breaking = false;</b>
+<b class="nc">&nbsp;        this.config = config;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** This creates a remove plan. */
+<b class="fc">&nbsp;    public BuildPlan(int x, int y){</b>
+<b class="fc">&nbsp;        this.x = x;</b>
+<b class="fc">&nbsp;        this.y = y;</b>
+<b class="fc">&nbsp;        this.rotation = -1;</b>
+<b class="fc">&nbsp;        this.block = world.tile(x, y).block();</b>
+<b class="fc">&nbsp;        this.breaking = true;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public BuildPlan(){</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean placeable(Team team){
+<b class="nc">&nbsp;        return Build.validPlace(block, team, x, y, rotation);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isRotation(Team team){
+<b class="fc">&nbsp;        if(breaking) return false;</b>
+<b class="fc">&nbsp;        Tile tile = tile();</b>
+<b class="fc">&nbsp;        return tile != null &amp;&amp; tile.team() == team &amp;&amp; tile.block() == block &amp;&amp; tile.build != null &amp;&amp; tile.build.rotation != rotation;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean samePos(BuildPlan other){
+<b class="nc">&nbsp;        return x == other.x &amp;&amp; y == other.y;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Transforms the internal position of this config using the specified function, and return the result. */
+&nbsp;    public static Object pointConfig(Block block, Object config, Cons&lt;Point2&gt; cons){
+<b class="nc">&nbsp;        if(config instanceof Point2 point){</b>
+<b class="nc">&nbsp;            config = point.cpy();</b>
+<b class="nc">&nbsp;            cons.get((Point2)config);</b>
+<b class="nc">&nbsp;        }else if(config instanceof Point2[] points){</b>
+<b class="nc">&nbsp;            Point2[] result = new Point2[points.length];</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+<b class="nc">&nbsp;            for(Point2 p : points){</b>
+<b class="nc">&nbsp;                result[i] = p.cpy();</b>
+<b class="nc">&nbsp;                cons.get(result[i++]);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            config = result;</b>
+<b class="nc">&nbsp;        }else if(block != null){</b>
+<b class="nc">&nbsp;            config = block.pointConfig(config, cons);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return config;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Transforms the internal position of this config using the specified function. */
+&nbsp;    public void pointConfig(Cons&lt;Point2&gt; cons){
+<b class="nc">&nbsp;        this.config = pointConfig(block, this.config, cons);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public BuildPlan copy(){
+<b class="nc">&nbsp;        BuildPlan copy = new BuildPlan();</b>
+<b class="nc">&nbsp;        copy.x = x;</b>
+<b class="nc">&nbsp;        copy.y = y;</b>
+<b class="nc">&nbsp;        copy.rotation = rotation;</b>
+<b class="nc">&nbsp;        copy.block = block;</b>
+<b class="nc">&nbsp;        copy.breaking = breaking;</b>
+<b class="nc">&nbsp;        copy.config = config;</b>
+<b class="nc">&nbsp;        copy.originalX = originalX;</b>
+<b class="nc">&nbsp;        copy.originalY = originalY;</b>
+<b class="nc">&nbsp;        copy.progress = progress;</b>
+<b class="nc">&nbsp;        copy.initialized = initialized;</b>
+<b class="nc">&nbsp;        copy.animScale = animScale;</b>
+<b class="nc">&nbsp;        return copy;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public BuildPlan original(int x, int y, int originalWidth, int originalHeight){
+<b class="nc">&nbsp;        originalX = x;</b>
+<b class="nc">&nbsp;        originalY = y;</b>
+<b class="nc">&nbsp;        this.originalWidth = originalWidth;</b>
+<b class="nc">&nbsp;        this.originalHeight = originalHeight;</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Rect bounds(Rect rect){
+<b class="nc">&nbsp;        if(breaking){</b>
+<b class="nc">&nbsp;            return rect.set(-100f, -100f, 0f, 0f);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            return block.bounds(x, y, rect);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public BuildPlan set(int x, int y, int rotation, Block block){
+<b class="nc">&nbsp;        this.x = x;</b>
+<b class="nc">&nbsp;        this.y = y;</b>
+<b class="nc">&nbsp;        if(block != null) this.rotation = block.planRotation(rotation);</b>
+<b class="nc">&nbsp;        this.block = block;</b>
+<b class="nc">&nbsp;        this.breaking = false;</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float drawx(){
+<b class="fc">&nbsp;        return x*tilesize + (block == null ? 0 : block.offset);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public float drawy(){
+<b class="fc">&nbsp;        return y*tilesize + (block == null ? 0 : block.offset);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Tile tile(){
+<b class="fc">&nbsp;        return world.tile(x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable Building build(){
+<b class="nc">&nbsp;        return world.build(x, y);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void hitbox(Rect out){
+<b class="nc">&nbsp;        if(block != null){</b>
+<b class="nc">&nbsp;            out.setCentered(x * tilesize + block.offset, y * tilesize + block.offset, block.size * tilesize);</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            out.setCentered(x * tilesize, y * tilesize, tilesize);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float getX(){
+<b class="fc">&nbsp;        return drawx();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public float getY(){
+<b class="fc">&nbsp;        return drawy();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString(){
+<b class="nc">&nbsp;        return &quot;BuildPlan{&quot; +</b>
+&nbsp;        &quot;x=&quot; + x +
+&nbsp;        &quot;, y=&quot; + y +
+&nbsp;        &quot;, rotation=&quot; + rotation +
+&nbsp;        &quot;, block=&quot; + block +
+&nbsp;        &quot;, breaking=&quot; + breaking +
+&nbsp;        &quot;, progress=&quot; + progress +
+&nbsp;        &quot;, initialized=&quot; + initialized +
+&nbsp;        &quot;, config=&quot; + config +
+&nbsp;        &#39;}&#39;;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-10 13:22</div>
+</div>
+</body>
+</html>
