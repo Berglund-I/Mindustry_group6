@@ -1383,4 +1383,113 @@ public class ApplicationTests{
         tile.build.handleStack(item, 1, unit);
         assertEquals(capacity, tile.build.items.get(item));
     }
+
+    @Test
+    void testUpdateWithNoIndicators(){
+        //Ida Update()
+        //Arrange
+        AttackIndicators attackIndicators = new AttackIndicators();
+
+        //Act
+        attackIndicators.update();
+
+        //Assert
+        assertTrue(attackIndicators.list().isEmpty());
+
+    }
+
+    @Test
+    void testUpdateWithActiveIndicator(){
+        //Ida Update()
+        //Arrange
+        AttackIndicators attackIndicators = new AttackIndicators();
+        int x = 1, y = 1;
+        attackIndicators.add(x, y);
+        long initialIndicator = attackIndicators.list().get(0);
+
+        //Act
+        attackIndicators.update();
+
+        //Assert
+        long updatedIndicator = attackIndicators.list().get(0);
+        assertTrue(updatedIndicator != initialIndicator);
+        assertTrue(Indicator.time(updatedIndicator) > Indicator.time(initialIndicator));
+
+    }
+
+    @Test
+    void testUpdateRemovesTimedOutIndicator(){
+        //Ida Update()
+        //Arrange
+        AttackIndicators attackIndicators = new AttackIndicators();
+        int x = 2, y = 2;
+        attackIndicators.add(x, y);
+
+        //Does a for loop to reach timeout
+        for(int i = 0; i < 1000; i++){
+            attackIndicators.update();
+        }
+
+        //Act
+        attackIndicators.update();
+
+        //Assert
+        assertTrue(attackIndicators.list().isEmpty());
+
+    }
+
+    @Test
+    void testUpdateRelocatesIndicesAfterTimeout() {
+        // Arrange
+        AttackIndicators attackIndicators = new AttackIndicators();
+        int x1 = 1, y1 = 1;
+        int x2 = 2, y2 = 2;
+
+        //Adding two indicators
+        attackIndicators.add(x1, y1);
+        attackIndicators.add(x2, y2);
+
+        //Manipulates the time of the first indicator so that it reaches timeout faster
+        long[] items = attackIndicators.list().items;
+        items[0] = Indicator.time(items[0], 15f * 60f - 1f); //Almost at timeout
+
+        // Act
+        attackIndicators.update(); //This should remove the first indicator but leave the second
+
+        // Assert
+        assertEquals(1, attackIndicators.list().size); //It should be exactly 1 indicator left
+
+        //Controls that the remaining indicator is correct uppdated in posToIndex
+        long remainingIndicator = attackIndicators.list().get(0);
+        int remainingPos = Indicator.pos(remainingIndicator);
+
+        assertEquals(Point2.pack(x2, y2), remainingPos);
+    }
+
+    @Test
+    void testClear() {
+        //Ida clear()
+        //Arrange
+        AttackIndicators attackIndicators = new AttackIndicators();
+        attackIndicators.add(1, 1);
+        attackIndicators.add(2, 2);
+        attackIndicators.add(3, 3);
+
+        //Control if the lists is not empty before clear()
+        assertFalse(attackIndicators.list().isEmpty());
+
+        //Act
+        attackIndicators.clear();
+
+        //Assert
+        //Checks that indicators is empty
+        assertTrue(attackIndicators.list().isEmpty());
+        //posToIndex is private so then I checks for its effect indirectly
+        //Tries to add a new indicator and checks if it works with no problem
+        attackIndicators.add(4,4);
+        assertEquals(1, attackIndicators.list().size);
+    }
+
+
+
 }
