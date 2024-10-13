@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > ElevationMovec</title>
+  <title>Coverage Report > Syncc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: ElevationMovec (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Syncc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">ElevationMovec</td>
+  <td class="name">Syncc</td>
 </tr>
 
 </table>
@@ -40,16 +40,48 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
+&nbsp;import arc.util.io.Reads;
+&nbsp;import arc.util.io.Writes;
+&nbsp;import java.nio.FloatBuffer;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.entities.EntityCollisions;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.ElevationMoveComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.SyncComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface ElevationMovec extends Entityc, Flyingc, Healthc, Hitboxc, Posc, Velc {
-&nbsp;  EntityCollisions.SolidPred solidity();
+&nbsp;public interface Syncc extends Entityc {
+&nbsp;  boolean isSyncHidden(Player player);
+&nbsp;
+&nbsp;  long lastUpdated();
+&nbsp;
+&nbsp;  long updateSpacing();
+&nbsp;
+&nbsp;  void afterSync();
+&nbsp;
+&nbsp;  void handleSyncHidden();
+&nbsp;
+&nbsp;  void interpolate();
+&nbsp;
+&nbsp;  void lastUpdated(long lastUpdated);
+&nbsp;
+&nbsp;  void readSync(Reads read);
+&nbsp;
+&nbsp;  void readSyncManual(FloatBuffer buffer);
+&nbsp;
+&nbsp;  void remove();
+&nbsp;
+&nbsp;  void snapInterpolation();
+&nbsp;
+&nbsp;  void snapSync();
+&nbsp;
+&nbsp;  void update();
+&nbsp;
+&nbsp;  void updateSpacing(long updateSpacing);
+&nbsp;
+&nbsp;  void writeSync(Writes write);
+&nbsp;
+&nbsp;  void writeSyncManual(FloatBuffer buffer);
 &nbsp;}
 </code>
 </pre>
@@ -74,7 +106,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

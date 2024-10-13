@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Tankc</title>
+  <title>Coverage Report > Firec</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Tankc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Firec (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Tankc</td>
+  <td class="name">Firec</td>
 </tr>
 
 </table>
@@ -40,33 +40,30 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.math.geom.Vec2;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.world.blocks.environment.Floor;
+&nbsp;import mindustry.world.Tile;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.TankComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.FireComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Tankc extends Boundedc, Builderc, Drawc, ElevationMovec, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
-&nbsp;  boolean walked();
+&nbsp;public interface Firec extends Drawc, Entityc, Posc, Syncc, Timedc {
+&nbsp;  float clipSize();
 &nbsp;
-&nbsp;  float floorSpeedMultiplier();
+&nbsp;  Tile tile();
 &nbsp;
-&nbsp;  float treadTime();
+&nbsp;  void afterRead();
 &nbsp;
-&nbsp;  Floor drownFloor();
+&nbsp;  void afterSync();
 &nbsp;
-&nbsp;  void approach(Vec2 vector);
+&nbsp;  void draw();
 &nbsp;
-&nbsp;  void moveAt(Vec2 vector, float acceleration);
+&nbsp;  void remove();
 &nbsp;
-&nbsp;  void treadTime(float treadTime);
+&nbsp;  void tile(Tile tile);
 &nbsp;
 &nbsp;  void update();
-&nbsp;
-&nbsp;  void walked(boolean walked);
 &nbsp;}
 </code>
 </pre>
@@ -91,7 +88,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

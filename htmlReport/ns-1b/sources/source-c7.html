@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Ownerc</title>
+  <title>Coverage Report > Teamc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Ownerc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Teamc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Ownerc</td>
+  <td class="name">Teamc</td>
 </tr>
 
 </table>
@@ -41,16 +41,31 @@ Current scope:     <a href="../../index.html">all classes</a>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
 &nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.game.Team;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.OwnerComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.TeamComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Ownerc extends Entityc {
-&nbsp;  Entityc owner();
+&nbsp;public interface Teamc extends Entityc, Posc {
+&nbsp;  /**
+&nbsp;   * @return whether the center of this entity is visible to the viewing team. 
+&nbsp;   */
+&nbsp;  boolean inFogTo(Team viewer);
 &nbsp;
-&nbsp;  void owner(Entityc owner);
+&nbsp;  boolean cheating();
+&nbsp;
+&nbsp;  Team team();
+&nbsp;
+&nbsp;  CoreBlock.CoreBuild closestCore();
+&nbsp;
+&nbsp;  CoreBlock.CoreBuild closestEnemyCore();
+&nbsp;
+&nbsp;  CoreBlock.CoreBuild core();
+&nbsp;
+&nbsp;  void team(Team team);
 &nbsp;}
 </code>
 </pre>
@@ -75,7 +90,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 13:22</div>
+    <div style="float:right;">generated on 2024-10-10 14:03</div>
 </div>
 </body>
 </html>

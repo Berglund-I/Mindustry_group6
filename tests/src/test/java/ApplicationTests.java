@@ -2,6 +2,7 @@ import arc.*;
 import arc.backend.headless.*;
 import arc.files.*;
 import arc.math.geom.*;
+import arc.scene.Scene;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
@@ -30,8 +31,10 @@ import org.json.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
+import static org.mockito.Mockito.*;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.nio.*;
 
 import static mindustry.Vars.*;
@@ -689,6 +692,7 @@ public class ApplicationTests{
 
     @Test
     void testSaveStateChangeToMenu() {
+        // Andreas
         // Arrange
         if (arc.Core.assets == null) {
             Core.assets = new arc.assets.AssetManager();
@@ -700,6 +704,74 @@ public class ApplicationTests{
         assertNull(save.getCurrent());
     }
 
+    @Test
+    void testSaveUpdateTimeStampEqualToZero() {
+        // Andreas
+        // Arrange
+        if (arc.Core.assets == null) {
+            Core.assets = new arc.assets.AssetManager();
+        }
+        // Act
+        Saves save = new Saves();
+        try {
+            Field field = Saves.class.getDeclaredField("lastTimestamp");
+            field.setAccessible(true);
+            field.set(save, 1000L);
+        }
+        catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        // Assert
+        assertTrue(save.getTotalPlaytime() == 0);
+    }
+
+    @Test
+    void testSaveUpdateWhenStateIsNotPausedAndHasDialog() {
+        // Andreas
+        // Arrange
+        if (arc.Core.assets == null) {
+            Core.assets = new arc.assets.AssetManager();
+        }
+        // Act
+        Saves save = new Saves();
+        try {
+            Field field = Saves.class.getDeclaredField("lastTimestamp");
+            field.setAccessible(true);
+            field.set(save, System.currentTimeMillis());
+        }
+        catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        GameState state = mock(GameState.class);
+        Scene scene = mock(Scene.class);
+        when(state.isGame()).thenReturn(false);
+        when(state.isPaused()).thenReturn(true);
+        when(scene.hasDialog()).thenReturn(false);
+        Core.scene = scene;
+        Vars.state = state;
+
+        save.update();
+
+        // Assert
+        assertTrue(save.getTotalPlaytime() >= 0);
+    }
+
+    @Test
+    void testSaveSaveSlotConstructor() {
+        // Andreas
+        // Arrange
+        if (arc.Core.assets == null) {
+            Core.assets = new arc.assets.AssetManager();
+        }
+
+        // Act
+        Fi mockFile = mock(Fi.class);
+        Saves.SaveSlot saveSlot = new Saves().new SaveSlot(mockFile);
+        // Assert
+        assertEquals(mockFile, saveSlot.file);
+    }
 
     void updateBlocks(int times){
         for(Tile tile : world.tiles){
@@ -1312,6 +1384,7 @@ public class ApplicationTests{
         assertEquals(capacity, tile.build.items.get(item));
     }
 
+
     //testAdd_newIndicator tests if the add() method correctly handles the case when a new indicator is created
     @Test
     void testAdd_newIndicator(){
@@ -1367,4 +1440,112 @@ public class ApplicationTests{
         long indicator = attackIndicators.list().get(0);
         assertEquals(0f, Indicator.time(indicator));
     }
+
+    @Test
+    void testUpdateWithNoIndicators(){
+        //Ida Update()
+        //Arrange
+        AttackIndicators attackIndicators = new AttackIndicators();
+
+        //Act
+        attackIndicators.update();
+
+        //Assert
+        assertTrue(attackIndicators.list().isEmpty());
+
+    }
+
+    @Test
+    void testUpdateWithActiveIndicator(){
+        //Ida Update()
+        //Arrange
+        AttackIndicators attackIndicators = new AttackIndicators();
+        int x = 1, y = 1;
+        attackIndicators.add(x, y);
+        long initialIndicator = attackIndicators.list().get(0);
+
+        //Act
+        attackIndicators.update();
+
+        //Assert
+        long updatedIndicator = attackIndicators.list().get(0);
+        assertTrue(updatedIndicator != initialIndicator);
+        assertTrue(Indicator.time(updatedIndicator) > Indicator.time(initialIndicator));
+
+    }
+
+    @Test
+    void testUpdateRemovesTimedOutIndicator(){
+        //Ida Update()
+        //Arrange
+        AttackIndicators attackIndicators = new AttackIndicators();
+        int x = 2, y = 2;
+        attackIndicators.add(x, y);
+
+        //Does a for loop to reach timeout
+        for(int i = 0; i < 1000; i++){
+            attackIndicators.update();
+        }
+
+        //Act
+        attackIndicators.update();
+
+        //Assert
+        assertTrue(attackIndicators.list().isEmpty());
+
+    }
+
+    @Test
+    void testUpdateRelocatesIndicesAfterTimeout() {
+        // Arrange
+        AttackIndicators attackIndicators = new AttackIndicators();
+        int x1 = 1, y1 = 1;
+        int x2 = 2, y2 = 2;
+
+        //Adding two indicators
+        attackIndicators.add(x1, y1);
+        attackIndicators.add(x2, y2);
+
+        //Manipulates the time of the first indicator so that it reaches timeout faster
+        long[] items = attackIndicators.list().items;
+        items[0] = Indicator.time(items[0], 15f * 60f - 1f); //Almost at timeout
+
+        // Act
+        attackIndicators.update(); //This should remove the first indicator but leave the second
+
+        // Assert
+        assertEquals(1, attackIndicators.list().size); //It should be exactly 1 indicator left
+
+        //Controls that the remaining indicator is correct uppdated in posToIndex
+        long remainingIndicator = attackIndicators.list().get(0);
+        int remainingPos = Indicator.pos(remainingIndicator);
+
+        assertEquals(Point2.pack(x2, y2), remainingPos);
+    }
+
+    @Test
+    void testClear() {
+        //Ida clear()
+        //Arrange
+        AttackIndicators attackIndicators = new AttackIndicators();
+        attackIndicators.add(1, 1);
+        attackIndicators.add(2, 2);
+        attackIndicators.add(3, 3);
+
+        //Control if the lists is not empty before clear()
+        assertFalse(attackIndicators.list().isEmpty());
+
+        //Act
+        attackIndicators.clear();
+
+        //Assert
+        //Checks that indicators is empty
+        assertTrue(attackIndicators.list().isEmpty());
+        //posToIndex is private so then I checks for its effect indirectly
+        //Tries to add a new indicator and checks if it works with no problem
+        attackIndicators.add(4,4);
+        assertEquals(1, attackIndicators.list().size);
+    }
+
+
 }
