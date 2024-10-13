@@ -1490,6 +1490,62 @@ public class ApplicationTests{
         assertEquals(1, attackIndicators.list().size);
     }
 
+    //testAdd_newIndicator tests if the add() method correctly handles the case when a new indicator is created
+    @Test
+    void testAdd_newIndicator(){
+        //Arrange
+        int x = 5;
+        int y = 10;
+        AttackIndicators attackIndicators = new AttackIndicators();
+
+        //make sure there is no previus indicators
+        attackIndicators.clear();
+
+        //Act
+        attackIndicators.add(x, y);
+
+        //Assert
+        //Check that the size of the indiacators have increased by one
+        assertEquals(1, attackIndicators.list().size);
+        //check that new indicator was added to right position
+        int position = Point2.pack(x, y);
+        long indicator = attackIndicators.list().get(0);
+        //Check if the psoition matches
+        assertEquals(position, Indicator.pos(indicator));
+        //Check if the added time is correct
+        assertEquals(0f, Indicator.time(indicator));
+    }
+
+    //testadd_existingindicator tests if an indicator already exists
+    @Test
+    void testAdd_existingIndicator(){
+        //Arrange
+        int x = 5;
+        int y = 10;
+        AttackIndicators attackIndicators = new AttackIndicators();
+
+        //make sure there is no previus indicators
+        attackIndicators.clear();
+
+        //Act
+        attackIndicators.add(x, y);
+
+        //Set time of the added indicator to simulate an existing one
+        long firstIndicator = attackIndicators.list().get(0);
+        attackIndicators.list().set(0, Indicator.time(firstIndicator, 5f));
+
+        //Act
+        attackIndicators.add(x, y);
+
+        //Assert
+        //Check that size of the indicators remain the same
+        assertEquals(1, attackIndicators.list().size);
+
+        //Check that existing indicator time is reset
+        long indicator = attackIndicators.list().get(0);
+        assertEquals(0f, Indicator.time(indicator));
+    }
+
 
 
 }
