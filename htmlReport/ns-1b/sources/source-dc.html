@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Puddlec</title>
+  <title>Coverage Report > Statusc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Puddlec (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Statusc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Puddlec</td>
+  <td class="name">Statusc</td>
 </tr>
 
 </table>
@@ -40,57 +40,124 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
+&nbsp;import arc.graphics.Color;
+&nbsp;import arc.struct.Bits;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.type.Liquid;
-&nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.entities.units.StatusEntry;
+&nbsp;import mindustry.type.StatusEffect;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.PuddleComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.StatusComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Puddlec extends Drawc, Entityc, Posc, Syncc {
-&nbsp;  float accepting();
+&nbsp;public interface Statusc extends Entityc, Flyingc, Healthc, Hitboxc, Posc, Velc {
+&nbsp;  /**
+&nbsp;   *  Applies a dynamic status effect, with stat multipliers that can be customized.
+&nbsp;   *  @return the entry to write multipliers to. If the dynamic status was already applied, returns the previous entry.
+&nbsp;   *  
+&nbsp;   */
+&nbsp;  StatusEntry applyDynamicStatus();
 &nbsp;
-&nbsp;  float amount();
+&nbsp;  /**
+&nbsp;   * Adds a status effect to this unit. 
+&nbsp;   */
+&nbsp;  void apply(StatusEffect effect, float duration);
 &nbsp;
-&nbsp;  float clipSize();
+&nbsp;  /**
+&nbsp;   * Apply a status effect for 1 tick (for permanent effects) 
+&nbsp;   */
+&nbsp;  void apply(StatusEffect effect);
 &nbsp;
-&nbsp;  float effectTime();
+&nbsp;  /**
+&nbsp;   * Removes a status effect. 
+&nbsp;   */
+&nbsp;  void unapply(StatusEffect effect);
 &nbsp;
-&nbsp;  float getFlammability();
+&nbsp;  /**
+&nbsp;   * Uses a dynamic status effect to change damage. 
+&nbsp;   */
+&nbsp;  void statusDamageMultiplier(float damageMultiplier);
 &nbsp;
-&nbsp;  float lastRipple();
+&nbsp;  /**
+&nbsp;   * Uses a dynamic status effect to change reload. 
+&nbsp;   */
+&nbsp;  void statusReloadMultiplier(float reloadMultiplier);
 &nbsp;
-&nbsp;  float updateTime();
+&nbsp;  /**
+&nbsp;   * Uses a dynamic status effect to override armor. 
+&nbsp;   */
+&nbsp;  void statusArmor(float armor);
 &nbsp;
-&nbsp;  Liquid liquid();
+&nbsp;  /**
+&nbsp;   * Uses a dynamic status effect to override build speed. 
+&nbsp;   */
+&nbsp;  void statusBuildSpeed(float buildSpeed);
 &nbsp;
-&nbsp;  Tile tile();
+&nbsp;  /**
+&nbsp;   * Uses a dynamic status effect to override drag. 
+&nbsp;   */
+&nbsp;  void statusDrag(float drag);
 &nbsp;
-&nbsp;  void accepting(float accepting);
+&nbsp;  /**
+&nbsp;   * Uses a dynamic status effect to override max health. 
+&nbsp;   */
+&nbsp;  void statusMaxHealth(float health);
 &nbsp;
-&nbsp;  void afterRead();
+&nbsp;  /**
+&nbsp;   * Uses a dynamic status effect to override speed (in tiles/second). 
+&nbsp;   */
+&nbsp;  void statusSpeed(float speed);
 &nbsp;
-&nbsp;  void afterSync();
+&nbsp;  Color statusColor();
 &nbsp;
-&nbsp;  void amount(float amount);
+&nbsp;  Bits statusBits();
+&nbsp;
+&nbsp;  boolean disarmed();
+&nbsp;
+&nbsp;  boolean hasEffect(StatusEffect effect);
+&nbsp;
+&nbsp;  boolean isBoss();
+&nbsp;
+&nbsp;  boolean isImmune(StatusEffect effect);
+&nbsp;
+&nbsp;  float armorOverride();
+&nbsp;
+&nbsp;  float buildSpeedMultiplier();
+&nbsp;
+&nbsp;  float damageMultiplier();
+&nbsp;
+&nbsp;  float dragMultiplier();
+&nbsp;
+&nbsp;  float getDuration(StatusEffect effect);
+&nbsp;
+&nbsp;  float healthMultiplier();
+&nbsp;
+&nbsp;  float reloadMultiplier();
+&nbsp;
+&nbsp;  float speedMultiplier();
+&nbsp;
+&nbsp;  void armorOverride(float armorOverride);
+&nbsp;
+&nbsp;  void buildSpeedMultiplier(float buildSpeedMultiplier);
+&nbsp;
+&nbsp;  void clearStatuses();
+&nbsp;
+&nbsp;  void damageMultiplier(float damageMultiplier);
+&nbsp;
+&nbsp;  void disarmed(boolean disarmed);
+&nbsp;
+&nbsp;  void dragMultiplier(float dragMultiplier);
 &nbsp;
 &nbsp;  void draw();
 &nbsp;
-&nbsp;  void effectTime(float effectTime);
+&nbsp;  void healthMultiplier(float healthMultiplier);
 &nbsp;
-&nbsp;  void lastRipple(float lastRipple);
+&nbsp;  void reloadMultiplier(float reloadMultiplier);
 &nbsp;
-&nbsp;  void liquid(Liquid liquid);
-&nbsp;
-&nbsp;  void remove();
-&nbsp;
-&nbsp;  void tile(Tile tile);
+&nbsp;  void speedMultiplier(float speedMultiplier);
 &nbsp;
 &nbsp;  void update();
-&nbsp;
-&nbsp;  void updateTime(float updateTime);
 &nbsp;}
 </code>
 </pre>
@@ -115,7 +182,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

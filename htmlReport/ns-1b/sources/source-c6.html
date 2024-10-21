@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Syncc</title>
+  <title>Coverage Report > Unitc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Syncc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Unitc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Syncc</td>
+  <td class="name">Unitc</td>
 </tr>
 
 </table>
@@ -40,48 +40,249 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.util.io.Reads;
-&nbsp;import arc.util.io.Writes;
-&nbsp;import java.nio.FloatBuffer;
+&nbsp;import arc.graphics.g2d.TextureRegion;
+&nbsp;import arc.math.geom.Position;
+&nbsp;import arc.math.geom.Vec2;
+&nbsp;import arc.scene.ui.layout.Table;
+&nbsp;import arc.util.Nullable;
+&nbsp;import mindustry.ai.types.CommandAI;
 &nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.ctype.Content;
+&nbsp;import mindustry.ctype.UnlockableContent;
+&nbsp;import mindustry.entities.abilities.Ability;
+&nbsp;import mindustry.entities.units.UnitController;
+&nbsp;import mindustry.game.Team;
+&nbsp;import mindustry.graphics.Trail;
+&nbsp;import mindustry.logic.LAccess;
+&nbsp;import mindustry.logic.Ranged;
+&nbsp;import mindustry.logic.Senseable;
+&nbsp;import mindustry.logic.Settable;
+&nbsp;import mindustry.type.StatusEffect;
+&nbsp;import mindustry.type.UnitType;
+&nbsp;import mindustry.ui.Displayable;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.SyncComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.UnitComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Syncc extends Entityc {
+&nbsp;public interface Unitc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Velc, Weaponsc, Ranged, Senseable, Settable, Displayable {
+&nbsp;  /**
+&nbsp;   * @return a preview UI icon for this unit. 
+&nbsp;   */
+&nbsp;  TextureRegion icon();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * @return approx. square size of the physical hitbox for physics 
+&nbsp;   */
+&nbsp;  float physicSize();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * @return name of direct or indirect player controller. 
+&nbsp;   */
+&nbsp;  String getControllerName();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * @return pathfinder path type for calculating costs. This is used for wave AI only. (TODO: remove) 
+&nbsp;   */
+&nbsp;  int pathType();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * @return speed with boost &amp; floor multipliers factored in. 
+&nbsp;   */
+&nbsp;  float speed();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * @return the collision layer to use for unit physics. Returning anything outside of PhysicsProcess contents will crash the game. 
+&nbsp;   */
+&nbsp;  int collisionLayer();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * @return where the unit wants to look at. 
+&nbsp;   */
+&nbsp;  float prefRotation();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * @return whether there is solid, un-occupied ground under this unit. 
+&nbsp;   */
+&nbsp;  boolean canLand();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Actually destroys the unit, removing it and creating explosions. 
+&nbsp;   */
+&nbsp;  void destroy();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Called when this unit was unloaded from a factory or spawn point. 
+&nbsp;   */
+&nbsp;  void unloaded();
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Move based on preferred unit movement type. 
+&nbsp;   */
+&nbsp;  void movePref(Vec2 movement);
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  Trail trail();
+&nbsp;
+&nbsp;  @Nullable
+&nbsp;  UnitType dockedType();
+&nbsp;
+&nbsp;  Player getPlayer();
+&nbsp;
+&nbsp;  boolean canDrown();
+&nbsp;
+&nbsp;  boolean canShoot();
+&nbsp;
+&nbsp;  boolean canTarget(Unit other);
+&nbsp;
+&nbsp;  boolean collides(Hitboxc other);
+&nbsp;
+&nbsp;  boolean displayable();
+&nbsp;
+&nbsp;  boolean hasWeapons();
+&nbsp;
+&nbsp;  boolean hittable();
+&nbsp;
+&nbsp;  boolean inFogTo(Team viewer);
+&nbsp;
+&nbsp;  boolean inRange(Position other);
+&nbsp;
+&nbsp;  boolean isAI();
+&nbsp;
+&nbsp;  boolean isCommandable();
+&nbsp;
+&nbsp;  boolean isEnemy();
+&nbsp;
+&nbsp;  boolean isImmune(StatusEffect effect);
+&nbsp;
+&nbsp;  boolean isPathImpassable(int tileX, int tileY);
+&nbsp;
+&nbsp;  boolean isPlayer();
+&nbsp;
 &nbsp;  boolean isSyncHidden(Player player);
 &nbsp;
-&nbsp;  long lastUpdated();
+&nbsp;  boolean spawnedByCore();
 &nbsp;
-&nbsp;  long updateSpacing();
+&nbsp;  boolean targetable(Team targeter);
+&nbsp;
+&nbsp;  double flag();
+&nbsp;
+&nbsp;  double sense(Content content);
+&nbsp;
+&nbsp;  double sense(LAccess sensor);
+&nbsp;
+&nbsp;  float bounds();
+&nbsp;
+&nbsp;  float clipSize();
+&nbsp;
+&nbsp;  float healTime();
+&nbsp;
+&nbsp;  float range();
+&nbsp;
+&nbsp;  float shadowAlpha();
+&nbsp;
+&nbsp;  int cap();
+&nbsp;
+&nbsp;  int count();
+&nbsp;
+&nbsp;  int itemCapacity();
+&nbsp;
+&nbsp;  int lastFogPos();
+&nbsp;
+&nbsp;  Object senseObject(LAccess sensor);
+&nbsp;
+&nbsp;  String lastCommanded();
+&nbsp;
+&nbsp;  String toString();
+&nbsp;
+&nbsp;  CommandAI command();
+&nbsp;
+&nbsp;  Ability[] abilities();
+&nbsp;
+&nbsp;  UnitController controller();
+&nbsp;
+&nbsp;  UnitType type();
+&nbsp;
+&nbsp;  void abilities(Ability[] abilities);
+&nbsp;
+&nbsp;  void add();
+&nbsp;
+&nbsp;  void afterAllRead();
+&nbsp;
+&nbsp;  void afterRead();
 &nbsp;
 &nbsp;  void afterSync();
 &nbsp;
+&nbsp;  void aimLook(Position pos);
+&nbsp;
+&nbsp;  void aimLook(float x, float y);
+&nbsp;
+&nbsp;  void approach(Vec2 vector);
+&nbsp;
+&nbsp;  void collision(Hitboxc other, float x, float y);
+&nbsp;
+&nbsp;  void controller(UnitController next);
+&nbsp;
+&nbsp;  void display(Table table);
+&nbsp;
+&nbsp;  void dockedType(@Nullable UnitType dockedType);
+&nbsp;
+&nbsp;  void draw();
+&nbsp;
+&nbsp;  void flag(double flag);
+&nbsp;
 &nbsp;  void handleSyncHidden();
 &nbsp;
-&nbsp;  void interpolate();
+&nbsp;  void heal(float amount);
 &nbsp;
-&nbsp;  void lastUpdated(long lastUpdated);
+&nbsp;  void healTime(float healTime);
 &nbsp;
-&nbsp;  void readSync(Reads read);
+&nbsp;  void kill();
 &nbsp;
-&nbsp;  void readSyncManual(FloatBuffer buffer);
+&nbsp;  void killed();
+&nbsp;
+&nbsp;  void landed();
+&nbsp;
+&nbsp;  void lastCommanded(String lastCommanded);
+&nbsp;
+&nbsp;  void lastFogPos(int lastFogPos);
+&nbsp;
+&nbsp;  void lookAt(Position pos);
+&nbsp;
+&nbsp;  void lookAt(float angle);
+&nbsp;
+&nbsp;  void lookAt(float x, float y);
+&nbsp;
+&nbsp;  void moveAt(Vec2 vector);
 &nbsp;
 &nbsp;  void remove();
 &nbsp;
-&nbsp;  void snapInterpolation();
+&nbsp;  void resetController();
 &nbsp;
-&nbsp;  void snapSync();
+&nbsp;  void rotateMove(Vec2 vec);
+&nbsp;
+&nbsp;  void set(UnitType def, UnitController controller);
+&nbsp;
+&nbsp;  void setProp(UnlockableContent content, double value);
+&nbsp;
+&nbsp;  void setProp(LAccess prop, double value);
+&nbsp;
+&nbsp;  void setProp(LAccess prop, Object value);
+&nbsp;
+&nbsp;  void setType(UnitType type);
+&nbsp;
+&nbsp;  void shadowAlpha(float shadowAlpha);
+&nbsp;
+&nbsp;  void spawnedByCore(boolean spawnedByCore);
+&nbsp;
+&nbsp;  void trail(@Nullable Trail trail);
+&nbsp;
+&nbsp;  void type(UnitType type);
 &nbsp;
 &nbsp;  void update();
 &nbsp;
-&nbsp;  void updateSpacing(long updateSpacing);
-&nbsp;
-&nbsp;  void writeSync(Writes write);
-&nbsp;
-&nbsp;  void writeSyncManual(FloatBuffer buffer);
+&nbsp;  void updateBoosting(boolean boost);
 &nbsp;}
 </code>
 </pre>
@@ -106,7 +307,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

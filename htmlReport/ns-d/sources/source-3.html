@@ -51,18 +51,18 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    50%
+    30%
   </span>
   <span class="absValue">
-    (5/10)
+    (3/10)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    38.7%
+    29%
   </span>
   <span class="absValue">
-    (12/31)
+    (9/31)
   </span>
 </td>
 </tr>
@@ -93,7 +93,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;    private ObjectMap&lt;String, Music&gt; loadedMusic = new ObjectMap&lt;&gt;();</b>
 &nbsp;
 &nbsp;    public void addFile(String path, Fi f){
-<b class="fc">&nbsp;        files.put(path.replace(&#39;\\&#39;, &#39;/&#39;), f);</b>
+<b class="nc">&nbsp;        files.put(path.replace(&#39;\\&#39;, &#39;/&#39;), f);</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    /** Gets an asset file.*/
@@ -104,7 +104,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    /** Gets an asset file.*/
 &nbsp;    public Fi get(String path, boolean safe){
 <b class="fc">&nbsp;        if(files.containsKey(path)){</b>
-<b class="fc">&nbsp;            return files.get(path);</b>
+<b class="nc">&nbsp;            return files.get(path);</b>
 <b class="fc">&nbsp;        }else if(files.containsKey(&quot;/&quot; + path)){</b>
 <b class="nc">&nbsp;            return files.get(&quot;/&quot; + path);</b>
 <b class="fc">&nbsp;        }else if(Core.files == null &amp;&amp; !safe){ //headless</b>
@@ -129,7 +129,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;     * Results are cached; consecutive calls to this method with the same name will return the same sound instance.
 &nbsp;     * */
 &nbsp;    public Sound loadSound(String soundName){
-<b class="fc">&nbsp;        if(Vars.headless) return Sounds.none;</b>
+<b class="nc">&nbsp;        if(Vars.headless) return Sounds.none;</b>
 &nbsp;
 <b class="nc">&nbsp;        return loadedSounds.get(soundName, () -&gt; {</b>
 <b class="nc">&nbsp;            String name = &quot;sounds/&quot; + soundName;</b>
@@ -185,7 +185,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

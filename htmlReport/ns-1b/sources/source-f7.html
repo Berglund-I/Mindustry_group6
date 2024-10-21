@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Healthc</title>
+  <title>Coverage Report > Payloadc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Healthc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Payloadc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Healthc</td>
+  <td class="name">Payloadc</td>
 </tr>
 
 </table>
@@ -40,71 +40,53 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
+&nbsp;import arc.scene.ui.layout.Table;
+&nbsp;import arc.struct.Seq;
 &nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.world.blocks.payloads.BuildPayload;
+&nbsp;import mindustry.world.blocks.payloads.Payload;
+&nbsp;import mindustry.world.blocks.payloads.UnitPayload;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.HealthComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.PayloadComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Healthc extends Entityc, Posc {
+&nbsp;public interface Payloadc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
 &nbsp;  /**
-&nbsp;   * Damage and pierce armor. 
+&nbsp;   * @return whether the tile has been successfully placed. 
 &nbsp;   */
-&nbsp;  void damagePierce(float amount);
+&nbsp;  boolean dropBlock(BuildPayload payload);
 &nbsp;
-&nbsp;  /**
-&nbsp;   * Damage and pierce armor. 
-&nbsp;   */
-&nbsp;  void damagePierce(float amount, boolean withEffect);
+&nbsp;  Seq&lt;Payload&gt; payloads();
 &nbsp;
-&nbsp;  /**
-&nbsp;   * Heals by a 0-1 fraction of max health. 
-&nbsp;   */
-&nbsp;  void healFract(float amount);
+&nbsp;  boolean canPickup(Building build);
 &nbsp;
-&nbsp;  /**
-&nbsp;   * Heals by a flat amount. 
-&nbsp;   */
-&nbsp;  void heal(float amount);
+&nbsp;  boolean canPickup(Unit unit);
 &nbsp;
-&nbsp;  boolean damaged();
+&nbsp;  boolean canPickupPayload(Payload pay);
 &nbsp;
-&nbsp;  boolean dead();
+&nbsp;  boolean dropLastPayload();
 &nbsp;
-&nbsp;  boolean isValid();
+&nbsp;  boolean dropUnit(UnitPayload payload);
 &nbsp;
-&nbsp;  float health();
+&nbsp;  boolean hasPayload();
 &nbsp;
-&nbsp;  float healthf();
+&nbsp;  boolean tryDropPayload(Payload payload);
 &nbsp;
-&nbsp;  float hitTime();
+&nbsp;  float payloadUsed();
 &nbsp;
-&nbsp;  float maxHealth();
+&nbsp;  void addPayload(Payload load);
 &nbsp;
-&nbsp;  void clampHealth();
+&nbsp;  void contentInfo(Table table, float itemSize, float width);
 &nbsp;
-&nbsp;  void damage(float amount);
+&nbsp;  void destroy();
 &nbsp;
-&nbsp;  void damage(float amount, boolean withEffect);
+&nbsp;  void payloads(Seq&lt;Payload&gt; payloads);
 &nbsp;
-&nbsp;  void damageContinuous(float amount);
+&nbsp;  void pickup(Building tile);
 &nbsp;
-&nbsp;  void damageContinuousPierce(float amount);
-&nbsp;
-&nbsp;  void dead(boolean dead);
-&nbsp;
-&nbsp;  void heal();
-&nbsp;
-&nbsp;  void health(float health);
-&nbsp;
-&nbsp;  void hitTime(float hitTime);
-&nbsp;
-&nbsp;  void kill();
-&nbsp;
-&nbsp;  void killed();
-&nbsp;
-&nbsp;  void maxHealth(float maxHealth);
+&nbsp;  void pickup(Unit unit);
 &nbsp;
 &nbsp;  void update();
 &nbsp;}
@@ -131,7 +113,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

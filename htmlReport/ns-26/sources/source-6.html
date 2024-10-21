@@ -40,18 +40,18 @@ Current scope:     <a href="../../index.html">all classes</a>
   <td class="name">Mods</td>
 <td class="coverageStat">
   <span class="percent">
-    49.1%
+    26.4%
   </span>
   <span class="absValue">
-    (26/53)
+    (14/53)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    48.3%
+    13.7%
   </span>
   <span class="absValue">
-    (225/466)
+    (64/466)
   </span>
 </td>
 </tr>
@@ -78,18 +78,18 @@ Current scope:     <a href="../../index.html">all classes</a>
     <td class="name">Mods$1LoadRun</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (2/2)
+    (0/2)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (7/7)
+    (0/7)
   </span>
 </td>
   </tr>
@@ -173,18 +173,18 @@ Current scope:     <a href="../../index.html">all classes</a>
     <td class="name">Mods$LoadedMod</td>
 <td class="coverageStat">
   <span class="percent">
-    21.7%
+    0%
   </span>
   <span class="absValue">
-    (5/23)
+    (0/23)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    34.9%
+    0%
   </span>
   <span class="absValue">
-    (15/43)
+    (0/43)
   </span>
 </td>
   </tr>
@@ -230,18 +230,18 @@ Current scope:     <a href="../../index.html">all classes</a>
     <td class="name">Mods$ModMeta</td>
 <td class="coverageStat">
   <span class="percent">
-    50%
+    0%
   </span>
   <span class="absValue">
-    (3/6)
+    (0/6)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    84.2%
+    0%
   </span>
   <span class="absValue">
-    (16/19)
+    (0/19)
   </span>
 </td>
   </tr>
@@ -268,18 +268,18 @@ Current scope:     <a href="../../index.html">all classes</a>
     <td class="name">Mods$ModState</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (2/2)
+    (0/2)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (8/8)
+    (0/8)
   </span>
 </td>
   </tr>
@@ -287,18 +287,18 @@ Current scope:     <a href="../../index.html">all classes</a>
   <td class="name"><strong>Total</strong></td>
 <td class="coverageStat">
   <span class="percent">
-    37.5%
+    14.4%
   </span>
   <span class="absValue">
-    (39/104)
+    (15/104)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    44.8%
+    11.2%
   </span>
   <span class="absValue">
-    (276/616)
+    (69/616)
   </span>
 </td>
 </tr>
@@ -391,10 +391,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    /** Returns a list of files per mod subdirectory. */
 &nbsp;    public void listFiles(String directory, Cons2&lt;LoadedMod, Fi&gt; cons){
 <b class="fc">&nbsp;        eachEnabled(mod -&gt; {</b>
-<b class="fc">&nbsp;            Fi file = mod.root.child(directory);</b>
-<b class="fc">&nbsp;            if(file.exists()){</b>
-<b class="fc">&nbsp;                for(Fi child : file.list()){</b>
-<b class="fc">&nbsp;                    cons.get(mod, child);</b>
+<b class="nc">&nbsp;            Fi file = mod.root.child(directory);</b>
+<b class="nc">&nbsp;            if(file.exists()){</b>
+<b class="nc">&nbsp;                for(Fi child : file.list()){</b>
+<b class="nc">&nbsp;                    cons.get(mod, child);</b>
 &nbsp;                }
 &nbsp;            }
 &nbsp;        });
@@ -739,8 +739,8 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    }
 &nbsp;
 &nbsp;    public Scripts getScripts(){
-<b class="fc">&nbsp;        if(scripts == null) scripts = platform.createScripts();</b>
-<b class="fc">&nbsp;        return scripts;</b>
+<b class="nc">&nbsp;        if(scripts == null) scripts = platform.createScripts();</b>
+<b class="nc">&nbsp;        return scripts;</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    /** @return whether the scripting engine has been initialized. */
@@ -754,7 +754,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 &nbsp;    /** @return whether to skip mod loading due to previous initialization failure. */
 &nbsp;    public boolean skipModLoading(){
-<b class="fc">&nbsp;        return failedToLaunch &amp;&amp; Core.settings.getBool(&quot;modcrashdisable&quot;, true);</b>
+<b class="nc">&nbsp;        return failedToLaunch &amp;&amp; Core.settings.getBool(&quot;modcrashdisable&quot;, true);</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    /** Loads all mods from the folder, but does not call any methods on them.*/
@@ -774,38 +774,38 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;        var metas = new Seq&lt;ModMeta&gt;();</b>
 &nbsp;
 <b class="fc">&nbsp;        for(Fi file : candidates){</b>
-<b class="fc">&nbsp;            ModMeta meta = null;</b>
+<b class="nc">&nbsp;            ModMeta meta = null;</b>
 &nbsp;
 &nbsp;            try{
-<b class="fc">&nbsp;                Fi zip = file.isDirectory() ? file : new ZipFi(file);</b>
+<b class="nc">&nbsp;                Fi zip = file.isDirectory() ? file : new ZipFi(file);</b>
 &nbsp;
-<b class="fc">&nbsp;                if(zip.list().length == 1 &amp;&amp; zip.list()[0].isDirectory()){</b>
-<b class="fc">&nbsp;                    zip = zip.list()[0];</b>
+<b class="nc">&nbsp;                if(zip.list().length == 1 &amp;&amp; zip.list()[0].isDirectory()){</b>
+<b class="nc">&nbsp;                    zip = zip.list()[0];</b>
 &nbsp;                }
 &nbsp;
-<b class="fc">&nbsp;                meta = findMeta(zip);</b>
+<b class="nc">&nbsp;                meta = findMeta(zip);</b>
 <b class="nc">&nbsp;            }catch(Throwable ignored){</b>
-<b class="fc">&nbsp;            }</b>
+<b class="nc">&nbsp;            }</b>
 &nbsp;
-<b class="fc">&nbsp;            if(meta == null || meta.name == null) continue;</b>
-<b class="fc">&nbsp;            metas.add(meta);</b>
-<b class="fc">&nbsp;            mapping.put(meta.internalName, file);</b>
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;            if(meta == null || meta.name == null) continue;</b>
+<b class="nc">&nbsp;            metas.add(meta);</b>
+<b class="nc">&nbsp;            mapping.put(meta.internalName, file);</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;
 <b class="fc">&nbsp;        var resolved = resolveDependencies(metas);</b>
 <b class="fc">&nbsp;        for(var entry : resolved){</b>
-<b class="fc">&nbsp;            var file = mapping.get(entry.key);</b>
-<b class="fc">&nbsp;            var steam = platform.getWorkshopContent(LoadedMod.class).contains(file);</b>
+<b class="nc">&nbsp;            var file = mapping.get(entry.key);</b>
+<b class="nc">&nbsp;            var steam = platform.getWorkshopContent(LoadedMod.class).contains(file);</b>
 &nbsp;
-<b class="fc">&nbsp;            Log.debug(&quot;[Mods] Loading mod @&quot;, file);</b>
+<b class="nc">&nbsp;            Log.debug(&quot;[Mods] Loading mod @&quot;, file);</b>
 &nbsp;
 &nbsp;            try{
-<b class="fc">&nbsp;                LoadedMod mod = loadMod(file, false, entry.value == ModState.enabled);</b>
-<b class="fc">&nbsp;                mod.state = entry.value;</b>
-<b class="fc">&nbsp;                mods.add(mod);</b>
+<b class="nc">&nbsp;                LoadedMod mod = loadMod(file, false, entry.value == ModState.enabled);</b>
+<b class="nc">&nbsp;                mod.state = entry.value;</b>
+<b class="nc">&nbsp;                mods.add(mod);</b>
 &nbsp;                //invalidate ordered mods cache
-<b class="fc">&nbsp;                lastOrderedMods = null;</b>
-<b class="fc">&nbsp;                if(steam) mod.addSteamID(file.name());</b>
+<b class="nc">&nbsp;                lastOrderedMods = null;</b>
+<b class="nc">&nbsp;                if(steam) mod.addSteamID(file.name());</b>
 <b class="nc">&nbsp;            }catch(Throwable e){</b>
 <b class="nc">&nbsp;                if(e instanceof ClassNotFoundException &amp;&amp; e.getMessage().contains(&quot;mindustry.plugin.Plugin&quot;)){</b>
 <b class="nc">&nbsp;                    Log.info(&quot;Plugin &#39;@&#39; is outdated and needs to be ported to 6.0! Update its main class to inherit from &#39;mindustry.mod.Plugin&#39;. See https://mindustrygame.github.io/wiki/modding/6-migrationv6/&quot;, file.name());</b>
@@ -816,20 +816,20 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="nc">&nbsp;                    Log.err(&quot;Failed to load mod file @. Skipping.&quot;, file);</b>
 <b class="nc">&nbsp;                    Log.err(e);</b>
 &nbsp;                }
-<b class="fc">&nbsp;            }</b>
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;
 &nbsp;        // Resolve the state
 <b class="fc">&nbsp;        mods.each(this::updateDependencies);</b>
 <b class="fc">&nbsp;        for(var mod : mods){</b>
 &nbsp;            // Skip mods where the state has already been resolved
-<b class="fc">&nbsp;            if(mod.state != ModState.enabled) continue;</b>
-<b class="fc">&nbsp;            if(!mod.isSupported()){</b>
+<b class="nc">&nbsp;            if(mod.state != ModState.enabled) continue;</b>
+<b class="nc">&nbsp;            if(!mod.isSupported()){</b>
 <b class="nc">&nbsp;                mod.state = ModState.unsupported;</b>
-<b class="fc">&nbsp;            }else if(!mod.shouldBeEnabled()){</b>
+<b class="nc">&nbsp;            }else if(!mod.shouldBeEnabled()){</b>
 <b class="nc">&nbsp;                mod.state = ModState.disabled;</b>
 &nbsp;            }
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;
 <b class="fc">&nbsp;        sortMods();</b>
 <b class="fc">&nbsp;        buildFiles();</b>
@@ -841,11 +841,11 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    }
 &nbsp;
 &nbsp;    private void updateDependencies(LoadedMod mod){
-<b class="fc">&nbsp;        mod.dependencies.clear();</b>
-<b class="fc">&nbsp;        mod.missingDependencies.clear();</b>
-<b class="fc">&nbsp;        mod.dependencies = mod.meta.dependencies.map(this::locateMod);</b>
+<b class="nc">&nbsp;        mod.dependencies.clear();</b>
+<b class="nc">&nbsp;        mod.missingDependencies.clear();</b>
+<b class="nc">&nbsp;        mod.dependencies = mod.meta.dependencies.map(this::locateMod);</b>
 &nbsp;
-<b class="fc">&nbsp;        for(int i = 0; i &lt; mod.dependencies.size; i++){</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; mod.dependencies.size; i++){</b>
 <b class="nc">&nbsp;            if(mod.dependencies.get(i) == null){</b>
 <b class="nc">&nbsp;                mod.missingDependencies.add(mod.meta.dependencies.get(i));</b>
 &nbsp;            }
@@ -857,41 +857,41 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;        //update cache if it&#39;s &quot;dirty&quot;/empty
 <b class="fc">&nbsp;        if(lastOrderedMods == null){</b>
 &nbsp;            //only enabled mods participate; this state is resolved in load()
-<b class="fc">&nbsp;            Seq&lt;LoadedMod&gt; enabled = mods.select(LoadedMod::enabled);</b>
+<b class="nc">&nbsp;            Seq&lt;LoadedMod&gt; enabled = mods.select(LoadedMod::enabled);</b>
 &nbsp;
-<b class="fc">&nbsp;            var mapping = enabled.asMap(m -&gt; m.meta.internalName);</b>
-<b class="fc">&nbsp;            lastOrderedMods = resolveDependencies(enabled.map(m -&gt; m.meta)).orderedKeys().map(mapping::get);</b>
+<b class="nc">&nbsp;            var mapping = enabled.asMap(m -&gt; m.meta.internalName);</b>
+<b class="nc">&nbsp;            lastOrderedMods = resolveDependencies(enabled.map(m -&gt; m.meta)).orderedKeys().map(mapping::get);</b>
 &nbsp;        }
 <b class="fc">&nbsp;        return lastOrderedMods;</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    public LoadedMod locateMod(String name){
-<b class="fc">&nbsp;        return mods.find(mod -&gt; mod.enabled() &amp;&amp; mod.name.equals(name));</b>
+<b class="nc">&nbsp;        return mods.find(mod -&gt; mod.enabled() &amp;&amp; mod.name.equals(name));</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    private void buildFiles(){
 <b class="fc">&nbsp;        for(LoadedMod mod : orderedMods()){</b>
-<b class="fc">&nbsp;            boolean zipFolder = !mod.file.isDirectory() &amp;&amp; mod.root.parent() != null;</b>
-<b class="fc">&nbsp;            String parentName = zipFolder ? mod.root.name() : null;</b>
-<b class="fc">&nbsp;            for(Fi file : mod.root.list()){</b>
+<b class="nc">&nbsp;            boolean zipFolder = !mod.file.isDirectory() &amp;&amp; mod.root.parent() != null;</b>
+<b class="nc">&nbsp;            String parentName = zipFolder ? mod.root.name() : null;</b>
+<b class="nc">&nbsp;            for(Fi file : mod.root.list()){</b>
 &nbsp;                //ignore special folders like bundles or sprites
-<b class="fc">&nbsp;                if(file.isDirectory() &amp;&amp; !specialFolders.contains(file.name())){</b>
-<b class="fc">&nbsp;                    file.walk(f -&gt; tree.addFile(mod.file.isDirectory() ? f.path().substring(1 + mod.file.path().length()) :</b>
-<b class="fc">&nbsp;                        zipFolder ? f.path().substring(parentName.length() + 1) : f.path(), f));</b>
+<b class="nc">&nbsp;                if(file.isDirectory() &amp;&amp; !specialFolders.contains(file.name())){</b>
+<b class="nc">&nbsp;                    file.walk(f -&gt; tree.addFile(mod.file.isDirectory() ? f.path().substring(1 + mod.file.path().length()) :</b>
+<b class="nc">&nbsp;                        zipFolder ? f.path().substring(parentName.length() + 1) : f.path(), f));</b>
 &nbsp;                }
 &nbsp;            }
 &nbsp;
 &nbsp;            //load up bundles.
-<b class="fc">&nbsp;            Fi folder = mod.root.child(&quot;bundles&quot;);</b>
-<b class="fc">&nbsp;            if(folder.exists()){</b>
-<b class="fc">&nbsp;                for(Fi file : folder.list()){</b>
-<b class="fc">&nbsp;                    if(file.name().startsWith(&quot;bundle&quot;) &amp;&amp; file.extension().equals(&quot;properties&quot;)){</b>
-<b class="fc">&nbsp;                        String name = file.nameWithoutExtension();</b>
-<b class="fc">&nbsp;                        bundles.get(name, Seq::new).add(file);</b>
+<b class="nc">&nbsp;            Fi folder = mod.root.child(&quot;bundles&quot;);</b>
+<b class="nc">&nbsp;            if(folder.exists()){</b>
+<b class="nc">&nbsp;                for(Fi file : folder.list()){</b>
+<b class="nc">&nbsp;                    if(file.name().startsWith(&quot;bundle&quot;) &amp;&amp; file.extension().equals(&quot;properties&quot;)){</b>
+<b class="nc">&nbsp;                        String name = file.nameWithoutExtension();</b>
+<b class="nc">&nbsp;                        bundles.get(name, Seq::new).add(file);</b>
 &nbsp;                    }
 &nbsp;                }
 &nbsp;            }
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;        }</b>
 <b class="fc">&nbsp;        Events.fire(new FileTreeInitEvent());</b>
 &nbsp;
 &nbsp;        //add new keys to each bundle
@@ -901,11 +901,11 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;            String locale = &quot;bundle&quot; + (str.isEmpty() ? &quot;&quot; : &quot;_&quot; + str);</b>
 <b class="fc">&nbsp;            for(Fi file : bundles.get(locale, Seq::new)){</b>
 &nbsp;                try{
-<b class="fc">&nbsp;                    PropertiesUtils.load(bundle.getProperties(), file.reader());</b>
+<b class="nc">&nbsp;                    PropertiesUtils.load(bundle.getProperties(), file.reader());</b>
 <b class="nc">&nbsp;                }catch(Throwable e){</b>
 <b class="nc">&nbsp;                    Log.err(&quot;Error loading bundle: &quot; + file + &quot;/&quot; + locale, e);</b>
-<b class="fc">&nbsp;                }</b>
-<b class="fc">&nbsp;            }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
 <b class="fc">&nbsp;            bundle = bundle.getParent();</b>
 <b class="fc">&nbsp;        }</b>
 &nbsp;    }
@@ -972,24 +972,24 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 &nbsp;        try{
 <b class="fc">&nbsp;            eachEnabled(mod -&gt; {</b>
-<b class="fc">&nbsp;                if(mod.root.child(&quot;scripts&quot;).exists()){</b>
-<b class="fc">&nbsp;                    content.setCurrentMod(mod);</b>
+<b class="nc">&nbsp;                if(mod.root.child(&quot;scripts&quot;).exists()){</b>
+<b class="nc">&nbsp;                    content.setCurrentMod(mod);</b>
 &nbsp;                    //if there&#39;s only one script file, use it (for backwards compatibility); if there isn&#39;t, use &quot;main.js&quot;
-<b class="fc">&nbsp;                    Seq&lt;Fi&gt; allScripts = mod.root.child(&quot;scripts&quot;).findAll(f -&gt; f.extEquals(&quot;js&quot;));</b>
-<b class="fc">&nbsp;                    Fi main = allScripts.size == 1 ? allScripts.first() : mod.root.child(&quot;scripts&quot;).child(&quot;main.js&quot;);</b>
-<b class="fc">&nbsp;                    if(main.exists() &amp;&amp; !main.isDirectory()){</b>
+<b class="nc">&nbsp;                    Seq&lt;Fi&gt; allScripts = mod.root.child(&quot;scripts&quot;).findAll(f -&gt; f.extEquals(&quot;js&quot;));</b>
+<b class="nc">&nbsp;                    Fi main = allScripts.size == 1 ? allScripts.first() : mod.root.child(&quot;scripts&quot;).child(&quot;main.js&quot;);</b>
+<b class="nc">&nbsp;                    if(main.exists() &amp;&amp; !main.isDirectory()){</b>
 &nbsp;                        try{
-<b class="fc">&nbsp;                            if(scripts == null){</b>
-<b class="fc">&nbsp;                                scripts = platform.createScripts();</b>
+<b class="nc">&nbsp;                            if(scripts == null){</b>
+<b class="nc">&nbsp;                                scripts = platform.createScripts();</b>
 &nbsp;                            }
-<b class="fc">&nbsp;                            any[0] = true;</b>
-<b class="fc">&nbsp;                            scripts.run(mod, main);</b>
+<b class="nc">&nbsp;                            any[0] = true;</b>
+<b class="nc">&nbsp;                            scripts.run(mod, main);</b>
 <b class="nc">&nbsp;                        }catch(Throwable e){</b>
 <b class="nc">&nbsp;                            Core.app.post(() -&gt; {</b>
 <b class="nc">&nbsp;                                Log.err(&quot;Error loading main script @ for mod @.&quot;, main.name(), mod.meta.name);</b>
 <b class="nc">&nbsp;                                Log.err(e);</b>
 &nbsp;                            });
-<b class="fc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                        }</b>
 &nbsp;                    }else{
 <b class="nc">&nbsp;                        Core.app.post(() -&gt; Log.err(&quot;No main.js found for mod @.&quot;, mod.meta.name));</b>
 &nbsp;                    }
@@ -1000,7 +1000,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;        }</b>
 &nbsp;
 <b class="fc">&nbsp;        if(any[0]){</b>
-<b class="fc">&nbsp;            Log.info(&quot;Time to initialize modded scripts: @&quot;, Time.elapsed());</b>
+<b class="nc">&nbsp;            Log.info(&quot;Time to initialize modded scripts: @&quot;, Time.elapsed());</b>
 &nbsp;        }
 &nbsp;    }
 &nbsp;
@@ -1010,11 +1010,11 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;        //load class mod content first
 <b class="fc">&nbsp;        for(LoadedMod mod : orderedMods()){</b>
 &nbsp;            //hidden mods can&#39;t load content
-<b class="fc">&nbsp;            if(mod.main != null &amp;&amp; !mod.meta.hidden){</b>
-<b class="fc">&nbsp;                content.setCurrentMod(mod);</b>
-<b class="fc">&nbsp;                mod.main.loadContent();</b>
+<b class="nc">&nbsp;            if(mod.main != null &amp;&amp; !mod.meta.hidden){</b>
+<b class="nc">&nbsp;                content.setCurrentMod(mod);</b>
+<b class="nc">&nbsp;                mod.main.loadContent();</b>
 &nbsp;            }
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;
 <b class="fc">&nbsp;        content.setCurrentMod(null);</b>
 &nbsp;
@@ -1023,49 +1023,49 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;            final Fi file;
 &nbsp;            final LoadedMod mod;
 &nbsp;
-<b class="fc">&nbsp;            public LoadRun(ContentType type, Fi file, LoadedMod mod){</b>
-<b class="fc">&nbsp;                this.type = type;</b>
-<b class="fc">&nbsp;                this.file = file;</b>
-<b class="fc">&nbsp;                this.mod = mod;</b>
+<b class="nc">&nbsp;            public LoadRun(ContentType type, Fi file, LoadedMod mod){</b>
+<b class="nc">&nbsp;                this.type = type;</b>
+<b class="nc">&nbsp;                this.file = file;</b>
+<b class="nc">&nbsp;                this.mod = mod;</b>
 &nbsp;            }
 &nbsp;
 &nbsp;            @Override
 &nbsp;            public int compareTo(LoadRun l){
-<b class="fc">&nbsp;                int mod = this.mod.name.compareTo(l.mod.name);</b>
-<b class="fc">&nbsp;                if(mod != 0) return mod;</b>
-<b class="fc">&nbsp;                return this.file.name().compareTo(l.file.name());</b>
+<b class="nc">&nbsp;                int mod = this.mod.name.compareTo(l.mod.name);</b>
+<b class="nc">&nbsp;                if(mod != 0) return mod;</b>
+<b class="nc">&nbsp;                return this.file.name().compareTo(l.file.name());</b>
 &nbsp;            }
 &nbsp;        }
 &nbsp;
 <b class="fc">&nbsp;        Seq&lt;LoadRun&gt; runs = new Seq&lt;&gt;();</b>
 &nbsp;
 <b class="fc">&nbsp;        for(LoadedMod mod : orderedMods()){</b>
-<b class="fc">&nbsp;            Seq&lt;LoadRun&gt; unorderedContent = new Seq&lt;&gt;();</b>
-<b class="fc">&nbsp;            ObjectMap&lt;String, LoadRun&gt; orderedContent = new ObjectMap&lt;&gt;();</b>
-<b class="fc">&nbsp;            String[] contentOrder = mod.meta.contentOrder;</b>
-<b class="fc">&nbsp;            ObjectSet&lt;String&gt; orderSet = contentOrder == null ? null : ObjectSet.with(contentOrder);</b>
+<b class="nc">&nbsp;            Seq&lt;LoadRun&gt; unorderedContent = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;            ObjectMap&lt;String, LoadRun&gt; orderedContent = new ObjectMap&lt;&gt;();</b>
+<b class="nc">&nbsp;            String[] contentOrder = mod.meta.contentOrder;</b>
+<b class="nc">&nbsp;            ObjectSet&lt;String&gt; orderSet = contentOrder == null ? null : ObjectSet.with(contentOrder);</b>
 &nbsp;
-<b class="fc">&nbsp;            if(mod.root.child(&quot;content&quot;).exists()){</b>
-<b class="fc">&nbsp;                Fi contentRoot = mod.root.child(&quot;content&quot;);</b>
-<b class="fc">&nbsp;                for(ContentType type : ContentType.all){</b>
-<b class="fc">&nbsp;                    String lower = type.name().toLowerCase(Locale.ROOT);</b>
-<b class="fc">&nbsp;                    Fi folder = contentRoot.child(lower + (lower.endsWith(&quot;s&quot;) ? &quot;&quot; : &quot;s&quot;));</b>
-<b class="fc">&nbsp;                    if(folder.exists()){</b>
-<b class="fc">&nbsp;                        for(Fi file : folder.findAll(f -&gt; f.extension().equals(&quot;json&quot;) || f.extension().equals(&quot;hjson&quot;))){</b>
+<b class="nc">&nbsp;            if(mod.root.child(&quot;content&quot;).exists()){</b>
+<b class="nc">&nbsp;                Fi contentRoot = mod.root.child(&quot;content&quot;);</b>
+<b class="nc">&nbsp;                for(ContentType type : ContentType.all){</b>
+<b class="nc">&nbsp;                    String lower = type.name().toLowerCase(Locale.ROOT);</b>
+<b class="nc">&nbsp;                    Fi folder = contentRoot.child(lower + (lower.endsWith(&quot;s&quot;) ? &quot;&quot; : &quot;s&quot;));</b>
+<b class="nc">&nbsp;                    if(folder.exists()){</b>
+<b class="nc">&nbsp;                        for(Fi file : folder.findAll(f -&gt; f.extension().equals(&quot;json&quot;) || f.extension().equals(&quot;hjson&quot;))){</b>
 &nbsp;
 &nbsp;                            //if this is part of the ordered content, put it aside to be dealt with later
-<b class="fc">&nbsp;                            if(orderSet != null &amp;&amp; orderSet.contains(file.nameWithoutExtension())){</b>
+<b class="nc">&nbsp;                            if(orderSet != null &amp;&amp; orderSet.contains(file.nameWithoutExtension())){</b>
 <b class="nc">&nbsp;                                orderedContent.put(file.nameWithoutExtension(), new LoadRun(type, file, mod));</b>
 &nbsp;                            }else{
-<b class="fc">&nbsp;                                unorderedContent.add(new LoadRun(type, file, mod));</b>
+<b class="nc">&nbsp;                                unorderedContent.add(new LoadRun(type, file, mod));</b>
 &nbsp;                            }
-<b class="fc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                        }</b>
 &nbsp;                    }
 &nbsp;                }
 &nbsp;            }
 &nbsp;
 &nbsp;            //ordered content will be loaded first, if it exists
-<b class="fc">&nbsp;            if(contentOrder != null){</b>
+<b class="nc">&nbsp;            if(contentOrder != null){</b>
 <b class="nc">&nbsp;                for(String contentName : contentOrder){</b>
 <b class="nc">&nbsp;                    LoadRun run = orderedContent.get(contentName);</b>
 <b class="nc">&nbsp;                    if(run != null){</b>
@@ -1077,15 +1077,15 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;            }
 &nbsp;
 &nbsp;            //unordered content is sorted alphabetically per mod
-<b class="fc">&nbsp;            runs.addAll(unorderedContent.sort());</b>
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;            runs.addAll(unorderedContent.sort());</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;
 <b class="fc">&nbsp;        for(LoadRun l : runs){</b>
-<b class="fc">&nbsp;            Content current = content.getLastAdded();</b>
+<b class="nc">&nbsp;            Content current = content.getLastAdded();</b>
 &nbsp;            try{
 &nbsp;                //this binds the content but does not load it entirely
-<b class="fc">&nbsp;                Content loaded = parser.parse(l.mod, l.file.nameWithoutExtension(), l.file.readString(&quot;UTF-8&quot;), l.file, l.type);</b>
-<b class="fc">&nbsp;                Log.debug(&quot;[@] Loaded &#39;@&#39;.&quot;, l.mod.meta.name, (loaded instanceof UnlockableContent u ? u.localizedName : loaded));</b>
+<b class="nc">&nbsp;                Content loaded = parser.parse(l.mod, l.file.nameWithoutExtension(), l.file.readString(&quot;UTF-8&quot;), l.file, l.type);</b>
+<b class="nc">&nbsp;                Log.debug(&quot;[@] Loaded &#39;@&#39;.&quot;, l.mod.meta.name, (loaded instanceof UnlockableContent u ? u.localizedName : loaded));</b>
 <b class="nc">&nbsp;            }catch(Throwable e){</b>
 <b class="nc">&nbsp;                if(current != content.getLastAdded() &amp;&amp; content.getLastAdded() != null){</b>
 <b class="nc">&nbsp;                    parser.markError(content.getLastAdded(), l.mod, l.file, e);</b>
@@ -1093,8 +1093,8 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="nc">&nbsp;                    ErrorContent error = new ErrorContent();</b>
 <b class="nc">&nbsp;                    parser.markError(error, l.mod, l.file, e);</b>
 &nbsp;                }
-<b class="fc">&nbsp;            }</b>
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;
 &nbsp;        //this finishes parsing content fields
 <b class="fc">&nbsp;        parser.finishParsing();</b>
@@ -1139,7 +1139,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    }
 &nbsp;
 &nbsp;    public Seq&lt;LoadedMod&gt; list(){
-<b class="fc">&nbsp;        return mods;</b>
+<b class="nc">&nbsp;        return mods;</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    /** Iterates through each mod with a main class. */
@@ -1154,28 +1154,28 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 &nbsp;    public void contextRun(LoadedMod mod, Runnable run){
 &nbsp;        try{
-<b class="fc">&nbsp;            run.run();</b>
+<b class="nc">&nbsp;            run.run();</b>
 <b class="nc">&nbsp;        }catch(Throwable t){</b>
 <b class="nc">&nbsp;            throw new RuntimeException(&quot;Error loading mod &quot; + mod.meta.name, t);</b>
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    /** Tries to find the config file of a mod/plugin. */
 &nbsp;    public @Nullable ModMeta findMeta(Fi file){
-<b class="fc">&nbsp;        Fi metaFile = null;</b>
-<b class="fc">&nbsp;        for(String name : metaFiles){</b>
-<b class="fc">&nbsp;            if((metaFile = file.child(name)).exists()){</b>
-<b class="fc">&nbsp;                break;</b>
+<b class="nc">&nbsp;        Fi metaFile = null;</b>
+<b class="nc">&nbsp;        for(String name : metaFiles){</b>
+<b class="nc">&nbsp;            if((metaFile = file.child(name)).exists()){</b>
+<b class="nc">&nbsp;                break;</b>
 &nbsp;            }
 &nbsp;        }
 &nbsp;
-<b class="fc">&nbsp;        if(!metaFile.exists()){</b>
+<b class="nc">&nbsp;        if(!metaFile.exists()){</b>
 <b class="nc">&nbsp;            return null;</b>
 &nbsp;        }
 &nbsp;
-<b class="fc">&nbsp;        ModMeta meta = json.fromJson(ModMeta.class, Jval.read(metaFile.readString()).toString(Jformat.plain));</b>
-<b class="fc">&nbsp;        meta.cleanup();</b>
-<b class="fc">&nbsp;        return meta;</b>
+<b class="nc">&nbsp;        ModMeta meta = json.fromJson(ModMeta.class, Jval.read(metaFile.readString()).toString(Jformat.plain));</b>
+<b class="nc">&nbsp;        meta.cleanup();</b>
+<b class="nc">&nbsp;        return meta;</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    /** Resolves the loading order of a list mods/plugins using their internal names. */
@@ -1183,35 +1183,35 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;        var context = new ModResolutionContext();</b>
 &nbsp;
 <b class="fc">&nbsp;        for(var meta : metas){</b>
-<b class="fc">&nbsp;            Seq&lt;ModDependency&gt; dependencies = new Seq&lt;&gt;();</b>
-<b class="fc">&nbsp;            for(var dependency : meta.dependencies){</b>
+<b class="nc">&nbsp;            Seq&lt;ModDependency&gt; dependencies = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;            for(var dependency : meta.dependencies){</b>
 <b class="nc">&nbsp;                dependencies.add(new ModDependency(dependency, true));</b>
 <b class="nc">&nbsp;            }</b>
-<b class="fc">&nbsp;            for(var dependency : meta.softDependencies){</b>
+<b class="nc">&nbsp;            for(var dependency : meta.softDependencies){</b>
 <b class="nc">&nbsp;                dependencies.add(new ModDependency(dependency, false));</b>
 <b class="nc">&nbsp;            }</b>
-<b class="fc">&nbsp;            context.dependencies.put(meta.internalName, dependencies);</b>
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;            context.dependencies.put(meta.internalName, dependencies);</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;
 <b class="fc">&nbsp;        for(var key : context.dependencies.keys()){</b>
-<b class="fc">&nbsp;            if(context.ordered.contains(key)){</b>
+<b class="nc">&nbsp;            if(context.ordered.contains(key)){</b>
 <b class="nc">&nbsp;                continue;</b>
 &nbsp;            }
-<b class="fc">&nbsp;            resolve(key, context);</b>
-<b class="fc">&nbsp;            context.visited.clear();</b>
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;            resolve(key, context);</b>
+<b class="nc">&nbsp;            context.visited.clear();</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;
 <b class="fc">&nbsp;        var result = new OrderedMap&lt;String, ModState&gt;();</b>
 <b class="fc">&nbsp;        for(var name : context.ordered){</b>
-<b class="fc">&nbsp;            result.put(name, ModState.enabled);</b>
-<b class="fc">&nbsp;        }</b>
+<b class="nc">&nbsp;            result.put(name, ModState.enabled);</b>
+<b class="nc">&nbsp;        }</b>
 <b class="fc">&nbsp;        result.putAll(context.invalid);</b>
 <b class="fc">&nbsp;        return result;</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    private boolean resolve(String element, ModResolutionContext context){
-<b class="fc">&nbsp;        context.visited.add(element);</b>
-<b class="fc">&nbsp;        for(final var dependency : context.dependencies.get(element)){</b>
+<b class="nc">&nbsp;        context.visited.add(element);</b>
+<b class="nc">&nbsp;        for(final var dependency : context.dependencies.get(element)){</b>
 &nbsp;            // Circular dependencies ?
 <b class="nc">&nbsp;            if(context.visited.contains(dependency.name) &amp;&amp; !context.ordered.contains(dependency.name)){</b>
 <b class="nc">&nbsp;                context.invalid.put(dependency.name, ModState.circularDependencies);</b>
@@ -1228,10 +1228,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="nc">&nbsp;                return false;</b>
 &nbsp;            }
 <b class="nc">&nbsp;        }</b>
-<b class="fc">&nbsp;        if(!context.ordered.contains(element)){</b>
-<b class="fc">&nbsp;            context.ordered.add(element);</b>
+<b class="nc">&nbsp;        if(!context.ordered.contains(element)){</b>
+<b class="nc">&nbsp;            context.ordered.add(element);</b>
 &nbsp;        }
-<b class="fc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;        return true;</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    /** Loads a mod file+meta, but does not add it to the list.
@@ -1243,30 +1243,30 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    /** Loads a mod file+meta, but does not add it to the list.
 &nbsp;     * Note that directories can be loaded as mods. */
 &nbsp;    private LoadedMod loadMod(Fi sourceFile, boolean overwrite, boolean initialize) throws Exception{
-<b class="fc">&nbsp;        Time.mark();</b>
+<b class="nc">&nbsp;        Time.mark();</b>
 &nbsp;
-<b class="fc">&nbsp;        ZipFi rootZip = null;</b>
+<b class="nc">&nbsp;        ZipFi rootZip = null;</b>
 &nbsp;
 &nbsp;        try{
-<b class="fc">&nbsp;            Fi zip = sourceFile.isDirectory() ? sourceFile : (rootZip = new ZipFi(sourceFile));</b>
-<b class="fc">&nbsp;            if(zip.list().length == 1 &amp;&amp; zip.list()[0].isDirectory()){</b>
-<b class="fc">&nbsp;                zip = zip.list()[0];</b>
+<b class="nc">&nbsp;            Fi zip = sourceFile.isDirectory() ? sourceFile : (rootZip = new ZipFi(sourceFile));</b>
+<b class="nc">&nbsp;            if(zip.list().length == 1 &amp;&amp; zip.list()[0].isDirectory()){</b>
+<b class="nc">&nbsp;                zip = zip.list()[0];</b>
 &nbsp;            }
 &nbsp;
-<b class="fc">&nbsp;            ModMeta meta = findMeta(zip);</b>
+<b class="nc">&nbsp;            ModMeta meta = findMeta(zip);</b>
 &nbsp;
-<b class="fc">&nbsp;            if(meta == null){</b>
+<b class="nc">&nbsp;            if(meta == null){</b>
 <b class="nc">&nbsp;                Log.warn(&quot;Mod @ doesn&#39;t have a &#39;[mod/plugin].[h]json&#39; file, skipping.&quot;, zip);</b>
 <b class="nc">&nbsp;                throw new ModLoadException(&quot;Invalid file: No mod.json found.&quot;);</b>
 &nbsp;            }
 &nbsp;
-<b class="fc">&nbsp;            String camelized = meta.name.replace(&quot; &quot;, &quot;&quot;);</b>
-<b class="fc">&nbsp;            String mainClass = meta.main == null ? camelized.toLowerCase(Locale.ROOT) + &quot;.&quot; + camelized + &quot;Mod&quot; : meta.main;</b>
-<b class="fc">&nbsp;            String baseName = meta.name.toLowerCase(Locale.ROOT).replace(&quot; &quot;, &quot;-&quot;);</b>
+<b class="nc">&nbsp;            String camelized = meta.name.replace(&quot; &quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;            String mainClass = meta.main == null ? camelized.toLowerCase(Locale.ROOT) + &quot;.&quot; + camelized + &quot;Mod&quot; : meta.main;</b>
+<b class="nc">&nbsp;            String baseName = meta.name.toLowerCase(Locale.ROOT).replace(&quot; &quot;, &quot;-&quot;);</b>
 &nbsp;
-<b class="fc">&nbsp;            var other = mods.find(m -&gt; m.name.equals(baseName));</b>
+<b class="nc">&nbsp;            var other = mods.find(m -&gt; m.name.equals(baseName));</b>
 &nbsp;
-<b class="fc">&nbsp;            if(other != null){</b>
+<b class="nc">&nbsp;            if(other != null){</b>
 &nbsp;                //steam mods can&#39;t really be deleted, they need to be unsubscribed
 <b class="nc">&nbsp;                if(overwrite &amp;&amp; !other.hasSteamID()){</b>
 &nbsp;                    //close zip file
@@ -1286,42 +1286,42 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;                }
 &nbsp;            }
 &nbsp;
-<b class="fc">&nbsp;            ClassLoader loader = null;</b>
+<b class="nc">&nbsp;            ClassLoader loader = null;</b>
 &nbsp;            Mod mainMod;
-<b class="fc">&nbsp;            Fi mainFile = zip;</b>
+<b class="nc">&nbsp;            Fi mainFile = zip;</b>
 &nbsp;
-<b class="fc">&nbsp;            if(android){</b>
+<b class="nc">&nbsp;            if(android){</b>
 <b class="nc">&nbsp;                mainFile = mainFile.child(&quot;classes.dex&quot;);</b>
 &nbsp;            }else{
-<b class="fc">&nbsp;                String[] path = (mainClass.replace(&#39;.&#39;, &#39;/&#39;) + &quot;.class&quot;).split(&quot;/&quot;);</b>
-<b class="fc">&nbsp;                for(String str : path){</b>
-<b class="fc">&nbsp;                    if(!str.isEmpty()){</b>
-<b class="fc">&nbsp;                        mainFile = mainFile.child(str);</b>
+<b class="nc">&nbsp;                String[] path = (mainClass.replace(&#39;.&#39;, &#39;/&#39;) + &quot;.class&quot;).split(&quot;/&quot;);</b>
+<b class="nc">&nbsp;                for(String str : path){</b>
+<b class="nc">&nbsp;                    if(!str.isEmpty()){</b>
+<b class="nc">&nbsp;                        mainFile = mainFile.child(str);</b>
 &nbsp;                    }
 &nbsp;                }
 &nbsp;            }
 &nbsp;
 &nbsp;            //make sure the main class exists before loading it; if it doesn&#39;t just don&#39;t put it there
 &nbsp;            //if the mod is explicitly marked as java, try loading it anyway
-<b class="fc">&nbsp;            if(</b>
-<b class="fc">&nbsp;                (mainFile.exists() || meta.java) &amp;&amp;</b>
-<b class="fc">&nbsp;                !skipModLoading() &amp;&amp;</b>
-<b class="fc">&nbsp;                Core.settings.getBool(&quot;mod-&quot; + baseName + &quot;-enabled&quot;, true) &amp;&amp;</b>
-<b class="fc">&nbsp;                Version.isAtLeast(meta.minGameVersion) &amp;&amp;</b>
-<b class="fc">&nbsp;                (meta.getMinMajor() &gt;= 136 || headless) &amp;&amp;</b>
+<b class="nc">&nbsp;            if(</b>
+<b class="nc">&nbsp;                (mainFile.exists() || meta.java) &amp;&amp;</b>
+<b class="nc">&nbsp;                !skipModLoading() &amp;&amp;</b>
+<b class="nc">&nbsp;                Core.settings.getBool(&quot;mod-&quot; + baseName + &quot;-enabled&quot;, true) &amp;&amp;</b>
+<b class="nc">&nbsp;                Version.isAtLeast(meta.minGameVersion) &amp;&amp;</b>
+<b class="nc">&nbsp;                (meta.getMinMajor() &gt;= 136 || headless) &amp;&amp;</b>
 &nbsp;                initialize
 &nbsp;            ){
-<b class="fc">&nbsp;                if(ios){</b>
+<b class="nc">&nbsp;                if(ios){</b>
 <b class="nc">&nbsp;                    throw new ModLoadException(&quot;Java class mods are not supported on iOS.&quot;);</b>
 &nbsp;                }
 &nbsp;
-<b class="fc">&nbsp;                loader = platform.loadJar(sourceFile, mainLoader);</b>
-<b class="fc">&nbsp;                mainLoader.addChild(loader);</b>
-<b class="fc">&nbsp;                Class&lt;?&gt; main = Class.forName(mainClass, true, loader);</b>
+<b class="nc">&nbsp;                loader = platform.loadJar(sourceFile, mainLoader);</b>
+<b class="nc">&nbsp;                mainLoader.addChild(loader);</b>
+<b class="nc">&nbsp;                Class&lt;?&gt; main = Class.forName(mainClass, true, loader);</b>
 &nbsp;
 &nbsp;                //detect mods that incorrectly package mindustry in the jar
-<b class="fc">&nbsp;                if((main.getSuperclass().getName().equals(&quot;mindustry.mod.Plugin&quot;) || main.getSuperclass().getName().equals(&quot;mindustry.mod.Mod&quot;)) &amp;&amp;</b>
-<b class="fc">&nbsp;                    main.getSuperclass().getClassLoader() != Mod.class.getClassLoader()){</b>
+<b class="nc">&nbsp;                if((main.getSuperclass().getName().equals(&quot;mindustry.mod.Plugin&quot;) || main.getSuperclass().getName().equals(&quot;mindustry.mod.Mod&quot;)) &amp;&amp;</b>
+<b class="nc">&nbsp;                    main.getSuperclass().getClassLoader() != Mod.class.getClassLoader()){</b>
 <b class="nc">&nbsp;                    throw new ModLoadException(</b>
 &nbsp;                        &quot;This mod/plugin has loaded Mindustry dependencies from its own class loader. &quot; +
 &nbsp;                        &quot;You are incorrectly including Mindustry dependencies in the mod JAR - &quot; +
@@ -1329,35 +1329,35 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;                    );
 &nbsp;                }
 &nbsp;
-<b class="fc">&nbsp;                metas.put(main, meta);</b>
-<b class="fc">&nbsp;                mainMod = (Mod)main.getDeclaredConstructor().newInstance();</b>
-<b class="fc">&nbsp;            }else{</b>
-<b class="fc">&nbsp;                mainMod = null;</b>
+<b class="nc">&nbsp;                metas.put(main, meta);</b>
+<b class="nc">&nbsp;                mainMod = (Mod)main.getDeclaredConstructor().newInstance();</b>
+<b class="nc">&nbsp;            }else{</b>
+<b class="nc">&nbsp;                mainMod = null;</b>
 &nbsp;            }
 &nbsp;
 &nbsp;            //all plugins are hidden implicitly
-<b class="fc">&nbsp;            if(mainMod instanceof Plugin){</b>
+<b class="nc">&nbsp;            if(mainMod instanceof Plugin){</b>
 <b class="nc">&nbsp;                meta.hidden = true;</b>
 &nbsp;            }
 &nbsp;
 &nbsp;            //disallow putting a description after the version
-<b class="fc">&nbsp;            if(meta.version != null){</b>
-<b class="fc">&nbsp;                int line = meta.version.indexOf(&#39;\n&#39;);</b>
-<b class="fc">&nbsp;                if(line != -1){</b>
+<b class="nc">&nbsp;            if(meta.version != null){</b>
+<b class="nc">&nbsp;                int line = meta.version.indexOf(&#39;\n&#39;);</b>
+<b class="nc">&nbsp;                if(line != -1){</b>
 <b class="nc">&nbsp;                    meta.version = meta.version.substring(0, line);</b>
 &nbsp;                }
 &nbsp;            }
 &nbsp;
 &nbsp;            //skip mod loading if it failed
-<b class="fc">&nbsp;            if(skipModLoading()){</b>
+<b class="nc">&nbsp;            if(skipModLoading()){</b>
 <b class="nc">&nbsp;                Core.settings.put(&quot;mod-&quot; + baseName + &quot;-enabled&quot;, false);</b>
 &nbsp;            }
 &nbsp;
-<b class="fc">&nbsp;            if(!headless &amp;&amp; Core.settings.getBool(&quot;mod-&quot; + baseName + &quot;-enabled&quot;, true)){</b>
+<b class="nc">&nbsp;            if(!headless &amp;&amp; Core.settings.getBool(&quot;mod-&quot; + baseName + &quot;-enabled&quot;, true)){</b>
 <b class="nc">&nbsp;                Log.info(&quot;Loaded mod &#39;@&#39; in @ms&quot;, meta.name, Time.elapsed());</b>
 &nbsp;            }
 &nbsp;
-<b class="fc">&nbsp;            return new LoadedMod(sourceFile, zip, mainMod, loader, meta);</b>
+<b class="nc">&nbsp;            return new LoadedMod(sourceFile, zip, mainMod, loader, meta);</b>
 <b class="nc">&nbsp;        }catch(Exception e){</b>
 &nbsp;            //delete root zip file so it can be closed on windows
 <b class="nc">&nbsp;            if(rootZip != null) rootZip.delete();</b>
@@ -1378,25 +1378,25 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;        /** This mod&#39;s metadata. */
 &nbsp;        public final ModMeta meta;
 &nbsp;        /** This mod&#39;s dependencies as already-loaded mods. */
-<b class="fc">&nbsp;        public Seq&lt;LoadedMod&gt; dependencies = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        public Seq&lt;LoadedMod&gt; dependencies = new Seq&lt;&gt;();</b>
 &nbsp;        /** All missing dependencies of this mod as strings. */
-<b class="fc">&nbsp;        public Seq&lt;String&gt; missingDependencies = new Seq&lt;&gt;();</b>
+<b class="nc">&nbsp;        public Seq&lt;String&gt; missingDependencies = new Seq&lt;&gt;();</b>
 &nbsp;        /** Content with initialization code. */
-<b class="fc">&nbsp;        public ObjectSet&lt;Content&gt; erroredContent = new ObjectSet&lt;&gt;();</b>
+<b class="nc">&nbsp;        public ObjectSet&lt;Content&gt; erroredContent = new ObjectSet&lt;&gt;();</b>
 &nbsp;        /** Current state of this mod. */
-<b class="fc">&nbsp;        public ModState state = ModState.enabled;</b>
+<b class="nc">&nbsp;        public ModState state = ModState.enabled;</b>
 &nbsp;        /** Icon texture. Should be disposed. */
 &nbsp;        public @Nullable Texture iconTexture;
 &nbsp;        /** Class loader for JAR mods. Null if the mod isn&#39;t loaded or this isn&#39;t a jar mod. */
 &nbsp;        public @Nullable ClassLoader loader;
 &nbsp;
-<b class="fc">&nbsp;        public LoadedMod(Fi file, Fi root, Mod main, ClassLoader loader, ModMeta meta){</b>
-<b class="fc">&nbsp;            this.root = root;</b>
-<b class="fc">&nbsp;            this.file = file;</b>
-<b class="fc">&nbsp;            this.loader = loader;</b>
-<b class="fc">&nbsp;            this.main = main;</b>
-<b class="fc">&nbsp;            this.meta = meta;</b>
-<b class="fc">&nbsp;            this.name = meta.name.toLowerCase(Locale.ROOT).replace(&quot; &quot;, &quot;-&quot;);</b>
+<b class="nc">&nbsp;        public LoadedMod(Fi file, Fi root, Mod main, ClassLoader loader, ModMeta meta){</b>
+<b class="nc">&nbsp;            this.root = root;</b>
+<b class="nc">&nbsp;            this.file = file;</b>
+<b class="nc">&nbsp;            this.loader = loader;</b>
+<b class="nc">&nbsp;            this.main = main;</b>
+<b class="nc">&nbsp;            this.meta = meta;</b>
+<b class="nc">&nbsp;            this.name = meta.name.toLowerCase(Locale.ROOT).replace(&quot; &quot;, &quot;-&quot;);</b>
 &nbsp;        }
 &nbsp;
 &nbsp;        /** @return whether this is a java class mod. */
@@ -1414,11 +1414,11 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;        }
 &nbsp;
 &nbsp;        public boolean enabled(){
-<b class="fc">&nbsp;            return state == ModState.enabled || state == ModState.contentErrors;</b>
+<b class="nc">&nbsp;            return state == ModState.enabled || state == ModState.contentErrors;</b>
 &nbsp;        }
 &nbsp;
 &nbsp;        public boolean shouldBeEnabled(){
-<b class="fc">&nbsp;            return Core.settings.getBool(&quot;mod-&quot; + name + &quot;-enabled&quot;, true);</b>
+<b class="nc">&nbsp;            return Core.settings.getBool(&quot;mod-&quot; + name + &quot;-enabled&quot;, true);</b>
 &nbsp;        }
 &nbsp;
 &nbsp;        public boolean hasUnmetDependencies(){
@@ -1426,13 +1426,13 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;        }
 &nbsp;
 &nbsp;        public boolean hasContentErrors(){
-<b class="fc">&nbsp;            return !erroredContent.isEmpty();</b>
+<b class="nc">&nbsp;            return !erroredContent.isEmpty();</b>
 &nbsp;        }
 &nbsp;
 &nbsp;        /** @return whether this mod is supported by the game version */
 &nbsp;        public boolean isSupported(){
 &nbsp;            //no unsupported mods on servers
-<b class="fc">&nbsp;            if(headless) return true;</b>
+<b class="nc">&nbsp;            if(headless) return true;</b>
 &nbsp;
 <b class="nc">&nbsp;            if(isOutdated() || isBlacklisted()) return false;</b>
 &nbsp;
@@ -1528,22 +1528,22 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    }
 &nbsp;
 &nbsp;    /** Mod metadata information.*/
-<b class="fc">&nbsp;    public static class ModMeta{</b>
+<b class="nc">&nbsp;    public static class ModMeta{</b>
 &nbsp;        /** Name as defined in mod.json. Stripped of colors, but may contain spaces. */
 &nbsp;        public String name;
 &nbsp;        /** Name without spaces in all lower case. */
 &nbsp;        public String internalName;
 &nbsp;        /** Minimum game version that this mod requires, e.g. &quot;140.1&quot; */
-<b class="fc">&nbsp;        public String minGameVersion = &quot;0&quot;;</b>
+<b class="nc">&nbsp;        public String minGameVersion = &quot;0&quot;;</b>
 &nbsp;        public @Nullable String displayName, author, description, subtitle, version, main, repo;
-<b class="fc">&nbsp;        public Seq&lt;String&gt; dependencies = Seq.with();</b>
-<b class="fc">&nbsp;        public Seq&lt;String&gt; softDependencies = Seq.with();</b>
+<b class="nc">&nbsp;        public Seq&lt;String&gt; dependencies = Seq.with();</b>
+<b class="nc">&nbsp;        public Seq&lt;String&gt; softDependencies = Seq.with();</b>
 &nbsp;        /** Hidden mods are only server-side or client-side, and do not support adding new content. */
 &nbsp;        public boolean hidden;
 &nbsp;        /** If true, this mod should be loaded as a Java class mod. This is technically optional, but highly recommended. */
 &nbsp;        public boolean java;
 &nbsp;        /** To rescale textures with a different size. Represents the size in pixels of the sprite of a 1x1 block. */
-<b class="fc">&nbsp;        public float texturescale = 1.0f;</b>
+<b class="nc">&nbsp;        public float texturescale = 1.0f;</b>
 &nbsp;        /** If true, bleeding is skipped and no content icons are generated. */
 &nbsp;        public boolean pregenerated;
 &nbsp;        /** If set, load the mod content in this order by content names */
@@ -1560,20 +1560,20 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 &nbsp;        //removes all colors
 &nbsp;        public void cleanup(){
-<b class="fc">&nbsp;            if(name != null) name = Strings.stripColors(name);</b>
-<b class="fc">&nbsp;            if(displayName != null) displayName = Strings.stripColors(displayName);</b>
-<b class="fc">&nbsp;            if(displayName == null) displayName = name;</b>
-<b class="fc">&nbsp;            if(version == null) version = &quot;0&quot;;</b>
-<b class="fc">&nbsp;            if(author != null) author = Strings.stripColors(author);</b>
-<b class="fc">&nbsp;            if(description != null) description = Strings.stripColors(description);</b>
-<b class="fc">&nbsp;            if(subtitle != null) subtitle = Strings.stripColors(subtitle).replace(&quot;\n&quot;, &quot;&quot;);</b>
-<b class="fc">&nbsp;            if(name != null) internalName = name.toLowerCase(Locale.ROOT).replace(&quot; &quot;, &quot;-&quot;);</b>
+<b class="nc">&nbsp;            if(name != null) name = Strings.stripColors(name);</b>
+<b class="nc">&nbsp;            if(displayName != null) displayName = Strings.stripColors(displayName);</b>
+<b class="nc">&nbsp;            if(displayName == null) displayName = name;</b>
+<b class="nc">&nbsp;            if(version == null) version = &quot;0&quot;;</b>
+<b class="nc">&nbsp;            if(author != null) author = Strings.stripColors(author);</b>
+<b class="nc">&nbsp;            if(description != null) description = Strings.stripColors(description);</b>
+<b class="nc">&nbsp;            if(subtitle != null) subtitle = Strings.stripColors(subtitle).replace(&quot;\n&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;            if(name != null) internalName = name.toLowerCase(Locale.ROOT).replace(&quot; &quot;, &quot;-&quot;);</b>
 &nbsp;        }
 &nbsp;
 &nbsp;        public int getMinMajor(){
-<b class="fc">&nbsp;            String ver = minGameVersion == null ? &quot;0&quot; : minGameVersion;</b>
-<b class="fc">&nbsp;            int dot = ver.indexOf(&quot;.&quot;);</b>
-<b class="fc">&nbsp;            return dot != -1 ? Strings.parseInt(ver.substring(0, dot), 0) : Strings.parseInt(ver, 0);</b>
+<b class="nc">&nbsp;            String ver = minGameVersion == null ? &quot;0&quot; : minGameVersion;</b>
+<b class="nc">&nbsp;            int dot = ver.indexOf(&quot;.&quot;);</b>
+<b class="nc">&nbsp;            return dot != -1 ? Strings.parseInt(ver.substring(0, dot), 0) : Strings.parseInt(ver, 0);</b>
 &nbsp;        }
 &nbsp;
 &nbsp;        @Override
@@ -1604,14 +1604,14 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;        }
 &nbsp;    }
 &nbsp;
-<b class="fc">&nbsp;    public enum ModState{</b>
-<b class="fc">&nbsp;        enabled,</b>
-<b class="fc">&nbsp;        contentErrors,</b>
-<b class="fc">&nbsp;        missingDependencies,</b>
-<b class="fc">&nbsp;        incompleteDependencies,</b>
-<b class="fc">&nbsp;        circularDependencies,</b>
-<b class="fc">&nbsp;        unsupported,</b>
-<b class="fc">&nbsp;        disabled,</b>
+<b class="nc">&nbsp;    public enum ModState{</b>
+<b class="nc">&nbsp;        enabled,</b>
+<b class="nc">&nbsp;        contentErrors,</b>
+<b class="nc">&nbsp;        missingDependencies,</b>
+<b class="nc">&nbsp;        incompleteDependencies,</b>
+<b class="nc">&nbsp;        circularDependencies,</b>
+<b class="nc">&nbsp;        unsupported,</b>
+<b class="nc">&nbsp;        disabled,</b>
 &nbsp;    }
 &nbsp;
 <b class="fc">&nbsp;    public static class ModResolutionContext {</b>
@@ -1654,7 +1654,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:59</div>
 </div>
 </body>
 </html>

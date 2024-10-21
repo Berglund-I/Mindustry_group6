@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Weaponsc</title>
+  <title>Coverage Report > EffectStatec</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Weaponsc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: EffectStatec (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Weaponsc</td>
+  <td class="name">EffectStatec</td>
 </tr>
 
 </table>
@@ -40,70 +40,31 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.math.geom.Position;
+&nbsp;import arc.graphics.Color;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.entities.units.WeaponMount;
-&nbsp;import mindustry.type.UnitType;
+&nbsp;import mindustry.entities.Effect;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.WeaponsComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.EffectStateComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Weaponsc extends Entityc, Flyingc, Healthc, Hitboxc, Posc, Rotc, Statusc, Teamc, Velc {
-&nbsp;  /**
-&nbsp;   * Aim at something. This will make all mounts point at it. 
-&nbsp;   */
-&nbsp;  void aim(float x, float y);
+&nbsp;public interface EffectStatec extends Childc, Drawc, Entityc, Posc, Rotc, Timedc {
+&nbsp;  Color color();
 &nbsp;
-&nbsp;  /**
-&nbsp;   * Update shooting and rotation for this unit. 
-&nbsp;   */
-&nbsp;  void update();
+&nbsp;  float clipSize();
 &nbsp;
-&nbsp;  /**
-&nbsp;   * weapon mount array, never null 
-&nbsp;   */
-&nbsp;  WeaponMount[] mounts();
+&nbsp;  Object data();
 &nbsp;
-&nbsp;  /**
-&nbsp;   * weapon mount array, never null 
-&nbsp;   */
-&nbsp;  void mounts(WeaponMount[] mounts);
+&nbsp;  Effect effect();
 &nbsp;
-&nbsp;  boolean canShoot();
+&nbsp;  void color(Color color);
 &nbsp;
-&nbsp;  boolean isRotate();
+&nbsp;  void data(Object data);
 &nbsp;
-&nbsp;  boolean isShooting();
+&nbsp;  void draw();
 &nbsp;
-&nbsp;  float aimX();
-&nbsp;
-&nbsp;  float aimY();
-&nbsp;
-&nbsp;  float ammo();
-&nbsp;
-&nbsp;  float ammof();
-&nbsp;
-&nbsp;  void aim(Position pos);
-&nbsp;
-&nbsp;  void aimX(float aimX);
-&nbsp;
-&nbsp;  void aimY(float aimY);
-&nbsp;
-&nbsp;  void ammo(float ammo);
-&nbsp;
-&nbsp;  void controlWeapons(boolean rotate, boolean shoot);
-&nbsp;
-&nbsp;  void controlWeapons(boolean rotateShoot);
-&nbsp;
-&nbsp;  void isShooting(boolean isShooting);
-&nbsp;
-&nbsp;  void remove();
-&nbsp;
-&nbsp;  void setWeaponRotation(float rotation);
-&nbsp;
-&nbsp;  void setupWeapons(UnitType def);
+&nbsp;  void effect(Effect effect);
 &nbsp;}
 </code>
 </pre>
@@ -128,7 +89,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

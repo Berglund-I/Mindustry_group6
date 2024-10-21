@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > UnitTetherc</title>
+  <title>Coverage Report > Puddlec</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: UnitTetherc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Puddlec (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">UnitTetherc</td>
+  <td class="name">Puddlec</td>
 </tr>
 
 </table>
@@ -40,29 +40,57 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.util.Nullable;
 &nbsp;import mindustry.annotations.Annotations;
+&nbsp;import mindustry.type.Liquid;
+&nbsp;import mindustry.world.Tile;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.UnitTetherComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.PuddleComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface UnitTetherc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
-&nbsp;  @Nullable
-&nbsp;  Unit spawner();
+&nbsp;public interface Puddlec extends Drawc, Entityc, Posc, Syncc {
+&nbsp;  float accepting();
 &nbsp;
-&nbsp;  int spawnerUnitId();
+&nbsp;  float amount();
+&nbsp;
+&nbsp;  float clipSize();
+&nbsp;
+&nbsp;  float effectTime();
+&nbsp;
+&nbsp;  float getFlammability();
+&nbsp;
+&nbsp;  float lastRipple();
+&nbsp;
+&nbsp;  float updateTime();
+&nbsp;
+&nbsp;  Liquid liquid();
+&nbsp;
+&nbsp;  Tile tile();
+&nbsp;
+&nbsp;  void accepting(float accepting);
 &nbsp;
 &nbsp;  void afterRead();
 &nbsp;
 &nbsp;  void afterSync();
 &nbsp;
-&nbsp;  void spawner(@Nullable Unit spawner);
+&nbsp;  void amount(float amount);
 &nbsp;
-&nbsp;  void spawnerUnitId(int spawnerUnitId);
+&nbsp;  void draw();
+&nbsp;
+&nbsp;  void effectTime(float effectTime);
+&nbsp;
+&nbsp;  void lastRipple(float lastRipple);
+&nbsp;
+&nbsp;  void liquid(Liquid liquid);
+&nbsp;
+&nbsp;  void remove();
+&nbsp;
+&nbsp;  void tile(Tile tile);
 &nbsp;
 &nbsp;  void update();
+&nbsp;
+&nbsp;  void updateTime(float updateTime);
 &nbsp;}
 </code>
 </pre>
@@ -87,7 +115,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

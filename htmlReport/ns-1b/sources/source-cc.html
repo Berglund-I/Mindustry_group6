@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Bulletc</title>
+  <title>Coverage Report > Physicsc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Bulletc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Physicsc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Bulletc</td>
+  <td class="name">Physicsc</td>
 </tr>
 
 </table>
@@ -40,128 +40,27 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.func.Cons;
-&nbsp;import arc.math.geom.QuadTree;
-&nbsp;import arc.struct.IntSeq;
-&nbsp;import arc.util.Nullable;
+&nbsp;import arc.math.geom.Vec2;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.entities.Mover;
-&nbsp;import mindustry.entities.bullet.BulletType;
-&nbsp;import mindustry.graphics.Trail;
-&nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.async.PhysicsProcess;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.BulletComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.PhysicsComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Bulletc extends Damagec, Drawc, Entityc, Hitboxc, Ownerc, Posc, Shielderc, Teamc, Timedc, Timerc, Velc {
-&nbsp;  /**
-&nbsp;   * @return the bullet&#39;s rotation. 
-&nbsp;   */
-&nbsp;  float rotation();
+&nbsp;public interface Physicsc extends Entityc, Flyingc, Healthc, Hitboxc, Posc, Velc {
+&nbsp;  float mass();
 &nbsp;
-&nbsp;  /**
-&nbsp;   * Sets the bullet&#39;s rotation in degrees. 
-&nbsp;   */
-&nbsp;  void rotation(float angle);
+&nbsp;  PhysicsProcess.PhysicRef physref();
 &nbsp;
-&nbsp;  @Nullable
-&nbsp;  Mover mover();
+&nbsp;  void impulse(Vec2 v);
 &nbsp;
-&nbsp;  @Nullable
-&nbsp;  Trail trail();
+&nbsp;  void impulse(float x, float y);
 &nbsp;
-&nbsp;  @Nullable
-&nbsp;  Tile aimTile();
+&nbsp;  void impulseNet(Vec2 v);
 &nbsp;
-&nbsp;  IntSeq collided();
-&nbsp;
-&nbsp;  boolean absorbed();
-&nbsp;
-&nbsp;  boolean checkUnderBuild(Building build, float x, float y);
-&nbsp;
-&nbsp;  boolean collides(Hitboxc other);
-&nbsp;
-&nbsp;  boolean hasCollided(int id);
-&nbsp;
-&nbsp;  boolean hit();
-&nbsp;
-&nbsp;  boolean isLocal();
-&nbsp;
-&nbsp;  boolean keepAlive();
-&nbsp;
-&nbsp;  float aimX();
-&nbsp;
-&nbsp;  float aimY();
-&nbsp;
-&nbsp;  float clipSize();
-&nbsp;
-&nbsp;  float damageMultiplier();
-&nbsp;
-&nbsp;  float fdata();
-&nbsp;
-&nbsp;  float originX();
-&nbsp;
-&nbsp;  float originY();
-&nbsp;
-&nbsp;  int frags();
-&nbsp;
-&nbsp;  Object data();
-&nbsp;
-&nbsp;  BulletType type();
-&nbsp;
-&nbsp;  void absorb();
-&nbsp;
-&nbsp;  void absorbed(boolean absorbed);
-&nbsp;
-&nbsp;  void add();
-&nbsp;
-&nbsp;  void aimTile(@Nullable Tile aimTile);
-&nbsp;
-&nbsp;  void aimX(float aimX);
-&nbsp;
-&nbsp;  void aimY(float aimY);
-&nbsp;
-&nbsp;  void collided(IntSeq collided);
-&nbsp;
-&nbsp;  void collision(Hitboxc other, float x, float y);
-&nbsp;
-&nbsp;  void data(Object data);
-&nbsp;
-&nbsp;  void draw();
-&nbsp;
-&nbsp;  void fdata(float fdata);
-&nbsp;
-&nbsp;  void frags(int frags);
-&nbsp;
-&nbsp;  void getCollisions(Cons&lt;QuadTree&gt; consumer);
-&nbsp;
-&nbsp;  void hit(boolean hit);
-&nbsp;
-&nbsp;  void initVel(float angle, float amount);
-&nbsp;
-&nbsp;  void keepAlive(boolean keepAlive);
-&nbsp;
-&nbsp;  void moveRelative(float x, float y);
-&nbsp;
-&nbsp;  void mover(@Nullable Mover mover);
-&nbsp;
-&nbsp;  void originX(float originX);
-&nbsp;
-&nbsp;  void originY(float originY);
-&nbsp;
-&nbsp;  void remove();
-&nbsp;
-&nbsp;  void tileRaycast(int x1, int y1, int x2, int y2);
-&nbsp;
-&nbsp;  void trail(@Nullable Trail trail);
-&nbsp;
-&nbsp;  void turn(float x, float y);
-&nbsp;
-&nbsp;  void type(BulletType type);
-&nbsp;
-&nbsp;  void update();
+&nbsp;  void physref(PhysicsProcess.PhysicRef physref);
 &nbsp;}
 </code>
 </pre>
@@ -186,7 +85,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

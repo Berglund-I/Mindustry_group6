@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Playerc</title>
+  <title>Coverage Report > BuildingTetherc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Playerc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: BuildingTetherc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Playerc</td>
+  <td class="name">BuildingTetherc</td>
 </tr>
 
 </table>
@@ -40,178 +40,19 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.graphics.Color;
-&nbsp;import arc.graphics.g2d.TextureRegion;
 &nbsp;import arc.util.Nullable;
-&nbsp;import arc.util.Ratekeeper;
-&nbsp;import mindustry.ai.UnitCommand;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.entities.units.UnitController;
-&nbsp;import mindustry.game.Team;
-&nbsp;import mindustry.net.Administration;
-&nbsp;import mindustry.net.NetConnection;
-&nbsp;import mindustry.net.Packets;
-&nbsp;import mindustry.world.blocks.storage.CoreBlock;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.PlayerComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.BuildingTetherComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Playerc extends UnitController, Drawc, Entityc, Posc, Syncc, Timerc {
-&nbsp;  /**
-&nbsp;   * @return largest/closest core, with largest cores getting priority 
-&nbsp;   */
-&nbsp;  CoreBlock.CoreBuild bestCore();
-&nbsp;
-&nbsp;  /**
-&nbsp;   * @return name with a markup color prefix 
-&nbsp;   */
-&nbsp;  String coloredName();
-&nbsp;
-&nbsp;  /**
-&nbsp;   * command the unit had before it was controlled. 
-&nbsp;   */
+&nbsp;public interface BuildingTetherc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
 &nbsp;  @Nullable
-&nbsp;  UnitCommand lastCommand();
+&nbsp;  Building building();
 &nbsp;
-&nbsp;  /**
-&nbsp;   * command the unit had before it was controlled. 
-&nbsp;   */
-&nbsp;  void lastCommand(@Nullable UnitCommand lastCommand);
-&nbsp;
-&nbsp;  @Nullable
-&nbsp;  Unit justSwitchFrom();
-&nbsp;
-&nbsp;  @Nullable
-&nbsp;  Unit justSwitchTo();
-&nbsp;
-&nbsp;  @Nullable
-&nbsp;  NetConnection con();
-&nbsp;
-&nbsp;  Unit unit();
-&nbsp;
-&nbsp;  Color color();
-&nbsp;
-&nbsp;  TextureRegion icon();
-&nbsp;
-&nbsp;  Ratekeeper itemDepositRate();
-&nbsp;
-&nbsp;  boolean admin();
-&nbsp;
-&nbsp;  boolean boosting();
-&nbsp;
-&nbsp;  boolean dead();
-&nbsp;
-&nbsp;  boolean displayAmmo();
-&nbsp;
-&nbsp;  boolean isBuilder();
-&nbsp;
-&nbsp;  boolean isLogicControllable();
-&nbsp;
-&nbsp;  boolean isValidController();
-&nbsp;
-&nbsp;  boolean shooting();
-&nbsp;
-&nbsp;  boolean typing();
-&nbsp;
-&nbsp;  float clipSize();
-&nbsp;
-&nbsp;  float deathTimer();
-&nbsp;
-&nbsp;  float mouseX();
-&nbsp;
-&nbsp;  float mouseY();
-&nbsp;
-&nbsp;  float textFadeTime();
-&nbsp;
-&nbsp;  String ip();
-&nbsp;
-&nbsp;  String lastText();
-&nbsp;
-&nbsp;  String locale();
-&nbsp;
-&nbsp;  String name();
-&nbsp;
-&nbsp;  String plainName();
-&nbsp;
-&nbsp;  String usid();
-&nbsp;
-&nbsp;  String uuid();
-&nbsp;
-&nbsp;  Team team();
-&nbsp;
-&nbsp;  Administration.PlayerInfo getInfo();
-&nbsp;
-&nbsp;  CoreBlock.CoreBuild closestCore();
-&nbsp;
-&nbsp;  CoreBlock.CoreBuild core();
-&nbsp;
-&nbsp;  void admin(boolean admin);
-&nbsp;
-&nbsp;  void afterSync();
-&nbsp;
-&nbsp;  void boosting(boolean boosting);
-&nbsp;
-&nbsp;  void checkSpawn();
-&nbsp;
-&nbsp;  void clearUnit();
-&nbsp;
-&nbsp;  void color(Color color);
-&nbsp;
-&nbsp;  void con(@Nullable NetConnection con);
-&nbsp;
-&nbsp;  void deathTimer(float deathTimer);
-&nbsp;
-&nbsp;  void draw();
-&nbsp;
-&nbsp;  void itemDepositRate(Ratekeeper itemDepositRate);
-&nbsp;
-&nbsp;  void justSwitchFrom(@Nullable Unit justSwitchFrom);
-&nbsp;
-&nbsp;  void justSwitchTo(@Nullable Unit justSwitchTo);
-&nbsp;
-&nbsp;  void kick(String reason);
-&nbsp;
-&nbsp;  void kick(String reason, long duration);
-&nbsp;
-&nbsp;  void kick(Packets.KickReason reason);
-&nbsp;
-&nbsp;  void kick(Packets.KickReason reason, long duration);
-&nbsp;
-&nbsp;  void lastText(String lastText);
-&nbsp;
-&nbsp;  void locale(String locale);
-&nbsp;
-&nbsp;  void mouseX(float mouseX);
-&nbsp;
-&nbsp;  void mouseY(float mouseY);
-&nbsp;
-&nbsp;  void name(String name);
-&nbsp;
-&nbsp;  void remove();
-&nbsp;
-&nbsp;  void reset();
-&nbsp;
-&nbsp;  void sendMessage(String text);
-&nbsp;
-&nbsp;  void sendMessage(String text, Player from);
-&nbsp;
-&nbsp;  void sendMessage(String text, Player from, String unformatted);
-&nbsp;
-&nbsp;  void sendUnformatted(Player from, String unformatted);
-&nbsp;
-&nbsp;  void sendUnformatted(String unformatted);
-&nbsp;
-&nbsp;  void shooting(boolean shooting);
-&nbsp;
-&nbsp;  void team(Team team);
-&nbsp;
-&nbsp;  void textFadeTime(float textFadeTime);
-&nbsp;
-&nbsp;  void typing(boolean typing);
-&nbsp;
-&nbsp;  void unit(Unit unit);
+&nbsp;  void building(@Nullable Building building);
 &nbsp;
 &nbsp;  void update();
 &nbsp;}
@@ -238,7 +79,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>
