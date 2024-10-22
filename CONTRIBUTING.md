@@ -15,6 +15,7 @@ If you are submitting a new block, make sure it has a name and description, and 
 - Utilize the JUnit 5 framework when implementing tests
 - Use the appropriate annotation for each test method, e.g., @Test
 - Use naming convention testWhatToTest, e.g., testAddNewIndicator.
+- Comment your tests.
 - Format your tests in accordance to Arrange, Act, Assert (AAA) pattern to maintain clarity and consistency.
   - Arrange: Set up the necessary objects and prepare for the test, e.g., initializing objects or setting the context for the test.
   - Act: Perform the action or invoke the needed method.
