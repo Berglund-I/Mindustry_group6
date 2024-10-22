@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Posc</title>
+  <title>Coverage Report > WorldLabelc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Posc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: WorldLabelc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Posc</td>
+  <td class="name">WorldLabelc</td>
 </tr>
 
 </table>
@@ -40,54 +40,44 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.math.geom.Position;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.world.Block;
-&nbsp;import mindustry.world.Tile;
-&nbsp;import mindustry.world.blocks.environment.Floor;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.PosComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.WorldLabelComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Posc extends Position, Entityc {
+&nbsp;public interface WorldLabelc extends Drawc, Entityc, Posc, Syncc {
 &nbsp;  /**
-&nbsp;   * Returns air if this unit is on a non-air top block. 
+&nbsp;   * Flags are packed into a byte for sync efficiency; see the flag static values. 
 &nbsp;   */
-&nbsp;  Floor floorOn();
+&nbsp;  byte flags();
 &nbsp;
-&nbsp;  Building buildOn();
+&nbsp;  /**
+&nbsp;   * Flags are packed into a byte for sync efficiency; see the flag static values. 
+&nbsp;   */
+&nbsp;  void flags(byte flags);
 &nbsp;
-&nbsp;  boolean onSolid();
+&nbsp;  /**
+&nbsp;   * This MUST be called instead of remove()! 
+&nbsp;   */
+&nbsp;  void hide();
 &nbsp;
-&nbsp;  float getX();
+&nbsp;  float clipSize();
 &nbsp;
-&nbsp;  float getY();
+&nbsp;  float fontSize();
 &nbsp;
-&nbsp;  float x();
+&nbsp;  float z();
 &nbsp;
-&nbsp;  float y();
+&nbsp;  String text();
 &nbsp;
-&nbsp;  int tileX();
+&nbsp;  void draw();
 &nbsp;
-&nbsp;  int tileY();
+&nbsp;  void fontSize(float fontSize);
 &nbsp;
-&nbsp;  Block blockOn();
+&nbsp;  void text(String text);
 &nbsp;
-&nbsp;  Tile tileOn();
-&nbsp;
-&nbsp;  void set(Position pos);
-&nbsp;
-&nbsp;  void set(float x, float y);
-&nbsp;
-&nbsp;  void trns(Position pos);
-&nbsp;
-&nbsp;  void trns(float x, float y);
-&nbsp;
-&nbsp;  void x(float x);
-&nbsp;
-&nbsp;  void y(float y);
+&nbsp;  void z(float z);
 &nbsp;}
 </code>
 </pre>
@@ -112,7 +102,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

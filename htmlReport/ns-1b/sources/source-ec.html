@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > EffectStatec</title>
+  <title>Coverage Report > LaunchPayloadc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: EffectStatec (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: LaunchPayloadc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">EffectStatec</td>
+  <td class="name">LaunchPayloadc</td>
 </tr>
 
 </table>
@@ -40,31 +40,34 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.graphics.Color;
+&nbsp;import arc.struct.Seq;
+&nbsp;import arc.util.Interval;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.entities.Effect;
+&nbsp;import mindustry.type.ItemStack;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.EffectStateComp}
+&nbsp; * Interface for {@link mindustry.world.blocks.campaign.LaunchPad.LaunchPayloadComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface EffectStatec extends Childc, Drawc, Entityc, Posc, Rotc, Timedc {
-&nbsp;  Color color();
+&nbsp;public interface LaunchPayloadc extends Drawc, Entityc, Posc, Teamc, Timedc {
+&nbsp;  Seq&lt;ItemStack&gt; stacks();
 &nbsp;
-&nbsp;  float clipSize();
+&nbsp;  Interval in();
 &nbsp;
-&nbsp;  Object data();
+&nbsp;  float cx();
 &nbsp;
-&nbsp;  Effect effect();
-&nbsp;
-&nbsp;  void color(Color color);
-&nbsp;
-&nbsp;  void data(Object data);
+&nbsp;  float cy();
 &nbsp;
 &nbsp;  void draw();
 &nbsp;
-&nbsp;  void effect(Effect effect);
+&nbsp;  void in(Interval in);
+&nbsp;
+&nbsp;  void remove();
+&nbsp;
+&nbsp;  void stacks(Seq&lt;ItemStack&gt; stacks);
+&nbsp;
+&nbsp;  void update();
 &nbsp;}
 </code>
 </pre>
@@ -89,7 +92,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

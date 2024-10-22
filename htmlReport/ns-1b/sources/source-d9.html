@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Hitboxc</title>
+  <title>Coverage Report > Flyingc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Hitboxc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Flyingc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Hitboxc</td>
+  <td class="name">Flyingc</td>
 </tr>
 
 </table>
@@ -40,60 +40,61 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.func.Cons;
-&nbsp;import arc.math.geom.QuadTree;
-&nbsp;import arc.math.geom.QuadTree.QuadTreeObject;
-&nbsp;import arc.math.geom.Rect;
+&nbsp;import arc.math.geom.Vec2;
+&nbsp;import arc.util.Nullable;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.entities.Sized;
+&nbsp;import mindustry.world.blocks.environment.Floor;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.HitboxComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.FlyingComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Hitboxc extends QuadTreeObject, Sized, Entityc, Posc {
-&nbsp;  boolean collides(Hitboxc other);
+&nbsp;public interface Flyingc extends Entityc, Healthc, Hitboxc, Posc, Velc {
+&nbsp;  @Nullable
+&nbsp;  Floor lastDrownFloor();
 &nbsp;
-&nbsp;  float deltaAngle();
+&nbsp;  boolean canDrown();
 &nbsp;
-&nbsp;  float deltaLen();
+&nbsp;  boolean checkTarget(boolean targetAir, boolean targetGround);
 &nbsp;
-&nbsp;  float deltaX();
+&nbsp;  boolean emitWalkSound();
 &nbsp;
-&nbsp;  float deltaY();
+&nbsp;  boolean hovering();
 &nbsp;
-&nbsp;  float hitSize();
+&nbsp;  boolean isFlying();
 &nbsp;
-&nbsp;  float lastX();
+&nbsp;  boolean isGrounded();
 &nbsp;
-&nbsp;  float lastY();
+&nbsp;  float drownTime();
 &nbsp;
-&nbsp;  void add();
+&nbsp;  float elevation();
 &nbsp;
-&nbsp;  void afterRead();
+&nbsp;  float floorSpeedMultiplier();
 &nbsp;
-&nbsp;  void collision(Hitboxc other, float x, float y);
+&nbsp;  float splashTimer();
 &nbsp;
-&nbsp;  void deltaX(float deltaX);
+&nbsp;  Floor drownFloor();
 &nbsp;
-&nbsp;  void deltaY(float deltaY);
+&nbsp;  void drownTime(float drownTime);
 &nbsp;
-&nbsp;  void getCollisions(Cons&lt;QuadTree&gt; consumer);
+&nbsp;  void elevation(float elevation);
 &nbsp;
-&nbsp;  void hitSize(float hitSize);
+&nbsp;  void hovering(boolean hovering);
 &nbsp;
-&nbsp;  void hitbox(Rect rect);
+&nbsp;  void landed();
 &nbsp;
-&nbsp;  void hitboxTile(Rect rect);
+&nbsp;  void lastDrownFloor(@Nullable Floor lastDrownFloor);
 &nbsp;
-&nbsp;  void lastX(float lastX);
+&nbsp;  void moveAt(Vec2 vector, float acceleration);
 &nbsp;
-&nbsp;  void lastY(float lastY);
+&nbsp;  void splashTimer(float splashTimer);
 &nbsp;
 &nbsp;  void update();
 &nbsp;
-&nbsp;  void updateLastPosition();
+&nbsp;  void updateDrowning();
+&nbsp;
+&nbsp;  void wobble();
 &nbsp;}
 </code>
 </pre>
@@ -118,7 +119,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

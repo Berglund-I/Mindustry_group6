@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Payloadc</title>
+  <title>Coverage Report > Posc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Payloadc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Posc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Payloadc</td>
+  <td class="name">Posc</td>
 </tr>
 
 </table>
@@ -40,55 +40,54 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.scene.ui.layout.Table;
-&nbsp;import arc.struct.Seq;
+&nbsp;import arc.math.geom.Position;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.world.blocks.payloads.BuildPayload;
-&nbsp;import mindustry.world.blocks.payloads.Payload;
-&nbsp;import mindustry.world.blocks.payloads.UnitPayload;
+&nbsp;import mindustry.world.Block;
+&nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.world.blocks.environment.Floor;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.PayloadComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.PosComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Payloadc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
+&nbsp;public interface Posc extends Position, Entityc {
 &nbsp;  /**
-&nbsp;   * @return whether the tile has been successfully placed. 
+&nbsp;   * Returns air if this unit is on a non-air top block. 
 &nbsp;   */
-&nbsp;  boolean dropBlock(BuildPayload payload);
+&nbsp;  Floor floorOn();
 &nbsp;
-&nbsp;  Seq&lt;Payload&gt; payloads();
+&nbsp;  Building buildOn();
 &nbsp;
-&nbsp;  boolean canPickup(Building build);
+&nbsp;  boolean onSolid();
 &nbsp;
-&nbsp;  boolean canPickup(Unit unit);
+&nbsp;  float getX();
 &nbsp;
-&nbsp;  boolean canPickupPayload(Payload pay);
+&nbsp;  float getY();
 &nbsp;
-&nbsp;  boolean dropLastPayload();
+&nbsp;  float x();
 &nbsp;
-&nbsp;  boolean dropUnit(UnitPayload payload);
+&nbsp;  float y();
 &nbsp;
-&nbsp;  boolean hasPayload();
+&nbsp;  int tileX();
 &nbsp;
-&nbsp;  boolean tryDropPayload(Payload payload);
+&nbsp;  int tileY();
 &nbsp;
-&nbsp;  float payloadUsed();
+&nbsp;  Block blockOn();
 &nbsp;
-&nbsp;  void addPayload(Payload load);
+&nbsp;  Tile tileOn();
 &nbsp;
-&nbsp;  void contentInfo(Table table, float itemSize, float width);
+&nbsp;  void set(Position pos);
 &nbsp;
-&nbsp;  void destroy();
+&nbsp;  void set(float x, float y);
 &nbsp;
-&nbsp;  void payloads(Seq&lt;Payload&gt; payloads);
+&nbsp;  void trns(Position pos);
 &nbsp;
-&nbsp;  void pickup(Building tile);
+&nbsp;  void trns(float x, float y);
 &nbsp;
-&nbsp;  void pickup(Unit unit);
+&nbsp;  void x(float x);
 &nbsp;
-&nbsp;  void update();
+&nbsp;  void y(float y);
 &nbsp;}
 </code>
 </pre>
@@ -113,7 +112,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

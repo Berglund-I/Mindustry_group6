@@ -40,18 +40,18 @@ Current scope:     <a href="../../index.html">all classes</a>
   <td class="name">Scripts</td>
 <td class="coverageStat">
   <span class="percent">
-    60%
+    0%
   </span>
   <span class="absValue">
-    (6/10)
+    (0/10)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    45.5%
+    0%
   </span>
   <span class="absValue">
-    (20/44)
+    (0/44)
   </span>
 </td>
 </tr>
@@ -59,18 +59,18 @@ Current scope:     <a href="../../index.html">all classes</a>
     <td class="name">Scripts$ScriptModuleProvider</td>
 <td class="coverageStat">
   <span class="percent">
-    33.3%
+    0%
   </span>
   <span class="absValue">
-    (1/3)
+    (0/3)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    16.7%
+    0%
   </span>
   <span class="absValue">
-    (3/18)
+    (0/18)
   </span>
 </td>
   </tr>
@@ -78,18 +78,18 @@ Current scope:     <a href="../../index.html">all classes</a>
   <td class="name"><strong>Total</strong></td>
 <td class="coverageStat">
   <span class="percent">
-    53.8%
+    0%
   </span>
   <span class="absValue">
-    (7/13)
+    (0/13)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    37.1%
+    0%
   </span>
   <span class="absValue">
-    (23/62)
+    (0/62)
   </span>
 </td>
 </tr>
@@ -121,26 +121,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    public final Scriptable scope;
 &nbsp;
 &nbsp;    private boolean errored;
-<b class="fc">&nbsp;    LoadedMod currentMod = null;</b>
+<b class="nc">&nbsp;    LoadedMod currentMod = null;</b>
 &nbsp;
-<b class="fc">&nbsp;    public Scripts(){</b>
-<b class="fc">&nbsp;        Time.mark();</b>
+<b class="nc">&nbsp;    public Scripts(){</b>
+<b class="nc">&nbsp;        Time.mark();</b>
 &nbsp;
-<b class="fc">&nbsp;        context = Vars.platform.getScriptContext();</b>
-<b class="fc">&nbsp;        scope = new ImporterTopLevel(context);</b>
+<b class="nc">&nbsp;        context = Vars.platform.getScriptContext();</b>
+<b class="nc">&nbsp;        scope = new ImporterTopLevel(context);</b>
 &nbsp;
-<b class="fc">&nbsp;        new RequireBuilder()</b>
-<b class="fc">&nbsp;            .setModuleScriptProvider(new SoftCachingModuleScriptProvider(new ScriptModuleProvider()))</b>
-<b class="fc">&nbsp;            .setSandboxed(true).createRequire(context, scope).install(scope);</b>
+<b class="nc">&nbsp;        new RequireBuilder()</b>
+<b class="nc">&nbsp;            .setModuleScriptProvider(new SoftCachingModuleScriptProvider(new ScriptModuleProvider()))</b>
+<b class="nc">&nbsp;            .setSandboxed(true).createRequire(context, scope).install(scope);</b>
 &nbsp;
-<b class="fc">&nbsp;        if(!run(Core.files.internal(&quot;scripts/global.js&quot;).readString(), &quot;global.js&quot;, false)){</b>
+<b class="nc">&nbsp;        if(!run(Core.files.internal(&quot;scripts/global.js&quot;).readString(), &quot;global.js&quot;, false)){</b>
 <b class="nc">&nbsp;            errored = true;</b>
 &nbsp;        }
-<b class="fc">&nbsp;        Log.debug(&quot;Time to load script engine: @&quot;, Time.elapsed());</b>
+<b class="nc">&nbsp;        Log.debug(&quot;Time to load script engine: @&quot;, Time.elapsed());</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    public boolean hasErrored(){
-<b class="fc">&nbsp;        return errored;</b>
+<b class="nc">&nbsp;        return errored;</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    public String runConsole(String text){
@@ -173,11 +173,11 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    }
 &nbsp;
 &nbsp;    public void log(String source, String message){
-<b class="fc">&nbsp;        log(LogLevel.info, source, message);</b>
+<b class="nc">&nbsp;        log(LogLevel.info, source, message);</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    public void log(LogLevel level, String source, String message){
-<b class="fc">&nbsp;        Log.log(level, &quot;[@]: @&quot;, source, message);</b>
+<b class="nc">&nbsp;        Log.log(level, &quot;[@]: @&quot;, source, message);</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    public float[] newFloats(int capacity){
@@ -185,19 +185,19 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    }
 &nbsp;
 &nbsp;    public void run(LoadedMod mod, Fi file){
-<b class="fc">&nbsp;        currentMod = mod;</b>
-<b class="fc">&nbsp;        run(file.readString(), mod.name + &quot;/&quot; + file.name(), true);</b>
-<b class="fc">&nbsp;        currentMod = null;</b>
+<b class="nc">&nbsp;        currentMod = mod;</b>
+<b class="nc">&nbsp;        run(file.readString(), mod.name + &quot;/&quot; + file.name(), true);</b>
+<b class="nc">&nbsp;        currentMod = null;</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    private boolean run(String script, String file, boolean wrap){
 &nbsp;        try{
-<b class="fc">&nbsp;            if(currentMod != null){</b>
+<b class="nc">&nbsp;            if(currentMod != null){</b>
 &nbsp;                //inject script info into file
-<b class="fc">&nbsp;                context.evaluateString(scope, &quot;modName = \&quot;&quot; + currentMod.name + &quot;\&quot;\nscriptName = \&quot;&quot; + file + &quot;\&quot;&quot;, &quot;initscript.js&quot;, 1);</b>
+<b class="nc">&nbsp;                context.evaluateString(scope, &quot;modName = \&quot;&quot; + currentMod.name + &quot;\&quot;\nscriptName = \&quot;&quot; + file + &quot;\&quot;&quot;, &quot;initscript.js&quot;, 1);</b>
 &nbsp;            }
-<b class="fc">&nbsp;            context.evaluateString(scope, wrap ? &quot;(function(){&#39;use strict&#39;;\n&quot; + script + &quot;\n})();&quot; : script, file, 0);</b>
-<b class="fc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;            context.evaluateString(scope, wrap ? &quot;(function(){&#39;use strict&#39;;\n&quot; + script + &quot;\n})();&quot; : script, file, 0);</b>
+<b class="nc">&nbsp;            return true;</b>
 <b class="nc">&nbsp;        }catch(Throwable t){</b>
 <b class="nc">&nbsp;            log(LogLevel.err, file, getError(t, true));</b>
 <b class="nc">&nbsp;            return false;</b>
@@ -210,10 +210,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    }
 &nbsp;
 &nbsp;    private class ScriptModuleProvider extends UrlModuleSourceProvider{
-<b class="fc">&nbsp;        private final Pattern directory = Pattern.compile(&quot;^(.+?)/(.+)&quot;);</b>
+<b class="nc">&nbsp;        private final Pattern directory = Pattern.compile(&quot;^(.+?)/(.+)&quot;);</b>
 &nbsp;
-<b class="fc">&nbsp;        public ScriptModuleProvider(){</b>
-<b class="fc">&nbsp;            super(null, null);</b>
+<b class="nc">&nbsp;        public ScriptModuleProvider(){</b>
+<b class="nc">&nbsp;            super(null, null);</b>
 &nbsp;        }
 &nbsp;
 &nbsp;        @Override
@@ -266,7 +266,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:59</div>
 </div>
 </body>
 </html>

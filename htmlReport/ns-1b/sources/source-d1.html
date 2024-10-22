@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > LaunchPayloadc</title>
+  <title>Coverage Report > Minerc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: LaunchPayloadc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Minerc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">LaunchPayloadc</td>
+  <td class="name">Minerc</td>
 </tr>
 
 </table>
@@ -40,32 +40,39 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
-&nbsp;import arc.struct.Seq;
-&nbsp;import arc.util.Interval;
+&nbsp;import arc.util.Nullable;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.type.ItemStack;
+&nbsp;import mindustry.type.Item;
+&nbsp;import mindustry.world.Tile;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.world.blocks.campaign.LaunchPad.LaunchPayloadComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.MinerComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface LaunchPayloadc extends Drawc, Entityc, Posc, Teamc, Timedc {
-&nbsp;  Seq&lt;ItemStack&gt; stacks();
+&nbsp;public interface Minerc extends Drawc, Entityc, Itemsc, Posc, Rotc, Teamc {
+&nbsp;  @Nullable
+&nbsp;  Tile mineTile();
 &nbsp;
-&nbsp;  Interval in();
+&nbsp;  boolean canMine();
 &nbsp;
-&nbsp;  float cx();
+&nbsp;  boolean canMine(Item item);
 &nbsp;
-&nbsp;  float cy();
+&nbsp;  boolean mining();
 &nbsp;
-&nbsp;  void draw();
+&nbsp;  boolean offloadImmediately();
 &nbsp;
-&nbsp;  void in(Interval in);
+&nbsp;  boolean validMine(Tile tile);
 &nbsp;
-&nbsp;  void remove();
+&nbsp;  boolean validMine(Tile tile, boolean checkDst);
 &nbsp;
-&nbsp;  void stacks(Seq&lt;ItemStack&gt; stacks);
+&nbsp;  float mineTimer();
+&nbsp;
+&nbsp;  Item getMineResult(Tile tile);
+&nbsp;
+&nbsp;  void mineTile(@Nullable Tile mineTile);
+&nbsp;
+&nbsp;  void mineTimer(float mineTimer);
 &nbsp;
 &nbsp;  void update();
 &nbsp;}
@@ -92,7 +99,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

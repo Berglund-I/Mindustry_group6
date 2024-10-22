@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Crawlc</title>
+  <title>Coverage Report > Syncc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Crawlc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Syncc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Crawlc</td>
+  <td class="name">Syncc</td>
 </tr>
 
 </table>
@@ -40,43 +40,48 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
+&nbsp;import arc.util.io.Reads;
+&nbsp;import arc.util.io.Writes;
+&nbsp;import java.nio.FloatBuffer;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.entities.EntityCollisions;
-&nbsp;import mindustry.world.blocks.environment.Floor;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.CrawlComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.SyncComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Crawlc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
-&nbsp;  float crawlTime();
+&nbsp;public interface Syncc extends Entityc {
+&nbsp;  boolean isSyncHidden(Player player);
 &nbsp;
-&nbsp;  float floorSpeedMultiplier();
+&nbsp;  long lastUpdated();
 &nbsp;
-&nbsp;  float lastCrawlSlowdown();
+&nbsp;  long updateSpacing();
 &nbsp;
-&nbsp;  float segmentRot();
+&nbsp;  void afterSync();
 &nbsp;
-&nbsp;  int pathType();
+&nbsp;  void handleSyncHidden();
 &nbsp;
-&nbsp;  EntityCollisions.SolidPred solidity();
+&nbsp;  void interpolate();
 &nbsp;
-&nbsp;  Floor drownFloor();
+&nbsp;  void lastUpdated(long lastUpdated);
 &nbsp;
-&nbsp;  Floor lastDeepFloor();
+&nbsp;  void readSync(Reads read);
 &nbsp;
-&nbsp;  void add();
+&nbsp;  void readSyncManual(FloatBuffer buffer);
 &nbsp;
-&nbsp;  void crawlTime(float crawlTime);
+&nbsp;  void remove();
 &nbsp;
-&nbsp;  void lastCrawlSlowdown(float lastCrawlSlowdown);
+&nbsp;  void snapInterpolation();
 &nbsp;
-&nbsp;  void lastDeepFloor(Floor lastDeepFloor);
-&nbsp;
-&nbsp;  void segmentRot(float segmentRot);
+&nbsp;  void snapSync();
 &nbsp;
 &nbsp;  void update();
+&nbsp;
+&nbsp;  void updateSpacing(long updateSpacing);
+&nbsp;
+&nbsp;  void writeSync(Writes write);
+&nbsp;
+&nbsp;  void writeSyncManual(FloatBuffer buffer);
 &nbsp;}
 </code>
 </pre>
@@ -101,7 +106,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

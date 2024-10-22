@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Minerc</title>
+  <title>Coverage Report > UnitTetherc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Minerc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: UnitTetherc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Minerc</td>
+  <td class="name">UnitTetherc</td>
 </tr>
 
 </table>
@@ -42,37 +42,25 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 &nbsp;import arc.util.Nullable;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.type.Item;
-&nbsp;import mindustry.world.Tile;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.MinerComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.UnitTetherComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Minerc extends Drawc, Entityc, Itemsc, Posc, Rotc, Teamc {
+&nbsp;public interface UnitTetherc extends Boundedc, Builderc, Drawc, Entityc, Flyingc, Healthc, Hitboxc, Itemsc, Minerc, Physicsc, Posc, Rotc, Shieldc, Statusc, Syncc, Teamc, Unitc, Velc, Weaponsc {
 &nbsp;  @Nullable
-&nbsp;  Tile mineTile();
+&nbsp;  Unit spawner();
 &nbsp;
-&nbsp;  boolean canMine();
+&nbsp;  int spawnerUnitId();
 &nbsp;
-&nbsp;  boolean canMine(Item item);
+&nbsp;  void afterRead();
 &nbsp;
-&nbsp;  boolean mining();
+&nbsp;  void afterSync();
 &nbsp;
-&nbsp;  boolean offloadImmediately();
+&nbsp;  void spawner(@Nullable Unit spawner);
 &nbsp;
-&nbsp;  boolean validMine(Tile tile);
-&nbsp;
-&nbsp;  boolean validMine(Tile tile, boolean checkDst);
-&nbsp;
-&nbsp;  float mineTimer();
-&nbsp;
-&nbsp;  Item getMineResult(Tile tile);
-&nbsp;
-&nbsp;  void mineTile(@Nullable Tile mineTile);
-&nbsp;
-&nbsp;  void mineTimer(float mineTimer);
+&nbsp;  void spawnerUnitId(int spawnerUnitId);
 &nbsp;
 &nbsp;  void update();
 &nbsp;}
@@ -99,7 +87,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

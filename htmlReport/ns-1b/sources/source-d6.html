@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Itemsc</title>
+  <title>Coverage Report > Teamc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Itemsc (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Teamc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Itemsc</td>
+  <td class="name">Teamc</td>
 </tr>
 
 </table>
@@ -41,40 +41,31 @@ Current scope:     <a href="../../index.html">all classes</a>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.type.Item;
-&nbsp;import mindustry.type.ItemStack;
+&nbsp;import mindustry.game.Team;
+&nbsp;import mindustry.world.blocks.storage.CoreBlock;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.ItemsComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.TeamComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Itemsc extends Entityc, Posc {
-&nbsp;  boolean acceptsItem(Item item);
+&nbsp;public interface Teamc extends Entityc, Posc {
+&nbsp;  /**
+&nbsp;   * @return whether the center of this entity is visible to the viewing team. 
+&nbsp;   */
+&nbsp;  boolean inFogTo(Team viewer);
 &nbsp;
-&nbsp;  boolean hasItem();
+&nbsp;  boolean cheating();
 &nbsp;
-&nbsp;  float itemTime();
+&nbsp;  Team team();
 &nbsp;
-&nbsp;  int itemCapacity();
+&nbsp;  CoreBlock.CoreBuild closestCore();
 &nbsp;
-&nbsp;  int maxAccepted(Item item);
+&nbsp;  CoreBlock.CoreBuild closestEnemyCore();
 &nbsp;
-&nbsp;  Item item();
+&nbsp;  CoreBlock.CoreBuild core();
 &nbsp;
-&nbsp;  ItemStack stack();
-&nbsp;
-&nbsp;  void addItem(Item item);
-&nbsp;
-&nbsp;  void addItem(Item item, int amount);
-&nbsp;
-&nbsp;  void clearItem();
-&nbsp;
-&nbsp;  void itemTime(float itemTime);
-&nbsp;
-&nbsp;  void stack(ItemStack stack);
-&nbsp;
-&nbsp;  void update();
+&nbsp;  void team(Team team);
 &nbsp;}
 </code>
 </pre>
@@ -99,7 +90,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

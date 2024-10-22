@@ -40,18 +40,18 @@ Current scope:     <a href="../../index.html">all classes</a>
   <td class="name">Platform</td>
 <td class="coverageStat">
   <span class="percent">
-    11.8%
+    2.9%
   </span>
   <span class="absValue">
-    (4/34)
+    (1/34)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    5.9%
+    0.8%
   </span>
   <span class="absValue">
-    (7/118)
+    (1/118)
   </span>
 </td>
 </tr>
@@ -59,18 +59,18 @@ Current scope:     <a href="../../index.html">all classes</a>
     <td class="name">Platform$1</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (2/2)
+    (0/2)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    90%
+    0%
   </span>
   <span class="absValue">
-    (9/10)
+    (0/10)
   </span>
 </td>
   </tr>
@@ -81,18 +81,18 @@ Current scope:     <a href="../../index.html">all classes</a>
   <td class="name"><strong>Total</strong></td>
 <td class="coverageStat">
   <span class="percent">
-    16.7%
+    2.8%
   </span>
   <span class="absValue">
-    (6/36)
+    (1/36)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    12.5%
+    0.8%
   </span>
   <span class="absValue">
-    (16/128)
+    (1/128)
   </span>
 </td>
 </tr>
@@ -129,25 +129,25 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 &nbsp;    /** Dynamically creates a class loader for a jar file. This loader must be child-first. */
 &nbsp;    default ClassLoader loadJar(Fi jar, ClassLoader parent) throws Exception{
-<b class="fc">&nbsp;        return new URLClassLoader(new URL[]{jar.file().toURI().toURL()}, parent){</b>
+<b class="nc">&nbsp;        return new URLClassLoader(new URL[]{jar.file().toURI().toURL()}, parent){</b>
 &nbsp;            @Override
 &nbsp;            protected Class&lt;?&gt; loadClass(String name, boolean resolve) throws ClassNotFoundException{
 &nbsp;                //check for loaded state
-<b class="fc">&nbsp;                Class&lt;?&gt; loadedClass = findLoadedClass(name);</b>
-<b class="fc">&nbsp;                if(loadedClass == null){</b>
+<b class="nc">&nbsp;                Class&lt;?&gt; loadedClass = findLoadedClass(name);</b>
+<b class="nc">&nbsp;                if(loadedClass == null){</b>
 &nbsp;                    try{
 &nbsp;                        //try to load own class first
-<b class="fc">&nbsp;                        loadedClass = findClass(name);</b>
-<b class="fc">&nbsp;                    }catch(ClassNotFoundException e){</b>
+<b class="nc">&nbsp;                        loadedClass = findClass(name);</b>
+<b class="nc">&nbsp;                    }catch(ClassNotFoundException e){</b>
 &nbsp;                        //use parent if not found
-<b class="fc">&nbsp;                        return parent.loadClass(name);</b>
-<b class="fc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                        return parent.loadClass(name);</b>
+<b class="nc">&nbsp;                    }</b>
 &nbsp;                }
 &nbsp;
-<b class="fc">&nbsp;                if(resolve){</b>
+<b class="nc">&nbsp;                if(resolve){</b>
 <b class="nc">&nbsp;                    resolveClass(loadedClass);</b>
 &nbsp;                }
-<b class="fc">&nbsp;                return loadedClass;</b>
+<b class="nc">&nbsp;                return loadedClass;</b>
 &nbsp;            }
 &nbsp;        };
 &nbsp;    }
@@ -182,14 +182,14 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 &nbsp;    /** Gets the scripting implementation. */
 &nbsp;    default Scripts createScripts(){
-<b class="fc">&nbsp;        return new Scripts();</b>
+<b class="nc">&nbsp;        return new Scripts();</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    default Context getScriptContext(){
-<b class="fc">&nbsp;        Context context = Context.getCurrentContext();</b>
-<b class="fc">&nbsp;        if(context == null) context = Context.enter();</b>
-<b class="fc">&nbsp;        context.setOptimizationLevel(9);</b>
-<b class="fc">&nbsp;        return context;</b>
+<b class="nc">&nbsp;        Context context = Context.getCurrentContext();</b>
+<b class="nc">&nbsp;        if(context == null) context = Context.enter();</b>
+<b class="nc">&nbsp;        context.setOptimizationLevel(9);</b>
+<b class="nc">&nbsp;        return context;</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    /** Update discord RPC. */
@@ -445,7 +445,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>

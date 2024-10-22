@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Firec</title>
+  <title>Coverage Report > Hitboxc</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -21,14 +21,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">mindustry.gen</a>
 </div>
 
-<h1>Coverage Summary for Class: Firec (mindustry.gen)</h1>
+<h1>Coverage Summary for Class: Hitboxc (mindustry.gen)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Firec</td>
+  <td class="name">Hitboxc</td>
 </tr>
 
 </table>
@@ -40,30 +40,60 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package mindustry.gen;
 &nbsp;
+&nbsp;import arc.func.Cons;
+&nbsp;import arc.math.geom.QuadTree;
+&nbsp;import arc.math.geom.QuadTree.QuadTreeObject;
+&nbsp;import arc.math.geom.Rect;
 &nbsp;import mindustry.annotations.Annotations;
-&nbsp;import mindustry.world.Tile;
+&nbsp;import mindustry.entities.Sized;
 &nbsp;
 &nbsp;/**
-&nbsp; * Interface for {@link mindustry.entities.comp.FireComp}
+&nbsp; * Interface for {@link mindustry.entities.comp.HitboxComp}
 &nbsp; */
 &nbsp;@Annotations.EntityInterface
 &nbsp;@SuppressWarnings(&quot;deprecation&quot;)
-&nbsp;public interface Firec extends Drawc, Entityc, Posc, Syncc, Timedc {
-&nbsp;  float clipSize();
+&nbsp;public interface Hitboxc extends QuadTreeObject, Sized, Entityc, Posc {
+&nbsp;  boolean collides(Hitboxc other);
 &nbsp;
-&nbsp;  Tile tile();
+&nbsp;  float deltaAngle();
+&nbsp;
+&nbsp;  float deltaLen();
+&nbsp;
+&nbsp;  float deltaX();
+&nbsp;
+&nbsp;  float deltaY();
+&nbsp;
+&nbsp;  float hitSize();
+&nbsp;
+&nbsp;  float lastX();
+&nbsp;
+&nbsp;  float lastY();
+&nbsp;
+&nbsp;  void add();
 &nbsp;
 &nbsp;  void afterRead();
 &nbsp;
-&nbsp;  void afterSync();
+&nbsp;  void collision(Hitboxc other, float x, float y);
 &nbsp;
-&nbsp;  void draw();
+&nbsp;  void deltaX(float deltaX);
 &nbsp;
-&nbsp;  void remove();
+&nbsp;  void deltaY(float deltaY);
 &nbsp;
-&nbsp;  void tile(Tile tile);
+&nbsp;  void getCollisions(Cons&lt;QuadTree&gt; consumer);
+&nbsp;
+&nbsp;  void hitSize(float hitSize);
+&nbsp;
+&nbsp;  void hitbox(Rect rect);
+&nbsp;
+&nbsp;  void hitboxTile(Rect rect);
+&nbsp;
+&nbsp;  void lastX(float lastX);
+&nbsp;
+&nbsp;  void lastY(float lastY);
 &nbsp;
 &nbsp;  void update();
+&nbsp;
+&nbsp;  void updateLastPosition();
 &nbsp;}
 </code>
 </pre>
@@ -88,7 +118,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2024-10-10 14:03</div>
+    <div style="float:right;">generated on 2024-10-10 15:58</div>
 </div>
 </body>
 </html>
